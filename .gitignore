@@ -1,0 +1,7 @@
+# AI Master - 静态站点
+node_modules/
+.DS_Store
+*.log
+build.py
+__pycache__/
+*.pyc

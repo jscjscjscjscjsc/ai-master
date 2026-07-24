@@ -1,0 +1,122 @@
+/* AI Master chapter expedition layer — keeps legacy interaction contracts intact. */
+body.chapter-page {
+  --sector: #72f6e4;
+  --sector-rgb: 114, 246, 228;
+  --sector-alt: #9d8cff;
+  --ink: #edf7ff;
+  --deep: #02050d;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(var(--sector-rgb), .09), transparent 28%),
+    radial-gradient(circle at 82% 30%, rgba(116, 77, 255, .09), transparent 26%),
+    linear-gradient(150deg, #02040a 0%, #050817 46%, #02040b 100%);
+  color: var(--ink);
+}
+body.chapter-page[data-chapter="2"], body.chapter-page[data-chapter="7"] { --sector:#9d8cff; --sector-rgb:157,140,255; --sector-alt:#61e8ff; }
+body.chapter-page[data-chapter="3"], body.chapter-page[data-chapter="8"] { --sector:#ffbf70; --sector-rgb:255,191,112; --sector-alt:#ff7eb6; }
+body.chapter-page[data-chapter="4"], body.chapter-page[data-chapter="9"] { --sector:#80b7ff; --sector-rgb:128,183,255; --sector-alt:#b18cff; }
+body.chapter-page[data-chapter="5"], body.chapter-page[data-chapter="10"] { --sector:#8df7af; --sector-rgb:141,247,175; --sector-alt:#63dfff; }
+.chapter-page .bg-grid { opacity:.13; background-size:96px 96px; mask-image:linear-gradient(to bottom,black,transparent 78%); }
+#chapter-deepspace { position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity:.82; }
+.chapter-page::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; background:linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px); background-size:120px 120px; mask-image:radial-gradient(circle at 50% 30%,black,transparent 72%); }
+.chapter-page .top-nav { background:rgba(2,5,13,.72); border-bottom:1px solid rgba(var(--sector-rgb),.15); backdrop-filter:blur(22px) saturate(130%); }
+.chapter-page .nav-inner { max-width:1460px; height:68px; }
+.chapter-page .nav-brand { gap:12px; letter-spacing:.1em; }
+.chapter-page .nav-brand b { font:600 13px/1 var(--font-mono); color:#f5fbff; }
+.chapter-page .nav-brand small { color:rgba(210,230,244,.4); font:500 9px/1 var(--font-mono); letter-spacing:.18em; }
+.chapter-page .brand-icon { position:relative; width:30px; height:30px; border:1px solid rgba(var(--sector-rgb),.5); border-radius:50%; box-shadow:0 0 20px rgba(var(--sector-rgb),.16); }
+.chapter-page .brand-icon::before,.chapter-page .brand-icon::after,.chapter-page .brand-icon i { content:""; position:absolute; border:1px solid rgba(var(--sector-rgb),.7); border-radius:50%; inset:5px; transform:rotate(55deg); }
+.chapter-page .brand-icon::after { inset:9px; background:var(--sector); border:0; box-shadow:0 0 10px var(--sector); }
+.chapter-page .brand-icon i { inset:2px 9px; transform:rotate(-45deg); }
+.chapter-page .nav-tool-btn,.chapter-page .btn-playground-nav,.chapter-page .btn-ghost,.chapter-page .btn-theme-toggle { display:inline-flex; align-items:center; gap:8px; min-height:35px; padding:7px 12px!important; border:1px solid rgba(197,224,242,.13)!important; border-radius:2px!important; background:rgba(255,255,255,.025)!important; color:rgba(224,239,249,.7)!important; font:500 11px/1 var(--font-mono)!important; letter-spacing:.08em; }
+.chapter-page .nav-tool-btn:hover,.chapter-page .btn-playground-nav:hover,.chapter-page .btn-ghost:hover { border-color:rgba(var(--sector-rgb),.5)!important; color:var(--sector)!important; transform:translateY(-1px); }
+.ui-glyph { display:inline-block; width:13px; height:13px; position:relative; color:var(--sector); }
+.glyph-orbit { border:1px solid currentColor; border-radius:50%; transform:scaleY(.55) rotate(-25deg); }
+.glyph-orbit::after { content:""; position:absolute; width:3px; height:3px; border-radius:50%; background:currentColor; right:-1px; top:1px; }
+.glyph-scan { border:1px solid currentColor; border-radius:1px; }
+.glyph-scan::after { content:""; position:absolute; left:2px; right:2px; top:5px; height:1px; background:currentColor; box-shadow:0 0 6px currentColor; }
+.glyph-pulse::before { content:""; position:absolute; inset:2px; border:1px solid currentColor; transform:rotate(45deg); }
+.glyph-eclipse { border:1px solid currentColor; border-radius:50%; box-shadow:inset 4px 0 rgba(var(--sector-rgb),.45); }
+.chapter-content { max-width:1240px!important; padding:106px 28px 100px!important; position:relative; z-index:1; }
+.chapter-page .chapter-hero { min-height:390px; padding:74px 70px 58px 47%; margin-bottom:70px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; overflow:hidden; border:1px solid rgba(var(--sector-rgb),.18); border-radius:2px; background:linear-gradient(115deg,rgba(4,8,18,.96),rgba(7,11,27,.77)); box-shadow:0 35px 90px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.04); text-align:left; }
+.chapter-page .chapter-hero::before { content:""; inset:0; background:linear-gradient(90deg,transparent 40%,rgba(var(--sector-rgb),.045)),repeating-linear-gradient(90deg,transparent 0 59px,rgba(255,255,255,.018) 60px); animation:none; }
+.chapter-page .chapter-hero::after { content:"EXPEDITION"; position:absolute; right:-25px; bottom:35px; color:rgba(255,255,255,.025); font:700 92px/1 var(--font-mono); letter-spacing:-.08em; }
+.hero-copy { position:relative; z-index:2; }
+.hero-kicker { display:flex; align-items:center; gap:12px; margin-bottom:18px; color:var(--sector); font:600 10px/1 var(--font-mono); letter-spacing:.19em; }
+.hero-kicker i { width:46px; height:1px; background:linear-gradient(90deg,var(--sector),transparent); }
+.chapter-page .chapter-hero h2 { max-width:690px; font-size:clamp(34px,5vw,64px); font-weight:350; line-height:1.08; letter-spacing:-.035em; color:#f2f7fb; background:none; -webkit-text-fill-color:initial; text-wrap:balance; }
+.chapter-page .chapter-hero .hero-desc { max-width:650px; margin:18px 0 0; color:rgba(210,227,240,.62); font-size:14px; line-height:1.9; }
+.hero-telemetry { display:flex; flex-wrap:wrap; gap:7px 24px; margin-top:26px; color:rgba(194,221,237,.45); font:500 9px/1 var(--font-mono); letter-spacing:.15em; text-transform:uppercase; }
+.hero-telemetry span::before { content:""; display:inline-block; width:4px; height:4px; margin:0 8px 1px 0; border-radius:50%; background:var(--sector); box-shadow:0 0 7px var(--sector); }
+.hero-planet { position:absolute; z-index:1; left:5%; top:50%; width:350px; aspect-ratio:1; transform:translateY(-50%); perspective:600px; filter:drop-shadow(0 0 65px rgba(var(--sector-rgb),.15)); }
+.planet-core { position:absolute; inset:17%; border-radius:50%; background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.8),rgba(var(--sector-rgb),.5) 5%,rgba(var(--sector-rgb),.14) 23%,#101326 58%,#02040a 78%); box-shadow:inset -26px -18px 45px rgba(0,0,0,.86),inset 12px 8px 24px rgba(var(--sector-rgb),.17),0 0 45px rgba(var(--sector-rgb),.22); animation:planetFloat 8s ease-in-out infinite; }
+.planet-core::after { content:""; position:absolute; inset:0; border-radius:50%; background:repeating-radial-gradient(ellipse at 30% 50%,transparent 0 12px,rgba(255,255,255,.045) 14px,transparent 17px); transform:rotate(-22deg); opacity:.7; }
+.planet-ring { position:absolute; inset:30% -2%; border:1px solid rgba(var(--sector-rgb),.45); border-radius:50%; transform:rotateX(69deg) rotateZ(-12deg); box-shadow:0 0 15px rgba(var(--sector-rgb),.12); }
+.ring-a::after { content:""; position:absolute; inset:-8px; border:5px solid rgba(var(--sector-rgb),.045); border-radius:50%; }
+.ring-b { inset:20% 8%; border-style:dashed; opacity:.3; animation:ringTurn 16s linear infinite; }
+.planet-moon { position:absolute; left:8%; top:25%; width:7px; height:7px; border-radius:50%; background:#fff; box-shadow:0 0 10px 3px var(--sector); animation:moonDrift 9s ease-in-out infinite; }
+.chapter-page .hero-buttons { position:relative; z-index:3; justify-content:flex-start; margin-top:32px; }
+.chapter-page .hero-buttons a,.chapter-page .hero-buttons button { border-radius:2px!important; padding:11px 17px!important; background:rgba(255,255,255,.025)!important; border:1px solid rgba(var(--sector-rgb),.28)!important; color:rgba(231,244,252,.82)!important; font:500 10px/1 var(--font-mono)!important; letter-spacing:.1em; box-shadow:none!important; }
+.chapter-page .hero-buttons a:hover,.chapter-page .hero-buttons button:hover { background:rgba(var(--sector-rgb),.1)!important; border-color:var(--sector)!important; color:#fff!important; transform:translateY(-2px); }
+.lock-mark { color:#ff9b9b; font-size:8px; margin-left:4px; }
+.route-heading { position:relative; margin:0 0 28px 74px; display:grid; grid-template-columns:auto 1fr auto; align-items:end; column-gap:18px; border-bottom:1px solid rgba(var(--sector-rgb),.13); padding-bottom:18px; }
+.route-heading span { grid-column:1/-1; color:var(--sector); font:600 9px/1 var(--font-mono); letter-spacing:.24em; margin-bottom:10px; }
+.route-heading strong { font-size:24px; font-weight:350; letter-spacing:.04em; }
+.route-heading em { color:rgba(202,222,235,.4); font:400 10px/1 var(--font-mono); letter-spacing:.1em; font-style:normal; }
+.chapter-page .knowledge-panel { position:relative; overflow:visible; }
+.chapter-page .knowledge-panel::before { content:""; position:absolute; left:31px; top:112px; bottom:30px; width:1px; background:linear-gradient(var(--sector),rgba(var(--sector-rgb),.14) 70%,transparent); box-shadow:0 0 12px rgba(var(--sector-rgb),.25); }
+.chapter-page .kp-item { position:relative; margin:0 0 18px 74px; overflow:visible; border:1px solid rgba(184,214,233,.11); border-radius:2px; background:linear-gradient(120deg,rgba(9,14,28,.89),rgba(5,9,19,.72)); box-shadow:0 16px 42px rgba(0,0,0,.18); transition:border-color .35s,transform .35s,box-shadow .35s; }
+.chapter-page .kp-item::before { content:attr(data-route-index); position:absolute; left:-74px; top:22px; width:62px; height:62px; display:grid; place-items:center; border:1px solid rgba(var(--sector-rgb),.35); border-radius:50%; background:radial-gradient(circle,rgba(var(--sector-rgb),.2),#050916 62%); color:var(--sector); font:500 9px/1 var(--font-mono); letter-spacing:.08em; box-shadow:0 0 0 6px #030712,0 0 25px rgba(var(--sector-rgb),.12); }
+.chapter-page .kp-item::after { content:""; position:absolute; left:-46px; top:50px; width:44px; height:1px; background:linear-gradient(90deg,var(--sector),rgba(var(--sector-rgb),.2)); }
+.chapter-page .kp-item:hover { transform:translateX(5px); border-color:rgba(var(--sector-rgb),.38); box-shadow:0 18px 55px rgba(0,0,0,.3),-12px 0 40px rgba(var(--sector-rgb),.04); }
+.chapter-page .kp-item.locked { opacity:.48; filter:saturate(.35); }
+.chapter-page .kp-item.completed::before { background:var(--sector); color:#04100e; box-shadow:0 0 0 6px #030712,0 0 27px rgba(var(--sector-rgb),.36); }
+.chapter-page .kp-header { min-height:104px; padding:24px 28px; }
+.chapter-page .kp-title { font-size:16px; font-weight:450; letter-spacing:.02em; }
+.chapter-page .kp-title > span:first-child { display:block; margin-bottom:8px; color:rgba(var(--sector-rgb),.7)!important; font:500 9px/1 var(--font-mono)!important; letter-spacing:.15em; }
+.chapter-page .kp-indicator { transform:none!important; color:var(--sector); }
+.state-label { padding:6px 8px; border:1px solid rgba(var(--sector-rgb),.28); color:rgba(var(--sector-rgb),.8); font:600 8px/1 var(--font-mono); letter-spacing:.13em; }
+.chapter-page .kp-body { border-top:1px solid rgba(var(--sector-rgb),.1); background:rgba(0,0,0,.14); }
+.chapter-page .kp-body-inner { padding:34px!important; }
+.chapter-page .kp-body-content { color:rgba(224,235,244,.78); line-height:1.9; }
+.chapter-page .kp-body-content h3,.chapter-page .kp-body-content h4 { color:#f1f8fc; font-weight:450; }
+.chapter-page .kp-body-content code { color:var(--sector); }
+.chapter-page .kp-exercises-section,.chapter-page .kp-notes-section { border-radius:2px; background:rgba(2,6,14,.55); border-color:rgba(var(--sector-rgb),.12); }
+.chapter-page .btn-interactive,.chapter-page .kp-actions a,.chapter-page .kp-actions button { border-radius:2px!important; }
+.chapter-page .kp-locked-icon { display:none; }
+.chapter-page .kp-locked-text::before { content:"ACCESS RESTRICTED  /  "; color:var(--sector); font:600 9px/1 var(--font-mono); letter-spacing:.12em; }
+.chapter-page .mindmap-overlay { background:rgba(1,3,9,.93); backdrop-filter:blur(22px); }
+.chapter-page .mindmap-container { border-radius:2px; border:1px solid rgba(var(--sector-rgb),.23); background:radial-gradient(circle at 50% 45%,rgba(var(--sector-rgb),.07),transparent 35%),#030713; box-shadow:0 0 120px rgba(var(--sector-rgb),.08); }
+.chapter-page .mindmap-toolbar { height:68px; background:rgba(4,8,17,.9); border-color:rgba(var(--sector-rgb),.14); }
+.chapter-page .mindmap-title { display:flex; flex-direction:column; gap:5px; font-size:13px; font-weight:450; letter-spacing:.05em; }
+.chapter-page .mindmap-title small { color:var(--sector); font:600 8px/1 var(--font-mono); letter-spacing:.2em; }
+.chapter-page .mindmap-tools button { border-radius:2px; color:rgba(221,239,248,.65); border:1px solid rgba(var(--sector-rgb),.15); background:rgba(255,255,255,.025); font:600 9px/1 var(--font-mono); letter-spacing:.08em; }
+.chapter-page #mindmap-svg text { fill:rgba(232,244,251,.84)!important; font-family:var(--font-sans)!important; }
+.chapter-page #mindmap-svg path { stroke:rgba(var(--sector-rgb),.42)!important; }
+.chapter-page #mindmap-svg circle { fill:var(--sector)!important; stroke:#07101a!important; filter:drop-shadow(0 0 5px var(--sector)); }
+.chapter-page .mind-elixir-container { background:radial-gradient(circle at center,rgba(var(--sector-rgb),.07),transparent 42%),#030713!important; }
+.chapter-page .mind-elixir-container .map-container { --bgcolor:#030713!important; --main-bgcolor:rgba(var(--sector-rgb),.08)!important; --main-color:var(--sector)!important; --root-bgcolor:#07111d!important; --root-color:#f0fbff!important; --root-border-color:var(--sector)!important; --panel-bgcolor:#07101d!important; --panel-color:#b9d3df!important; --selected:var(--sector)!important; }
+.chapter-page .mind-elixir-container me-root me-tpc,.chapter-page .mind-elixir-container me-main>me-wrapper>me-parent>me-tpc,.chapter-page .mind-elixir-container me-parent me-tpc { border-radius:2px!important; box-shadow:0 0 18px rgba(var(--sector-rgb),.08); background:rgba(5,13,25,.93)!important; border:1px solid rgba(var(--sector-rgb),.42)!important; color:rgba(232,245,250,.9)!important; }
+.chapter-page .mind-elixir-container .lines path,.chapter-page .mind-elixir-container .subLines path { stroke:rgba(var(--sector-rgb),.43)!important; }
+.chapter-page .btn-jj-float { background:radial-gradient(circle at 35% 30%,#fff,var(--sector) 7%,#14253a 30%,#030610 68%)!important; color:transparent!important; border:1px solid rgba(var(--sector-rgb),.7)!important; box-shadow:0 0 0 7px rgba(var(--sector-rgb),.06),0 0 34px rgba(var(--sector-rgb),.3)!important; }
+.chapter-page .btn-jj-float::before { content:"AI"; color:#eaffff; font:700 11px/1 var(--font-mono); letter-spacing:.1em; }
+.chapter-page .kp-ex-title,.chapter-page .answer-label,.chapter-page .code-ex-title { letter-spacing:.05em; }
+.chapter-page .btn-fav-star,.chapter-page .btn-jj.small,.chapter-page .btn-code-ex { font-size:0!important; }
+.chapter-page .btn-fav-star::after { content:"ARCHIVE"; font:600 8px/1 var(--font-mono); letter-spacing:.1em; }
+.chapter-page .btn-jj.small::after { content:"询问导师"; font:500 11px/1 var(--font-sans); }
+.chapter-page .btn-code-ex::after { content:"打开编程训练舱"; font:500 12px/1 var(--font-sans); }
+@keyframes planetFloat { 0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)} }
+@keyframes ringTurn { to{transform:rotateX(69deg) rotateZ(348deg)} }
+@keyframes moonDrift { 0%,100%{transform:translate(0,0)}50%{transform:translate(278px,132px)} }
+@media (max-width:850px) {
+  .chapter-page .nav-tool-label,.chapter-page .nav-brand small { display:none; }
+  .chapter-page .chapter-hero { padding:310px 26px 38px; min-height:650px; }
+  .hero-planet { width:300px; left:50%; top:35px; transform:translateX(-50%); }
+  .chapter-page .chapter-hero h2 { font-size:38px; }
+  .route-heading { margin-left:52px; grid-template-columns:1fr; }
+  .route-heading em { margin-top:8px; }
+  .chapter-page .knowledge-panel::before { left:20px; }
+  .chapter-page .kp-item { margin-left:52px; }
+  .chapter-page .kp-item::before { left:-52px; width:42px; height:42px; top:28px; }
+  .chapter-page .kp-item::after { left:-30px; width:28px; }
+}
+@media (prefers-reduced-motion:reduce) { .planet-core,.ring-b,.planet-moon { animation:none!important; } }

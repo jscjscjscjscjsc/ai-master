@@ -1,0 +1,91 @@
+{
+  "id": 4,
+  "title": "驾驭框架与智能体概念",
+  "icon": "⚙️",
+  "description": "从 LangChain 到 Agent 架构，掌握 LLM 开发框架和 AI 智能体设计思维",
+  "ppt_url": "https://feishu.doubao.com/slides/HJaUswQb3lmwG1d4UDKcJec9n9d",
+  "knowledge_points": [
+    {
+      "title": "LangChain 核心：Chain 与 Prompt 模板",
+      "content": "<h3>为什么需要框架？</h3><p>直接调用 LLM API 只能做单轮问答。一个完整的 AI 应用需要：<strong>提示词管理、多步推理、工具调用、记忆管理、流式输出</strong>。框架将这些能力封装为可组合的模块。</p><h3>LangChain 核心概念</h3><p>LangChain 是最流行的 LLM 应用框架，核心抽象是 <strong>Chain（链）</strong>——将多个组件串联为一条处理流水线。</p><pre><code>from langchain.prompts import ChatPromptTemplate\nfrom langchain.chat_models import ChatOpenAI\nfrom langchain.schema import StrOutputParser\n\n# 1. 定义 Prompt 模板（变量注入 + 角色设定）\nprompt = ChatPromptTemplate.from_messages([\n    (\"system\", \"你是一位{role}专家，用{style}风格回答。\"),\n    (\"user\", \"{question}\")\n])\n\n# 2. 创建模型\nmodel = ChatOpenAI(model=\"gpt-4o\", temperature=0.3)\n\n# 3. 构建 Chain（Prompt → LLM → 输出解析）\nchain = prompt | model | StrOutputParser()\n\n# 4. 调用\nresult = chain.invoke({\n    \"role\": \"Python 后端\",\n    \"style\": \"简洁专业\",\n    \"question\": \"Django ORM 的 N+1 问题如何解决？\"\n})\nprint(result)</code></pre><h3>LCEL（LangChain Expression Language）</h3><p>使用 <code>|</code> 管道符串联组件，构成声明式流水线。支持并行（RunnableParallel）、条件分支（RunnableBranch）、回退（with_fallbacks）。</p><h3>实战要点</h3><ul><li>Prompt 模板支持 Few-shot 示例注入，通过 MessagesPlaceholder 动态添加历史对话</li><li>Chain 可以嵌套：复杂任务 = 多个子 Chain 的组合</li><li>生产环境建议加上 RunnableConfig 进行调用追踪和超时控制</li></ul>"
+    },
+    {
+      "title": "LlamaIndex：数据连接与 RAG 框架",
+      "content": "<h3>LangChain vs LlamaIndex</h3><table><tr><th>维度</th><th>LangChain</th><th>LlamaIndex</th></tr><tr><td>定位</td><td>通用 LLM 应用框架</td><td>数据索引与检索框架</td></tr><tr><td>强项</td><td>Chain 编排、Agent、工具调用</td><td>文档解析、索引构建、检索增强</td></tr><tr><td>核心抽象</td><td>Chain / Agent / Tool</td><td>Index / Node / QueryEngine</td></tr><tr><td>适合场景</td><td>多步推理、Agent 系统</td><td>RAG 问答、知识库搜索</td></tr></table><h3>LlamaIndex 数据流水线</h3><pre><code>from llama_index.core import VectorStoreIndex, SimpleDirectoryReader\n\n# 1. 加载文档\ndocuments = SimpleDirectoryReader(\"./docs\").load_data()\n\n# 2. 构建索引\nindex = VectorStoreIndex.from_documents(\n    documents,\n    chunk_size=512,\n    chunk_overlap=50\n)\n\n# 3. 查询\nquery_engine = index.as_query_engine(similarity_top_k=5)\nresponse = query_engine.query(\"Transformer 的注意力机制如何工作？\")\nprint(response)</code></pre><h3>高级检索模式</h3><ul><li>递归检索：先检索文档摘要，再深入具体 chunk</li><li>RouterQueryEngine：根据问题类型自动路由到不同索引</li><li>SubQuestionQueryEngine：复杂问题自动拆解为子问题</li></ul>"
+    },
+    {
+      "title": "AI Agent 架构：感知-决策-执行循环",
+      "content": "<h3>什么是 AI Agent？</h3><p>Agent（智能体）是一个<strong>能自主感知环境、制定计划、调用工具、执行动作</strong>的 AI 系统。不同于简单的问答模型，Agent 能自己决定「下一步该做什么」。</p><h3>Agent 核心循环（ReAct 范式）</h3><pre><code>class AIAgent:\n    def __init__(self, llm, tools):\n        self.llm = llm\n        self.tools = tools\n        self.memory = []\n    \n    def run(self, task):\n        while not self.is_finished():\n            thought = self.llm.think(task, self.memory, self.tools)\n            action = thought.get_action()\n            observation = self.tools[action.name](action.input)\n            self.memory.append({\"thought\": thought, \"action\": action, \"observation\": observation})\n        return self.final_answer()</code></pre><h3>Agent 设计关键问题</h3><ol><li><strong>工具描述</strong>：name + description + input_schema 是 LLM 选择工具的唯一依据</li><li><strong>规划能力</strong>：复杂任务需 Plan-and-Execute 模式——先规划再执行</li><li><strong>错误恢复</strong>：工具调用失败时 Agent 应自我修正</li><li><strong>安全边界</strong>：危险操作需要人类确认</li></ol><h3>Agent 类型</h3><table><tr><th>类型</th><th>特点</th><th>适用场景</th></tr><tr><td>ReAct</td><td>Thought-Action-Observation 循环</td><td>通用工具调用</td></tr><tr><td>Plan-Execute</td><td>先规划再执行</td><td>复杂多步任务</td></tr><tr><td>Multi-Agent</td><td>多Agent协作分工</td><td>大型项目模拟</td></tr></table>"
+    },
+    {
+      "title": "工具调用（Function Calling）深度实践",
+      "content": "<h3>Function Calling 原理</h3><p>LLM 不直接执行函数，而是输出 JSON 描述「调用哪个函数、传什么参数」，由你的代码实际执行。</p><pre><code>tools = [{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"search_database\",\n        \"description\": \"按姓名/邮箱/ID搜索用户数据库\",\n        \"parameters\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"query\": {\"type\": \"string\", \"description\": \"搜索关键词\"},\n                \"field\": {\"type\": \"string\", \"enum\": [\"name\",\"email\",\"id\"]}\n            },\n            \"required\": [\"query\"]\n        }\n    }\n}]\n# LLM 返回函数调用指令而非执行结果：\n# {\"name\":\"search_database\", \"arguments\":{\"query\":\"张三\",\"field\":\"name\"}}</code></pre><h3>工具设计最佳实践</h3><ul><li>description 是 LLM 选择工具的唯一依据，必须精确描述使用场景</li><li>用 enum 限制参数值、用 format 指定 email/date 格式</li><li>每个工具单一职责，组合使用而非巨型工具</li><li>工具错误信息要让 LLM 能理解并自我纠正</li></ul>"
+    },
+    {
+      "title": "多 Agent 协作与通信机制",
+      "content": "<h3>单 Agent 的局限与多 Agent 架构</h3><p>单个 Agent 面对复杂项目时：上下文超限、不同任务需不同专长、缺乏第二意见。</p><h3>多 Agent 模式</h3><pre><code># 层级式（Manager-Worker）\nclass MultiAgentSystem:\n    def __init__(self):\n        self.manager = Agent(role=\"项目经理\")\n        self.coder = Agent(role=\"代码专家\", tools=[\"write_code\"])\n        self.reviewer = Agent(role=\"代码审查\", tools=[\"review_code\"])\n    \n    def build_feature(self, requirement):\n        plan = self.manager.plan(requirement)\n        code = self.coder.execute(plan)\n        review = self.reviewer.check(code)\n        return code, review\n\n# 辩论式（Debate）：多Agent从不同角度分析，综合最佳方案</code></pre><h3>Agent 间通信</h3><table><tr><th>方式</th><th>优点</th><th>适用场景</th></tr><tr><td>自然语言消息</td><td>灵活</td><td>探索性任务</td></tr><tr><td>结构化JSON</td><td>精确</td><td>生产环境</td></tr><tr><td>共享工作空间</td><td>多Agent并发</td><td>协同编辑</td></tr></table><h3>实战建议</h3><ul><li>从2-3个Agent开始</li><li>每个Agent的role描述要非常具体</li><li>添加人类在环节点进行关键决策</li><li>记录决策日志便于调试</li></ul>"
+    },
+    {
+      "title": "生产级框架选型与工程化落地",
+      "content": "<h3>框架选型决策</h3><pre><code>你需要什么？\n├── RAG 问答 → LlamaIndex（数据索引）或 LangChain + 向量库\n├── Agent 系统 → LangChain / LangGraph（流程编排）\n├── 可视化编排 → Dify / Coze（低代码平台）\n├── 生产 API → FastAPI + OpenAI SDK（轻量可控）\n├── 多模型调度 → LiteLLM（统一 API 代理）\n└── 成本优化 → 缓存 + 模型路由 + Token 预算</code></pre><h3>原型→生产的关键差距</h3><table><tr><th>维度</th><th>原型</th><th>生产</th></tr><tr><td>错误处理</td><td>try/except</td><td>分级重试+熔断+降级</td></tr><tr><td>配置</td><td>硬编码</td><td>密钥管理服务+环境变量</td></tr><tr><td>可观测性</td><td>print</td><td>结构化日志+链路追踪+监控</td></tr><tr><td>成本</td><td>无限制</td><td>Token预算+缓存+模型降级</td></tr><tr><td>评测</td><td>人工</td><td>自动化评测+A/B测试</td></tr></table><h3>工程师核心能力</h3><p>合格的 AI 工程师不仅用框架，更要理解框架为什么这样设计。当框架不满足需求时，能从底层 API 自行构建解决方案——这才是从使用者到工程师的跃迁。</p>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "使用 LangChain 的 LCEL，'|' 管道符的核心作用是什么？",
+      "options": [
+        "A. 用于 Python 的类型注解",
+        "B. 将多个 Runnable 组件串联为声明式处理流水线",
+        "C. 用于连接 LLM 到外部数据库",
+        "D. 仅用于格式化 Prompt 输出"
+      ],
+      "answer": 1,
+      "explanation": "LCEL 中的 | 管道符将前一个组件的输出作为后一个组件的输入，形成声明式的处理流水线。"
+    },
+    {
+      "question": "在设计 AI Agent 时，以下哪个是最容易被忽视但至关重要的要素？",
+      "options": [
+        "A. 使用最新的 LLM 模型",
+        "B. 工具描述的清晰度和函数签名的精确性",
+        "C. Agent 的对话轮数上限",
+        "D. 前端 UI 的美观程度"
+      ],
+      "answer": 1,
+      "explanation": "工具的 description 是 LLM 选择调用哪个工具的唯一依据。模糊的描述会导致 LLM 选错工具——这是 Agent 失败最常见的原因。"
+    },
+    {
+      "question": "RAG 原型升级到生产环境时，最关键的改造是什么？",
+      "options": [
+        "A. 将所有代码迁移到 Java",
+        "B. 增加 Prompt 缓存、错误重试、可观测性和评测体系",
+        "C. 删除测试代码减少体积",
+        "D. 只用单一模型"
+      ],
+      "answer": 1,
+      "explanation": "原型和生产的关键差距在工程化：Token 预算控制、缓存策略、分级重试与熔断、结构化日志与链路追踪、自动评测回归。"
+    },
+    {
+      "question": "以下哪种 Agent 架构最适合处理需要多步推理的复杂编程任务？",
+      "options": [
+        "A. 单 Agent + 固定 Prompt",
+        "B. Manager-Worker 多 Agent 层级式协作",
+        "C. 不用 Agent，写 if-else 逻辑",
+        "D. 只用一个 ReAct Agent 一直循环"
+      ],
+      "answer": 1,
+      "explanation": "复杂编程任务需要需求分析、编码、审查、测试等不同专长的子任务。Manager-Worker 模式将任务拆解分配给专业 Agent，效率和质量都远超单 Agent。"
+    },
+    {
+      "type": "code",
+      "question": "实现 ReAct Agent 循环",
+      "code_prompt": "实现一个简化版 ReAct Agent：1) 定义 Tool 类和 execute 方法 2) 实现 Thought-Action-Observation 循环 3) 至少包含3个工具（search/calculate/weather）4) 模拟 LLM 决策过程（用规则而非真实API）5) 运行一个需要多步工具调用的任务并打印完整推理链。",
+      "explanation": "ReAct 循环是 AI Agent 的通用决策框架：观察→思考→行动→观察下一状态→继续直到完成。理解这个循环就理解了 Agent 的核心。"
+    },
+    {
+      "type": "code",
+      "question": "LangChain Chain 机制模拟",
+      "code_prompt": "用 Python 模拟 LangChain Chain 核心机制：1) 实现 Runnable 基类（含 invoke 和 __or__ 方法）2) 创建 PromptTemplate/LLM/OutputParser 三个组件 3) 用 chain = prompt | llm | parser 语法构建流水线 4) 演示 invoke 如何自动传递数据。不安装 langchain，只实现核心概念。",
+      "explanation": "Chain 本质：每个组件是一个 Runnable，| 操作符将前一个输出接给下一个输入。理解这一点就能从使用者变架构者。"
+    }
+  ]
+}

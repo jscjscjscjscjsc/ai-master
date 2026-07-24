@@ -1,0 +1,90 @@
+{
+  "id": 8,
+  "title": "阿里云ACP大模型认证（下）",
+  "icon": "📊",
+  "description": "继续深入学习 ACP 考试的高级考点：模型部署优化、模型量化、RAG 架构、安全评测和企业级部署架构",
+  "knowledge_points": [
+    {
+      "title": "模型部署与优化",
+      "content": "<h3>部署架构选择</h3><table><tr><th>方式</th><th>适用场景</th><th>特点</th></tr><tr><td>PAI-EAS 在线推理</td><td>实时 API 服务</td><td>低延迟（<100ms），自动扩缩</td></tr><tr><td>PAI-DLC 分布式训练</td><td>大规模模型训练</td><td>GPU 集群调度，弹性资源</td></tr><tr><td>函数计算 FC + GPU</td><td>轻量推理</td><td>按需付费，事件驱动，冷启动</td></tr><tr><td>ACK 容器服务</td><td>自定义部署</td><td>K8s 编排，灵活度最高</td></tr></table><h3>推理优化技术</h3><ul><li><strong>模型量化</strong>：FP16→INT8/INT4，减少 50-75% 显存占用，推理速度提升 2-4 倍</li><li><strong>KV-Cache 优化</strong>：共享前缀缓存、PagedAttention（vLLM）</li><li><strong>动态批处理</strong>：合并多个请求提高 GPU 利用率</li><li><strong>模型蒸馏</strong>：用大模型教小模型，保持 90%+ 性能但体积减少 90%</li><li><strong>Tensor 并行</strong>：多 GPU 并行推理，减少单卡显存压力</li></ul><h3>弹性伸缩策略</h3><ul><li>基于 QPS/CPU/GPU 利用率的自动扩容</li><li>GPU 资源预热（冷启动优化）</li><li>预留实例 + 按量实例混合部署降成本</li><li>HPA（水平自动扩缩）和 VPA（垂直自动扩缩）</li></ul>"
+    },
+    {
+      "title": "模型量化原理",
+      "content": "<h3>为什么需要量化？</h3><p>大模型通常使用 FP32（32 位浮点数）训练，每个参数占 4 字节。一个 70B 模型仅参数就需要 280GB 显存，远超单张 GPU 容量。量化通过<strong>降低数值精度</strong>来压缩模型。</p><h3>量化类型</h3><pre><code># 量化精度对比\nFP32:  0 00000000 00000000000000000000000  → 4 字节/参数\nFP16:  0 00000 0000000000                  → 2 字节/参数\nINT8:  00000000                            → 1 字节/参数\nINT4:  0000                                → 0.5 字节/参数\n\n# 70B 模型不同精度的显存需求\nFP32: 280 GB（需要 4×A100 80G）\nFP16: 140 GB（需要 2×A100 80G）\nINT8:  70 GB（1×A100 80G 勉强）\nINT4:  35 GB（可以在 1×A100 上运行！）</code></pre><h3>量化方法</h3><ul><li><strong>PTQ（训练后量化）</strong>：训练完成后直接量化，简单但有一定精度损失</li><li><strong>QAT（量化感知训练）</strong>：训练中模拟量化效果，精度损失更小但需要重新训练</li><li><strong>GPTQ</strong>：基于最优脑外科框架的量化方法，效果好（Post-Training Quantization）</li><li><strong>AWQ</strong>：激活感知权重量化，识别 1% 的关键权重并保护它们</li></ul><h3>量化公式</h3><pre><code># 对称量化\nx_int8 = round(x_float / scale)\nscale = max(|x_float|) / 127\n\n# 反量化\nx_float ≈ x_int8 × scale</code></pre>"
+    },
+    {
+      "title": "RAG 架构与向量数据库",
+      "content": "<h3>RAG 完整流程</h3><pre><code>RAG 系统流程：\n用户提问\n  → 1. 向量化：将问题转为 embedding 向量\n  → 2. 检索：在向量数据库中搜索最相似的文档\n  → 3. 重排序：对检索结果精排\n  → 4. 注入：将相关文档注入 Prompt\n  → 5. 生成：LLM 基于上下文生成答案\n  → 6. 溯源：附上引用来源</code></pre><h3>向量检索核心原理</h3><pre><code># 余弦相似度\nsimilarity(A, B) = cos(θ) = (A · B) / (||A|| × ||B||)\n\n# 向量检索算法\n- 暴力搜索（KNN）：O(n×d)，小数据集可用\n- IVF（倒排文件）：聚类+局部搜索，O(√n)\n- HNSW（分层可导航小世界图）：O(log n)，目前最流行</code></pre><h3>阿里云向量检索产品</h3><table><tr><th>产品</th><th>类型</th><th>适用场景</th></tr><tr><td>DashVector</td><td>专用向量数据库</td><td>高性能向量检索，10ms 级延迟</td></tr><tr><td>Elasticsearch</td><td>搜索引擎（支持向量）</td><td>文本+向量混合搜索</td></tr><tr><td>OpenSearch</td><td>智能搜索服务</td><td>企业级搜索，向量+关键词融合</td></tr><tr><td>ADB PG</td><td>分析型数据库（向量插件）</td><td>SQL+向量混合查询</td></tr></table>"
+    },
+    {
+      "title": "RAG 评估框架",
+      "content": "<h3>RAG 评估维度</h3><table><tr><th>维度</th><th>指标</th><th>测量方法</th></tr><tr><td>检索准确率</td><td>Recall@k, Precision@k, MRR</td><td>标注的相关文档 vs 检索结果</td></tr><tr><td>生成质量</td><td>Faithfulness, Answer Relevance</td><td>LLM-as-Judge 评分</td></tr><tr><td>端到端</td><td>Context Precision, Context Recall</td><td>综合评估</td></tr><tr><td>延迟</td><td>P50/P95/P99 延迟</td><td>压力测试</td></tr></table><h3>RAG 评估框架（RAGAS）</h3><p>RAGAS 是流行的开源 RAG 评估框架，包含以下核心指标：</p><ul><li><strong>Faithfulness</strong>：生成答案是否忠实于检索上下文（无幻觉）</li><li><strong>Answer Relevance</strong>：答案是否与问题相关</li><li><strong>Context Precision</strong>：检索结果中相关文档的比例</li><li><strong>Context Recall</strong>：所有相关文档被成功检索的比例</li></ul><h3>RAG 性能瓶颈分析</h3><ul><li><strong>检索失败</strong>：相关文档未被检索到 → 提高 chunk 重叠度、多路召回</li><li><strong>上下文过载</strong>：太多不相关内容干扰 LLM → 重排序、选择性注入</li><li><strong>幻觉</strong>：LLM 不遵循检索内容 → 强化提示词约束、降低 temperature</li></ul>"
+    },
+    {
+      "title": "大模型安全与合规",
+      "content": "<h3>大模型安全挑战</h3><ul><li><strong>Prompt 注入</strong>：恶意提示词绕过安全限制，诱使模型执行未授权操作</li><li><strong>数据泄露</strong>：模型输出中包含训练数据中的敏感信息</li><li><strong>有害内容生成</strong>：输出违法、暴力、歧视性内容</li><li><strong>偏见与歧视</strong>：训练数据中的社会偏见被模型继承和放大</li></ul><h3>阿里云安全方案</h3><ul><li><strong>内容安全</strong>：文本/图片审核 API，检测违规内容</li><li><strong>数据加密</strong>：传输加密（TLS 1.3）、存储加密（KMS + 密钥轮换）</li><li><strong>访问控制</strong>：RAM 精细化权限管理，最小权限原则</li><li><strong>审计日志</strong>：ActionTrail 操作审计，90 天日志保留</li><li><strong>WAF</strong>：Web 应用防火墙，防御注入攻击</li></ul><h3>合规要求</h3><ul><li>《生成式人工智能服务管理暂行办法》——算法备案、安全评估</li><li>《个人信息保护法》（PIPL）——用户数据保护</li><li>等保 2.0 三级——信息安全等级保护</li><li>数据分类分级管理</li></ul>"
+    },
+    {
+      "title": "安全评测方法论",
+      "content": "<h3>红队测试（Red Teaming）</h3><p>红队测试是<strong>模拟攻击者行为</strong>对模型进行安全评估的方法，目的是在大规模部署前发现安全漏洞。</p><pre><code>红队测试流程：\n1. 威胁建模：识别可能的攻击面\n   - Prompt 注入、越狱、角色反转\n   - 数据投毒、后门触发\n   - 拒绝服务、资源耗尽\n\n2. 测试用例生成\n   - 手工编写：领域专家设计\n   - 自动生成：LLM 辅助生成变体\n   - 对抗生成：GAN/遗传算法\n\n3. 执行测试\n   - 黑盒测试：只访问 API\n   - 白盒测试：可访问模型权重\n   - 灰盒测试：部分信息</code></pre><h3>评估指标</h3><ul><li><strong>ASR（Attack Success Rate）</strong>：攻击成功率</li><li><strong>拒绝率</strong>：模型正确拒绝恶意请求的比例</li><li><strong>越狱韧性</strong>：模型抵抗越狱提示的能力</li><li><strong>数据泄露率</strong>：模型泄露训练数据的比例</li></ul><h3>安全评估工具</h3><ul><li>Garak：开源 LLM 安全评估框架</li><li>Azure AI Content Safety：内容安全 API</li><li>阿里云内容审核：文本/图片/语音审核</li></ul>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "将 70B 模型从 FP16 量化到 INT8，理论上显存需求减少多少？",
+      "options": [
+        "A. 从 140GB 减少到 70GB（减少 50%）",
+        "B. 从 280GB 减少到 70GB（减少 75%）",
+        "C. 从 140GB 减少到 35GB（减少 75%）",
+        "D. 显存需求不变"
+      ],
+      "answer": 0,
+      "explanation": "FP16 每个参数占 2 字节，INT8 占 1 字节，所以 70B 模型从 FP16（140GB）量化为 INT8（70GB），显存需求<strong>减少 50%</strong>。INT4 可进一步减到 35GB。FP32 则需 280GB。"
+    },
+    {
+      "question": "在 RAG 系统中，当检索到的文档包含大量不相关内容时，最有效的缓解方法是什么？",
+      "options": [
+        "A. 增加检索的文档数量",
+        "B. 加入重排序（Rerank）步骤，只将最相关的文档注入 Prompt",
+        "C. 降低 LLM 的 temperature",
+        "D. 使用更大的 embedding 模型"
+      ],
+      "answer": 1,
+      "explanation": "当检索结果中包含大量不相关内容时，<strong>重排序</strong>可以通过交叉编码器（cross-encoder）对检索结果进行精排，只保留最相关的文档，减少 LLM 被不相关信息干扰。"
+    },
+    {
+      "question": "在安全评测中，ASR（Attack Success Rate）指标衡量的是什么？",
+      "options": [
+        "A. 模型回答的正确率",
+        "B. 攻击者成功突破模型安全防护的比例",
+        "C. 模型的推理速度",
+        "D. 训练数据的准确率"
+      ],
+      "answer": 1,
+      "explanation": "ASR（Attack Success Rate）是<strong>攻击成功率</strong>，指在红队测试中成功绕过模型安全防护的测试用例占总测试用例的比例。ASR 越低，模型的安全韧性越好。"
+    },
+    {
+      "question": "HNSW（Hierarchical Navigable Small World）向量索引相比暴力搜索（KNN）的优势是什么？",
+      "options": [
+        "A. 搜索结果更准确",
+        "B. 搜索时间复杂度从 O(n×d) 降低到 O(log n)",
+        "C. 不需要消耗任何内存",
+        "D. 支持模糊搜索"
+      ],
+      "answer": 1,
+      "explanation": "HNSW 通过构建<strong>分层可导航小世界图</strong>，搜索时间复杂度为 O(log n)，远优于暴力搜索的 O(n×d)。这是目前最流行的高性能向量检索算法。"
+    },
+    {
+      "type": "code",
+      "question": "实现模型量化工具",
+      "code_prompt": "实现一个简化版量化工具 Quantizer：1) quantize_fp32_to_int8(tensor, scale) 2) dequantize_int8_to_fp32(tensor, scale) 3) calculate_scale(tensor) 计算最佳缩放因子。",
+      "explanation": "量化核心公式：x_int8 = round(x_float / scale)，scale = max(|x_float|) / 127。注意处理对称量化的边界。"
+    },
+    {
+      "type": "code",
+      "question": "实现简化版向量数据库",
+      "code_prompt": "实现 VectorDB 类：1) add(id, vector) 存储 2) search(query_vector, k) 相似度搜索 3) 使用余弦相似度 4) delete(id) 删除。支持至少 1000 条数据。",
+      "explanation": "余弦相似度公式：cos(A,B) = (A·B)/(||A||×||B||)。简单实现用暴力搜索，进阶尝试用 IVF 索引。"
+    }
+  ]
+}

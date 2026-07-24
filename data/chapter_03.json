@@ -1,0 +1,91 @@
+{
+  "id": 3,
+  "title": "提示词工程基础",
+  "icon": "✍️",
+  "description": "掌握提示词（Prompt）工程的核心概念、系统化编写原则和主流范式，学会精确控制 AI 输出",
+  "ppt_url": "https://feishu.doubao.com/slides/VHDcsc4s4l7Rdpd3ajMcjju5nLb",
+  "knowledge_points": [
+    {
+      "title": "什么是提示词工程？",
+      "content": "<h3>定义</h3><p>提示词工程（Prompt Engineering）是<strong>设计和优化输入给 LLM 的提示文本</strong>，以引导模型生成期望输出的系统性方法。它既是艺术（需要直觉和创造力）也是科学（有可重复的方法论）。</p><h3>为什么重要？</h3><ul><li>同一模型，不同提示词，输出质量差异可达 10 倍以上</li><li>好的提示词能让小模型（7B）超越差提示词下的大模型（175B）</li><li>无需微调即可定制模型行为，是成本最低的 AI 优化手段</li><li>是当前 AI 应用开发的核心技能，直接影响产品体验</li></ul><h3>提示词的组成部分</h3><pre><code>一个完整的提示词通常包含以下要素：\n\n1. 角色设定（Persona）\n   \"你是一位资深的 Python 后端工程师...\"\n\n2. 任务描述（Task）\n   \"请帮我 review 以下代码的性能问题...\"\n\n3. 上下文信息（Context）\n   \"这段代码运行在 Django 4.2 环境下...\"\n\n4. 输出格式（Format）\n   \"请用 Markdown 表格列出问题和改进建议\"\n\n5. 示例（Examples）- 可选但推荐\n   \"参考以下格式：\\n问题 | 严重程度 | 改进方案\"</code></pre>"
+    },
+    {
+      "title": "提示词编写核心原则",
+      "content": "<h3>四大黄金法则</h3><ol><li><strong>清晰明确</strong>：避免模糊，具体说明需求<pre><code>错误: \"写一个排序\"\n正确: \"用 Python 实现快速排序算法，要求包含详细注释，\n      时间复杂度分析，并给出 3 个测试用例\"</code></pre></li><li><strong>提供上下文</strong>：告知背景和目标<pre><code>错误: \"翻译这句话\"\n正确: \"将以下技术文档从英文翻译成中文，保持专业术语\n      的准确性，面向有 3 年经验的软件工程师\"</code></pre></li><li><strong>设定约束</strong>：限制输出范围<pre><code>错误: \"介绍一下 Transformer\"\n正确: \"用 300 字以内介绍 Transformer 的核心思想，\n      面向高中生，避免数学公式\"</code></pre></li><li><strong>给出示例</strong>：用 Few-shot 引导格式和风格</li></ol><h3>进阶原则</h3><ul><li><strong>负向提示</strong>：明确告诉模型不要做什么（\"不要使用专业术语\"）</li><li><strong>分步指示</strong>：复杂任务拆解为步骤（\"先分析，再总结，最后建议\"）</li><li><strong>输出验证</strong>：要求模型自我检查（\"请验证你的回答是否准确\"）</li><li><strong>Token 预算</strong>：明确限制输出长度（\"不超过 200 字\"）</li></ul>"
+    },
+    {
+      "title": "角色扮演提示法",
+      "content": "<h3>为什么角色扮演有效？</h3><p>给模型设定角色会激活训练数据中与该角色相关的<strong>知识分布和语言风格</strong>。本质上，角色设定相当于在隐式地选择一条推理路径——模型会调用其参数空间中与角色相关的子网络。</p><h3>经典角色模板</h3><pre><code># 专家角色\n\"你是一位拥有 20 年经验的 {领域} 专家。\n请以专业、严谨的风格回答以下问题：\"\n\n# 导师角色\n\"你是一位耐心的 {学科} 老师。请用通俗易懂的方式\n向初学者解释以下概念，使用类比和实例：\"\n\n# 批判性角色\n\"请用苏格拉底式提问法，通过一系列引导性问题\n帮助我理解 {概念}，而不是直接给出答案。\"</code></pre><h3>角色扮演的高级技巧</h3><ul><li><strong>多层角色</strong>：同时赋予多个角色（\"你既是安全专家又是开发者\"）</li><li><strong>角色链</strong>：让模型在不同角色间切换（\"先作为分析者评估，再作为决策者给出方案\"）</li><li><strong>反角色</strong>：让模型挑战自己的观点（\"反驳你刚刚给出的建议\"）</li><li><strong>角色参数</strong>：为角色添加具体属性（\"你是一位使用 Django 5 年、擅长性能优化的 Python 工程师\"）</li></ul>"
+    },
+    {
+      "title": "Zero-shot / Few-shot / Many-shot",
+      "content": "<h3>Zero-shot（零样本）</h3>不给示例，直接描述任务。适用于简单、常见的任务，模型已具备能力。<pre><code>\"将以下句子分类为积极、消极或中性：\n'这部电影让我非常感动'\"</code></pre><h3>Few-shot（少样本）</h3>提供 1-5 个示例，让模型学习任务模式。<pre><code>\"分类句子情感：\n句子：'服务态度很差' → 消极\n句子：'性价比还不错' → 积极\n句子：'今天天气阴天' → 中性\n句子：'产品质量超出预期' →\"</code></pre><h3>Many-shot（多样本）</h3>提供几十到上百个示例。Claude 等长上下文模型尤其擅长利用大量示例学习复杂模式。研究显示 Many-shot 的效果可以接近微调。</p><h3>选择建议</h3><table><tr><th>任务类型</th><th>推荐方式</th><th>示例数</th></tr><tr><td>简单分类/提取</td><td>Zero-shot</td><td>0</td></tr><tr><td>格式化输出</td><td>Few-shot</td><td>2-5</td></tr><tr><td>复杂推理/转化</td><td>Few-shot CoT</td><td>3-5</td></tr><tr><td>复杂模式学习</td><td>Many-shot</td><td>20-100+</td></tr></table>"
+    },
+    {
+      "title": "Prompt 模式系统性分类",
+      "content": "<h3>六大 Prompt 模式</h3><ol><li><strong>指令模式</strong>：直接告诉模型做什么，最简单直接<pre><code>\"列出 Python 中 5 种常用设计模式及其适用场景\"</code></pre></li><li><strong>角色模式</strong>：赋予角色设定后提问<pre><code>\"你是一名资深架构师，请分析这个系统的扩展性问题\"</code></pre></li><li><strong>示例模式</strong>：通过示例让模型学习模式和格式<pre><code>\"以下是一些示例，请按相同格式输出...\"</code></pre></li><li><strong>思维链模式</strong>：要求展示推理过程<pre><code>\"请逐步推理，最后给出答案...\"</code></pre></li><li><strong>模板模式</strong>：提供结构化模板让模型填充<pre><code>\"请按以下格式填写：\n名称：\n描述：\n优势：\n劣势：\"</code></pre></li><li><strong>反思模式</strong>：要求模型自我评估和修正<pre><code>\"请检查你的回答是否有遗漏或错误，如有请修正\"</code></pre></li></ol><h3>选择框架</h3><p>任务越复杂，需要的 Prompt 模式越多层：简单任务用指令/角色模式，复杂推理任务加思维链模式，需要高质量输出时加反思模式。</p>"
+    },
+    {
+      "title": "复杂约束工程与输出控制",
+      "content": "<h3>输出格式控制</h3><pre><code># JSON 输出控制\n\"请以 JSON 格式返回，严格按照以下 schema：\n{\n  'sentiment': 'positive|negative|neutral',\n  'confidence': 0.0-1.0,\n  'evidence': ['引文1', '引文2']\n}\"</code></pre><h3>约束技术</h3><ul><li><strong>分隔符</strong>：用 XML/自定义标签分割不同部分（<text>...</text>）</li><li><strong>结构化输出</strong>：JSON mode / Function Calling 确保格式规范</li><li><strong>约束满足</strong>：明确列出必须包含/绝对不能包含的元素</li><li><strong>层次化指示</strong>：将约束按重要性分层（\"必须... 最好... 可选...\"）</li></ul><h3>温度（Temperature）控制</h3><table><tr><th>温度</th><th>特点</th><th>适用场景</th></tr><tr><td>0.0-0.2</td><td>确定性高，重复性好</td><td>代码生成、事实问答、JSON 输出</td></tr><tr><td>0.3-0.7</td><td>平衡创造性和确定性</td><td>通用对话、内容生成</td></tr><tr><td>0.8-1.0</td><td>高创造性，多样性强</td><td>创意写作、头脑风暴、诗歌</td></tr></table><h3>近因效应（Recency Bias）</h3><p>模型倾向于更关注提示词末尾的内容。因此：<strong>最重要的指令放在最前面和最后面</strong>。中间部分可能被「遗忘」（Lost in the Middle 现象）。</p>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "在提示词工程中，Many-shot 相比 Few-shot 的主要优势是什么？",
+      "options": [
+        "A. Many-shot 需要的 token 更少，成本更低",
+        "B. Many-shot 能处理更复杂的模式学习，效果更接近微调",
+        "C. Many-shot 不需要写提示词模板",
+        "D. Many-shot 适用于所有模型的免费额度"
+      ],
+      "answer": 1,
+      "explanation": "Many-shot 提供 20-100+ 个示例，长上下文模型能从中学习复杂模式。研究表明 Many-shot 的效果可以接近微调。<strong>缺点</strong>是 token 消耗更大。"
+    },
+    {
+      "question": "以下哪种提示词技巧利用了模型的「近因效应」？",
+      "options": [
+        "A. 在提示词末尾重复最重要的指令",
+        "B. 使用全大写单词强调关键要求",
+        "C. 在提示词开头设置复杂的角色背景",
+        "D. 在提示词中间提供大量示例"
+      ],
+      "answer": 0,
+      "explanation": "近因效应指模型更关注提示词末尾的内容。因此<strong>最重要的指令应该放在开头和结尾</strong>，中间部分容易被模型相对忽视。"
+    },
+    {
+      "question": "在设置 LLM 的 Temperature 参数时，以下哪个描述正确？",
+      "options": [
+        "A. Temperature 越高，输出越确定和可重复",
+        "B. Temperature 为 0 时模型完全不工作",
+        "C. Temperature 控制 softmax 输出的概率分布的平滑程度，值越大分布越均匀",
+        "D. Temperature 只影响输出长度，不影响内容"
+      ],
+      "answer": 2,
+      "explanation": "Temperature 控制 softmax 的平滑程度。值越大（>1），概率分布越均匀，输出越多样；值越小（<1），分布越尖锐，输出越确定。"
+    },
+    {
+      "question": "在提示词中同时使用角色设定和示例，这两种技术分别作用于模型的什么层面？",
+      "options": [
+        "A. 角色设定影响训练数据选择，示例影响推理路径",
+        "B. 角色设定激活相关参数子空间，示例提供具体的输出格式模板",
+        "C. 两者作用相同，都是给模型提供更多文本",
+        "D. 角色设定只在简短的提示词中有效，示例只在长提示词中有效"
+      ],
+      "answer": 1,
+      "explanation": "角色设定激活训练数据中与该角色相关的<strong>参数子空间</strong>，调用特定的知识和风格。而示例提供<strong>具体的格式和推理模板</strong>供模型模仿。两者互补。"
+    },
+    {
+      "type": "code",
+      "question": "实现 Prompt 模板类",
+      "code_prompt": "实现一个 PromptTemplate 类，支持：1) 变量注入（用 {var} 语法）2) 可选块（用 [optional] 标记）3) 版本管理 4) 格式化输出。",
+      "explanation": "模板类需要支持 system prompt + user prompt 的拼接，以及动态变量的安全替换。"
+    },
+    {
+      "type": "code",
+      "question": "提示词质量评估器",
+      "code_prompt": "写一个函数 evaluate_prompt(prompt)，从 5 个维度评分（角色/任务/上下文/格式/约束），每个维度 0-10 分，返回总分和改进建议。",
+      "explanation": "用关键词检测和正则表达式判断各要素是否存在。例如检查是否有角色词、任务动词、格式指示符等。"
+    }
+  ]
+}

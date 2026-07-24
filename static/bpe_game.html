@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BPE 分词实验室 · Tokenization Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050714;--bg-2:#0a0e27;
+  --panel:rgba(255,255,255,.035);--panel-2:rgba(255,255,255,.06);
+  --border:rgba(0,217,255,.18);
+  --cyan:#00d9ff;--purple:#a855f7;--pink:#ec4899;--green:#34d399;--amber:#fbbf24;--red:#f87171;
+  --text:#e6edf6;--muted:#8aa0bd;
+  --grad:linear-gradient(120deg,#00d9ff 0%,#a855f7 55%,#ec4899 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',system-ui,sans-serif;line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(60vw 60vw at 10% 5%, rgba(0,217,255,.10), transparent 60%),
+  radial-gradient(55vw 55vw at 90% 30%, rgba(168,85,247,.10), transparent 60%),
+  radial-gradient(60vw 60vw at 50% 110%, rgba(236,72,153,.08), transparent 60%);}
+#bg-canvas{position:fixed;inset:0;z-index:1;opacity:.4;pointer-events:none}
+.wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 20px 80px}
+
+/* 顶栏 */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0;position:sticky;top:0;z-index:30;
+  backdrop-filter:blur(12px);background:rgba(5,7,20,.7);border-bottom:1px solid var(--border);margin:0 -20px;padding-left:20px;padding-right:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:18px;letter-spacing:2px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand .tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:6px}
+.topbar .right{display:flex;gap:10px;align-items:center}
+.btn-ghost{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:14px;cursor:pointer;
+  background:transparent;border:1px solid var(--border);color:var(--cyan);padding:7px 14px;border-radius:8px;transition:.25s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-ghost:hover{background:rgba(0,217,255,.1);box-shadow:0 0 14px rgba(0,217,255,.25)}
+.btn-ghost.solid{background:var(--grad);color:#04122a;border:none;font-weight:700}
+.btn-ghost.solid:hover{transform:translateY(-1px);box-shadow:0 0 22px rgba(0,217,255,.5)}
+
+/* 头部 */
+.hero{padding:46px 0 30px;text-align:center}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border:1px solid var(--border);border-radius:999px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:2px;background:rgba(0,217,255,.05);margin-bottom:18px}
+.hero .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(38px,7vw,72px);line-height:1;letter-spacing:1px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:12px}
+.hero .en{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--muted);letter-spacing:6px;margin-bottom:14px}
+.hero p{color:var(--muted);max-width:680px;margin:0 auto;font-size:15px}
+
+/* 进度章节 */
+.phases{display:flex;justify-content:center;gap:0;margin:34px auto 0;max-width:680px;flex-wrap:wrap}
+.phase{flex:1;min-width:120px;text-align:center;padding:14px 8px;position:relative;cursor:pointer;transition:.3s;opacity:.5}
+.phase.active{opacity:1}
+.phase .pnum{font-family:'Orbitron',sans-serif;font-weight:900;font-size:22px;color:var(--cyan)}
+.phase .ptitle{font-size:13px;color:var(--muted);margin-top:2px;font-weight:500}
+.phase.active .ptitle{color:var(--text)}
+.phase::after{content:'';position:absolute;top:24px;right:-50%;width:100%;height:2px;background:var(--border);z-index:-1}
+.phase:last-child::after{display:none}
+.phase.done .pnum{color:var(--green)}
+.phase.done::after{background:var(--green)}
+@media(max-width:600px){.phase::after{display:none}}
+
+/* 面板 */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:28px;margin-top:30px;backdrop-filter:blur(8px);position:relative;overflow:hidden}
+.panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.panel-title h2{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px}
+.panel-title h2 .ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(0,217,255,.12);font-size:16px}
+.panel-title .hint{font-size:13px;color:var(--muted)}
+
+/* 语料芯片 */
+.corpus{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px}
+.word-card{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;min-width:130px;position:relative;transition:.3s}
+.word-card .wcount{position:absolute;top:-8px;right:-8px;background:var(--purple);color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;
+  padding:2px 8px;border-radius:10px;font-weight:700}
+.word-card .wlabel{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px}
+.tokens{display:flex;flex-wrap:wrap;gap:4px;min-height:32px}
+.tok{padding:4px 9px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:2px;
+  background:rgba(0,217,255,.1);color:var(--cyan);border:1px solid rgba(0,217,255,.3);transition:.25s;position:relative}
+.tok.sep{background:transparent;border:none;color:var(--muted)}
+.tok .bar{position:absolute;top:-1px;right:-1px;left:-1px;bottom:-1px;border-radius:6px;pointer-events:none}
+.tok:hover .bar{box-shadow:0 0 0 2px var(--cyan)}
+.tok.merged{background:rgba(236,72,153,.18);color:var(--pink);border-color:rgba(236,72,153,.5);animation:pop .5s}
+.tok.fading{opacity:0;transform:scale(.5)}
+.tok.born{animation:born .6s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes born{0%{opacity:0;transform:translateY(-12px) scale(.5)}100%{opacity:1;transform:none}}
+
+/* 候选字符对 */
+.candidates{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:8px}
+.pair-card{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.pair-card:hover{border-color:rgba(0,217,255,.5);transform:translateY(-3px);box-shadow:0 12px 30px -10px rgba(0,217,255,.3)}
+.pair-card.best{border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.06)}
+.pair-card.best::after{content:'最佳';position:absolute;top:8px;right:8px;font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--green);background:rgba(52,211,153,.15);padding:2px 6px;border-radius:4px;letter-spacing:1px}
+.pair-card .pair-tok{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;margin-bottom:6px}
+.pair-card .pair-tok .p{padding:3px 8px;border-radius:5px;background:rgba(0,217,255,.15);color:var(--cyan)}
+.pair-card .pair-tok .plus{color:var(--muted)}
+.pair-card .pair-tok .arrow{color:var(--muted);margin:0 4px}
+.pair-card .pair-tok .res{padding:3px 8px;border-radius:5px;background:rgba(236,72,153,.18);color:var(--pink)}
+.pair-card .pfreq{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.pair-card .pfreq .n{font-family:'Orbitron',sans-serif;font-weight:900;font-size:20px;color:var(--amber)}
+.pair-card .pfreq .l{font-size:11px;color:var(--muted)}
+
+/* 词汇表 */
+.vocab-panel{margin-top:24px}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:8px;max-height:200px;overflow-y:auto;padding:4px}
+.vocab-grid::-webkit-scrollbar{width:6px}.vocab-grid::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:3px}
+.vocab-tok{padding:5px 11px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+  background:rgba(0,217,255,.08);color:var(--cyan);border:1px solid rgba(0,217,255,.25);animation:born .5s}
+.vocab-tok.base{background:rgba(138,160,189,.08);color:var(--muted);border-color:rgba(138,160,189,.2)}
+.vocab-tok.merged{background:rgba(236,72,153,.12);color:var(--pink);border-color:rgba(236,72,153,.35)}
+.vocab-tok .id{font-size:9px;color:var(--muted);margin-left:4px}
+
+/* 操作按钮 */
+.action-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:20px;padding-top:20px;border-top:1px dashed var(--border)}
+.btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;cursor:pointer;padding:11px 22px;border-radius:10px;
+  border:1px solid var(--border);background:rgba(0,217,255,.08);color:var(--cyan);transition:.25s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:8px}
+.btn:hover:not(:disabled){background:rgba(0,217,255,.18);box-shadow:0 0 16px rgba(0,217,255,.3);transform:translateY(-2px)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.primary{background:var(--grad);color:#04122a;border:none}
+.btn.primary:hover:not(:disabled){box-shadow:0 0 24px rgba(0,217,255,.5)}
+.btn.warn{background:rgba(251,191,36,.1);color:var(--amber);border-color:rgba(251,191,36,.3)}
+.toast-area{flex:1;text-align:right;font-size:13px;color:var(--muted);min-width:200px}
+.toast-area .ok{color:var(--green)}.toast-area .err{color:var(--red)}
+
+/* 日志 */
+.log{margin-top:18px;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;max-height:160px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.log::-webkit-scrollbar{width:6px}.log::-webkit-scrollbar-thumb{background:var(--purple);border-radius:3px}
+.log-line{padding:3px 0;color:var(--muted);border-bottom:1px dashed rgba(255,255,255,.04)}
+.log-line:last-child{border:none}
+.log-line .t{color:var(--cyan);margin-right:8px}
+.log-line .ok{color:var(--green)}.log-line .err{color:var(--red)}.log-line .info{color:var(--amber)}
+
+/* 切词挑战 */
+.challenge{margin-top:24px}
+.chal-input{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.chal-input input{flex:1;min-width:240px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 16px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:15px;outline:none;transition:.25s}
+.chal-input input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,217,255,.15)}
+.chal-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px;min-height:48px}
+.chal-word{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--muted);padding:6px 0}
+.cut-zone{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:48px;padding:8px;background:rgba(0,0,0,.2);border:1px dashed var(--border);border-radius:10px}
+.cut-tok{padding:6px 12px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;
+  background:rgba(0,217,255,.12);color:var(--cyan);border:1px solid rgba(0,217,255,.3);cursor:pointer;transition:.2s;animation:born .4s}
+.cut-tok:hover{background:rgba(248,113,113,.15);color:var(--red);border-color:rgba(248,113,113,.4)}
+.cut-tok.unseen{background:rgba(251,191,36,.12);color:var(--amber);border-color:rgba(251,191,36,.3)}
+.cut-tok.ovr{background:rgba(236,72,153,.12);color:var(--pink);border-color:rgba(236,72,153,.3)}
+.cut-cursor{width:2px;height:24px;background:var(--cyan);animation:blink 1s infinite;opacity:.6}
+@keyframes blink{0%,49%{opacity:.6}50%,100%{opacity:0}}
+.chal-status{margin-top:14px;padding:14px 16px;border-radius:10px;font-size:14px;display:none}
+.chal-status.show{display:block;animation:born .3s}
+.chal-status.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--green)}
+.chal-status.err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,153,.3);color:var(--red)}
+.chal-status .num{font-family:'Orbitron',sans-serif;font-weight:900;font-size:22px}
+
+/* 统计条 */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-box .v{font-family:'Orbitron',sans-serif;font-weight:900;font-size:26px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat-box .l{font-size:12px;color:var(--muted);margin-top:2px;letter-spacing:1px}
+
+/* 知识卡片 */
+.kinfo{background:linear-gradient(120deg,rgba(0,217,255,.06),rgba(168,85,247,.05));border:1px solid rgba(0,217,255,.3);border-radius:12px;padding:16px 18px;margin-top:18px;display:flex;gap:14px;align-items:flex-start}
+.kinfo .ico{font-size:24px;flex-shrink:0}
+.kinfo .txt h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:var(--cyan);margin-bottom:4px}
+.kinfo .txt p{font-size:13.5px;color:var(--muted)}
+.kinfo .txt b{color:var(--text)}
+
+/* 完成屏 */
+.finale{display:none;text-align:center;padding:40px 20px}
+.finale.show{display:block;animation:born .6s}
+.finale h2{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(28px,5vw,46px);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:12px}
+.finale p{color:var(--muted);max-width:560px;margin:0 auto 24px}
+
+footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;border-top:1px solid var(--border);margin-top:40px}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<div class="wrap">
+
+  <!-- 顶栏 -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">BPE LAB</div>
+      <div class="tag">GAME 01 · 分词实验室</div>
+    </div>
+    <div class="right">
+      <a href="llm-training-game.html" class="btn-ghost">▶ 训练游戏</a>
+      <a href="#" class="btn-ghost solid" id="back-app">返回课程 ↗</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="badge"><span class="dot"></span> HANDS-ON · 动手实验</div>
+    <h1>BPE 分词实验室</h1>
+    <div class="en">BYTE PAIR ENCODING · TOKENIZATION</div>
+    <p>你是分词器的设计师。观察语料，找出最高频的字符对，合并它们，看着词汇表一步步成长——这正是 GPT、LLaMA 等大模型 token 化的核心原理。</p>
+  </div>
+
+  <!-- 阶段进度 -->
+  <div class="phases">
+    <div class="phase active" id="ph1"><div class="pnum">01</div><div class="ptitle">观察语料</div></div>
+    <div class="phase" id="ph2"><div class="pnum">02</div><div class="ptitle">合并字符对</div></div>
+    <div class="phase" id="ph3"><div class="pnum">03</div><div class="ptitle">词汇表成长</div></div>
+    <div class="phase" id="ph4"><div class="pnum">04</div><div class="ptitle">切词挑战</div></div>
+  </div>
+
+  <!-- 主面板 -->
+  <div class="panel" id="main-panel">
+    <div class="panel-title">
+      <h2><span class="ic">📚</span> 训练语料 Corpus</h2>
+      <div class="hint">每个词后的数字是它在语料中出现的次数</div>
+    </div>
+
+    <div class="corpus" id="corpus"></div>
+
+    <div class="stats-row">
+      <div class="stat-box"><div class="v" id="st-iter">0</div><div class="l">合并轮次</div></div>
+      <div class="stat-box"><div class="v" id="st-vocab">0</div><div class="l">词汇表大小</div></div>
+      <div class="stat-box"><div class="v" id="st-pairs">0</div><div class="l">候选字符对</div></div>
+      <div class="stat-box"><div class="v" id="st-tokens">0</div><div class="l">当前总 token 数</div></div>
+    </div>
+
+    <div class="panel-title" style="margin-top:14px">
+      <h2><span class="ic">🎯</span> 候选字符对 · 点击选择要合并的对</h2>
+      <div class="hint">⭐ 标记的是当前频率最高的"最佳合并"</div>
+    </div>
+    <div class="candidates" id="candidates"></div>
+
+    <div class="action-row">
+      <button class="btn primary" id="btn-merge-best">⚡ 合并最高频对</button>
+      <button class="btn" id="btn-merge-auto" disabled>🔄 自动训练到底</button>
+      <button class="btn warn" id="btn-reset">↺ 重置实验</button>
+      <div class="toast-area" id="toast"></div>
+    </div>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <!-- 词汇表面板 -->
+  <div class="panel vocab-panel">
+    <div class="panel-title">
+      <h2><span class="ic">🗂️</span> 词汇表 Vocabulary</h2>
+      <div class="hint">蓝色=基础字符，粉色=合并产生的新 token</div>
+    </div>
+    <div class="vocab-grid" id="vocab"></div>
+    <div class="kinfo">
+      <div class="ico">💡</div>
+      <div class="txt">
+        <h4>BPE 的核心思想</h4>
+        <p>从"每个字符是一个 token"出发，每轮找出语料中<b>出现频率最高</b>的相邻字符对，把它们合并成一个新的 token 加入词汇表。重复这个过程，词汇表就会从字母长成有意义的<b>子词（subword）</b>。"low""est""er"这类片段会被自动学出来——既不会像单词表那样庞大，也不会像字符那样丢失语义。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 切词挑战 -->
+  <div class="panel challenge" id="challenge-panel">
+    <div class="panel-title">
+      <h2><span class="ic">⚔️</span> 切词挑战 · 用学到的词汇表切分新词</h2>
+      <div class="hint">点击 token 可以删除（撤销切割）</div>
+    </div>
+
+    <div class="kinfo" style="background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.3)">
+      <div class="ico">🎮</div>
+      <div class="txt">
+        <h4>挑战规则</h4>
+        <p>输入一个词（最好包含训练中出现过的片段），系统会用你训练出的词汇表进行"贪心最长匹配"切分。试着切出<b style="color:var(--pink)">尽可能少</b>的 token——这就是大模型实际 tokenize 你输入的方式！</p>
+      </div>
+    </div>
+
+    <div class="chal-input" style="margin-top:18px">
+      <input type="text" id="chal-word-input" placeholder="输入一个词，比如 lowest / newer / slower" value="lowest">
+      <button class="btn primary" id="btn-chal">⚔️ 开始切词</button>
+    </div>
+
+    <div class="chal-row">
+      <div class="chal-word" id="chal-display"></div>
+    </div>
+    <div class="cut-zone" id="cut-zone">
+      <span style="color:var(--muted);font-size:13px">点击"开始切词"查看结果...</span>
+    </div>
+    <div class="chal-status" id="chal-status"></div>
+  </div>
+
+  <footer>
+    BPE 分词实验室 · 用于教学演示 · 体验 GPT/LLaMA 等 tokenizer 的核心算法
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   配置：APP 链接（与训练游戏共用）
+   ============================================================ */
+const APP_URL = "https://your-ai-app.example.com";  // ← 替换为你的 app 链接
+document.getElementById('back-app').href = APP_URL;
+
+/* ============================================================
+   背景：粒子神经网络
+   ============================================================ */
+(function(){
+  const cv=document.getElementById('bg-canvas'),ctx=cv.getContext('2d');
+  let W,H,P=[];const COL=['#00d9ff','#a855f7','#ec4899'];
+  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  function init(){const n=Math.min(70,Math.floor(W*H/22000));P=[];
+    for(let i=0;i<n;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.3+.5,c:COL[i%3]});}
+  resize();init();addEventListener('resize',()=>{resize();init();});
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=p.c;ctx.globalAlpha=.55;ctx.fill();}
+    ctx.globalAlpha=1;
+    for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const a=P[i],b=P[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<130){ctx.strokeStyle='rgba(0,217,255,'+(1-d/130)*.13+')';ctx.lineWidth=.5;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ============================================================
+   BPE 核心逻辑
+   ============================================================ */
+const INITIAL_CORPUS = [
+  {word:'low', count:5},
+  {word:'lower', count:2},
+  {word:'newest', count:6},
+  {word:'widest', count:3},
+  // 词频让某些对更可能出现
+];
+
+// 状态
+let state=null;
+
+function initState(){
+  // 初始：每个词拆成字符 + 结束符 </w>
+  const words = INITIAL_CORPUS.map(item => ({
+    label: item.word,
+    count: item.count,
+    // tokens: 字符数组，末尾加 </w> 表示词边界
+    tokens: [...item.word].map(c=>c)  // 简化：不加</w>，纯字符
+  }));
+  // 初始词汇表 = 所有出现的字符
+  const baseChars = new Set();
+  words.forEach(w => w.tokens.forEach(t => baseChars.add(t)));
+  state = {
+    words,
+    vocab: [...baseChars].sort(),       // 词汇表（有序）
+    baseSet: new Set(baseChars),        // 基础字符集合
+    merges: [],                         // 合并历史 [{pair, merged}]
+    iter: 0,
+    autoMode: false,
+  };
+}
+
+// 计算所有相邻字符对及其频率（加权）
+function getPairs(){
+  const pairCount = {};  // "a|b" -> 总频次
+  const pairWords = {};  // "a|b" -> 涉及的词索引列表
+  state.words.forEach((w, wi) => {
+    for(let i=0;i<w.tokens.length-1;i++){
+      const pair = w.tokens[i] + '|' + w.tokens[i+1];
+      pairCount[pair] = (pairCount[pair]||0) + w.count;
+      if(!pairWords[pair]) pairWords[pair]=[];
+      if(!pairWords[pair].includes(wi)) pairWords[pair].push(wi);
+    }
+  });
+  // 转数组
+  const list = Object.entries(pairCount).map(([pair,count])=>{
+    const [a,b]=pair.split('|');
+    return {pair, a, b, count, words: pairWords[pair]};
+  }).sort((x,y)=>y.count-x.count || y.pair.length-x.pair.length);
+  return list;
+}
+
+// 执行一次合并
+function doMerge(a, b){
+  const merged = a + b;
+  const pairKey = a + '|' + b;
+  // 在所有词中替换 a|b -> merged
+  state.words.forEach(w => {
+    const nt = [];
+    for(let i=0;i<w.tokens.length;i++){
+      if(i < w.tokens.length-1 && w.tokens[i]===a && w.tokens[i+1]===b){
+        nt.push(merged);
+        i++; // 跳过 b
+      } else {
+        nt.push(w.tokens[i]);
+      }
+    }
+    w.tokens = nt;
+  });
+  // 加入词汇表
+  if(!state.vocab.includes(merged)){
+    state.vocab.push(merged);
+  }
+  state.merges.push({a, b, merged});
+  state.iter++;
+}
+
+/* ============================================================
+   渲染
+   ============================================================ */
+function render(){
+  renderCorpus();
+  renderCandidates();
+  renderVocab();
+  renderStats();
+}
+
+function renderCorpus(){
+  const el = document.getElementById('corpus');
+  el.innerHTML = '';
+  state.words.forEach(w => {
+    const card = document.createElement('div');
+    card.className = 'word-card';
+    card.innerHTML = `<div class="wcount">×${w.count}</div><div class="wlabel">"${w.label}"</div>`;
+    const toks = document.createElement('div');
+    toks.className = 'tokens';
+    w.tokens.forEach(t => {
+      const span = document.createElement('span');
+      const isBase = state.baseSet.has(t) && t.length===1;
+      span.className = 'tok' + (isBase ? '' : ' merged');
+      span.textContent = t;
+      toks.appendChild(span);
+    });
+    card.appendChild(toks);
+    el.appendChild(card);
+  });
+}
+
+function renderCandidates(){
+  const el = document.getElementById('candidates');
+  const pairs = getPairs();
+  el.innerHTML = '';
+  if(pairs.length === 0){
+    el.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;grid-column:1/-1">没有可合并的字符对了 ✅ 训练完成</div>';
+    document.getElementById('btn-merge-best').disabled = true;
+    document.getElementById('btn-merge-auto').disabled = true;
+    setPhase(3); // 进入切词阶段
+    return;
+  }
+  document.getElementById('btn-merge-best').disabled = false;
+  document.getElementById('btn-merge-auto').disabled = false;
+  const bestCount = pairs[0].count;
+  pairs.forEach(p => {
+    const isBest = p.count === bestCount;
+    const card = document.createElement('div');
+    card.className = 'pair-card' + (isBest ? ' best' : '');
+    card.innerHTML = `
+      <div class="pair-tok">
+        <span class="p">${p.a}</span><span class="plus">+</span><span class="p">${p.b}</span>
+        <span class="arrow">→</span><span class="res">${p.a}${p.b}</span>
+      </div>
+      <div class="pfreq">
+        <span class="l">出现频次</span>
+        <span class="n">${p.count}</span>
+      </div>`;
+    card.onclick = () => userMergePair(p.a, p.b, isBest);
+    el.appendChild(card);
+  });
+}
+
+function renderVocab(){
+  const el = document.getElementById('vocab');
+  el.innerHTML = '';
+  state.vocab.forEach((t, i) => {
+    const span = document.createElement('span');
+    const isBase = state.baseSet.has(t) && t.length===1;
+    span.className = 'vocab-tok' + (isBase ? ' base' : ' merged');
+    span.innerHTML = `${t}<span class="id">#${i}</span>`;
+    el.appendChild(span);
+  });
+}
+
+function renderStats(){
+  document.getElementById('st-iter').textContent = state.iter;
+  document.getElementById('st-vocab').textContent = state.vocab.length;
+  document.getElementById('st-pairs').textContent = getPairs().length;
+  const totalTokens = state.words.reduce((s,w)=>s + w.tokens.length * w.count, 0);
+  document.getElementById('st-tokens').textContent = totalTokens;
+}
+
+/* ============================================================
+   交互
+   ============================================================ */
+function log(msg, type='info'){
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  const time = `#${String(state.iter).padStart(2,'0')}`;
+  line.innerHTML = `<span class="t">${time}</span><span class="${type}">${type==='ok'?'✓ ':type==='err'?'✗ ':'▸ '}</span>${msg}`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function toast(msg, type='ok'){
+  const el = document.getElementById('toast');
+  el.innerHTML = `<span class="${type}">${msg}</span>`;
+  clearTimeout(window.__toastT);
+  window.__toastT = setTimeout(()=>{el.innerHTML='';}, 2800);
+}
+
+function userMergePair(a, b, isBest){
+  const pairs = getPairs();
+  const target = pairs.find(p => p.a===a && p.b===b);
+  if(!target){ toast('该字符对不存在', 'err'); return; }
+  doMerge(a, b);
+  log(`合并字符对 <b style="color:var(--cyan)">${a}+${b}</b> → <b style="color:var(--pink)">${a+b}</b>，频次 ${target.count}`, 'ok');
+  if(isBest){
+    toast(`漂亮！这是最佳合并 (频次 ${target.count})`, 'ok');
+  } else {
+    const bestCount = pairs[0].count;
+    if(target.count < bestCount){
+      toast(`已合并，但还有更高频的对 (频次 ${bestCount})`, 'err');
+    } else {
+      toast('已合并 ✅', 'ok');
+    }
+  }
+  render();
+  if(state.iter >= 1) setPhase(1);
+  if(state.iter >= 5) setPhase(2);
+}
+
+function setPhase(n){
+  ['ph1','ph2','ph3','ph4'].forEach((id,i)=>{
+    const el = document.getElementById(id);
+    el.classList.toggle('active', i===n);
+    el.classList.toggle('done', i<n);
+  });
+}
+
+document.getElementById('btn-merge-best').onclick = () => {
+  const pairs = getPairs();
+  if(pairs.length === 0) return;
+  const best = pairs[0];
+  userMergePair(best.a, best.b, true);
+};
+
+document.getElementById('btn-merge-auto').onclick = async function(){
+  if(state.autoMode){
+    state.autoMode = false;
+    this.textContent = '🔄 自动训练到底';
+    this.classList.remove('warn');
+    return;
+  }
+  state.autoMode = true;
+  this.textContent = '⏸️ 暂停自动训练';
+  this.classList.add('warn');
+  while(state.autoMode){
+    const pairs = getPairs();
+    if(pairs.length === 0){
+      state.autoMode = false;
+      this.textContent = '🔄 自动训练到底';
+      this.classList.remove('warn');
+      log('训练完成！词汇表已收敛 ✅', 'ok');
+      toast('训练完成！', 'ok');
+      break;
+    }
+    const best = pairs[0];
+    doMerge(best.a, best.b);
+    log(`[自动] 合并 <b style="color:var(--cyan)">${best.a}+${best.b}</b> → <b style="color:var(--pink)">${best.a+best.b}</b>，频次 ${best.count}`);
+    render();
+    await new Promise(r => setTimeout(r, 700));
+  }
+  if(state.iter >= 5) setPhase(2);
+};
+
+document.getElementById('btn-reset').onclick = () => {
+  initState();
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('btn-merge-auto').textContent = '🔄 自动训练到底';
+  document.getElementById('btn-merge-auto').classList.remove('warn');
+  state.autoMode = false;
+  setPhase(0);
+  log('实验已重置，所有 token 回到字符状态', 'info');
+  render();
+};
+
+/* ============================================================
+   切词挑战
+   ============================================================ */
+function tokenizeWord(word){
+  // BPE 推理：贪心最长匹配（按词汇表长度优先）
+  // 先按词汇表中长度倒序排列构建候选
+  const vocabSet = new Set(state.vocab);
+  // 从字符开始，逐步应用学到的 merge 规则（更准确的 BPE 推理）
+  let tokens = [...word];
+  for(const merge of state.merges){
+    const nt = [];
+    for(let i=0;i<tokens.length;i++){
+      if(i<tokens.length-1 && tokens[i]===merge.a && tokens[i+1]===merge.b){
+        nt.push(merge.merged); i++;
+      } else nt.push(tokens[i]);
+    }
+    tokens = nt;
+  }
+  return tokens;
+}
+
+document.getElementById('btn-chal').onclick = () => {
+  const word = document.getElementById('chal-word-input').value.trim().toLowerCase();
+  if(!word){ toast('请输入一个词', 'err'); return; }
+  doChallenge(word);
+};
+document.getElementById('chal-word-input').addEventListener('keydown', e => {
+  if(e.key==='Enter'){ document.getElementById('btn-chal').click(); }
+});
+
+function doChallenge(word){
+  document.getElementById('chal-display').innerHTML = `输入词: <b style="color:var(--cyan);font-family:JetBrains Mono">${word}</b>`;
+  const tokens = tokenizeWord(word);
+  const zone = document.getElementById('cut-zone');
+  zone.innerHTML = '';
+  if(tokens.length === 0){
+    zone.innerHTML = '<span style="color:var(--muted)">无法切分</span>';
+    return;
+  }
+  tokens.forEach((t, i) => {
+    const isBase = state.baseSet.has(t) && t.length===1;
+    const inVocab = state.vocab.includes(t);
+    const span = document.createElement('span');
+    let cls = 'cut-tok';
+    if(!inVocab) cls += ' ovr';      // 未登录词标记
+    else if(!isBase) cls += ' unseen'; // 合并 token
+    span.className = cls;
+    span.textContent = t;
+    span.style.animationDelay = (i * 0.12) + 's';
+    zone.appendChild(span);
+    if(i < tokens.length - 1){
+      const sep = document.createElement('span');
+      sep.style.cssText = 'color:var(--muted);font-size:18px;align-self:center';
+      sep.textContent = '·';
+      zone.appendChild(sep);
+    }
+  });
+  // 状态评价
+  const status = document.getElementById('chal-status');
+  status.className = 'chal-status show ok';
+  const known = tokens.filter(t => state.vocab.includes(t)).length;
+  const isWhole = tokens.length === 1 && state.vocab.includes(tokens[0]);
+  let msg;
+  if(isWhole){
+    msg = `<b>🎉 完美！</b> 整个词作为一个完整 token 存在于词汇表中。<br>切分结果：<b class="num">1</b> 个 token — 这是最高效的切分！`;
+  } else if(known === tokens.length){
+    msg = `<b>✅ 优秀！</b> 所有片段都来自你训练的词汇表。<br>切分结果：<b class="num">${tokens.length}</b> 个 token — ${tokens.join(' | ')}`;
+  } else {
+    msg = `<b>⚠️ 注意</b> 粉色 token 不在词汇表中（未登录词 OOV）。大模型遇到没见过的字符会回退到字节切分。<br>切分结果：<b class="num">${tokens.length}</b> 个 token`;
+    status.className = 'chal-status show err';
+  }
+  status.innerHTML = msg;
+  log(`切词挑战: "${word}" → [${tokens.join(', ')}] (${tokens.length} tokens)`, 'info');
+}
+
+/* ============================================================
+   启动
+   ============================================================ */
+initState();
+log('实验已就绪。语料中每个词已拆成字符，词汇表只含基础字母。', 'info');
+log('提示：点击下方候选字符对来合并，或点击"合并最高频对"一键最优。', 'info');
+render();
+// 默认切词挑战预填
+setTimeout(()=>doChallenge('lowest'), 100);
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#030510" />
+  <title>星辰学习教练 · AI Master</title>
+  <link rel="stylesheet" href="/static/css/learning_coach.css" />
+</head>
+<body>
+  <canvas id="coach-space" aria-hidden="true"></canvas>
+  <div class="nebula nebula-a" aria-hidden="true"></div><div class="nebula nebula-b" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
+
+  <header class="coach-header">
+    <a href="/dashboard" class="brand"><i></i><span>AI MASTER <em>/ LEARNING COACH</em></span></a>
+    <p><b></b> PERSONAL LEARNING SIGNAL</p>
+    <a href="/dashboard" class="return-link">返回指挥舱 <i>↗</i></a>
+  </header>
+
+  <main class="coach-shell">
+    <section class="coach-intro" id="coachIntro">
+      <p class="eyebrow">FEYNMAN LEARNING PROTOCOL</p>
+      <h1>把目标变成<br /><em>一条会回应你的航线。</em></h1>
+      <p>星辰学习教练会先理解你的目标和节奏，再用费曼学习法陪你完成每一个知识节点：学习、讲解、追问、补弱、推进。</p>
+      <div class="method-row"><span>01 设定目标</span><i></i><span>02 费曼讲解</span><i></i><span>03 动态推进</span></div>
+    </section>
+
+    <section class="onboarding-panel" id="onboardingPanel" aria-labelledby="onboardingTitle">
+      <div class="panel-head"><p>MISSION INTAKE</p><span>先校准你的专属路线</span></div>
+      <h2 id="onboardingTitle">你准备抵达哪里？</h2>
+      <form id="intakeForm">
+        <label class="field field-wide"><span>学习内容与目标</span><textarea id="goal" required minlength="6" maxlength="500" placeholder="例如：我想在 6 周内掌握私有化部署 LLM 与 RAG，能独立为团队搭建可用的知识库问答系统。"></textarea></label>
+        <label class="field"><span>当前基础</span><select id="currentLevel"><option value="零基础，刚开始接触">零基础，刚开始接触</option><option value="了解概念，缺少实践">了解概念，缺少实践</option><option value="能完成基础项目">能完成基础项目</option><option value="有项目经验，想系统进阶">有项目经验，想系统进阶</option></select></label>
+        <label class="field"><span>每天可投入时间</span><select id="dailyMinutes"><option value="30">30 分钟</option><option value="45" selected>45 分钟</option><option value="60">1 小时</option><option value="90">1.5 小时</option><option value="120">2 小时以上</option></select></label>
+        <label class="field"><span>目标日期</span><input id="deadline" type="date" /></label>
+        <label class="field"><span>偏好的学习方式</span><input id="preference" maxlength="160" placeholder="例如：项目驱动、先理解再动手" /></label>
+        <label class="field field-wide"><span>你最担心的困难</span><input id="challenge" maxlength="300" placeholder="例如：模型、向量库、部署环境太多，不知道先学哪个" /></label>
+        <button class="primary-action" type="submit"><span>生成我的学习星图</span><i>→</i></button>
+      </form>
+    </section>
+
+    <section class="route-view" id="routeView" hidden>
+      <aside class="mission-brief">
+        <p class="eyebrow">PERSONAL MISSION</p>
+        <h1 id="missionTitle"></h1>
+        <p id="coachIntroText" class="coach-copy"></p>
+        <div class="profile-summary" id="profileSummary"></div>
+        <button class="quiet-action" id="replanButton" type="button">重新校准路线 <i>↻</i></button>
+      </aside>
+
+      <section class="route-core" aria-label="个人学习星图">
+        <header class="route-top"><div><p>YOUR LEARNING CONSTELLATION</p><h2>专属学习星图</h2></div><span id="routeProgress">0 / 0 已抵达</span></header>
+        <div class="constellation" id="constellation"></div>
+      </section>
+
+      <aside class="mission-panel" id="missionPanel">
+        <div class="panel-head"><p id="missionCode">CURRENT MILESTONE</p><span id="missionTime"></span></div>
+        <h2 id="missionName">正在校准任务</h2>
+        <p id="missionObjective"></p>
+        <a id="learnLink" class="study-link" href="#"><span>进入对应知识星球</span><i>↗</i></a>
+        <div class="feynman-card">
+          <p>FEYNMAN OUTPUT</p><strong id="feynmanPrompt"></strong>
+          <small id="completionCriteria"></small>
+          <textarea id="explanationInput" maxlength="4000" placeholder="现在请像在给一位零基础朋友讲解一样，用自己的话说明。可以讲概念、举例、解释为什么。"></textarea>
+          <button class="primary-action" id="checkExplanation" type="button"><span>交给教练检验讲解</span><i>→</i></button>
+        </div>
+        <section class="coach-feedback" id="coachFeedback" hidden aria-live="polite"></section>
+      </aside>
+    </section>
+  </main>
+
+  <div class="loading-overlay" id="loadingOverlay" hidden><div class="loading-orbit"><i></i></div><p id="loadingText">正在校准星图</p><span>DEEP LEARNING ROUTE INFERENCE</span></div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="/static/js/learning_coach.js"></script>
+</body>
+</html>

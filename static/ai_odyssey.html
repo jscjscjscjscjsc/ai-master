@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#02030b" />
+  <title>AI Odyssey · AI Master</title>
+  <!-- Relative assets keep this cinematic page usable both inside Flask and as a direct file preview. -->
+  <link rel="stylesheet" href="css/ai_odyssey.css" />
+  <link rel="stylesheet" href="css/ai_odyssey_enhanced.css" />
+</head>
+<body>
+  <canvas id="odyssey-canvas" aria-hidden="true"></canvas>
+  <div class="noise" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
+  <header class="odyssey-nav">
+    <a href="/dashboard" class="odyssey-brand"><i></i><span>AI MASTER <em>/ ODYSSEY</em></span></a>
+    <p><b></b> LIVE LEARNING SIGNAL</p>
+    <a href="#chapters" class="nav-enter">进入航线 <i>↓</i></a>
+  </header>
+  <section class="odyssey-hero">
+    <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+    <div class="flight-hud" aria-hidden="true">
+      <span><i></i> DRAG TO BEND THE STARFIELD</span>
+      <span>SECTOR 01 / ORBITAL ARCHIVE</span>
+    </div>
+    <div class="hero-copy">
+      <p class="kicker"><i></i> AI LEARNING EXPERIENCE / 2026</p>
+      <h1>把知识，<br /><em>变成可抵达的宇宙。</em></h1>
+      <p class="hero-desc">从 Transformer 的第一束注意力，到 RAG 与智能体的工程星系。拖动视野，沿着光流进入你的下一段学习远征。</p>
+      <a href="#chapters" class="launch"><span>开启 AI 远征</span><i>→</i></a>
+    </div>
+    <div class="hero-object"><div class="core"></div><div class="shell"></div><div class="debris"></div></div>
+    <p class="scroll-cue"><span>DRAG TO EXPLORE · SCROLL TO NAVIGATE</span><i></i></p>
+  </section>
+  <main id="chapters" class="chapter-stream">
+    <article class="odyssey-chapter left" data-color="#72f6e4" data-target="/static/transformer_cg.html">
+      <div class="chapter-meta"><span>01</span><i></i><small>FOUNDATION / CORE MODEL</small></div>
+      <div class="chapter-field" aria-hidden="true"><span class="float-chip chip-a">Q · K · V</span><span class="float-chip chip-b">LAYER 12</span><span class="float-orbit"></span></div>
+      <div class="chapter-card transformer-card"><div class="card-mesh"></div><div class="media-window"><i></i><i></i><i></i><b>01 / ATTENTION FLOW</b></div><p>ATTENTION</p><strong>TRANSFORMER</strong><span>SELF ATTENTION · MULTI HEAD · ROPE</span></div>
+      <div class="chapter-copy"><p>CHAPTER 01</p><h2>从注意力，<em>看见大模型的思考。</em></h2><span>深入 Transformer 架构，理解每一次生成背后的信息流动。</span><button>进入星域 <i>→</i></button></div>
+    </article>
+    <article class="odyssey-chapter right" data-color="#b79bff" data-target="/static/prompt_cg_starlab/index.html">
+      <div class="chapter-meta"><span>02</span><i></i><small>LANGUAGE / INTERFACE</small></div>
+      <div class="chapter-field" aria-hidden="true"><span class="float-chip chip-a">SYSTEM</span><span class="float-chip chip-b">CONTEXT 8K</span><span class="float-orbit"></span></div>
+      <div class="chapter-card prompt-card"><div class="prompt-particles"></div><div class="media-window"><i></i><i></i><i></i><b>02 / CONTEXT FIELD</b></div><p>PROMPT</p><strong>LANGUAGE<br />DESIGN</strong><span>CONTEXT · REASONING · CONTROL</span></div>
+      <div class="chapter-copy"><p>CHAPTER 02</p><h2>让语言成为，<em>通往模型的导航仪。</em></h2><span>把提示词工程从“问问题”升级为可复用、可验证的系统设计。</span><button>进入星域 <i>→</i></button></div>
+    </article>
+    <article class="odyssey-chapter left" data-color="#ff9ec7" data-target="/static/agentic_cg/index.html">
+      <div class="chapter-meta"><span>03</span><i></i><small>AGENT / ORCHESTRATION</small></div>
+      <div class="chapter-field" aria-hidden="true"><span class="float-chip chip-a">TOOL CALL</span><span class="float-chip chip-b">MEMORY</span><span class="float-orbit"></span></div>
+      <div class="chapter-card agent-card"><div class="agent-ring"></div><div class="agent-node n1"></div><div class="agent-node n2"></div><div class="agent-node n3"></div><div class="media-window"><i></i><i></i><i></i><b>03 / AGENT LOOP</b></div><p>AGENT</p><strong>ORCHESTRA</strong><span>PLAN · TOOL · MEMORY · ACT</span></div>
+      <div class="chapter-copy"><p>CHAPTER 03</p><h2>让智能体，<em>从回应走向行动。</em></h2><span>探索工作流、工具调用、记忆和多智能体协作的真实工程路径。</span><button>进入星域 <i>→</i></button></div>
+    </article>
+    <article class="odyssey-chapter right" data-color="#ffcf76" data-target="/static/rag_cg/index.html">
+      <div class="chapter-meta"><span>04</span><i></i><small>RETRIEVAL / PRIVATE DATA</small></div>
+      <div class="chapter-field" aria-hidden="true"><span class="float-chip chip-a">VECTOR DB</span><span class="float-chip chip-b">TOP K / 08</span><span class="float-orbit"></span></div>
+      <div class="chapter-card rag-card"><div class="rag-grid"></div><div class="media-window"><i></i><i></i><i></i><b>04 / PRIVATE RETRIEVAL</b></div><p>PRIVATE</p><strong>RAG<br />SYSTEM</strong><span>RETRIEVE · RERANK · GENERATE</span></div>
+      <div class="chapter-copy"><p>CHAPTER 04</p><h2>让私有知识，<em>成为模型的第二记忆。</em></h2><span>走进 RAG、向量检索、重排序与私有化部署的完整工程链路。</span><button>进入星域 <i>→</i></button></div>
+    </article>
+  </main>
+  <footer><span>AI MASTER / ORIGINAL INTERACTIVE LEARNING EXPERIENCE</span><a href="/dashboard">返回指挥舱 ↗</a></footer>
+  <script src="vendor/three.r128.min.js"></script>
+  <script src="js/ai_odyssey.js"></script>
+</body>
+</html>
