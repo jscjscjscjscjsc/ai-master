@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#030611" />
+    <meta name="description" content="AIMaster 驾驭工程与智能体的兴起 · 章节引导 CG" />
+    <title>AIMaster · 驾驭工程与智能体的兴起</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./responsive.css" />
+  </head>
+  <body data-scene="0">
+    <canvas id="cosmos" aria-hidden="true"></canvas>
+    <div class="nebula nebula-a" aria-hidden="true"></div>
+    <div class="nebula nebula-b" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <header class="hud-header">
+      <a class="brand" href="#" aria-label="重新播放章节引导">
+        <span class="brand-sigil"><i></i><i></i><i></i></span>
+        <span>AIMASTER <em>/ CHAPTER 09</em></span>
+      </a>
+      <div class="hud-status"><i></i><span>AGENTIC SIGNAL ONLINE</span></div>
+      <button class="skip-button" id="skipButton" type="button">跳过片头 <span>↗</span></button>
+    </header>
+
+    <main class="cinema" aria-live="polite">
+      <section class="scene active" data-index="0" aria-hidden="false">
+        <div class="scene-copy">
+          <p class="scene-code">PROLOGUE / 00:01</p>
+          <h1>当代码不再只是<br /><em>被编写。</em></h1>
+          <p>它开始理解意图、调用工具，并沿着目标独自前行。</p>
+        </div>
+        <div class="scene-visual visual-signal" aria-hidden="true">
+          <div class="signal-core"><span>?</span></div>
+          <div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-ring ring-3"></div>
+          <span class="coordinate coord-a">PROMPT / 001</span><span class="coordinate coord-b">INTENT DETECTED</span>
+        </div>
+      </section>
+
+      <section class="scene" data-index="1" aria-hidden="true">
+        <div class="scene-copy">
+          <p class="scene-code">PHASE 01 / CO-PILOT</p>
+          <h2>人类给出方向，<br /><em>模型点亮路径。</em></h2>
+          <p>从补全一行代码，到理解整个仓库。AI 开始成为工程师身旁的第二视角。</p>
+        </div>
+        <div class="scene-visual visual-code" aria-hidden="true">
+          <div class="code-window">
+            <div class="window-bar"><i></i><i></i><i></i><span>mission.ts</span></div>
+            <pre><span>01</span> <b>const</b> mission = <em>understand</em>(intent);
+<span>02</span> <b>const</b> route = <em>plan</em>(mission);
+<span>03</span> <b>await</b> route.<strong>execute</strong>();
+<span>04</span> <i class="code-cursor"></i></pre>
+          </div>
+          <div class="scan-beam"></div>
+          <span class="coordinate coord-a">CONTEXT / 128K</span><span class="coordinate coord-b">REPOSITORY MAPPED</span>
+        </div>
+      </section>
+
+      <section class="scene" data-index="2" aria-hidden="true">
+        <div class="scene-copy">
+          <p class="scene-code">PHASE 02 / AUTONOMY</p>
+          <h2>一次回答结束。<br /><em>一场行动开始。</em></h2>
+          <p>感知、规划、行动、反思——智能体把推理变成一个持续运行的闭环。</p>
+        </div>
+        <div class="scene-visual visual-loop" aria-hidden="true">
+          <div class="loop-orbit"><div class="agent-core">AGENT<small>CORE</small></div></div>
+          <div class="loop-node node-perceive"><i></i><span>01 感知</span></div>
+          <div class="loop-node node-plan"><i></i><span>02 规划</span></div>
+          <div class="loop-node node-act"><i></i><span>03 行动</span></div>
+          <div class="loop-node node-reflect"><i></i><span>04 反思</span></div>
+          <div class="loop-pulse"></div>
+        </div>
+      </section>
+
+      <section class="scene" data-index="3" aria-hidden="true">
+        <div class="scene-copy">
+          <p class="scene-code">PHASE 03 / ORCHESTRATION</p>
+          <h2>一个智能体是火种。<br /><em>协作，才是星群。</em></h2>
+          <p>研究、编码、测试、审查。多个角色共享目标，在清晰的边界内彼此接力。</p>
+        </div>
+        <div class="scene-visual visual-network" aria-hidden="true">
+          <svg class="network-lines" viewBox="0 0 600 600"><path d="M300 300 L150 180 M300 300 L460 160 M300 300 L480 410 M300 300 L135 425 M150 180 L460 160 M460 160 L480 410 M480 410 L135 425 M135 425 L150 180" /></svg>
+          <div class="network-core">GOAL<small>SHARED</small></div>
+          <div class="agent-node n1"><i>R</i><span>研究</span></div><div class="agent-node n2"><i>C</i><span>编码</span></div>
+          <div class="agent-node n3"><i>T</i><span>测试</span></div><div class="agent-node n4"><i>V</i><span>审查</span></div>
+        </div>
+      </section>
+
+      <section class="scene" data-index="4" aria-hidden="true">
+        <div class="scene-copy final-copy">
+          <p class="scene-code">CHAPTER 09 / READY</p>
+          <h2>驾驭工程，<br /><em>与智能体的兴起。</em></h2>
+          <p>你将学习如何定义任务、配置工具、编排协作，并让每一次自主行动都可观测、可验证、可掌控。</p>
+          <div class="final-prompt">
+            <span>准备好了吗，旅行者？</span>
+            <a class="start-button" id="startButton" href="../agentic-engineering.html">
+              <span>开始学习</span><i>→</i><b></b>
+            </a>
+          </div>
+        </div>
+        <div class="scene-visual visual-gate" aria-hidden="true">
+          <div class="gate-halo halo-1"></div><div class="gate-halo halo-2"></div><div class="gate-halo halo-3"></div>
+          <div class="gate"><div class="gate-depth"></div><span>ENTER</span></div>
+          <div class="gate-floor"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="player-hud">
+      <button class="play-toggle" id="playToggle" type="button" aria-label="暂停自动播放"><span class="pause-icon"></span></button>
+      <div class="timeline" id="timeline" role="tablist" aria-label="章节片头进度"></div>
+      <div class="timecode"><span id="currentTime">00:00</span><i>/</i><span>00:30</span></div>
+    </footer>
+
+    <div class="orientation-note">请旋转设备，进入更完整的星图</div>
+    <script src="./app.js"></script>
+  </body>
+</html>

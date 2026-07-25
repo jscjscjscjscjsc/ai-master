@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#05080a" />
+    <meta name="description" content="AIMaster 产品推广演示页：一场从使用 AI 到驾驭 AI 的星际学习旅程。" />
+    <title>AIMaster | 从使用 AI 到驾驭 AI</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="stylesheet" href="./aimaster-promo.css" />
+  </head>
+  <body>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="scroll-meter" aria-hidden="true"><span id="scrollMeter"></span></div>
+
+    <header class="topbar">
+      <a class="brand" href="#arrival" aria-label="返回演示开场">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>AIMASTER <em>LEARNING UNIVERSE</em></span>
+      </a>
+      <div class="topbar-status"><i></i><span>LIVE PRESENTATION</span></div>
+      <button class="icon-button" id="muteMotion" type="button" aria-label="暂停背景动态" data-tooltip="暂停背景动态">
+        <i data-lucide="pause"></i>
+      </button>
+    </header>
+
+    <nav class="chapter-rail" aria-label="演示章节">
+      <a class="rail-step active" href="#arrival" data-section="arrival"><b>00</b><span>进入</span></a>
+      <a class="rail-step" href="#core" data-section="core"><b>01</b><span>沉浸关卡</span></a>
+      <a class="rail-step" href="#lab" data-section="lab"><b>02</b><span>模型实验室</span></a>
+      <a class="rail-step" href="#mentor" data-section="mentor"><b>03</b><span>JJ 老师</span></a>
+      <a class="rail-step" href="#galaxy" data-section="galaxy"><b>04</b><span>知识星海</span></a>
+      <a class="rail-step" href="#tools" data-section="tools"><b>05</b><span>创作工具</span></a>
+      <a class="rail-step" href="#summit" data-section="summit"><b>06</b><span>升华</span></a>
+    </nav>
+
+    <main>
+      <section class="chapter arrival" id="arrival" data-chapter="00">
+        <div class="hero-nebula" aria-hidden="true"></div>
+        <div class="arrival-copy reveal">
+          <p class="eyebrow"><span></span> AIMASTER / AI LEARNING QUEST SYSTEM</p>
+          <h1>不是教你<br /><em>使用 AI。</em></h1>
+          <p class="hero-copy">这是一次从提问、理解、实验，到创造、建造、驾驭的学习远征。</p>
+          <div class="hero-actions">
+            <a class="command-button" href="#core"><span>进入学习宇宙</span><i data-lucide="arrow-down"></i></a>
+            <p><b>06</b> 个能力星系<br /><b>01</b> 条成长主线</p>
+          </div>
+        </div>
+        <div class="arrival-map reveal" aria-label="AIMaster 学习宇宙预览">
+          <div class="map-grid"></div>
+          <div class="map-axis axis-x"></div><div class="map-axis axis-y"></div>
+          <div class="signal-line signal-a"></div><div class="signal-line signal-b"></div><div class="signal-line signal-c"></div>
+          <span class="map-node node-core">AI</span>
+          <span class="map-node node-one">问</span><span class="map-node node-two">验</span>
+          <span class="map-node node-three">造</span><span class="map-node node-four">驭</span>
+          <p class="map-caption"><i></i> 你的下一次升级，从这里开始</p>
+        </div>
+        <div class="scroll-cue"><span>SCROLL TO LAUNCH</span><i></i></div>
+      </section>
+
+      <section class="chapter core" id="core" data-chapter="01">
+        <div class="chapter-index reveal"><span>01 / 06</span><i></i><b>沉浸关卡</b></div>
+        <div class="chapter-heading split-heading reveal">
+          <div>
+            <p class="eyebrow"><span></span> CINEMATIC LEARNING</p>
+            <h2>每一章，先让你<br /><em>想进入。</em></h2>
+          </div>
+          <p>把课程从一页页内容，变成一场有情绪、有目标、有反馈的探索。精美 CG 不是片头装饰，而是每次进入新知识前的召唤。</p>
+        </div>
+        <div class="core-layout reveal">
+          <article class="cg-console">
+            <div class="console-top"><span>CHAPTER 09 / AGENTIC ENGINEERING</span><i>00:17 / 00:30</i></div>
+            <div class="cg-stage">
+              <div class="cg-rings"><i></i><i></i><i></i></div>
+              <div class="cg-core">AGENT<small>CORE</small></div>
+              <span class="cg-label label-one">01 感知</span><span class="cg-label label-two">02 规划</span>
+              <span class="cg-label label-three">03 行动</span><span class="cg-label label-four">04 反思</span>
+            </div>
+            <div class="console-timeline"><span class="done"></span><span class="done"></span><span class="active"></span><span></span><span></span></div>
+            <div class="console-caption"><b>当代码开始理解意图，学习也该进入下一种体验。</b><span>可暂停 / 可切换 / 可回看</span></div>
+          </article>
+          <article class="explain-panel">
+            <div class="panel-kicker"><span class="live-dot"></span> JJ 正在细致讲解</div>
+            <p class="question">“为什么模型会把一个看起来正确的答案，判断成错误？”</p>
+            <div class="answer-flow">
+              <div><b>01</b><span>先定位：是数据、提示词，还是推理链路出了偏差？</span></div>
+              <div><b>02</b><span>再举例：用当前题目里的真实变量，把抽象原因讲清楚。</span></div>
+              <div><b>03</b><span>最后行动：给出下一步验证方式，而不是只留下结论。</span></div>
+            </div>
+            <div class="panel-footer"><span>不是给标准答案</span><strong>是陪你抵达答案</strong></div>
+          </article>
+          <article class="compiler-panel">
+            <div class="compiler-head"><span>ONLINE ALGORITHM SIMULATOR</span><b><i></i> READY</b></div>
+            <div class="code-area" aria-label="算法模拟代码示意">
+              <p><i>01</i><span class="keyword">for</span> each token <span class="keyword">in</span> sequence:</p>
+              <p><i>02</i>&nbsp;&nbsp;attention = <span class="function">score</span>(query, key)</p>
+              <p class="code-error"><i>03</i>&nbsp;&nbsp;weight = <span class="function">softmax</span>(attention)</p>
+              <p><i>04</i>&nbsp;&nbsp;output += weight * value</p>
+            </div>
+            <div class="compiler-feedback"><span class="feedback-icon">!</span><p><b>发现一个可解释的偏差</b>注意力权重未归一化。这里不是只报错，而是告诉你它会怎样影响输出。</p></div>
+            <div class="score-row"><span>推演完成度 <b>82</b></span><span>下一步：修正后再试一次 <i data-lucide="arrow-right"></i></span></div>
+          </article>
+        </div>
+        <p class="cutaway reveal"><i data-lucide="clapperboard"></i> 此处切入：真实章节 CG、题目讲解与在线编译器演示</p>
+      </section>
+
+      <section class="chapter lab" id="lab" data-chapter="02">
+        <div class="chapter-index reveal"><span>02 / 06</span><i></i><b>模型实验室</b></div>
+        <div class="lab-layout">
+          <div class="lab-copy reveal">
+            <p class="eyebrow"><span></span> MODEL LABORATORY</p>
+            <h2>不要背算法。<br /><em>让算法动起来。</em></h2>
+            <p>把每一个模型算法做成独立、精致、可玩的实验网页。你不是在记概念，而是在动态反馈里亲手看见它为何发生。</p>
+            <div class="lab-stats"><span><b>01</b> 算法 / 一座实验岛</span><span><b>动</b> 画 / 即时反馈</span><span><b>玩</b> 法 / 主动掌握</span></div>
+          </div>
+          <div class="lab-sim reveal" aria-label="模型实验动态示意">
+            <div class="sim-header"><span>ATTENTION ARENA</span><span>实时演算中</span></div>
+            <div class="token-field">
+              <button class="token token-a" type="button" data-token="问题">问题</button>
+              <button class="token token-b" type="button" data-token="模型">模型</button>
+              <button class="token token-c active" type="button" data-token="理解">理解</button>
+              <button class="token token-d" type="button" data-token="语境">语境</button>
+              <span class="attention-beam beam-a"></span><span class="attention-beam beam-b"></span><span class="attention-beam beam-c"></span>
+              <div class="attention-core"><b>0.87</b><small>ATTENTION</small></div>
+            </div>
+            <div class="sim-controls"><span>把注意力放在</span><strong id="selectedToken">理解</strong><div class="sim-bar"><i id="simBar"></i></div><span id="simStatus">关联度 87%</span></div>
+          </div>
+        </div>
+        <div class="experiment-strip reveal" aria-label="实验室算法主题">
+          <article><b>01</b><h3>Transformer</h3><p>让注意力在词与词之间流动，看到模型如何建立关联。</p></article>
+          <article><b>02</b><h3>神经网络</h3><p>拖动权重、观察损失，让抽象训练有即时的手感。</p></article>
+          <article><b>03</b><h3>RAG 检索</h3><p>让一份资料经过切片、召回、重排，带着证据抵达答案。</p></article>
+          <article><b>04</b><h3>智能体循环</h3><p>感知、规划、行动、反思，从一次回答看见持续行动。</p></article>
+        </div>
+        <p class="cutaway reveal"><i data-lucide="flask-conical"></i> 此处切入：任意一个真实算法网页或学习游戏</p>
+      </section>
+
+      <section class="chapter mentor" id="mentor" data-chapter="03">
+        <div class="mentor-grid">
+          <div class="mentor-orbit reveal" aria-label="JJ 老师智能体轨道">
+            <div class="mentor-signal one"></div><div class="mentor-signal two"></div><div class="mentor-signal three"></div>
+            <div class="mentor-avatar"><span>JJ</span><small>TEACHER</small></div>
+            <span class="memory-memory memory-one">你问过的 RAG 问题</span>
+            <span class="memory-memory memory-two">你的 Transformer 实验</span>
+            <span class="memory-memory memory-three">本章的卡点</span>
+            <span class="memory-memory memory-four">下一阶段目标</span>
+          </div>
+          <div class="mentor-copy reveal">
+            <div class="chapter-index"><span>03 / 06</span><i></i><b>JJ 老师</b></div>
+            <p class="eyebrow"><span></span> A MENTOR WHO REMEMBERS</p>
+            <h2>真正的智能体，<br /><em>应该认识你。</em></h2>
+            <p>JJ 老师不是一个每次刷新就失忆的问答框。他有启发性人格，能记住你的历史对话、理解你反复卡住的地方，并在长上下文里持续陪你走。</p>
+            <div class="mentor-points">
+              <div><b>记得住</b><span>每一个用户问过什么、学到哪里、在哪停留过。</span></div>
+              <div><b>讲得透</b><span>不急着替你回答，用追问和示例把思考一步步引出来。</span></div>
+              <div><b>带得远</b><span>结合当前能力，规划学习路线；每章结束，留下真正能带走的启示。</span></div>
+            </div>
+          </div>
+        </div>
+        <article class="jj-dialogue reveal" aria-live="polite">
+          <div class="dialogue-label"><span class="live-dot"></span> JJ / 学习轨迹同步中</div>
+          <div class="dialogue-row user"><span>你</span><p>“我知道 RAG 的流程，但还是不知道什么时候该加重排模型。”</p></div>
+          <div class="dialogue-row jj"><span>JJ</span><p id="jjReply">先不急着背概念。回到你昨天做的知识库实验：那次召回了哪些“看似相关”的片段？我们一起用真实结果判断。</p></div>
+          <div class="dialogue-actions">
+            <button type="button" data-reply="0">继续追问</button>
+            <button type="button" data-reply="1">查看学习路线</button>
+            <button type="button" data-reply="2">收下本章启示</button>
+          </div>
+        </article>
+        <p class="cutaway reveal"><i data-lucide="bot-message-square"></i> 此处切入：JJ 老师真实对话、历史记忆与章节总结</p>
+      </section>
+
+      <section class="chapter galaxy" id="galaxy" data-chapter="04">
+        <div class="chapter-index reveal"><span>04 / 06</span><i></i><b>知识星海</b></div>
+        <div class="galaxy-heading reveal">
+          <p class="eyebrow"><span></span> KNOWLEDGE GALAXY</p>
+          <h2>知识不该是一条目录。<br /><em>它应该是一片星海。</em></h2>
+          <p>每一个系统章节是一座星系；每一个知识点是一颗可以抵达、可以理解、也可以继续追问的星球。</p>
+        </div>
+        <div class="galaxy-stage reveal">
+          <div id="knowledgeGalaxy" role="img" aria-label="可交互的三维知识星系图"></div>
+          <aside class="galaxy-hud" aria-live="polite">
+            <p>FOCUS PLANET</p>
+            <h3 id="planetName">Transformer</h3>
+            <span id="planetMeta">模型基础星系 / 核心知识点</span>
+            <div class="hud-line"></div>
+            <p id="planetDescription">从注意力机制出发，理解模型如何让每一个词看见与自己相关的上下文。</p>
+            <div class="hud-actions"><button id="focusPlanet" type="button">定位知识</button><button id="askPlanet" type="button">问 JJ</button></div>
+          </aside>
+          <div class="galaxy-legend"><span><i class="legend-core"></i> 系统章节</span><span><i class="legend-planet"></i> 知识星球</span><span><i class="legend-route"></i> 学习路径</span></div>
+        </div>
+        <div class="galaxy-foot reveal"><span>拖动星海，探索知识之间的关系。</span><strong>随时进入具体知识，也随时把问题交给 JJ。</strong></div>
+        <p class="cutaway reveal"><i data-lucide="orbit"></i> 此处切入：知识图谱的真实 3D 交互与知识点页面</p>
+      </section>
+
+      <section class="chapter tools" id="tools" data-chapter="05">
+        <div class="chapter-index reveal"><span>05 / 06</span><i></i><b>创作工具</b></div>
+        <div class="tools-heading reveal">
+          <p class="eyebrow"><span></span> CREATE, ORGANIZE, EXPRESS</p>
+          <h2>学会之后，<br /><em>让它成为你的作品。</em></h2>
+          <p>理解从来不该只留在对话里。AIMaster 把高频创作工具放进同一片学习宇宙，让灵感、结构、表达和复习互相连接。</p>
+        </div>
+        <div class="tool-grid reveal">
+          <article class="tool-card canvas-card"><div class="tool-icon"><i data-lucide="pen-tool"></i></div><span>01 / CREATE</span><h3>无限画布</h3><p>把灵感、资料、问题与方案放在同一个工作面上，自由连接。</p><div class="canvas-lines" aria-hidden="true"><i></i><i></i><i></i><b></b><b></b><b></b></div></article>
+          <article class="tool-card ppt-card"><div class="tool-icon"><i data-lucide="presentation"></i></div><span>02 / EXPRESS</span><h3>AI PPT</h3><p>把刚刚学会的知识组织成能够讲给别人听的演示。</p><div class="mini-slides" aria-hidden="true"><i></i><i></i><i></i></div></article>
+          <article class="tool-card mind-card"><div class="tool-icon"><i data-lucide="git-fork"></i></div><span>03 / CONNECT</span><h3>思维导图</h3><p>让零散概念成为结构，让每一次复习都看得见脉络。</p><div class="mind-map" aria-hidden="true"><b></b><i></i><i></i><i></i><i></i></div></article>
+          <article class="tool-card dictionary-card"><div class="tool-icon"><i data-lucide="book-open-text"></i></div><span>04 / LOOK UP</span><h3>知识词典</h3><p>遇到陌生术语，随时回到清晰、可信、能继续延展的解释。</p><div class="definition" aria-hidden="true"><b>Attention</b><i>n.</i><span>模型理解关系的核心机制</span></div></article>
+          <article class="tool-card video-card"><div class="tool-icon"><i data-lucide="play-square"></i></div><span>05 / EXPLORE</span><h3>视频推荐</h3><p>根据当前章节与学习状态，延伸到真正值得看的下一支视频。</p><div class="video-bars" aria-hidden="true"><i></i><b></b><b></b></div></article>
+        </div>
+        <p class="cutaway reveal"><i data-lucide="panels-top-left"></i> 此处切入：画布、PPT、思维导图、词典或视频推荐的真实页面</p>
+      </section>
+
+      <section class="chapter summit" id="summit" data-chapter="06">
+        <div class="summit-grid">
+          <div class="summit-copy reveal">
+            <div class="chapter-index"><span>06 / 06</span><i></i><b>升华</b></div>
+            <p class="eyebrow"><span></span> THE AIMASTER PROMISE</p>
+            <h2>从使用 AI，<br />到理解 AI。<br /><em>再到驾驭 AI。</em></h2>
+            <p>这就是 AIMaster 的力量：它不堆叠功能，而是把每一个功能放进一条完整的成长路径。让学习者能提问、能实验、能表达、能建造，也能把真正的 AI 系统带进现实。</p>
+            <a class="command-button" href="#arrival"><span>重新进入宇宙</span><i data-lucide="rotate-ccw"></i></a>
+          </div>
+          <div class="mastery-path reveal" aria-label="AIMaster 成长路径">
+            <div class="path-track"><i></i></div>
+            <div class="path-stop"><b>01</b><span>会问</span><small>把不会，变成下一步</small></div>
+            <div class="path-stop"><b>02</b><span>会验</span><small>让模型能力可观察</small></div>
+            <div class="path-stop"><b>03</b><span>会造</span><small>把想法变成作品</small></div>
+            <div class="path-stop final"><b>04</b><span>会驭</span><small>让智能系统可信、可控</small></div>
+          </div>
+        </div>
+        <div class="summit-quote reveal"><span>“</span><p>每一个精雕细琢的页面，都是一扇门。门的后面，不是更多炫技，而是一个更有创造力、更有判断力、更有能力把想法落地的你。</p></div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
+    <script src="./aimaster-promo.js"></script>
+  </body>
+</html>

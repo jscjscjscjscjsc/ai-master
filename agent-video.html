@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>国产 AI Agent 实测：Trae、WorkBuddy、ZCode</title>
+    <link rel="stylesheet" href="./agent-video.css" />
+  </head>
+  <body>
+    <main id="story" class="story">
+      <section class="scene hero reveal active" data-scene="0">
+        <div class="eyebrow">个人实测 · 2026 / 06</div>
+        <p class="chapter">01 / 从“能不能用”开始</p>
+        <h1>国产 AI Agent<br /><em>到底适不适合普通人？</em></h1>
+        <p class="lede">不比参数表，只聊我实际用下来的三件事：上手门槛、日常效率、以及它们各自不太好听的短板。</p>
+        <div class="topic-row"><span>Trae</span><span>WorkBuddy</span><span>ZCode</span></div>
+        <button class="advance" type="button">开始讲</button>
+      </section>
+
+      <section class="scene split reveal" data-scene="1">
+        <div>
+          <p class="chapter">02 / 为什么要找替代方案</p>
+          <h2>国外工具很好，<br />但“开始用”这一步很长。</h2>
+          <p>Codex 通常需要稳定 API 渠道或账号环境；第三方中转配合 CC Switch 也要改配置，连接中断时还得自己排查。Claude 终端体验不错，但下载安装到能接国内模型，同样要学习成本。</p>
+          <p>这不是说它们不好，而是对只想把工作推进的人，第一步已经消耗了不少精力。</p>
+        </div>
+        <div class="quote-panel"><span>我的筛选标准</span><strong>安装后能不能马上做事？<br />免费额度够不够先体验？<br />中断之后自己能不能恢复？</strong></div>
+      </section>
+
+      <section class="scene reveal" data-scene="2">
+        <p class="chapter">03 / 这次怎么测</p>
+        <h2>同一类任务，三种不同的产品路线。</h2>
+        <div class="cards three">
+          <article><b>01</b><h3>前端展示页</h3><p>让它们分别做一页介绍自身产品的网页，看界面、完成度和修改效率。</p></article>
+          <article><b>02</b><h3>真实办公流</h3><p>读取已有文件、填写 Word、保存结果。重点看能否融进已有工作习惯。</p></article>
+          <article><b>03</b><h3>本地执行</h3><p>从手机发起指令，让电脑执行本地文件与云端任务，观察交接是否顺畅。</p></article>
+        </div>
+        <p class="note">以下结论只代表个人设备、时间段和任务条件，不等于产品能力的绝对排名。</p>
+      </section>
+
+      <section class="scene product trae reveal" data-scene="3">
+        <div class="product-head"><div><p class="chapter">04 / Trae</p><h2>先把“能做事”<br />摆到桌面上。</h2></div><span class="pill">适合：内容与开发混合任务</span></div>
+        <div class="media-slot demo-screen" data-demo="trae"></div>
+        <div class="two-col"><p>我优先选的是 Trae Work：它支持手机端同步，电脑上的本地文件和云端任务都能被远程推进。对需要离开工位、但又不想打断执行的人，这一点很实用。</p><p>基础界面不复杂：任务、文件、对话和执行状态都集中在同一条工作流里。第一次打开不需要先研究一堆配置。</p></div>
+      </section>
+
+      <section class="scene reveal" data-scene="4">
+        <p class="chapter">05 / Trae 实操看点</p>
+        <h2>让它做产品介绍页，<br />再用手机推动本地任务。</h2>
+        <div class="media-slot wide demo-screen" data-demo="remote"></div>
+        <div class="metric-row"><div><strong>上手</strong><span>安装后可直接开始</span></div><div><strong>模型</strong><span>内置多种国产模型</span></div><div><strong>协同</strong><span>手机与电脑联动</span></div></div>
+        <p class="note">我的体验里，它的免费使用空间比较大；高峰时任务会排队。是否开权益类服务，建议按实际频率决定。</p>
+      </section>
+
+      <section class="scene product buddy reveal" data-scene="5">
+        <div class="product-head"><div><p class="chapter">06 / WorkBuddy</p><h2>它更像是一个<br />懂办公上下文的同事。</h2></div><span class="pill">适合：文档、文件、协作流</span></div>
+        <div class="media-slot demo-screen" data-demo="buddy"></div>
+        <div class="two-col"><p>它的长处不在于把每一段代码都写到极致，而在于和企业微信、腾讯文档一类办公产品的连接。已有资料不必反复下载、上传、解释一遍。</p><p>我会展示一次读取微信文件、填写 Word 再保存的过程。这里真正重要的是：人能少做一次格式搬运，注意力留给判断和确认。</p></div>
+      </section>
+
+      <section class="scene reveal" data-scene="6">
+        <p class="chapter">07 / WorkBuddy 的取舍</p>
+        <h2>办公方便，不代表它适合所有开发任务。</h2>
+        <table><thead><tr><th>维度</th><th>我的观察</th><th>更适合谁</th></tr></thead><tbody><tr><td>文档和文件</td><td>办公产品衔接顺，适合减少复制粘贴</td><td>行政、运营、协作密集的团队</td></tr><tr><td>日常额度</td><td>有免费使用空间，体验时没有明显排队感</td><td>每天有轻量任务的人</td></tr><tr><td>代码工程</td><td>复杂工程推进感弱于 Trae 和 ZCode</td><td>不把它当主力 IDE 的人</td></tr></tbody></table>
+        <div class="media-slot short demo-screen" data-demo="document"></div>
+      </section>
+
+      <section class="scene product zcode reveal" data-scene="7">
+        <div class="product-head"><div><p class="chapter">08 / ZCode</p><h2>它把重点放在<br />“写代码”这件事上。</h2></div><span class="pill">适合：已有开发基础的用户</span></div>
+        <div class="media-slot demo-screen" data-demo="zcode"></div>
+        <div class="two-col"><p>它的界面会让很多人想到旧版 Codex：会话、任务、文件和执行结果围绕开发流程排布。它对自家 GLM 系列模型的适配，是我关注它的主要原因。</p><p>在前端页生成这一轮里，它的代码导向很明显：会更积极地组织项目结构、处理样式与组件，而不是只输出一段可复制的示例。</p></div>
+      </section>
+
+      <section class="scene reveal" data-scene="8">
+        <p class="chapter">09 / ZCode 的现实问题</p>
+        <h2>能力值得试，<br />获得稳定使用权却不轻松。</h2>
+        <div class="cards three warning"><article><b>额度</b><h3>免费期有限</h3><p>新注册可以集中把真实需求跑一遍，别只拿它做空泛测试。</p></article><article><b>并发</b><h3>高负载会影响体验</h3><p>我在多任务时感到响应变慢，适合把任务拆开、一次确认一件事。</p></article><article><b>付费</b><h3>路径不够友好</h3><p>计划与充值可得性会变化，普通用户不宜先把工作流压在它身上。</p></article></div>
+        <p class="note">我的建议：先用免费额度验证它是否能解决你的具体项目，再决定是否投入成本。</p>
+      </section>
+
+      <section class="scene reveal" data-scene="9">
+        <p class="chapter">10 / 同题前端对比</p>
+        <h2>让它们都介绍自己，<br />结果差别在哪里？</h2>
+        <div class="media-grid"><div class="media-slot demo-screen mini" data-demo="trae-result"></div><div class="media-slot demo-screen mini" data-demo="buddy-result"></div><div class="media-slot demo-screen mini" data-demo="zcode-result"></div></div>
+        <table><thead><tr><th>产品</th><th>我会重点看</th><th>不该只看</th></tr></thead><tbody><tr><td>Trae</td><td>从想法到可运行页面的推进感</td><td>一张首屏截图</td></tr><tr><td>WorkBuddy</td><td>是否能把现有资料直接用起来</td><td>炫技式动效</td></tr><tr><td>ZCode</td><td>工程结构和后续可改性</td><td>首次生成速度</td></tr></tbody></table>
+      </section>
+
+      <section class="scene reveal" data-scene="10">
+        <p class="chapter">11 / 怎么选</p>
+        <h2>不用追求“最强”，<br />先选最少摩擦的一款。</h2>
+        <div class="decision"><div><span>我主要做内容、网站、轻开发</span><strong>先试 Trae</strong></div><div><span>我每天在文件和协作工具之间切换</span><strong>先试 WorkBuddy</strong></div><div><span>我已经有项目，想多写代码、多改工程</span><strong>先试 ZCode</strong></div></div>
+      </section>
+
+      <section class="scene ending reveal" data-scene="11">
+        <p class="chapter">12 / 最后的结论</p>
+        <h2>Agent 的价值不是替你决定，<br /><em>是把你从重复操作里放出来。</em></h2>
+        <p class="lede">对普通用户，先找到能稳定跑通一个真实任务的工具，比研究一张模型排行榜更有意义。用完三款，再告诉我：哪一个帮你真正省下了时间？</p>
+        <button class="advance restart" type="button">回到开头</button>
+      </section>
+    </main>
+    <div class="progress"><span></span></div>
+    <script src="./agent-video.js"></script>
+  </body>
+</html>
