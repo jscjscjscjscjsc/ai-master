@@ -44,6 +44,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 #main-app{position:relative;z-index:4;min-height:100vh}
 #presplash{position:fixed;inset:0;z-index:100;transition:opacity 1.2s ease, visibility 1.2s ease}
 #presplash.fade-out{opacity:0;visibility:hidden}
+#skip-intro{position:absolute;top:58px;left:50%;transform:translateX(-50%);z-index:6;padding:9px 22px;border:1px solid rgba(0,217,255,.5);border-radius:999px;background:rgba(6,8,24,.6);color:#00d9ff;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;backdrop-filter:blur(8px);transition:all .25s}
+#skip-intro:hover{background:rgba(0,217,255,.16);transform:translateX(-50%) translateY(-1px)}
 </style>
 </head>
 <body>
@@ -51,6 +53,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <div id="presplash">
   <div class="brand">AI <span>MASTER</span></div>
   <div class="chapter-tag" id="scene-tag">SECTOR &mdash;</div>
+  <button id="skip-intro" type="button" onclick="enterMain()" aria-label="跳过开场动画，直接进入主界面">跳过开场 → 直接进入</button>
   <canvas id="scene-canvas"></canvas>
   <div class="scene-info" id="scene-info">
     <div class="scene-num" id="scene-num">SECTOR 00</div>
@@ -312,6 +315,8 @@ if (hasEntered) {
       showScene(sceneIdx);
     }
   }, 130);
+  // 兜底：无论动画推进是否正常，12 秒后强制进入主界面，确保主界面必定显示
+  setTimeout(enterMain, 12000);
 }
 
 function enterMain() {
