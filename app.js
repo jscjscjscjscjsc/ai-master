@@ -1,3 +1,11 @@
+// ===== Skip intro if already watched in this session =====
+// 避免每次回退都重新播放 20 秒开场动画
+try {
+  if (sessionStorage.getItem("aimaster_intro_watched") === "1") {
+    window.location.replace("./login.html");
+  }
+} catch (e) {}
+
 const scenes = [
   {
     kicker: "关卡 01 / 唤醒",
@@ -164,10 +172,59 @@ featureDeck.addEventListener("click", (event) => {
 prevScene.addEventListener("click", () => setScene(sceneIndex - 1));
 nextScene.addEventListener("click", () => setScene(sceneIndex + 1));
 playToggle.addEventListener("click", togglePlaying);
+
+// 点击"开始"按钮：标记已观看并跳转登录页
 startButton.addEventListener("click", () => {
+  try { sessionStorage.setItem("aimaster_intro_watched", "1"); } catch (e) {}
   window.location.href = "./login.html";
 });
+
+// 按 Esc 或空格跳过开场动画，直接进入登录页
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" || e.key === " ") {
+    e.preventDefault();
+    try { sessionStorage.setItem("aimaster_intro_watched", "1"); } catch (e2) {}
+    window.location.href = "./login.html";
+  }
+});
+
 window.addEventListener("resize", resizeCanvas);
+
+// 动态注入"跳过动画"按钮（右上角，始终可见）
+const skipButton = document.createElement("button");
+skipButton.type = "button";
+skipButton.textContent = "跳过动画 →";
+skipButton.setAttribute("aria-label", "跳过开场动画");
+skipButton.style.cssText = [
+  "position:fixed",
+  "top:16px",
+  "right:16px",
+  "z-index:9999",
+  "padding:8px 18px",
+  "border:1px solid rgba(18,231,255,0.5)",
+  "border-radius:999px",
+  "background:rgba(5,12,24,0.7)",
+  "color:#12e7ff",
+  "font:inherit",
+  "font-size:13px",
+  "font-weight:700",
+  "cursor:pointer",
+  "backdrop-filter:blur(8px)",
+  "transition:all .2s",
+].join(";");
+skipButton.addEventListener("mouseenter", () => {
+  skipButton.style.background = "rgba(18,231,255,0.15)";
+  skipButton.style.transform = "translateY(-1px)";
+});
+skipButton.addEventListener("mouseleave", () => {
+  skipButton.style.background = "rgba(5,12,24,0.7)";
+  skipButton.style.transform = "translateY(0)";
+});
+skipButton.addEventListener("click", () => {
+  try { sessionStorage.setItem("aimaster_intro_watched", "1"); } catch (e) {}
+  window.location.href = "./login.html";
+});
+document.body.appendChild(skipButton);
 
 resizeCanvas();
 setScene(0);

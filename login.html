@@ -117,9 +117,24 @@
           密码
           <input type="password" autocomplete="current-password" placeholder="请输入密码" />
         </label>
-        <button type="button">进入软件</button>
+        <button type="button" id="enterBtn">进入软件</button>
       </form>
-      <a href="./index.html">返回开场动画</a>
+      <a href="./aimaster-promo.html" id="backLink">直接进入 AIMaster 功能主页</a>
     </main>
+    <script>
+      // 登录按钮跳转到功能主页（aimaster-promo.html 是当前最完整的功能展示页）
+      var enterBtn = document.getElementById("enterBtn");
+      if (enterBtn) {
+        enterBtn.addEventListener("click", function () {
+          // 标记已登录，避免回退时重新播放开场动画
+          try { sessionStorage.setItem("aimaster_logged_in", "1"); } catch (e) {}
+          window.location.href = "./aimaster-promo.html";
+        });
+      }
+      // 回车键也触发登录
+      document.querySelector("form").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { enterBtn.click(); }
+      });
+    </script>
   </body>
 </html>
