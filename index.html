@@ -275,6 +275,8 @@ function showScene(idx) {
     progressFill.style.width = '100%';
     progressLabel.textContent = 'SYSTEM READY';
     progressPct.textContent = '100%';
+    // 加载动画播放完毕自动进入主界面，避免停在加载界面、主界面不显示
+    setTimeout(enterMain, 600);
     return;
   }
   const s = scenes[idx];
@@ -295,19 +297,29 @@ function showScene(idx) {
   sceneTimer = 0;
 }
 
-showScene(0);
-setInterval(() => {
-  sceneTimer++;
-  if (sceneTimer >= 30 && sceneIdx < scenes.length) {
-    sceneIdx++;
-    showScene(sceneIdx);
-  }
-}, 130);
+// 本次会话已进入过主界面：跳过加载动画，直接显示主界面（修复回退重新加载）
+let hasEntered = false;
+try { hasEntered = sessionStorage.getItem('aimaster-has-entered') === '1'; } catch (e) {}
+
+if (hasEntered) {
+  enterMain();
+} else {
+  showScene(0);
+  setInterval(() => {
+    sceneTimer++;
+    if (sceneTimer >= 12 && sceneIdx < scenes.length) {
+      sceneIdx++;
+      showScene(sceneIdx);
+    }
+  }, 130);
+}
 
 function enterMain() {
   presplash.classList.add('fade-out');
   document.getElementById('main-app').classList.remove('hidden');
   window.scrollTo(0, 0);
+  // 记忆已进入主界面，避免回退时重新播放加载动画
+  try { sessionStorage.setItem('aimaster-has-entered', '1'); } catch (e) {}
   loadChapters();
   loadGlossary();
 }
