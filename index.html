@@ -325,8 +325,17 @@ function enterMain() {
   window.scrollTo(0, 0);
   // 记忆已进入主界面，避免回退时重新播放加载动画
   try { sessionStorage.setItem('aimaster-has-entered', '1'); } catch (e) {}
+  // 立即显示主界面内容（不依赖章节数据是否加载成功）
+  revealDashboard();
   loadChapters();
   loadGlossary();
+}
+
+// 主界面内容入场动画：给 .dashboard-reveal 元素加 .visible（CSS 认 visible，之前误用 revealed 导致内容一直透明）
+function revealDashboard() {
+  document.querySelectorAll('.dashboard-reveal').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), 100 + i * 80);
+  });
 }
 
 // ===== Chapter Loading =====
@@ -361,10 +370,11 @@ function loadChapters() {
         </div>`;
       track.appendChild(article);
     });
-    // Reveal animation
-    document.querySelectorAll('.dashboard-reveal').forEach((el, i) => {
-      setTimeout(() => el.classList.add('revealed'), 100 + i * 80);
-    });
+    // 章节卡片也加 visible 显示
+    document.querySelectorAll('#chapter-track .dashboard-reveal').forEach(el => el.classList.add('visible'));
+  }).catch(() => {
+    // 章节数据加载失败也要保证主界面其余内容可见
+    revealDashboard();
   });
 }
 
