@@ -1,0 +1,90 @@
+{
+  "id": 9,
+  "title": "大模型应用实战",
+  "icon": "🔬",
+  "description": "综合实战：构建 RAG 应用、AI Agent 开发、多工具编排、评估驱动开发（EDD）、Prompt 缓存优化和生产级部署架构",
+  "knowledge_points": [
+    {
+      "title": "构建 RAG 问答系统",
+      "content": "<h3>完整 RAG 系统设计</h3><pre><code>系统架构：\n用户输入\n  → Query Understanding（查询理解：改写、扩展）\n    → Retriever（检索器：稠密检索 + BM25 混合）\n      → Reranker（重排序：cross-encoder 精排）\n        → Prompt Constructor（提示词构造：上下文注入+引用标记）\n          → LLM Generator（生成器：基于上下文回答）\n            → Output Validator（输出验证：引用检查+格式校验）</code></pre><h3>文档处理策略</h3><ul><li><strong>文档切分</strong>：固定长度（512 chars）、语义切分（按段落）、递归切分（按层级）</li><li><strong>重叠策略</strong>：相邻块重叠 10-20% 保证上下文连贯</li><li><strong>元数据标注</strong>：记录来源、章节、时间戳便于溯源</li></ul><h3>检索策略</h3><table><tr><th>策略</th><th>方法</th><th>适用场景</th></tr><tr><td>稠密检索</td><td>embedding 模型向量化 + ANN 搜索</td><td>语义匹配</td></tr><tr><td>稀疏检索</td><td>BM25 关键词匹配</td><td>精确关键词匹配</td></tr><tr><td>混合检索</td><td>稠密+稀疏结果加权融合</td><td>通用（推荐）</td></tr><tr><td>多路召回</td><td>多种检索策略并行，结果融合</td><td>高精度要求</td></tr></table>"
+    },
+    {
+      "title": "AI Agent 开发",
+      "content": "<h3>Agent 核心架构</h3><pre><code>Agent 核心循环：\n  用户请求\n    → Plan（规划：分解任务为子步骤）\n      → Execute（执行：调用工具处理每个子步骤）\n        → Observe（观察：收集执行结果）\n          → Reflect（反思：是否需要调整计划？）\n            → Repeat / Final Answer</code></pre><h3>Agent 组件详解</h3><ul><li><strong>LLM 大脑</strong>：推理和决策的核心</li><li><strong>工具集</strong>：Search, Calculator, Code Executor, File I/O, API 调用</li><li><strong>记忆系统</strong>：<ul><li>短期记忆（对话历史）</li><li>长期记忆（向量数据库）</li><li>工作记忆（当前任务状态）</li></ul></li><li><strong>规划器</strong>：任务分解和依赖管理</li></ul><h3>Agent 设计原则</h3><ul><li><strong>工具接口标准化</strong>：每个工具一致的方法签名</li><li><strong>错误隔离</strong>：一个工具失败不影响其他工具</li><li><strong>安全边界</strong>：限制工具权限，沙箱执行</li><li><strong>可观测性</strong>：每个步骤可记录和审计</li></ul>"
+    },
+    {
+      "title": "多工具编排",
+      "content": "<h3>编排模式</h3><pre><code># 顺序执行（Pipeline）\nA → B → C → D\n适用：有明确依赖的数据处理流程\n\n# 并行执行（Parallel）\nA → B → Done\n  → C →\n适用：相互独立的子任务（如同时搜索+计算）\n\n# 条件分支（Condition）\nA → if X: B → Done\n  → else: C → Done\n适用：结果依赖前一步输出\n\n# 映射-归约（Map-Reduce）\nA → [B1, B2, B3] → C → Done\n适用：大规模数据处理</code></pre><h3>工具编排引擎设计</h3><p>实现一个支持 DAG（有向无环图）的工具编排引擎，支持：</p><ul><li><strong>依赖管理</strong>：自动识别工具间的依赖关系</li><li><strong>并行调度</strong>：无依赖的工具并行执行</li><li><strong>结果传递</strong>：工具间通过上下文对象传递数据</li><li><strong>错误处理</strong>：支持重试、降级和熔断</li><li><strong>超时控制</strong>：每个工具可配置超时时间</li></ul>"
+    },
+    {
+      "title": "评估驱动开发（EDD）",
+      "content": "<h3>什么是 EDD？</h3><p>评估驱动开发（Evaluation-Driven Development）借鉴了 TDD（测试驱动开发）的思路：<strong>先定义评估指标，再开发模型应用</strong>，确保每次改动都有可量化的效果验证。</p><h3>EDD 工作流</h3><pre><code>1. 定义评估集\n   - 收集 100-1000 个代表性用例\n   - 人工标注标准答案\n   - 覆盖正常场景和边界 Case\n\n2. 建立评估 Pipeline\n   - 自动化运行评估\n   - 计算核心指标（准确率、F1、BLEU 等）\n   - 生成对比报告\n\n3. 迭代开发\n   - 每次 Prompt/策略变更后运行评估\n   - 关注指标变化（改进 vs 回归）\n   - 回归测试确保旧问题不重现</code></pre><h3>评估集设计原则</h3><table><tr><th>类型</th><th>比例</th><th>说明</th></tr><tr><td>黄金用例</td><td>20%</td><td>核心场景，每次必须通过</td></tr><tr><td>常规用例</td><td>60%</td><td>典型使用场景</td></tr><tr><td>边界用例</td><td>15%</td><td>边缘情况和异常输入</td></tr><tr><td>对抗用例</td><td>5%</td><td>安全测试和注入测试</td></tr></table>"
+    },
+    {
+      "title": "Prompt 缓存与成本优化",
+      "content": "<h3>Prompt Caching 原理</h3><p>对于重复使用的长前缀（如系统提示词、Few-shot 示例、工具定义），API 会缓存计算结果。后续请求只需计算增量部分，显著降低成本。</p><pre><code># 缓存策略\n[系统角色设定 + 规则说明] ← 缓存命中区域（几千 tokens）\n[Few-shot 示例]         ← 缓存命中区域\n[用户动态输入]           ← 每次不同（只有这里需要全量计算）\n[模型输出]               ← 每次生成</code></pre><h3>成本优化策略</h3><ul><li><strong>利用 Prompt Caching</strong>：可节省 50-80% 输入 Token 成本</li><li><strong>不同任务路由不同模型</strong>：简单任务用小模型（Turbo），复杂任务用大模型（Max）</li><li><strong>Batch 处理</strong>：非实时请求使用 Batch API，费用减半</li><li><strong>输出长度控制</strong>：max_tokens 设置合理上限，减少浪费</li><li><strong>缓存高频问答</strong>：常见问题直接返回缓存结果</li></ul>"
+    },
+    {
+      "title": "生产级部署架构",
+      "content": "<h3>典型生产架构</h3><pre><code>用户客户端\n  ↓\nCDN（静态资源加速）\n  ↓\nAPI Gateway（流量控制、认证、限流、日志）\n  ↓\n应用服务层（业务逻辑、Prompt 管理、会话管理）\n  ↓              ↗\n模型推理层         缓存层\n(PAI-EAS/vLLM)   (Redis/Memcached)\n  ↓              ↗\n向量检索层（检索增强生成 RAG）\n  ↑\n数据处理层（ETL、文档更新、索引重建）</code></pre><h3>关键组件设计</h3><ul><li><strong>API Gateway</strong>：限流（Token Bucket）、认证（JWT）、负载均衡</li><li><strong>推理集群</strong>：多副本部署，HPA 自动伸缩，蓝绿部署</li><li><strong>缓存</strong>：热点问题 Redis 缓存，TTL 策略</li><li><strong>监控告警</strong>：Prometheus + Grafana，关注延迟、吞吐、错误率</li><li><strong>日志</strong>：结构化日志（JSON），ELK 收集分析</li></ul><h3>高可用设计</h3><ul><li>多 AZ（可用区）部署</li><li>优雅降级：模型服务不可用时返回缓存或默认回复</li><li>熔断机制：超时超过阈值时快速失败</li><li>数据备份：定期备份配置、知识库和日志</li></ul>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "在 EDD（评估驱动开发）实践中，黄金用例、常规用例、边界用例的推荐比例是？",
+      "options": [
+        "A. 黄金 10%、常规 70%、边界 20%",
+        "B. 黄金 20%、常规 60%、边界 15%、对抗 5%",
+        "C. 黄金 30%、常规 50%、边界 20%",
+        "D. 黄金 50%、常规 50%"
+      ],
+      "answer": 1,
+      "explanation": "推荐的评估集分布：黄金用例 20%（核心场景必须通过）、常规用例 60%（典型使用场景）、边界用例 15%（边缘情况）、对抗用例 5%（安全测试）。"
+    },
+    {
+      "question": "在多工具编排中，当多个工具间没有数据依赖关系时，最有效的执行策略是？",
+      "options": [
+        "A. 顺序执行",
+        "B. 并行执行",
+        "C. 随机执行",
+        "D. 只执行其中一个"
+      ],
+      "answer": 1,
+      "explanation": "当工具间<strong>没有数据依赖</strong>时，应<strong>并行执行</strong>，可以充分利用系统资源并减少总耗时。这与 Map-Reduce 模式中的 Map 阶段相似。"
+    },
+    {
+      "question": "Prompt Caching 技术能显著降低成本的主要原因是？",
+      "options": [
+        "A. 每次请求不需要经过网络传输",
+        "B. 重复使用的长前缀（系统提示词、工具定义）只计算一次，后续复用",
+        "C. Prompt Caching 可以完全替代模型推理",
+        "D. 使用了更便宜的模型型号"
+      ],
+      "answer": 1,
+      "explanation": "Prompt Caching 的核心机制：<strong>重复使用的长前缀</strong>（系统提示词、Few-shot 示例、工具定义）在第一次请求时计算并缓存，后续请求只计算增量部分，可节省 50-80% 的输入 Token 成本。"
+    },
+    {
+      "question": "在生产级推理架构中，LLM 推理服务因过载导致响应时间显著增加时，应最先采用什么措施？",
+      "options": [
+        "A. 重启所有推理服务",
+        "B. 启用限流和熔断机制，保护系统不被压垮，同时快速扩容",
+        "C. 降低所有请求的 temperature",
+        "D. 关闭缓存层释放资源"
+      ],
+      "answer": 1,
+      "explanation": "过载时应先<strong>启用限流和熔断</strong>防止系统雪崩，同时<strong>触发 HPA 自动扩容</strong>。熔断可以快速失败而非让请求排队等待，保护整体可用性。"
+    },
+    {
+      "type": "code",
+      "question": "实现 Agent 框架",
+      "code_prompt": "实现一个 Agent 框架：1) Tool 基类（name, description, run()） 2) Agent 类（register_tool, plan, execute） 3) 内置至少 3 个工具 4) 支持 Thought-Action-Observation 循环。",
+      "explanation": "Agent 的核心是 ReAct 循环。解析 LLM 的输出中的 Action 标记，匹配已注册的工具并调用。"
+    },
+    {
+      "type": "code",
+      "question": "实现多工具编排引擎",
+      "code_prompt": "实现一个 DAG 编排引擎 Orchestrator：1) add_tool(name, deps) 注册工具和依赖 2) 自动拓扑排序 3) 并行执行无依赖的工具 4) 结果聚合。",
+      "explanation": "用拓扑排序确定执行顺序，用 concurrent.futures.ThreadPoolExecutor 实现并行执行。"
+    }
+  ]
+}

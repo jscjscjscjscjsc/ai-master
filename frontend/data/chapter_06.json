@@ -1,0 +1,85 @@
+{
+  "id": 6,
+  "title": "RAG 技术详解",
+  "icon": "🔍",
+  "description": "深入理解检索增强生成（RAG）技术的核心原理、系统架构与工程实践",
+  "ppt_url": "https://feishu.doubao.com/slides/ZF5gsFtDvlyeBEdetoocM7enncc",
+  "knowledge_points": [
+    {
+      "title": "RAG 架构设计与核心流程",
+      "content": "<h3>为什么需要 RAG？</h3><p>大语言模型虽然知识渊博，但存在两个致命缺陷：<strong>知识截止</strong>（训练数据有截止日期，无法感知新知识）和<strong>幻觉</strong>（可能编造看似合理但事实错误的内容）。RAG（Retrieval-Augmented Generation）通过<strong>检索外部知识库</strong>来增强生成能力，像一个学者在回答问题前先去查资料。</p><pre><code># RAG 核心三阶段\n# 1. 索引（Indexing）：将文档切片、向量化，构建可检索的知识库\n# 2. 检索（Retrieval）：根据用户问题召回最相关的文档片段\n# 3. 生成（Generation）：基于检索结果 + 原始问题，生成可信回答\n\ndef rag_pipeline(question, knowledge_base):\n    # 阶段一：检索\n    query_embedding = embed(question)           # 将问题向量化\n    relevant_docs = search(query_embedding,     # 在向量库中语义检索\n                         knowledge_base, top_k=5)\n    \n    # 阶段二：生成\n    context = \"\\n\\n\".join(relevant_docs)       # 拼接检索到的上下文\n    prompt = f\"基于以下资料：\\n{context}\\n\\n回答：{question}\"\n    answer = llm.generate(prompt)               # 让 LLM 基于上下文回答\n    return answer</code></pre><h3>RAG 的哲学意义</h3><p>RAG 的核心理念是：<strong>真正的智能不在于记住一切，而在于知道在哪里找到答案</strong>。就像一位博学之士，不在于脑中存了多少本书，而在于知道遇到问题时该翻开哪本书。RAG 将 LLM 从「背诵者」转变为「研究者」——不是依赖训练时学到的知识，而是在回答的当下主动查阅资料。这种「检索→思考→回答」的范式，比纯粹的参数化记忆更接近人类智能的本质。</p><h3>完整 RAG 系统架构</h3><pre><code>用户提问\n    ↓\n1. 查询理解（Query Understanding）\n   ├── 查询改写（Query Rewriting）：\"transformer 注意力机制\" → \"transformer 的注意力机制是什么？有哪些类型？\"\n   ├── 查询扩展（Query Expansion）：用 LLM 生成同义问题，多角度检索\n   └── 查询分解（Query Decomposition）：复杂问题拆解为子问题\n    ↓\n2. 检索（Retrieval）\n   ├── 稠密检索（Dense Retrieval）：语义嵌入相似度搜索\n   ├── 稀疏检索（Sparse Retrieval）：BM25 关键词匹配\n   └── 混合检索（Hybrid Search）：加权融合两种检索结果\n    ↓\n3. 重排序（Reranking）\n   └── Cross-encoder 精排：对召回结果逐对打分，过滤不相关信息\n    ↓\n4. 上下文构建（Context Construction）\n   ├── 窗口扩展：以检索到的 chunk 为中心，展开其上下文\n   ├── 去重融合：合并信息重叠的文档片段\n   └── 压缩精简：只保留与问题最相关的句子\n    ↓\n5. 生成（Generation）\n   ├── 引用标注：在生成内容中标注信息来源\n   ├── 幻觉检测：LLM 自我评估回答的可信度\n   └── 溯源验证：确保每个陈述都有资料支撑\n    ↓\n用户收到回答 + 引用来源</code></pre><div style=\"margin:16px 0;display:flex;gap:10px;flex-wrap:wrap;\"><a href=\"/static/rag_starlab/index.html#lab\" target=\"_blank\" class=\"btn-interactive\" style=\"display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#ec4899,#8b5cf6);color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;text-decoration:none;\">🔬 RAG 交互实验室</a></div>"
+    },
+    {
+      "title": "向量数据库与 Embedding",
+      "content": "<h3>Embedding：把语义变成数学</h3><p>Embedding 是将文本、图片等非结构化数据映射到高维向量空间的技术。语义相近的文本在向量空间中距离更近——这是 RAG 检索的数学基础。</p><pre><code># Embedding 的核心思想：语义相似度 = 向量距离\n# 模型：text-embedding-3-small (OpenAI), bge-large (BAAI),\n#       m3e (Moka), stella (infgrad)\n# 输出维度：384 ~ 3072 维向量\n\ndef cosine_similarity(vec_a, vec_b):\n    \"\"\"余弦相似度：1=完全相同，0=完全不相关，-1=语义相反\"\"\"\n    dot = sum(a*b for a,b in zip(vec_a, vec_b))\n    norm_a = sum(a*a for a in vec_a)**0.5\n    norm_b = sum(b*b for b in vec_b)**0.5\n    return dot / (norm_a * norm_b)\n\n# 示例：语义相似度对比\nprint(cosine_similarity(\n    embed(\"猫坐在垫子上\"),\n    embed(\"一只猫咪趴在毯子上\")\n))  # 0.87 — 语义高度相似\n\nprint(cosine_similarity(\n    embed(\"猫坐在垫子上\"),\n    embed(\"如何编写 Python 程序\")\n))  # 0.12 — 语义几乎无关</code></pre><h3>向量数据库选型对比</h3><table><tr><th>数据库</th><th>索引算法</th><th>开源</th><th>适合场景</th></tr><tr><td>FAISS</td><td>IVF+PQ/HNSW</td><td>✅</td><td>高性能离线检索、批量向量搜索</td></tr><tr><td>Milvus</td><td>多种混合</td><td>✅</td><td>大规模生产环境、分布式部署</td></tr><tr><td>Qdrant</td><td>HNSW</td><td>✅</td><td>Rust 实现、低延迟、过滤器丰富</td></tr><tr><td>Chroma</td><td>HNSW</td><td>✅</td><td>快速原型、轻量嵌入、开发者友好</td></tr><tr><td>Pinecone</td><td>专有</td><td>❌</td><td>Serverless 托管、免运维</td></tr></table><h3>HNSW 算法的精妙之处</h3><p>HNSW（Hierarchical Navigable Small World）是目前最流行的近似最近邻搜索算法。它的核心思想借鉴了<strong>社交网络中的「六度分隔」</strong>理论——通过构建多层图索引，搜索时从顶层（粗粒度）快速定位到目标区域，再到底层（细粒度）精确搜索。搜索时间复杂度从暴力搜索的 O(N) 降到 O(log N)，同时保持 95%+ 的检索精度。</p>"
+    },
+    {
+      "title": "检索策略：从朴素到智能",
+      "content": "<h3>检索方法的进化谱系</h3><p>RAG 的检索策略经历了从简单到复杂的演进，理解每种方法的优劣是构建高质量 RAG 系统的关键。</p><h3>1. 稠密检索（Dense Retrieval）</h3><p>用双编码器（Dual Encoder）架构将查询和文档分别编码为向量，通过向量相似度检索。</p><pre><code>class DenseRetriever:\n    def __init__(self, model_name=\"BAAI/bge-large-zh\"):\n        self.encoder = SentenceTransformer(model_name)\n        self.index = FAISS(IndexFlatIP, 1024)  # 内积索引\n    \n    def add_documents(self, docs):\n        \"\"\"将文档向量化后加入索引\"\"\"\n        vectors = self.encoder.encode(docs)\n        self.index.add(vectors)\n    \n    def search(self, query, k=5):\n        \"\"\"语义检索\"\"\"\n        q_vec = self.encoder.encode([query])\n        scores, indices = self.index.search(q_vec, k)\n        return [self.docs[i] for i in indices[0]]</code></pre><h3>2. 稀疏检索（BM25）</h3><p>基于词频统计的经典检索方法，对精确关键词匹配非常有效。</p><pre><code># BM25 评分公式\n# Score(q,d) = Σ IDF(q_i) × TF(q_i,d) × (k₁+1) / (TF + k₁×(1-b+b×|d|/avg_dl))\n# 其中 k₁=1.6, b=0.75 是经验参数</code></pre><h3>3. 混合检索（Hybrid Search）</h3><p>稠密检索擅长语义匹配但可能遗漏精准关键词，稀疏检索擅长关键词匹配但缺乏语义理解。混合检索加权融合两者：</p><pre><code>def hybrid_search(query, dense_retriever, sparse_retriever, alpha=0.5):\n    \"\"\"alpha=0 纯稠密, alpha=1 纯稀疏\"\"\"\n    dense_results = dense_retriever.search(query)\n    sparse_results = sparse_retriever.search(query)\n    \n    # RRF（Reciprocal Rank Fusion）融合策略\n    combined = {}\n    for rank, doc in enumerate(dense_results):\n        combined[doc.id] = combined.get(doc.id, 0) + alpha * 1/(rank+60)\n    for rank, doc in enumerate(sparse_results):\n        combined[doc.id] = combined.get(doc.id, 0) + (1-alpha) * 1/(rank+60)\n    \n    return sorted(combined.items(), key=lambda x: -x[1])[:10]</code></pre><h3>4. 重排序（Reranking）</h3><p>检索后的结果需要<strong>精排</strong>：Cross-encoder 模型同时看到查询和文档，计算更精确的相关性分数。</p><pre><code># 粗排：双编码器（效率高，精度一般）\n# 精排：Cross-encoder（效率低，精度高）\n# 典型管线：粗排取 top-100 → 精排取 top-5</code></pre>"
+    },
+    {
+      "title": "高阶 RAG 范式",
+      "content": "<h3>RAG 的智能进化</h3><p>基础 RAG（检索→生成）虽然有效，但在复杂场景下暴露出诸多问题：检索结果不相关、多步推理困难、无法自我修正。于是，一系列高阶 RAG 范式应运而生。</p><h3>1. Corrective RAG（CRAG）</h3><p>CRAG 在检索后增加<strong>质量评估</strong>环节：如果检索结果不可靠，自动触发网络搜索或知识回退。</p><pre><code>def corrective_rag(question):\n    docs = retrieve(question)\n    relevance = evaluate_relevance(docs, question)  # 自评检索质量\n    \n    if relevance > 0.8:\n        return generate(question, docs)           # 高质量，直接生成\n    elif relevance > 0.3:\n        docs += web_search(question)               # 补充网络搜索\n        return generate(question, docs)\n    else:\n        return \"我无法从现有资料中找到可靠答案\"      # 回退到保守回答</code></pre><h3>2. Self-RAG</h3><p>Self-RAG 让模型自主决定：是否需要检索、检索到什么、以及生成的内容是否可信。通过训练模型输出特殊的<strong>反思 token</strong>（如 `<检索>`、`<相关>`、`<支持>`），实现检索和生成的深度融合。</p><h3>3. Agentic RAG</h3><p>Agentic RAG 将 RAG 流程从「固定的检索→生成」流水线升级为<strong>智能体自主规划</strong>：</p><pre><code>Agent 的思考过程：\n1. 用户问「华为 2024 年的研发投入和苹果对比如何？」\n2. Agent 思考：这个问题涉及两个实体的数据，需要分别检索\n3. 行动一：检索「华为 2024 年报 研发投入」\n4. 行动二：检索「Apple 2024 R&D spending」\n5. 发现数据单位不同（人民币 vs 美元）\n6. 行动三：查询汇率（1 USD = 7.2 CNY）\n7. 行动四：计算并对比\n8. 生成综合回答：\"华为研发投入 1797 亿元（约 250 亿美元），\n   苹果 303 亿美元。苹果的研发投入比华为高约 21%。\"</code></pre><h3>4. HyDE（假设性文档嵌入）</h3><p>HyDE 的核心洞察：<strong>查询和文档之间可能存在语义差异</strong>。比如搜索「如何治疗感冒」，文档可能写作「上呼吸道感染的用药方案」。HyDE 的做法是：先用 LLM 根据问题生成一段假设性回答，然后<strong>用这个假设回答去检索</strong>，因为「回答 vs 文档」的语义匹配度通常高于「问题 vs 文档」。</p>"
+    },
+    {
+      "title": "RAG 评估与质量保障",
+      "content": "<h3>RAG 评估的三维框架</h3><p>一个 RAG 系统的好坏不能只看最终回答是否准确，需要从三个独立维度评估：</p><pre><code># RAG 评估三维度\n# 1. Retrieval Quality（检索质量）\n#    - Context Relevance：检索到的上下文与问题的相关度\n#    - Hit Rate：关键信息是否被成功召回\n#    - MRR (Mean Reciprocal Rank)：正确答案的排位\n#\n# 2. Generation Quality（生成质量）\n#    - Answer Relevance：回答是否直接回应问题\n#    - Faithfulness：回答是否有来源支撑（不凭空编造）\n#    - Completeness：是否完整覆盖了问题的各个方面\n#\n# 3. Integration Quality（融合质量）\n#    - Citation Accuracy：引用标注是否正确\n#    - Context Utilization：模型是否真正利用了检索到的上下文\n#    - Hallucination Rate：无中生有的比例</code></pre><h3>RAGAS 评估框架</h3><p>RAGAS 是最流行的 RAG 评估框架，提供标准化评分：</p><pre><code>from ragas import evaluate\nfrom ragas.metrics import context_precision, faithfulness\n\n# context_precision：检索到的文档中有多少真正相关\n# faithfulness：生成的回答中有多少信息有检索结果支撑\n# answer_relevancy：回答与问题的相关程度\n\nscores = evaluate(\n    dataset=test_questions,\n    metrics=[context_precision, faithfulness, answer_relevancy]\n)</code></pre><h3>评估驱动的 RAG 优化策略</h3><table><tr><th>发现问题</th><th>可能原因</th><th>优化方案</th></tr><tr><td>检索不相关</td><td>Chunk 太大/太小、Embedding 模型不适合领域</td><td>调整切片策略、换用领域 Embedding 模型</td></tr><tr><td>幻觉率高</td><td>模型忽略上下文、检索信息不足</td><td>增加 top-k、使用更严格的 system prompt</td></tr><tr><td>回答不完整</td><td>检索遗漏关键信息、查询理解不充分</td><td>查询改写、多路检索融合</td></tr><tr><td>引用错误</td><td>引用机制设计不当、Span 定位不准确</td><td>基于 chunk 的引用、限制引用范围</td></tr></table>"
+    },
+    {
+      "title": "RAG 的局限性与未来方向",
+      "content": "<h3>RAG 的先天局限</h3><p>RAG 并非万能。在追求 RAG 的同时，我们需要清醒认识它的边界：</p><ul><li><strong>「垃圾进，垃圾出」</strong>：如果知识库本身质量不高、信息过时或存在偏见，RAG 只是让 LLM 更高效地重复这些错误。RAG 增强的是<strong>知识的可信度</strong>，而非知识的<strong>真理性</strong>。</li><li><strong>检索瓶颈</strong>：再好的检索算法也有召回极限。如果关键信息不在 top-k 中，后续生成再好也无济于事。</li><li><strong>上下文窗口的局限</strong>：检索到的文档越多，LLM 的处理负担越重。虽然窗口已扩展到百万级，但「迷失在中间」现象仍然存在。</li><li><strong>系统复杂度</strong>：一个生产级 RAG 系统需要协调 Embedding 模型、向量数据库、重排序、提示词管理、监控评估等 10+ 组件，每个环节都可能是短板。</li></ul><h3>RAG 的未来演进</h3><ul><li><strong>GraphRAG</strong>：在向量检索之外引入知识图谱，通过实体间的关系路径进行多跳推理，回答需要跨文档联结才能解答的复杂问题。</li><li><strong>多模态 RAG</strong>：超越纯文本检索，同时检索图像、表格、音频、视频。例如，回答「这个图表的趋势说明了什么？」需要同时理解图片和文字。</li><li><strong>Agentic 融合</strong>：RAG 不再是固定的检索→生成流程，而是由 Agent 自主规划——它会自问「我需要什么信息？从哪里获取？如何验证？」</li><li><strong>与微调的边界消融</strong>：未来的 RAG 系统可能结合轻量级微调，在检索和记忆之间取得最佳平衡。</li></ul><h3>最后的哲思</h3><p>RAG 代表了 AI 发展中的一个深刻转向：从「让模型背下整个互联网」到「让模型学会使用工具」。这不仅是技术的演进，更是对<strong>智能本质</strong>的重新思考——真正的智慧不在于存储了多少信息，而在于知道如何获取、甄别和运用知识。就像一位真正的学者，不在于脑中装着多少本书，而在于面对未知时，知道该翻开哪一本书、如何批判性地阅读、以及如何将不同来源的智慧融合成新的洞见。</p>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "在 RAG 系统中，当检索到的文档与用户问题相关性不高时，以下哪种策略最合理？",
+      "options": [
+        "A. 让 LLM 忽略检索结果，完全凭自身知识回答",
+        "B. 增加检索数量（增大 top-k）并采用 Corrective RAG 的思路进行质量评估",
+        "C. 直接拒绝回答用户问题",
+        "D. 减少检索数量（减小 top-k）以降低噪声"
+      ],
+      "answer": 1,
+      "explanation": "Corrective RAG（CRAG）的核心思想就是对检索结果进行质量评估。当相关性不高时，不应该简单地丢弃或忽略，而应该：1) 评估当前检索质量 2) 触发补充策略（如查询改写、网络搜索）3) 在确保信息充分的前提下生成回答。这是对检索结果负责任的态度。"
+    },
+    {
+      "question": "稠密检索和稀疏检索（BM25）的核心区别是什么？",
+      "options": [
+        "A. 稠密检索速度更快，稀疏检索更慢",
+        "B. 稠密检索基于语义相似度，稀疏检索基于关键词匹配",
+        "C. 两者实际上没有本质区别",
+        "D. 稠密检索不需要索引，稀疏检索需要建立倒排索引"
+      ],
+      "answer": 1,
+      "explanation": "稠密检索（Dense Retrieval）将文本映射为语义向量，能理解「猫和狗都是宠物」这类语义关系，但对「cats vs felines」这种罕见词匹配可能不如稀疏检索。稀疏检索（BM25）基于精确的关键词频率统计，对「Transformer 注意力机制」这类专有名词的匹配更精准。两者的本质差异在于：<strong>语义理解 vs 精确匹配</strong>。这也是为什么生产系统通常采用混合检索，取长补短。"
+    },
+    {
+      "question": "为什么 HNSW 算法在向量搜索中能够同时保证高速度和高召回率？它的设计哲学是什么？",
+      "options": [
+        "A. 因为 HNSW 采用了暴力搜索，所以精度高",
+        "B. HNSW 通过牺牲精度来换取速度，实际召回率很低",
+        "C. HNSW 构建了多层图索引，从粗到细搜索，灵感来自社交网络的六度分隔理论",
+        "D. HNSW 使用哈希表替代了向量比较"
+      ],
+      "answer": 2,
+      "explanation": "HNSW（Hierarchical Navigable Small World）的精妙之处在于多层图结构：顶层是粗粒度的导航层，快速定位到目标区域；底层是细粒度的精确层，找到最近邻。这种「先粗后细」的策略本质上模拟了人类在社交网络中找人的方式——先确定在哪个圈子，再精确锁定。搜索时间复杂度从 O(N) 降至 O(log N)，同时通过多层图的冗余连接保持高召回率（95%+）。"
+    },
+    {
+      "question": "Self-RAG 与标准 RAG 的核心区别是什么？",
+      "options": [
+        "A. Self-RAG 不需要检索，完全靠模型自身知识",
+        "B. Self-RAG 训练模型自主决定何时检索以及如何评估检索结果",
+        "C. Self-RAG 只用于文本分类任务",
+        "D. Self-RAG 是 RAG 的简化版本，减少了组件数量"
+      ],
+      "answer": 1,
+      "explanation": "Self-RAG 的突破性在于：传统 RAG 是「先检索再生成」的固定流水线，而 Self-RAG 让模型学会在生成过程中自主反思：「我是否需要更多信息来回答这个问题？」「检索到的资料真的支持我的说法吗？」通过训练特殊的反思 token，模型获得了<strong>元认知能力</strong>——它能感知自己知识的边界，这是一个从「被动检索」到「主动求知」的本质飞跃。"
+    },
+    {
+      "type": "code",
+      "question": "实现混合检索融合器",
+      "code_prompt": "实现 HybridRetriever 类：1) 同时支持稠密检索（SentenceTransformer）和稀疏检索（基于 TF-IDF 或 BM25 的模拟实现）2) 实现 RRF（Reciprocal Rank Fusion）融合算法 3) 支持可调节的融合权重 alpha 4) 对同一组测试查询，对比纯稠密、纯稀疏、混合检索三种策略的 top-5 结果差异。",
+      "explanation": "混合检索是生产级 RAG 系统的标配。RRF 融合策略的核心优势是：它不要求不同检索器返回的分数在同一尺度上，而是基于排位（rank）进行融合，鲁棒性极强。"
+    }
+  ]
+}

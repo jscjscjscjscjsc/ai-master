@@ -1,0 +1,91 @@
+"""Verify that the public AI Master frontend export runs without a backend.
+
+The check uses only the Python standard library. It serves ``frontend`` from a
+temporary local port, then verifies the routes and assets that make up the
+public learning experience. Run it after rebuilding the export or before
+pushing a release.
+"""
+from __future__ import annotations
+
+import json
+import threading
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+
+ROOT = Path(__file__).resolve().parent.parent
+FRONTEND = ROOT / "frontend"
+
+PAGES = [
+    "/",
+    "/dashboard/",
+    "/knowledge-stars/",
+    "/canvas/",
+    "/playground/",
+    *[f"/chapter/{chapter_id}/" for chapter_id in range(1, 11)],
+    "/static/llm_intro.html",
+    "/static/transformer_cg.html",
+    "/static/prompt_cg_starlab/index.html",
+    "/static/agentic_cg/index.html",
+    "/static/claude_cg/index.html",
+    "/static/rag_cg/index.html",
+    "/static/rag_starlab/index.html",
+    "/static/ai_odyssey.html",
+    "/static/interview.html",
+    "/static/transformer_lab.html",
+    "/static/bpe_game.html",
+    "/static/llm_training_game.html",
+]
+
+ASSETS = [
+    "/assets/frontend.css",
+    "/assets/frontend.js",
+    "/data/knowledge-universe.json",
+    "/static/vendor/three.r128.min.js",
+    "/static/js/knowledge_stars.js",
+    "/static/css/knowledge_stars.css",
+    "/static/bgm.mp3",
+]
+
+
+class QuietHandler(SimpleHTTPRequestHandler):
+    def log_message(self, _format: str, *_args: object) -> None:
+        pass
+
+
+def request_ok(base_url: str, route: str) -> None:
+    request = Request(f"{base_url}{route}", method="HEAD")
+    with urlopen(request, timeout=5) as response:  # nosec B310 - localhost only
+        if response.status != 200:
+            raise RuntimeError(f"{route} returned HTTP {response.status}")
+
+
+def main() -> None:
+    if not (FRONTEND / "dashboard" / "index.html").is_file():
+        raise SystemExit("frontend export is missing; run scripts/build_frontend_demo.py first")
+
+    handler = partial(QuietHandler, directory=str(FRONTEND))
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base_url = f"http://127.0.0.1:{server.server_port}"
+
+    try:
+        for route in PAGES + ASSETS:
+            request_ok(base_url, route)
+
+        universe = json.loads((FRONTEND / "data" / "knowledge-universe.json").read_text(encoding="utf-8"))
+        summary = universe.get("summary", {})
+        if summary.get("galaxies") != 10 or summary.get("stars") != 57:
+            raise RuntimeError(f"unexpected knowledge universe summary: {summary}")
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    print(f"Frontend verification passed: {len(PAGES)} pages, {len(ASSETS)} assets, 10 galaxies, 57 knowledge nodes.")
+
+
+if __name__ == "__main__":
+    main()

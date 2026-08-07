@@ -1,0 +1,92 @@
+{
+  "id": 1,
+  "title": "大模型基础原理",
+  "icon": "🧠",
+  "description": "深入理解大语言模型的核心概念、发展历程、基础工作原理及其背后的数学与工程原理",
+  "ppt_url": "https://feishu.doubao.com/slides/WqhSsdj0sliQIFdl9sacvjuznlh",
+  "knowledge_points": [
+    {
+      "title": "什么是大语言模型（LLM）？",
+      "content": "<h3>定义与本质</h3><p>大语言模型（Large Language Model, LLM）是一种基于<strong>深度学习</strong>的神经网络模型，通过在<strong>海量文本数据</strong>上进行自监督学习，掌握人类语言的统计规律、语法结构和语义关系。其核心思想是：给定上文，预测下文——即<strong>自回归语言建模</strong>（Autoregressive Language Modeling, ARLM）。</p><h3>自回归生成原理</h3><p>LLM 的核心数学框架是条件概率链式法则（Chain Rule）：</p><pre><code>P(token_1, token_2, ..., token_n) = P(token_1) × P(token_2|token_1) × P(token_3|token_1,token_2) × ... × P(token_n|token_1,...,token_{n-1})\n\n# 训练目标：最大化给定所有前文条件下，下一个 token 的概率\nLoss = -Σᵢ log P(token_i | token_&lt;i)\n\n# 推理生成（逐个 token 采样）：\nfor step in range(max_tokens):\n    next_token = model(sampled_tokens)  # 预测下一个 token 的分布\n    sampled = sample(next_token)        # 从概率分布中采样\n    if sampled == EOS_TOKEN:            # 遇到结束符停止\n        break\n    output.append(sampled)</code></pre><p>这个过程就像完成一句话接龙：看到「今天天气」→ 预测「真」→ 看到「今天天气真」→ 预测「好」→ 看到「今天天气真好」→ 预测「！」，直到模型认为句子已经完整。</p><h3>核心特征详解</h3><ul><li><strong>参数规模巨大</strong>：从数十亿到数万亿参数。GPT-3 有 1750 亿参数，GPT-4 估计约 1.76 万亿，Claude 3.5 级别模型也在千亿级以上。参数越多，模型容量越大，能捕获更复杂的模式。如果把 GPT-4 的参数全部存为 float16（2 字节），仅参数就需要约 3.5TB 存储空间。</li><li><strong>训练数据海量</strong>：通常在数 TB 到数百 TB 的文本上训练，涵盖网页（CommonCrawl, 包含 50 亿+ 网页）、书籍、学术论文、代码（GitHub 公开仓库）、社交媒体等多元数据源。GPT-4 的训练数据估计超过 13 万亿 tokens。</li><li><strong>涌现能力</strong>（Emergent Abilities）：当模型规模跨越某个阈值后，突然展现出未在训练中明确优化的能力——如思维链推理、上下文学习、代码生成等。这不是逐步提升，而是<strong>相变式</strong>跃迁。例如，模型在 100 亿参数时无法解决简单算术，到 1000 亿参数时突然能准确计算三位数乘法。</li><li><strong>通用性</strong>：单一模型无需微调即可处理翻译、摘要、编程、推理、创意写作等多种任务，这是与以往专用小模型的本质区别。</li></ul><h3>主流模型架构对比</h3><p>虽然统称为 LLM，但不同模型采用不同的架构设计，理解这些差异对选择合适的模型至关重要：</p><table><tr><th>架构类型</th><th>代表模型</th><th>核心特点</th><th>适用场景</th></tr><tr><td>Encoder-Only（编码器）</td><td>BERT, RoBERTa, DeBERTa</td><td>双向注意力，能同时看到上下文</td><td>文本分类、实体识别、语义相似度、阅读理解（无需生成的任务）</td></tr><tr><td>Decoder-Only（解码器）</td><td>GPT 系列, Claude, LLaMA, Qwen</td><td>单向注意力（因果掩码），逐 token 生成</td><td>文本生成、对话、代码生成、创作（当前最主流的架构）</td></tr><tr><td>Encoder-Decoder（编解码）</td><td>T5, BART, GLM</td><td>编码器处理输入 + 解码器生成输出</td><td>翻译、摘要、文本转换（输入和输出差异大的任务）</td></tr></table><p><strong>当前趋势</strong>：GPT 系列引领的 Decoder-Only 架构已成为主流，原因在于：(1) 训练效率更高（只需要语言建模目标）(2) 推理更简单（不需要编码器解码器之间的交叉注意力）(3) 扩展性更好（Scaling Laws 在 Decoder-Only 上已验证得最充分）。</p><h3>重点：LLM 是如何训练的？</h3><p>训练一个大语言模型分为两个关键阶段：</p><ol><li><strong>预训练（Pre-training）</strong>：在海量无标注数据上进行自监督学习。模型“阅读”数万亿词的文本，学习语法、知识、推理模式和世界常识。训练方式就是从互联网文本中随机遮掉或预测下一个词。这个阶段需要数千甚至数万张 GPU/TPU 并行计算数周到数月。</li><li><strong>对齐训练（Alignment）</strong>：通过 RLHF 等技术让模型的输出符合人类偏好。预训练模型只是“预测下一个词”的高手，但不一定知道如何“有用且安全地回答”。对齐训练让模型学会说“我不知道”、拒绝不当请求、提供简洁有帮助的回答。</li></ol><h3>技术演进时间线</h3><table><tr><th>年份</th><th>里程碑</th><th>核心贡献</th></tr><tr><td>2017</td><td>Transformer 论文</td><td>Google 提出「Attention Is All You Need」，用自注意力替代 RNN，奠定现代 LLM 架构基础</td></tr><tr><td>2018.06</td><td>GPT-1</td><td>OpenAI 证明生成式预训练 + 微调范式的有效性，1.17 亿参数</td></tr><tr><td>2018.10</td><td>BERT</td><td>Google 引入双向编码器预训练（Masked LM），刷新 11 项 NLP 任务记录，3.4 亿参数</td></tr><tr><td>2019.02</td><td>GPT-2</td><td>15 亿参数，展示 zero-shot 迁移能力，引发对 AI 安全的讨论</td></tr><tr><td>2020.05</td><td>GPT-3</td><td>1750 亿参数，Few-shot 能力爆发，API 商业化开启，标志着 Scaling 时代的到来</td></tr><tr><td>2021.07</td><td>Codex</td><td>GPT-3 的代码微调版，驱动 GitHub Copilot，证明代码训练能增强推理能力</td></tr><tr><td>2022.03</td><td>InstructGPT / ChatGPT</td><td>RLHF 技术使模型能进行自然对话，对齐人类偏好，用户量 2 个月破亿</td></tr><tr><td>2022.03</td><td>Chinchilla</td><td>DeepMind 揭示最优计算分配法则：模型参数和训练数据应等比例扩展</td></tr><tr><td>2023.02</td><td>LLaMA</td><td>Meta 开源高质量模型，证明小模型+更多数据也能超越大模型，推动开源生态爆发</td></tr><tr><td>2023.03</td><td>GPT-4</td><td>多模态能力、长上下文（32K→128K）、推理水平飞跃，在各种专业考试中名列前茅</td></tr><tr><td>2024-25</td><td>Claude 4 / GPT-5</td><td>深度推理、Agent 能力、超长上下文（1M+），模型自主性大幅提升，推理过程可解释</td></tr></table>"
+    },
+    {
+      "title": "LLM 的核心能力与局限性",
+      "content": "<h3>基础能力矩阵</h3><ul><li><strong>文本生成</strong>：基于概率分布的自回归生成，每个 token 的预测都依赖于前面的全部上下文。</li><li><strong>语言理解</strong>：通过注意力机制捕获长距离依赖关系，理解文本的语义、情感、意图甚至言外之意。</li><li><strong>上下文学习</strong>（In-Context Learning）：不需要梯度更新，仅通过提示词中的示例就能学习新任务。研究表明 ICL 相当于在隐式地执行梯度下降。</li><li><strong>代码生成与推理</strong>：不仅能写代码，还能理解算法逻辑、分析复杂度、调试错误。</li></ul><h3>高级能力</h3><ul><li><strong>思维链推理</strong>（Chain-of-Thought）：通过展示中间推理步骤，显著提升数学、逻辑等复杂任务的准确率，在某些基准测试上提升 30-50%。</li><li><strong>工具使用</strong>：通过函数调用（Function Calling）机制调用外部 API、执行代码、搜索网络，大幅扩展能力边界。</li><li><strong>规划与分解</strong>：将复杂任务递归拆解为子任务，并协调执行顺序。</li><li><strong>多轮记忆</strong>：在长对话中维持上下文一致性，Claude 4 等模型能在 200K+ 上下文中准确回忆早期细节。</li></ul><h3>核心局限性</h3><ul><li><strong>幻觉</strong>（Hallucination）：模型可能生成看似合理但事实错误的内容。原因是 LLM 本质是下一个 token 预测器，并非事实数据库。缓解方案包括 RAG、提示词约束、对抗性采样等。</li><li><strong>知识截止</strong>：模型知识源于训练数据，无法自动获取新信息。</li><li><strong>上下文窗口限制</strong>：虽然窗口已扩展到百万级，但长上下文中的「迷失在中间」（Lost in the Middle）现象仍然存在——模型对输入中间部分的关注度低于开头和结尾。</li><li><strong>推理不一致</strong>：模型可能在简单算术上犯错，对问题的措辞变化敏感，难以进行真正的因果推理。</li></ul>"
+    },
+    {
+      "title": "Token 与 Tokenization 算法（BPE）",
+      "content": "<h3>Token 的本质</h3><p>Token 是 LLM 处理文本的<strong>最小语义单位</strong>。模型不是按字符或单词处理文本，而是通过 Tokenizer（分词器）将文本映射为整数序列。</p><h3>为什么需要 Tokenization？</h3><p>神经网络无法直接处理文本，需要将文本转换为数字序列。Tokenization 解决了三个关键问题：(1) 处理任意长度的输入；(2) 处理未知词（OOV）；(3) 在模型效率和表达能力间取得平衡。</p><h3>BPE（Byte Pair Encoding）算法详解</h3><p>BPE 是目前最主流的分词算法（GPT、Claude、LLaMA 等均使用）：</p><pre><code># BPE 训练阶段\n1. 将语料库中所有文本按字符拆分为基础单元\n   例: \"hello\" → ['h', 'e', 'l', 'l', 'o']\n\n2. 统计所有相邻字符对的频率\n   ('h','e'): 5次, ('e','l'): 10次, ('l','l'): 8次 ...\n\n3. 合并频率最高的字符对为一个新 token\n   假设 ('l','l') 频率最高 → 合并为 'll'\n   词典新增 'll'，文本变为 ['h','e','ll','o']\n\n4. 重复步骤 2-3，直到达到预设的词典大小\n   （GPT-4 词典大小约 100K tokens）</code></pre><h3>Token 数量估算</h3><table><tr><th>语言</th><th>1 Token ≈</th><th>示例</th></tr><tr><td>英文</td><td>0.75 个单词</td><td>\"Hello, how are you?\" ≈ 4 tokens</td></tr><tr><td>中文</td><td>0.5-0.6 个汉字</td><td>\"人工智能大模型\" ≈ 3 tokens</td></tr><tr><td>代码</td><td>0.5-1 个 token/符号</td><td>\"print(\"hello\")\" ≈ 5 tokens</td></tr></table>"
+    },
+    {
+      "title": "预训练与微调",
+      "content": "<h3>预训练（Pre-training）—— 构建基础能力</h3><p>预训练是在<strong>海量无标注数据</strong>上训练模型的核心阶段：</p><pre><code># 预训练目标函数（自回归语言建模）\nLoss = -Σ log P(token_i | token_1, ..., token_{i-1})\n# 即：最大化给定上文条件下，下一个 token 的概率</code></pre><ul><li><strong>训练数据</strong>：CommonCrawl（数万亿 token）、书籍、论文、代码、维基百科等</li><li><strong>计算量</strong>：GPT-3 用了数千个 GPU 训练数月，总计算量约 3.14×10³ FLOPS</li><li><strong>成本</strong>：GPT-4 级别模型训练成本数亿美元</li><li><strong>硬件</strong>：数万个 GPU 并行训练，需要 3D 并行（数据并行+张量并行+流水线并行）</li></ul><h3>微调（Fine-tuning）—— 任务适配</h3><ul><li><strong>SFT（监督微调）</strong>：使用人工标注的高质量对话数据训练</li><li><strong>RLHF（人类反馈强化学习）</strong>：RLHF 三阶段：1) 收集人类偏好数据 2) 训练奖励模型 RM 3) 用 PPO 算法优化语言模型</li><li><strong>DPO（直接偏好优化）</strong>：2023 年提出的简化方案，不需要独立的奖励模型</li></ul><h3>提示词 vs 微调：决策框架</h3><table><tr><th>维度</th><th>提示词工程</th><th>微调</th></tr><tr><td>实施门槛</td><td>低，只需编写文本</td><td>高，需要 ML 工程能力</td></tr><tr><td>成本</td><td>零成本</td><td>高（标注数据 + GPU 算力）</td></tr><tr><td>迭代速度</td><td>即时调整</td><td>数小时到数天</td></tr><tr><td>推荐场景</td><td>初步验证、快速原型</td><td>生产级定制、私有知识</td></tr></table>"
+    },
+    {
+      "title": "缩放定律（Scaling Laws）",
+      "content": "<h3>核心发现</h3><p>2020 年 OpenAI 发表的 Scaling Laws 揭示了一个关键规律：模型的性能与<strong>模型参数量 N、数据量 D、计算量 C</strong> 之间存在可预测的幂律关系。</p><pre><code># 缩放定律的核心公式（幂律关系）\nLoss(N) ≈ a/N^α + c    （损失随参数量增大而下降）\nLoss(D) ≈ b/D^β + c    （损失随数据量增大而下降）\n# 其中 α ≈ 0.076, β ≈ 0.095</code></pre><h3>Chinchilla 最优计算分配</h3><p>DeepMind 2022 年的 Chinchilla 论文：对于给定的计算预算，模型参数量和训练 token 数应该<strong>等比例扩展</strong>。</p><pre><code># Chinchilla 最优分配法则\nTotal_Compute ≈ 6 × N × D\n# N = 参数量，D = 训练 token 数</code></pre><h3>涌现能力</h3><ul><li>GPT-2（1.5B）：基本文本生成</li><li>GPT-3（175B）：Few-shot 学习能力爆发</li><li>PaLM（540B）：思维链推理能力凸显</li><li>GPT-4（~1.76T）：多模态理解、复杂推理</li></ul>"
+    },
+    {
+      "title": "RLHF 与人类对齐",
+      "content": "<h3>为什么需要对齐？</h3><p>预训练模型的目标是「预测下一个 token」，而非「输出有用且安全的回答」。对齐（Alignment）的目标是让模型行为符合人类价值观和期望。</p><h3>RLHF 三阶段详解</h3><pre><code>阶段一：监督微调（SFT）\n  收集人工编写的示范数据（问题+理想回答）\n  在预训练模型上做标准的监督学习\n\n阶段二：训练奖励模型（Reward Model）\n  收集对比数据：对同一问题，让模型生成多个回答\n  人工排序（A > B > C > D）\n  训练一个分类模型预测人类偏好\n  RM 损失：Loss = -log(σ(r_θ(x, y_w) - r_θ(x, y_l)))\n\n阶段三：PPO 强化学习\n  使用 RM 作为奖励信号，优化语言模型\n  PPO 目标包含：策略梯度 + KL 散度惩罚 + 价值函数损失</code></pre><h3>DPO：更简洁的替代方案</h3><p>DPO 避免了训练 RM 和 PPO 的复杂性，直接优化偏好：</p><pre><code>L_DPO = -E[log σ(β * log(π_θ(y_w|x)/π_ref(y_w|x))\n                - β * log(π_θ(y_l|x)/π_ref(y_l|x)))]</code></pre><h3>对齐的挑战</h3><ul><li><strong>奖励欺骗</strong>（Reward Hacking）：模型找到最大化奖励但不符合人类意图的方式</li><li><strong>能力衰退</strong>：过度对齐可能导致模型在通用任务上性能下降</li><li><strong>价值观冲突</strong>：不同文化对「好回答」的定义不一致</li></ul>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "Scaling Laws 的研究表明，在计算预算固定时，以下哪种分配策略最优？",
+      "options": [
+        "A. 只增加模型参数量，训练 token 数保持不变",
+        "B. 只增加训练 token 数，参数量保持不变",
+        "C. 模型参数量和训练 token 数等比例扩展",
+        "D. 增加推理时的计算量而非训练计算量"
+      ],
+      "answer": 2,
+      "explanation": "Chinchilla 论文发现，对于给定的计算预算，模型参数量 N 和训练 token 数 D 应该<strong>等比例扩展</strong>（Total_Compute = 6×N×D）。"
+    },
+    {
+      "question": "以下关于 Tokenization 的描述，哪项是正确的？",
+      "options": [
+        "A. BPE 算法每次合并频率最高的字符三元组",
+        "B. 中文的 tokenization 效率通常比英文更高（每 token 包含更多语义）",
+        "C. Tokenizer 词典越大，模型推理计算开销越小",
+        "D. BPE 算法是预先定义好词典再对文本进行分词"
+      ],
+      "answer": 1,
+      "explanation": "中文每 token 约 0.5-0.6 个汉字，英文每 token 约 0.75 个单词。BPE 合并的是<strong>字符对</strong>，词典是训练阶段逐步构建的。"
+    },
+    {
+      "question": "在 RLHF 的 PPO 训练阶段，为什么需要在目标函数中加入 KL 散度惩罚项？",
+      "options": [
+        "A. 为了减少模型参数量以加快推理速度",
+        "B. 为了防止模型在追求奖励时偏离 SFT 模型太远",
+        "C. 为了增加模型的随机性以获得更多样化的输出",
+        "D. 为了消除奖励模型的预测误差"
+      ],
+      "answer": 1,
+      "explanation": "KL 散度惩罚项防止模型找到奖励模型的漏洞（Reward Hacking），确保优化后的模型在统计分布上不偏离 SFT 模型太远。"
+    },
+    {
+      "question": "以下哪种现象最能说明 LLM 的「涌现能力」？",
+      "options": [
+        "A. 当模型参数量从 1.5B 增加到 175B 时，突然展现出可靠的 Few-shot 推理能力",
+        "B. 模型在更多数据上训练后，困惑度持续平滑下降",
+        "C. 使用更大的 batch size 训练时，训练速度线性提升",
+        "D. 增加模型的层数后，训练损失稳步降低"
+      ],
+      "answer": 0,
+      "explanation": "涌现能力是指模型规模跨过某个阈值后<strong>突然出现</strong>的能力，GPT-3（175B）相比 GPT-2（1.5B）展现出的 Few-shot 学习能力爆发是典型例子。"
+    },
+    {
+      "type": "code",
+      "question": "实现简化版 BPE Tokenization",
+      "code_prompt": "实现一个简化版 BPE 算法：1) 统计字符频率 2) 找到最频繁的相邻字符对 3) 合并指定次数 4) 对新文本编码。使用 collections.Counter。",
+      "explanation": "实现 BPE 的关键在于维护词表（merge rules），编码时按最长匹配到最短匹配进行分词。"
+    },
+    {
+      "type": "code",
+      "question": "模拟缩放定律曲线",
+      "code_prompt": "导入 matplotlib 和 numpy，根据 Loss(N) = a/N^α + c 绘制曲线。a=100, α=0.076, c=3，N 从 10^7 到 10^12。",
+      "explanation": "幂律关系意味着增加参数量带来的收益边际递减，解释了模型需要在参数和数据之间平衡的原因。"
+    }
+  ],
+  "mindmap": "# 大模型基础原理\n## 什么是大语言模型（LLM）？\n### 定义与本质\n### 自回归生成原理\n### 核心特征：参数规模、训练数据、涌现能力、通用性\n### 主流模型架构：Encoder-Only / Decoder-Only / Encoder-Decoder\n### LLM 训练流程：预训练 → 对齐训练\n### 技术演进时间线（2017-2025）\n## LLM 的核心能力与局限性\n### 基础能力矩阵：文本生成、语言理解、上下文学习、代码推理\n### 高级能力：思维链推理、工具使用、规划分解、多轮记忆\n### 核心局限性\n#### 幻觉（Hallucination）与缓解方案\n#### 知识截止\n#### 上下文窗口限制与 Lost in the Middle\n#### 推理不一致\n## Token 与 Tokenization 算法（BPE）\n### Token 的本质：最小语义单位\n### 为什么需要 Tokenization\n### BPE 算法详解\n#### 训练阶段：字符拆分 → 频率统计 → 合并对\n#### 编码阶段：查词表匹配\n### Token 数量估算：英文/中文/代码\n## 预训练与微调\n### 预训练：构建基础能力\n#### 训练目标函数 Loss = -Σ log P\n#### 数据规模与计算成本\n### 微调：任务适配\n#### SFT（监督微调）\n#### RLHF（人类反馈强化学习）\n#### DPO（直接偏好优化）\n### 提示词 vs 微调决策框架\n## 缩放定律（Scaling Laws）\n### 核心发现：幂律关系 Loss(N) ≈ a/N^α + c\n### Chinchilla 最优计算分配\n#### Total_Compute ≈ 6 × N × D\n#### 参数与数据应等比例扩展\n### 涌现能力相变点\n## RLHF 与人类对齐\n### 为什么需要对齐\n### RLHF 三阶段：SFT → RM → PPO\n### DPO：更简洁的替代方案\n### 对齐的挑战\n#### Reward Hacking\n#### 能力衰退\n#### 价值观冲突"
+}

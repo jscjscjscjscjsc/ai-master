@@ -1,0 +1,401 @@
+[
+  {
+    "id": "1_0",
+    "chapter": 1,
+    "chapter_title": "大模型基础原理",
+    "title": "什么是大语言模型（LLM）？",
+    "desc": "定义与本质大语言模型（Large Language Model, LLM）是一种基于深度学习的神经网络模型，通过在海量文本数据上进行自监督学习，掌握人类语言的统计规律、语法结构和语义关系。其核心思想是：给定上文，预测下文——即自回归语言建模"
+  },
+  {
+    "id": "1_1",
+    "chapter": 1,
+    "chapter_title": "大模型基础原理",
+    "title": "LLM 的核心能力与局限性",
+    "desc": "基础能力矩阵文本生成：基于概率分布的自回归生成，每个 token 的预测都依赖于前面的全部上下文。语言理解：通过注意力机制捕获长距离依赖关系，理解文本的语义、情感、意图甚至言外之意。上下文学习（In-Context Learning）：不需"
+  },
+  {
+    "id": "1_2",
+    "chapter": 1,
+    "chapter_title": "大模型基础原理",
+    "title": "Token 与 Tokenization 算法（BPE）",
+    "desc": "Token 的本质Token 是 LLM 处理文本的最小语义单位。模型不是按字符或单词处理文本，而是通过 Tokenizer（分词器）将文本映射为整数序列。为什么需要 Tokenization？神经网络无法直接处理文本，需要将文本转换为数字"
+  },
+  {
+    "id": "1_3",
+    "chapter": 1,
+    "chapter_title": "大模型基础原理",
+    "title": "预训练与微调",
+    "desc": "预训练（Pre-training）—— 构建基础能力预训练是在海量无标注数据上训练模型的核心阶段：# 预训练目标函数（自回归语言建模）\nLoss = -Σ log P(token_i | token_1, ..., token_{i-1})"
+  },
+  {
+    "id": "1_4",
+    "chapter": 1,
+    "chapter_title": "大模型基础原理",
+    "title": "缩放定律（Scaling Laws）",
+    "desc": "核心发现2020 年 OpenAI 发表的 Scaling Laws 揭示了一个关键规律：模型的性能与模型参数量 N、数据量 D、计算量 C 之间存在可预测的幂律关系。# 缩放定律的核心公式（幂律关系）\nLoss(N) ≈ a/N^α +"
+  },
+  {
+    "id": "1_5",
+    "chapter": 1,
+    "chapter_title": "大模型基础原理",
+    "title": "RLHF 与人类对齐",
+    "desc": "为什么需要对齐？预训练模型的目标是「预测下一个 token」，而非「输出有用且安全的回答」。对齐（Alignment）的目标是让模型行为符合人类价值观和期望。RLHF 三阶段详解阶段一：监督微调（SFT）\n  收集人工编写的示范数据（问题+"
+  },
+  {
+    "id": "2_6",
+    "chapter": 2,
+    "chapter_title": "Transformer 架构详解",
+    "title": "Transformer 整体架构",
+    "desc": "为什么是 Transformer？2017 年 Google 在《Attention Is All You Need》中提出 Transformer，它用自注意力机制替代了传统的 RNN/LSTM，解决了长序列建模和并行化训练两大难题。架构"
+  },
+  {
+    "id": "2_7",
+    "chapter": 2,
+    "chapter_title": "Transformer 架构详解",
+    "title": "自注意力机制（Self-Attention）",
+    "desc": "核心思想Self-Attention 让输入序列中的每个位置都与其他所有位置建立直接联系，捕获全局依赖关系。与 RNN 的逐步传递不同，Self-Attention 一步到位建立所有位置间的连接。QKV 机制详解# 每个 Token 产生三"
+  },
+  {
+    "id": "2_8",
+    "chapter": 2,
+    "chapter_title": "Transformer 架构详解",
+    "title": "注意力公式推导与数学原理",
+    "desc": "为什么需要缩放？假设 q 和 k 是 d_k 维的独立随机向量，每个分量的均值为 0、方差为 1，则点积 q·k 的均值为 0、方差为 d_k。方差越大，softmax 的输入值就越大，导致梯度趋近于 0。# 证明（简化）：\nq · k ="
+  },
+  {
+    "id": "2_9",
+    "chapter": 2,
+    "chapter_title": "Transformer 架构详解",
+    "title": "多头注意力与位置编码（RoPE）",
+    "desc": "多头注意力（Multi-Head Attention）不是只做一次注意力计算，而是并行做多次，每次关注不同的方面：MultiHead(Q, K, V) = Concat(head_1, ..., head_h) × W_O\nhead_i ="
+  },
+  {
+    "id": "2_10",
+    "chapter": 2,
+    "chapter_title": "Transformer 架构详解",
+    "title": "KV-Cache 与推理优化",
+    "desc": "什么是 KV-Cache？在自回归生成中，每步生成一个新 token，但前面的 token 已经计算过的 K 和 V 矩阵可以缓存复用，避免重复计算。# 无 KV-Cache（每一步重算所有）\nstep 1: 计算 token_1 的 K,"
+  },
+  {
+    "id": "2_11",
+    "chapter": 2,
+    "chapter_title": "Transformer 架构详解",
+    "title": "FlashAttention 原理",
+    "desc": "FlashAttention 的核心问题标准注意力计算在 GPU 上存在显存带宽瓶颈：# 标准实现\nS = QK^T           # (n×d) × (d×n) = n×n\nP = softmax(S)     # n×n ← 写入"
+  },
+  {
+    "id": "3_12",
+    "chapter": 3,
+    "chapter_title": "提示词工程基础",
+    "title": "什么是提示词工程？",
+    "desc": "定义提示词工程（Prompt Engineering）是设计和优化输入给 LLM 的提示文本，以引导模型生成期望输出的系统性方法。它既是艺术（需要直觉和创造力）也是科学（有可重复的方法论）。为什么重要？同一模型，不同提示词，输出质量差异可达"
+  },
+  {
+    "id": "3_13",
+    "chapter": 3,
+    "chapter_title": "提示词工程基础",
+    "title": "提示词编写核心原则",
+    "desc": "四大黄金法则清晰明确：避免模糊，具体说明需求错误: \"写一个排序\"\n正确: \"用 Python 实现快速排序算法，要求包含详细注释，\n      时间复杂度分析，并给出 3 个测试用例\"提供上下文：告知背景和目标错误: \"翻译这句话\"\n正确"
+  },
+  {
+    "id": "3_14",
+    "chapter": 3,
+    "chapter_title": "提示词工程基础",
+    "title": "角色扮演提示法",
+    "desc": "为什么角色扮演有效？给模型设定角色会激活训练数据中与该角色相关的知识分布和语言风格。本质上，角色设定相当于在隐式地选择一条推理路径——模型会调用其参数空间中与角色相关的子网络。经典角色模板# 专家角色\n\"你是一位拥有 20 年经验的 {领域"
+  },
+  {
+    "id": "3_15",
+    "chapter": 3,
+    "chapter_title": "提示词工程基础",
+    "title": "Zero-shot / Few-shot / Many-shot",
+    "desc": "Zero-shot（零样本）不给示例，直接描述任务。适用于简单、常见的任务，模型已具备能力。\"将以下句子分类为积极、消极或中性：\n'这部电影让我非常感动'\"Few-shot（少样本）提供 1-5 个示例，让模型学习任务模式。\"分类句子情感："
+  },
+  {
+    "id": "3_16",
+    "chapter": 3,
+    "chapter_title": "提示词工程基础",
+    "title": "Prompt 模式系统性分类",
+    "desc": "六大 Prompt 模式指令模式：直接告诉模型做什么，最简单直接\"列出 Python 中 5 种常用设计模式及其适用场景\"角色模式：赋予角色设定后提问\"你是一名资深架构师，请分析这个系统的扩展性问题\"示例模式：通过示例让模型学习模式和格式\""
+  },
+  {
+    "id": "3_17",
+    "chapter": 3,
+    "chapter_title": "提示词工程基础",
+    "title": "复杂约束工程与输出控制",
+    "desc": "输出格式控制# JSON 输出控制\n\"请以 JSON 格式返回，严格按照以下 schema：\n{\n  'sentiment': 'positive|negative|neutral',\n  'confidence': 0.0-1.0,"
+  },
+  {
+    "id": "4_18",
+    "chapter": 4,
+    "chapter_title": "提示词进阶技巧",
+    "title": "思维链（Chain-of-Thought, CoT）",
+    "desc": "核心思想思维链提示让模型在给出最终答案前，先展示逐步推理过程。这显著提升了数学、逻辑和常识推理任务的准确率。Zero-shot CoT# 只需加一句魔法提示词\n\"请逐步思考（Let's think step by step）...\"\n\n#"
+  },
+  {
+    "id": "4_19",
+    "chapter": 4,
+    "chapter_title": "提示词进阶技巧",
+    "title": "Tree-of-Thoughts（ToT）",
+    "desc": "从链到树ToT 将 CoT 的线性推理扩展为树状搜索：在每个推理步骤探索多个可能方向，并通过评估函数剪枝。ToT 算法流程：\n1. 从当前状态出发，生成多个候选下一步\n2. 用评估函数对每个候选打分\n3. 选择高分候选继续探索（BFS/DF"
+  },
+  {
+    "id": "4_20",
+    "chapter": 4,
+    "chapter_title": "提示词进阶技巧",
+    "title": "Self-Consistency 与投票机制",
+    "desc": "核心思想Self-Consistency 的核心直觉：复杂的推理问题通常有不止一种正确的推理路径。通过多次采样不同的推理路径并聚合结果，可以提高最终答案的可靠性。Self-Consistency 流程：\n1. 用相同的提示词调用 LLM N"
+  },
+  {
+    "id": "4_21",
+    "chapter": 4,
+    "chapter_title": "提示词进阶技巧",
+    "title": "ReAct 与工具使用",
+    "desc": "ReAct = Reasoning + ActingReAct 模式让模型在推理（Thought）和行动（Action）之间交替进行，这是构建 AI Agent 的基础范式。ReAct 循环：\n  Thought: 我需要什么信息？如何完成"
+  },
+  {
+    "id": "4_22",
+    "chapter": 4,
+    "chapter_title": "提示词进阶技巧",
+    "title": "RAG 提示技巧",
+    "desc": "RAG 提示词的核心挑战RAG（Retrieval-Augmented Generation）系统中，提示词设计直接决定模型能否正确利用检索到的文档。高质量 RAG 提示词模板system: \"你是一个基于给定文档回答问题的助手。\n**规则"
+  },
+  {
+    "id": "4_23",
+    "chapter": 4,
+    "chapter_title": "提示词进阶技巧",
+    "title": "提示词评估与迭代优化",
+    "desc": "评估维度维度指标方法准确性答案正确率标注测试集 + 自动评分格式合规格式匹配率正则表达式校验一致性多次输出相似度低 temperature 测试鲁棒性措辞变化的稳定性同义改写测试效率Token 消耗统计输入输出 token 数迭代优化流程基"
+  },
+  {
+    "id": "5_24",
+    "chapter": 5,
+    "chapter_title": "Claude Code 安装与配置",
+    "title": "Claude Code 简介",
+    "desc": "什么是 Claude Code？Claude Code 是 Anthropic 推出的命令行 AI 编程助手，可在终端中直接使用 Claude 模型进行代码编写、调试、重构等任务。它深入理解项目上下文，而不仅仅是单个文件。核心能力代码理解："
+  },
+  {
+    "id": "5_25",
+    "chapter": 5,
+    "chapter_title": "Claude Code 安装与配置",
+    "title": "安装步骤（Windows）",
+    "desc": "方式一：npm 全局安装（推荐）# 确保已安装 Node.js 18+\nnode --version\n# v18.12.0 或更高版本\n\n# 全局安装 Claude Code CLI\nnpm install -g @anthropic-ai"
+  },
+  {
+    "id": "5_26",
+    "chapter": 5,
+    "chapter_title": "Claude Code 安装与配置",
+    "title": "初始化与认证",
+    "desc": "首次启动cd your-project\nclaude首次启动会自动提示你进行认证。认证方式OAuth 登录：浏览器授权登录，适合个人使用API Key：从 Anthropic Console 获取，适合 CI/CD 和自动化场景组织 SSO"
+  },
+  {
+    "id": "5_27",
+    "chapter": 5,
+    "chapter_title": "Claude Code 安装与配置",
+    "title": "权限与安全设置",
+    "desc": "设置文件层次结构~/.claude/settings.json          # 用户级全局配置\n  .claude/settings.json          # 项目级配置（可提交 Git）\n  .claude/settings."
+  },
+  {
+    "id": "5_28",
+    "chapter": 5,
+    "chapter_title": "Claude Code 安装与配置",
+    "title": "CI/CD 集成",
+    "desc": "GitHub Actions 集成# .github/workflows/claude-review.yml\nname: Claude Code Review\non: [pull_request]\njobs:\n  review:\n    r"
+  },
+  {
+    "id": "5_29",
+    "chapter": 5,
+    "chapter_title": "Claude Code 安装与配置",
+    "title": "多项目配置与管理",
+    "desc": "项目管理策略# 每个项目独立配置\nproject-A/.claude/settings.json  # A 项目的权限和 hook\nproject-B/.claude/settings.json  # B 项目的权限和 hook\n\n# 全局"
+  },
+  {
+    "id": "6_30",
+    "chapter": 6,
+    "chapter_title": "Claude Code 使用技巧",
+    "title": "斜杠命令（Slash Commands）",
+    "desc": "内置命令一览命令功能使用场景/help查看帮助信息不熟悉命令时/clear清空当前对话上下文积累过多时/compact压缩上下文释放空间长时间对话后/init初始化项目 CLAUDE.md新项目设置/config打开配置界面修改设置/rev"
+  },
+  {
+    "id": "6_31",
+    "chapter": 6,
+    "chapter_title": "Claude Code 使用技巧",
+    "title": "Hooks 系统",
+    "desc": "什么是 Hooks？Hooks 是 Claude Code 特定事件发生前后自动执行的脚本，用于实现自动化工作流。可用事件类型事件触发时机常见用途PreToolUse工具执行前命令验证、安全检查PostToolUse工具执行后结果记录、通知"
+  },
+  {
+    "id": "6_32",
+    "chapter": 6,
+    "chapter_title": "Claude Code 使用技巧",
+    "title": "Worktree 隔离工作",
+    "desc": "什么是 Worktree？Git Worktree 允许在同一仓库中同时检出多个分支到不同目录，互不干扰。每个 worktree 是独立的可工作副本。Claude Code 中的 WorktreeClaude 可自动创建临时 worktre"
+  },
+  {
+    "id": "6_33",
+    "chapter": 6,
+    "chapter_title": "Claude Code 使用技巧",
+    "title": "自定义技能（Skills）",
+    "desc": "Skills 系统Skills 是可复用的专业化能力模块，通过 /skill-name 调用。它们封装了特定领域的知识和工作流。内置 SkillsSkill用途code-review全面代码审查（安全、性能、可维护性）security-re"
+  },
+  {
+    "id": "6_34",
+    "chapter": 6,
+    "chapter_title": "Claude Code 使用技巧",
+    "title": "MCP（Model Context Protocol）",
+    "desc": "什么是 MCP？MCP（Model Context Protocol）是 Anthropic 提出的开放协议，定义了 AI 模型与外部工具/数据源之间的标准交互方式——可以理解为「AI 应用的 USB 接口」。MCP 架构+--------"
+  },
+  {
+    "id": "6_35",
+    "chapter": 6,
+    "chapter_title": "Claude Code 使用技巧",
+    "title": "高级 Hook 链与自动化",
+    "desc": "Hook 链设计模式# 典型 Hook 链：安全审查 + 构建 + 测试 + 部署\nPreToolUse (git push)\n  ├── Hook 1: 运行安全扫描（npm audit）\n  ├── Hook 2: 运行测试套件（npm"
+  },
+  {
+    "id": "7_36",
+    "chapter": 7,
+    "chapter_title": "阿里云ACP大模型认证（上）",
+    "title": "阿里云ACP认证概述",
+    "desc": "什么是 ACP 认证？ACP（Alibaba Cloud Certified Professional）是阿里云专业技术认证，验证持证者在阿里云产品和技术领域的专业能力。其中 AI 工程师方向聚焦于大模型应用和机器学习平台。考试概况项目说明"
+  },
+  {
+    "id": "7_37",
+    "chapter": 7,
+    "chapter_title": "阿里云ACP大模型认证（上）",
+    "title": "灵积（DashScope）模型服务",
+    "desc": "DashScope 简介DashScope（灵积）是阿里云的一站式模型服务平台，提供统一 API 调用各类 AI 模型的能力。它是阿里云大模型服务的核心入口。通义千问系列模型模型特点适用场景Qwen-Max旗舰版，最强综合能力复杂推理、高质"
+  },
+  {
+    "id": "7_38",
+    "chapter": 7,
+    "chapter_title": "阿里云ACP大模型认证（上）",
+    "title": "百炼平台",
+    "desc": "百炼平台定位百炼是阿里云的大模型应用开发平台，提供从数据准备、模型调优到应用评测的全链路 AI 开发能力。比 DashScope 更偏上层应用开发。核心功能模块数据管理：支持上传多种格式数据（TXT/PDF/Excel），提供标注工具模型调"
+  },
+  {
+    "id": "7_39",
+    "chapter": 7,
+    "chapter_title": "阿里云ACP大模型认证（上）",
+    "title": "PAI 平台全流程",
+    "desc": "PAI 平台组件组件功能适用场景PAI-Studio可视化建模，拖拽式 ML 流程低代码 ML 开发PAI-DSW交互式 Notebook（Jupyter）算法探索、原型开发PAI-DLC分布式训练集群大规模模型训练PAI-EAS在线推理服"
+  },
+  {
+    "id": "7_40",
+    "chapter": 7,
+    "chapter_title": "阿里云ACP大模型认证（上）",
+    "title": "ACP 高频考点总结",
+    "desc": "云计算基础考点ECS 实例规格族（通用型/计算型/内存型/GPU 型）及适用场景OSS 存储类型（标准/低频/归档/冷归档）SLB 负载均衡调度算法（轮询/最小连接数/一致性哈希）VPC 网络规划（CIDR 划分、安全组规则）AI 平台考点"
+  },
+  {
+    "id": "7_41",
+    "chapter": 7,
+    "chapter_title": "阿里云ACP大模型认证（上）",
+    "title": "模型评估指标",
+    "desc": "分类任务指标# 混淆矩阵\n            预测正类    预测负类\n实际正类      TP          FN\n实际负类      FP          TN\n\n# 核心指标\n准确率 Accuracy = (TP + TN)"
+  },
+  {
+    "id": "8_42",
+    "chapter": 8,
+    "chapter_title": "阿里云ACP大模型认证（下）",
+    "title": "模型部署与优化",
+    "desc": "部署架构选择方式适用场景特点PAI-EAS 在线推理实时 API 服务低延迟（PAI-DLC 分布式训练大规模模型训练GPU 集群调度，弹性资源函数计算 FC + GPU轻量推理按需付费，事件驱动，冷启动ACK 容器服务自定义部署K8s 编"
+  },
+  {
+    "id": "8_43",
+    "chapter": 8,
+    "chapter_title": "阿里云ACP大模型认证（下）",
+    "title": "模型量化原理",
+    "desc": "为什么需要量化？大模型通常使用 FP32（32 位浮点数）训练，每个参数占 4 字节。一个 70B 模型仅参数就需要 280GB 显存，远超单张 GPU 容量。量化通过降低数值精度来压缩模型。量化类型# 量化精度对比\nFP32:  0 00"
+  },
+  {
+    "id": "8_44",
+    "chapter": 8,
+    "chapter_title": "阿里云ACP大模型认证（下）",
+    "title": "RAG 架构与向量数据库",
+    "desc": "RAG 完整流程RAG 系统流程：\n用户提问\n  → 1. 向量化：将问题转为 embedding 向量\n  → 2. 检索：在向量数据库中搜索最相似的文档\n  → 3. 重排序：对检索结果精排\n  → 4. 注入：将相关文档注入 Prom"
+  },
+  {
+    "id": "8_45",
+    "chapter": 8,
+    "chapter_title": "阿里云ACP大模型认证（下）",
+    "title": "RAG 评估框架",
+    "desc": "RAG 评估维度维度指标测量方法检索准确率Recall@k, Precision@k, MRR标注的相关文档 vs 检索结果生成质量Faithfulness, Answer RelevanceLLM-as-Judge 评分端到端Contex"
+  },
+  {
+    "id": "8_46",
+    "chapter": 8,
+    "chapter_title": "阿里云ACP大模型认证（下）",
+    "title": "大模型安全与合规",
+    "desc": "大模型安全挑战Prompt 注入：恶意提示词绕过安全限制，诱使模型执行未授权操作数据泄露：模型输出中包含训练数据中的敏感信息有害内容生成：输出违法、暴力、歧视性内容偏见与歧视：训练数据中的社会偏见被模型继承和放大阿里云安全方案内容安全：文本"
+  },
+  {
+    "id": "8_47",
+    "chapter": 8,
+    "chapter_title": "阿里云ACP大模型认证（下）",
+    "title": "安全评测方法论",
+    "desc": "红队测试（Red Teaming）红队测试是模拟攻击者行为对模型进行安全评估的方法，目的是在大规模部署前发现安全漏洞。红队测试流程：\n1. 威胁建模：识别可能的攻击面\n   - Prompt 注入、越狱、角色反转\n   - 数据投毒、后门触"
+  },
+  {
+    "id": "9_48",
+    "chapter": 9,
+    "chapter_title": "大模型应用实战",
+    "title": "构建 RAG 问答系统",
+    "desc": "完整 RAG 系统设计系统架构：\n用户输入\n  → Query Understanding（查询理解：改写、扩展）\n    → Retriever（检索器：稠密检索 + BM25 混合）\n      → Reranker（重排序：cross"
+  },
+  {
+    "id": "9_49",
+    "chapter": 9,
+    "chapter_title": "大模型应用实战",
+    "title": "AI Agent 开发",
+    "desc": "Agent 核心架构Agent 核心循环：\n  用户请求\n    → Plan（规划：分解任务为子步骤）\n      → Execute（执行：调用工具处理每个子步骤）\n        → Observe（观察：收集执行结果）"
+  },
+  {
+    "id": "9_50",
+    "chapter": 9,
+    "chapter_title": "大模型应用实战",
+    "title": "多工具编排",
+    "desc": "编排模式# 顺序执行（Pipeline）\nA → B → C → D\n适用：有明确依赖的数据处理流程\n\n# 并行执行（Parallel）\nA → B → Done\n  → C →\n适用：相互独立的子任务（如同时搜索+计算）\n\n# 条件分支（"
+  },
+  {
+    "id": "9_51",
+    "chapter": 9,
+    "chapter_title": "大模型应用实战",
+    "title": "评估驱动开发（EDD）",
+    "desc": "什么是 EDD？评估驱动开发（Evaluation-Driven Development）借鉴了 TDD（测试驱动开发）的思路：先定义评估指标，再开发模型应用，确保每次改动都有可量化的效果验证。EDD 工作流1. 定义评估集\n   - 收集"
+  },
+  {
+    "id": "9_52",
+    "chapter": 9,
+    "chapter_title": "大模型应用实战",
+    "title": "Prompt 缓存与成本优化",
+    "desc": "Prompt Caching 原理对于重复使用的长前缀（如系统提示词、Few-shot 示例、工具定义），API 会缓存计算结果。后续请求只需计算增量部分，显著降低成本。# 缓存策略\n[系统角色设定 + 规则说明] ← 缓存命中区域（几千"
+  },
+  {
+    "id": "9_53",
+    "chapter": 9,
+    "chapter_title": "大模型应用实战",
+    "title": "生产级部署架构",
+    "desc": "典型生产架构用户客户端\n  ↓\nCDN（静态资源加速）\n  ↓\nAPI Gateway（流量控制、认证、限流、日志）\n  ↓\n应用服务层（业务逻辑、Prompt 管理、会话管理）\n  ↓              ↗\n模型推理层"
+  },
+  {
+    "id": "10_54",
+    "chapter": 10,
+    "chapter_title": "各类 Agent 教学与测试",
+    "title": "Trae 智能体 — 产品介绍与使用指南",
+    "desc": "Trae 智能体介绍Trae 是字节跳动推出的 AI 原生集成开发环境（IDE），内置智能体能力，支持 Skill、Hooks、MCP 等高级功能。下面提供了视频讲解和交互式教程两种学习方式。🚀 打开 Trae 交互式教程🎬 Trae 产品"
+  },
+  {
+    "id": "10_55",
+    "chapter": 10,
+    "chapter_title": "各类 Agent 教学与测试",
+    "title": "ZCode GLM — 大模型展示",
+    "desc": "ZCode GLM 介绍ZCode GLM 是一个大模型综合展示平台，展示了多种 GLM 模型的能力与特性。🌐 打开 ZCode GLM 展示页"
+  },
+  {
+    "id": "10_56",
+    "chapter": 10,
+    "chapter_title": "各类 Agent 教学与测试",
+    "title": "WorkBuddy — 智能助手",
+    "desc": "WorkBuddy 智能助手WorkBuddy 是一款智能工作助手，帮助用户高效完成各类工作任务。💼 打开 WorkBuddy 展示页"
+  }
+]

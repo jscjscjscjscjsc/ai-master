@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROMPT ENGINEERING · CG · 提示词工程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a1a;
+  --cyan:#00d4ff; --purple:#a855f7; --pink:#f472b6;
+  --green:#34d399; --amber:#fbbf24; --orange:#fb923c;
+  --text:#e6edf6; --muted:#8aa0bd;
+  --grad:linear-gradient(120deg,#00d4ff 0%,#a855f7 60%,#f472b6 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
+body{
+  font-family:'Noto Sans SC','Rajdhani',system-ui,sans-serif;
+  color:var(--text);position:relative;cursor:default;
+}
+body.playing{cursor:none}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(60vw 60vw at 10% 10%, rgba(0,212,255,.08), transparent 60%),
+    radial-gradient(50vw 50vw at 85% 20%, rgba(168,85,247,.10), transparent 60%),
+    radial-gradient(50vw 50vw at 50% 90%, rgba(244,114,182,.06), transparent 60%);
+}
+#stage{position:fixed;inset:0;z-index:1;display:block;width:100%;height:100%}
+#overlay{position:fixed;inset:0;z-index:2;pointer-events:none}
+
+.brand{
+  position:absolute;top:24px;left:28px;
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:15px;letter-spacing:2px;
+  opacity:.55;
+}
+.brand span{color:var(--cyan)}
+.embed-hint{
+  position:absolute;top:24px;right:28px;font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--muted);opacity:.5;letter-spacing:1px;
+}
+
+.scene-info{
+  position:absolute;left:6vw;bottom:130px;max-width:70vw;
+  transition:opacity .55s ease;
+}
+.scene-info.hide{opacity:0}
+.scene-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--cyan);letter-spacing:4px;opacity:.85}
+.scene-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(30px,5vw,70px);line-height:.98;letter-spacing:-1px;
+  margin:6px 0 10px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.scene-sub{font-family:'Rajdhani',sans-serif;font-weight:500;font-size:clamp(14px,1.5vw,19px);color:var(--muted);letter-spacing:1px}
+
+.caption{
+  position:absolute;left:50%;bottom:96px;transform:translateX(-50%);
+  text-align:center;max-width:84vw;font-size:clamp(14px,1.5vw,18px);
+  color:var(--text);font-style:italic;opacity:0;transition:opacity .6s;
+  text-shadow:0 2px 24px rgba(0,0,0,.7);pointer-events:none;
+}
+.caption.show{opacity:.95}
+
+.cta-wrap{
+  position:absolute;left:50%;top:62%;transform:translate(-50%,-50%) scale(.92);
+  text-align:center;opacity:0;pointer-events:none;transition:opacity .8s ease, transform .8s ease;
+}
+.cta-wrap.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.cta{
+  display:inline-block;cursor:pointer;pointer-events:auto;text-decoration:none;
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(16px,1.8vw,22px);
+  letter-spacing:3px;color:#03122b;
+  padding:18px 50px;border-radius:60px;background:var(--grad);position:relative;
+  box-shadow:0 0 40px rgba(0,212,255,.55),0 0 90px rgba(168,85,247,.3);
+  transition:transform .25s, box-shadow .25s;animation:ctaPulse 2.6s ease-in-out infinite;
+}
+.cta:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 0 64px rgba(0,212,255,.85),0 0 130px rgba(244,114,182,.45)}
+.cta .arrow{display:inline-block;transition:transform .25s}
+.cta:hover .arrow{transform:translateX(7px)}
+.cta-sub{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:3px}
+@keyframes ctaPulse{0%,100%{box-shadow:0 0 40px rgba(0,212,255,.55),0 0 90px rgba(168,85,247,.3)}50%{box-shadow:0 0 64px rgba(0,212,255,.8),0 0 130px rgba(244,114,182,.5)}}
+
+.bottom-bar{position:absolute;left:0;right:0;bottom:0;padding:0 6vw 22px;pointer-events:none;transition:opacity .4s}
+body.ui-hidden .bottom-bar,body.ui-hidden .brand,body.ui-hidden .scene-info{opacity:0}
+.progress-track{position:relative;height:3px;background:rgba(255,255,255,.09);border-radius:2px;cursor:pointer;pointer-events:auto;margin-bottom:14px}
+.progress-fill{position:absolute;left:0;top:0;height:100%;border-radius:2px;background:var(--grad);width:0%;box-shadow:0 0 10px rgba(0,212,255,.6)}
+.chapter-marks{position:absolute;inset:0}
+.chapter-marks .mk{position:absolute;top:-3px;width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.22);transform:translate(-50%,0);cursor:pointer;pointer-events:auto;transition:.2s;border:0}
+.chapter-marks .mk:hover{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.chapter-marks .mk.passed{background:rgba(0,212,255,.55)}
+.chapter-marks .mk.cur{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.bar-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.time-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px}
+.controls{display:flex;gap:10px;pointer-events:auto}
+.ctrl-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.05);border:1px solid rgba(0,212,255,.22);
+  color:var(--text);cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:.25s;backdrop-filter:blur(8px);font-family:inherit;
+}
+.ctrl-btn:hover{background:rgba(0,212,255,.16);border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(0,212,255,.4)}
+
+.chapter-pop{
+  position:absolute;right:6vw;bottom:82px;
+  background:rgba(10,10,26,.9);border:1px solid rgba(0,212,255,.22);
+  border-radius:14px;padding:10px;backdrop-filter:blur(14px);
+  opacity:0;pointer-events:none;transform:translateY(10px);transition:.3s;
+  display:flex;flex-direction:column;gap:2px;min-width:200px;
+}
+.chapter-pop.show{opacity:1;pointer-events:auto;transform:none}
+.chapter-pop .item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:.2s}
+.chapter-pop .item:hover{background:rgba(0,212,255,.1);color:var(--text)}
+.chapter-pop .item.active{color:var(--cyan);background:rgba(0,212,255,.08)}
+.chapter-pop .item .n{font-family:'JetBrains Mono',monospace;font-size:11px;width:22px}
+
+.paused-badge{
+  position:absolute;top:24px;left:50%;transform:translateX(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--amber);
+  letter-spacing:3px;opacity:0;transition:.3s;
+  padding:5px 16px;border:1px solid rgba(251,191,36,.4);border-radius:999px;background:rgba(251,191,36,.06);
+}
+.paused-badge.show{opacity:1}
+
+@media(max-width:640px){
+  .scene-info{bottom:118px;left:5vw}
+  .bottom-bar{padding:0 5vw 16px}
+  .ctrl-btn{width:34px;height:34px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+
+<div id="overlay">
+  <div class="brand">PROMPT<span>//</span>CG</div>
+  <div class="embed-hint" id="embedHint"></div>
+
+  <div class="scene-info" id="sceneInfo">
+    <div class="scene-num" id="sceneNum">// 01</div>
+    <div class="scene-title" id="sceneTitle">PROLOGUE</div>
+    <div class="scene-sub" id="sceneSub">序章</div>
+  </div>
+
+  <div class="caption" id="caption"></div>
+
+  <div class="cta-wrap" id="ctaWrap">
+    <a class="cta" id="ctaBtn" href="/chapter/3">
+      开始学习 &nbsp;BEGIN LEARNING <span class="arrow">→</span>
+    </a>
+    <div class="cta-sub">THE ART OF ASKING</div>
+  </div>
+
+  <div class="paused-badge" id="pausedBadge">// PAUSED · PRESS SPACE</div>
+  <div class="chapter-pop" id="chapterPop"></div>
+
+  <div class="bottom-bar" id="bottomBar">
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-fill" id="progressFill"></div>
+      <div class="chapter-marks" id="chapterMarks"></div>
+    </div>
+    <div class="bar-row">
+      <div class="time-label" id="timeLabel">00:00 / 00:00</div>
+      <div class="controls">
+        <button class="ctrl-btn" id="btnPrev" title="上一章 (←)">⏮</button>
+        <button class="ctrl-btn" id="btnPlay" title="播放/暂停 (Space)">⏸</button>
+        <button class="ctrl-btn" id="btnNext" title="下一章 (→)">⏭</button>
+        <button class="ctrl-btn" id="btnChapters" title="章节">☰</button>
+        <button class="ctrl-btn" id="btnFs" title="全屏 (F)">⛶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const TAU = Math.PI * 2;
+const C = { cyan:'#00d4ff', purple:'#a855f7', pink:'#f472b6', green:'#34d399', amber:'#fbbf24', orange:'#fb923c', white:'#e6edf6', muted:'#8aa0bd' };
+const lerp  = (a,b,t)=>a+(b-a)*t;
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const easeInOut = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+const easeOut   = t => 1-Math.pow(1-t,3);
+const easeIn    = t => t*t*t;
+const rand      = (a,b)=>a+Math.random()*(b-a);
+const pick      = arr => arr[Math.floor(Math.random()*arr.length)];
+
+const PARAMS = (function(){
+  const q = new URL(location.href).searchParams;
+  return {
+    autoplay: q.get('autoplay')!=='0',
+    loop:     q.get('loop')!=='0',
+    start:    clamp(parseInt(q.get('start')||'1',10)||1, 1, 6),
+    controls: q.get('controls')!=='0',
+    learn:    q.get('learn') || '/chapter/3',
+    embed:    q.get('embed')==='1'
+  };
+})();
+document.getElementById('ctaBtn').href = PARAMS.learn;
+if(PARAMS.embed){
+  document.getElementById('embedHint').textContent = '// EMBEDDED MODE';
+}
+if(!PARAMS.controls){
+  document.body.classList.add('ui-hidden');
+}
+
+/* ---- canvas ---- */
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+let W=0, H=0, DPR = Math.min(window.devicePixelRatio||1, 2);
+function resize(){
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  initStars();
+}
+window.addEventListener('resize', resize);
+
+let stars = [];
+function initStars(){
+  stars = [];
+  const n = Math.min(150, Math.floor(W*H/13000));
+  const cols = [C.cyan, C.purple, C.pink, C.white];
+  for(let i=0;i<n;i++){
+    stars.push({ x:Math.random()*W, y:Math.random()*H, z:Math.random()*0.9+0.1,
+      c:pick(cols), tw:Math.random()*TAU, sp:rand(0.2,0.8) });
+  }
+}
+function drawStars(dt){
+  for(const s of stars){
+    s.tw += dt*0.001*(0.5+s.z);
+    s.y  += s.z*0.012*dt*0.06*s.sp;
+    if(s.y>H+2) s.y = -2;
+    const a = (0.25+0.55*Math.abs(Math.sin(s.tw)))*s.z;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = s.c;
+    const r = s.z*1.7;
+    ctx.fillRect(s.x, s.y, r, r);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function glowDot(x,y,r,color,alpha){
+  ctx.globalCompositeOperation='lighter';
+  const grd = ctx.createRadialGradient(x,y,0,x,y,Math.max(0.1,r));
+  grd.addColorStop(0, color);
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(x,y,Math.max(0.1,r),0,TAU); ctx.fill();
+  ctx.globalCompositeOperation='source-over';
+  ctx.globalAlpha = 1;
+}
+function gradText(cx,cy,text,fs,alpha,blur){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='900 '+fs+'px Orbitron, sans-serif';
+  const w = ctx.measureText(text).width;
+  const g = ctx.createLinearGradient(cx-w/2,cy-fs/2,cx+w/2,cy+fs/2);
+  g.addColorStop(0,'#00d4ff'); g.addColorStop(0.5,'#a855f7'); g.addColorStop(1,'#f472b6');
+  ctx.fillStyle = g;
+  if(blur>0){ ctx.shadowColor='rgba(0,212,255,.6)'; ctx.shadowBlur=blur; }
+  ctx.fillText(text, cx, cy);
+  ctx.restore();
+}
+function drawLabel(txt,x,y,color,alpha,size){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font = '600 '+(size||12)+'px Rajdhani, sans-serif';
+  ctx.fillText(txt, x, y);
+  ctx.restore();
+}
+function hexA(hex,a){
+  const n = parseInt(hex.slice(1),16);
+  return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+}
+
+function drawMessageBubble(x,y,w,h,color,alpha){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = hexA(color,0.6);
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.roundRect(x-w/2, y-h/2, w, h, 8);
+  ctx.stroke();
+  ctx.fillStyle = hexA(color,0.08);
+  ctx.fill();
+  ctx.restore();
+}
+
+/* ============================================================
+   场景定义: 提示词工程 CG
+   ============================================================ */
+
+const SCENES = [
+/* 01 PROLOGUE - 提示词的艺术 */
+{
+  id:'prologue', num:'01', title:'PROLOGUE', sub:'序章 · 学会提问',
+  caption:'提示词工程 — 让 AI 理解你的真正意图。',
+  duration: 8000,
+  init(){
+    this.parts = [];
+    const cx=W/2, cy=H/2;
+    for(let i=0;i<200;i++){
+      const ang = Math.random()*TAU;
+      const dist = Math.max(W,H)*rand(0.5,0.85);
+      this.parts.push({
+        x:cx+Math.cos(ang)*dist, y:cy+Math.sin(ang)*dist,
+        tx:cx+rand(-8,8), ty:cy+rand(-8,8),
+        vx:0, vy:0, r:rand(0.6,2),
+        c:pick([C.cyan,C.purple,C.pink,C.green]), life:1
+      });
+    }
+    this.burst=false; this.burstT=0; this.rings=[];
+  },
+  update(ctx,p,dt){
+    const cx=W/2, cy=H/2;
+    if(p < 0.55){
+      const cv = easeOut(clamp(p/0.45,0,1));
+      for(const pt of this.parts){
+        pt.x = lerp(pt.x, pt.tx, 0.03+cv*0.13);
+        pt.y = lerp(pt.y, pt.ty, 0.03+cv*0.13);
+        glowDot(pt.x, pt.y, pt.r*(0.8+cv*1.2), pt.c, 0.7);
+      }
+      if(p>0.38){
+        const g = clamp((p-0.38)/0.17,0,1);
+        glowDot(cx, cy, lerp(6,60,easeIn(g)), C.white, g);
+        glowDot(cx, cy, lerp(4,40,easeIn(g)), C.cyan, g*0.8);
+      }
+    } else {
+      if(!this.burst){
+        this.burst = true; this.burstT = 0;
+        for(const pt of this.parts){
+          const ang = Math.atan2(pt.y-cy, pt.x-cx)+rand(-0.3,0.3);
+          const sp = rand(2.5,9);
+          pt.vx = Math.cos(ang)*sp; pt.vy = Math.sin(ang)*sp;
+        }
+        this.rings.push({r:10,a:1}); this.rings.push({r:5,a:1});
+      }
+      this.burstT += dt;
+      if(Math.random()<0.05) this.rings.push({r:6,a:1});
+      for(const r of this.rings){ r.r += dt*0.5; r.a -= dt*0.0008; }
+      this.rings = this.rings.filter(r=>r.a>0);
+      ctx.globalCompositeOperation='lighter';
+      for(const r of this.rings){
+        ctx.strokeStyle = hexA(C.cyan, r.a*0.5);
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(cx,cy,r.r,0,TAU); ctx.stroke();
+      }
+      ctx.globalCompositeOperation='source-over';
+      for(const pt of this.parts){
+        pt.x += pt.vx*dt*0.06; pt.y += pt.vy*dt*0.06;
+        pt.vx *= 0.985; pt.vy *= 0.985;
+        pt.life -= dt*0.00018;
+        if(pt.life>0) glowDot(pt.x, pt.y, pt.r, pt.c, clamp(pt.life,0,1)*0.85);
+      }
+      if(this.burstT > 350){
+        const tg = clamp((this.burstT-350)/900,0,1);
+        gradText(cx, cy-Math.min(W*0.04,40), 'PROMPT', Math.min(W*0.105,130), tg, 50*tg);
+      }
+    }
+  }
+},
+
+/* 02 THE QUESTION - 提问的起点 */
+{
+  id:'question', num:'02', title:'THE QUESTION', sub:'起点 · 一切从提问开始',
+  caption:'一个好的提问，胜过一百个盲目的尝试。',
+  duration: 8000,
+  init(){
+    this.t=0;
+    this.prompts = [
+      {text:'"写一个排序算法"', color:C.pink, scale:1, phase:0},
+      {text:'"用 Python 实现归并排序，附带时间复杂度分析"', color:C.cyan, scale:0, phase:0},
+      {text:'"为归并排序添加内存使用优化和并行版本"', color:C.green, scale:0, phase:0}
+    ];
+    this.bloomT = 0;
+  },
+  update(ctx,p,dt){
+    this.t += dt;
+    const cx=W/2, cy=H*0.45;
+
+    // 第一阶段：原始提示浮现
+    const p1 = clamp(p/0.3,0,1);
+    const p2 = clamp((p-0.3)/0.25,0,1);
+    const p3 = clamp((p-0.55)/0.25,0,1);
+
+    if(p1>0){
+      this.prompts[0].scale = easeOut(p1);
+      const s = this.prompts[0].scale;
+      const fs = Math.min(W*0.032,30);
+      ctx.save();
+      ctx.globalAlpha = s*0.9;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='500 '+fs+'px "Noto Sans SC",sans-serif';
+      ctx.fillStyle = hexA(C.pink, 0.8);
+      ctx.fillText(this.prompts[0].text, cx, cy);
+      ctx.restore();
+      // 移除标记
+      if(p1>0.5){
+        const xf = clamp((p1-0.5)/0.3,0,1);
+        ctx.save();
+        ctx.globalAlpha = xf*0.9;
+        ctx.strokeStyle = hexA(C.pink, xf);
+        ctx.lineWidth = 2;
+        const tw = ctx.measureText(this.prompts[0].text).width || 240;
+        ctx.beginPath();
+        ctx.moveTo(cx-tw/2-8, cy); ctx.lineTo(cx+tw/2+8, cy);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+    // 第二阶段：更好的提示
+    if(p2>0 && this.prompts[1].scale<1){
+      this.prompts[1].scale = easeOut(p2);
+      this.prompts[0].scale = 1 - easeOut(p2)*0.5;
+      const s = this.prompts[1].scale;
+      if(s>0){
+        const fs = Math.min(W*0.032,30);
+        ctx.save();
+        ctx.globalAlpha = s*0.95;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font='500 '+fs+'px "Noto Sans SC",sans-serif';
+        ctx.fillStyle = hexA(C.cyan, s);
+        ctx.fillText(this.prompts[1].text, cx, cy);
+        ctx.restore();
+      }
+    }
+    // 第三阶段：最佳提示
+    if(p3>0 && this.prompts[2].scale<1){
+      this.prompts[2].scale = easeOut(p3);
+      this.prompts[1].scale = 1 - easeOut(p3)*0.5;
+      const s = this.prompts[2].scale;
+      if(s>0){
+        const fs = Math.min(W*0.032,30);
+        ctx.save();
+        ctx.globalAlpha = s*0.95;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font='500 '+fs+'px "Noto Sans SC",sans-serif';
+        ctx.fillStyle = hexA(C.green, s);
+        ctx.fillText(this.prompts[2].text, cx, cy);
+        ctx.restore();
+      }
+    }
+
+    // 质量分数
+    if(p>0.15){
+      const qp = clamp(p/0.15,0,1);
+      const scores = [
+        {x:W*0.22, label:'简单提问', val:0.3, c:C.pink},
+        {x:W*0.50, label:'明确任务', val:0.7, c:C.amber},
+        {x:W*0.78, label:'精准定制', val:0.95, c:C.green}
+      ];
+      for(const s of scores){
+        const bp = clamp((p - (s.val-0.2))/0.3,0,1);
+        if(bp>0){
+          glowDot(s.x, H*0.7, 6*bp, s.c, bp*0.9);
+          drawLabel(s.label, s.x, H*0.76, s.c, bp*0.9, 12);
+        }
+      }
+      drawLabel('FROM VAGUE → TO PRECISE', W/2, H*0.85, C.muted, qp*0.7, 14);
+    }
+  }
+},
+
+/* 03 THE ELEMENTS - 提示词五要素 */
+{
+  id:'elements', num:'03', title:'ELEMENTS', sub:'要素 · 构建完美提示',
+  caption:'角色 · 任务 · 上下文 · 格式 · 约束 — 五者缺一不可',
+  duration: 10000,
+  init(){
+    this.t=0;
+    this.elems = [
+      {label:'角色', sub:'Persona', icon:'🎭', color:C.pink, x:0, y:0},
+      {label:'任务', sub:'Task', icon:'🎯', color:C.cyan, x:0, y:0},
+      {label:'上下文', sub:'Context', icon:'📚', color:C.green, x:0, y:0},
+      {label:'格式', sub:'Format', icon:'📐', color:C.amber, x:0, y:0},
+      {label:'约束', sub:'Constraints', icon:'⚖️', color:C.purple, x:0, y:0}
+    ];
+  },
+  update(ctx,p,dt){
+    this.t += dt;
+    const cx=W/2, cy=H*0.48;
+    const n = this.elems.length;
+    const R = Math.min(W,H)*0.22;
+
+    // 中心核
+    const coreP = clamp(p/0.15,0,1);
+    if(coreP>0){
+      glowDot(cx,cy, 20*coreP, C.cyan, coreP*0.6);
+      glowDot(cx,cy, 8*coreP, C.white, coreP);
+      drawLabel('PROMPT', cx, cy, C.cyan, coreP*0.9, Math.min(W*0.025,22));
+    }
+
+    // 五要素圆环
+    const ringP = clamp((p-0.1)/0.4,0,1);
+    if(ringP>0){
+      for(let i=0;i<n;i++){
+        const e = this.elems[i];
+        const ang = (i/n)*TAU - Math.PI/2;
+        const a = easeOut(clamp((ringP - i*0.12)/0.3,0,1));
+        if(a<=0) continue;
+        const x = cx+Math.cos(ang)*R, y = cy+Math.sin(ang)*R*0.7;
+        e.x=x; e.y=y;
+
+        // 节点球
+        glowDot(x, y, 16, e.color, a*0.9);
+        glowDot(x, y, 6, C.white, a*0.6);
+
+        // 标签
+        const fs = Math.min(W*0.028,24);
+        drawLabel(e.label, x, y-22, e.color, a, Math.min(W*0.02,18));
+        drawLabel(e.sub, x, y+28, C.muted, a*0.7, 11);
+
+        // 连接到中心
+        if(a>0.3){
+          ctx.globalCompositeOperation='lighter';
+          ctx.strokeStyle = hexA(e.color, a*0.2);
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke();
+          ctx.globalCompositeOperation='source-over';
+        }
+      }
+    }
+
+    // 底部总结
+    const sp = clamp((p-0.7)/0.2,0,1);
+    if(sp>0){
+      drawLabel('CLARITY + CONTEXT + CONSTRAINTS = QUALITY', W/2, H*0.82, C.amber, sp*0.85, Math.min(W*0.016,16));
+    }
+  }
+},
+
+/* 04 FEW-SHOT - 示例的力量 */
+{
+  id:'fewshot', num:'04', title:'FEW-SHOT', sub:'示例 · 让模型学会你的模式',
+  caption:'给一个例子，模型理解任务；给三个例子，模型学会模式。',
+  duration: 9000,
+  init(){
+    this.t=0;
+    this.examples = [
+      {src:'"今天心情很好" → 积极', color:C.green, done:false},
+      {src:'"服务态度很差" → 消极', color:C.pink, done:false},
+      {src:'"明天可能下雨" → 中性', color:C.amber, done:false},
+      {src:'"产品超出预期" → ？', color:C.cyan, isQ:true}
+    ];
+    this.exRow = 0;
+  },
+  update(ctx,p,dt){
+    this.t += dt;
+    const cx=W/2;
+    const startY = H*0.28;
+    const gap = Math.min(64, H*0.08);
+
+    // Zero-shot vs Few-shot 对比
+    for(let i=0;i<this.examples.length;i++){
+      const ex = this.examples[i];
+      const ep = clamp((p - i*0.14)/0.22,0,1);
+      if(ep<=0) continue;
+      const a = easeOut(ep);
+      const y = startY + i*gap;
+
+      // 气泡
+      ctx.save();
+      ctx.globalAlpha = a*0.9;
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      const fs = Math.min(W*0.024,20);
+      ctx.font='500 '+fs+'px "Noto Sans SC",sans-serif';
+
+      // 箭头连接
+      if(i>0 && a>0.5){
+        const prevY = startY + (i-1)*gap;
+        ctx.strokeStyle = hexA(C.muted, a*0.2);
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4,6]);
+        ctx.beginPath(); ctx.moveTo(W*0.28, prevY+gap/2); ctx.lineTo(W*0.28, y-gap/2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      const x = ex.isQ ? W*0.38 : W*0.22;
+      ctx.fillStyle = hexA(ex.color, a);
+      ctx.fillText(ex.src, x, y);
+      ctx.restore();
+    }
+
+    // 标签对比
+    const zp = clamp(p/0.3,0,1);
+    if(zp>0){
+      drawLabel('ZERO-SHOT', W*0.22, H*0.18, C.pink, zp*0.7, Math.min(W*0.022,20));
+      drawLabel('FEW-SHOT (3 EXAMPLES)', W*0.55, H*0.18, C.green, zp*0.7, Math.min(W*0.022,20));
+
+      // 精度增长
+      const accP = clamp((p-0.15)/0.35,0,1);
+      if(accP>0){
+        const barY = H*0.82;
+        // Zero-shot bar
+        const w1 = Math.min(W*0.12, 120) * 0.55;
+        ctx.fillStyle = hexA(C.pink, 0.5*accP);
+        ctx.fillRect(W*0.22-w1/2, barY, w1, 14);
+        drawLabel('~55%', W*0.22, barY+24, C.pink, accP*0.7, 12);
+
+        // Few-shot bar
+        const w2 = Math.min(W*0.12, 120) * 0.88;
+        ctx.fillStyle = hexA(C.green, 0.5*accP);
+        ctx.fillRect(W*0.55-w2/2, barY, w2, 14);
+        drawLabel('~88%', W*0.55, barY+24, C.green, accP*0.7, 12);
+
+        drawLabel('ACCURACY COMPARISON', W/2, barY-24, C.muted, accP*0.6, 12);
+      }
+    }
+  }
+},
+
+/* 05 CHAIN OF THOUGHT - 思维链 */
+{
+  id:'cot', num:'05', title:'CHAIN OF THOUGHT', sub:'推理 · 让模型一步步思考',
+  caption:'"让我们一步一步思考" — 最简单的提示，最强大的效果。',
+  duration: 9000,
+  init(){
+    this.t=0;
+    this.steps = [
+      {text:'小明有 5 个苹果，给了小红 2 个，', sub:'初始状态', color:C.cyan},
+      {text:'又买了 3 个，', sub:'中间变化', color:C.green},
+      {text:'还被小华拿走了 1 个。', sub:'最终变化', color:C.pink},
+      {text:'小明现在有几个苹果？', sub:'答案：5-2+3-1 = 5个 ✓', color:C.amber, isAns:true}
+    ];
+  },
+  update(ctx,p,dt){
+    this.t += dt;
+    const cx=W/2;
+    const startY = H*0.2;
+    const gap = Math.min(72, H*0.085);
+
+    // 步骤链
+    for(let i=0;i<this.steps.length;i++){
+      const s = this.steps[i];
+      const ep = clamp((p - i*0.16)/0.25,0,1);
+      if(ep<=0) continue;
+      const a = easeOut(ep);
+      const y = startY + i*gap;
+
+      // 链式连接
+      if(i>0){
+        const prevY = startY + (i-1)*gap;
+        ctx.strokeStyle = hexA(C.cyan, a*0.25);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, prevY+gap/2-8);
+        ctx.lineTo(cx, y-gap/2+8);
+        ctx.stroke();
+        // 箭头点
+        if(a>0.5){
+          glowDot(cx, lerp(prevY+gap/2, y-gap/2, 0.5), 3, C.cyan, 0.5);
+        }
+      }
+
+      // 步骤框
+      const fs = Math.min(W*0.028,24);
+      const tw = ctx.measureText ? ctx.measureText(s.text).width || 300 : 300;
+      const bw = Math.min(tw+40, W*0.7);
+
+      ctx.save();
+      ctx.globalAlpha = a*0.92;
+
+      if(s.isAns){
+        // 答案用特殊样式
+        const grd = ctx.createLinearGradient(cx-bw/2,0,cx+bw/2,0);
+        grd.addColorStop(0,'rgba(251,191,36,0.12)');
+        grd.addColorStop(0.5,'rgba(251,191,36,0.18)');
+        grd.addColorStop(1,'rgba(251,191,36,0.12)');
+        ctx.fillStyle = grd;
+        ctx.beginPath(); ctx.roundRect(cx-bw/2-8, y-20, bw+16, 44, 8); ctx.fill();
+        ctx.strokeStyle = hexA(C.amber, 0.4);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(cx-bw/2-8, y-20, bw+16, 44, 8); ctx.stroke();
+      } else {
+        ctx.fillStyle = hexA(s.color, 0.08);
+        ctx.beginPath(); ctx.roundRect(cx-bw/2-8, y-20, bw+16, 44, 6); ctx.fill();
+        ctx.strokeStyle = hexA(s.color, 0.3);
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(cx-bw/2-8, y-20, bw+16, 44, 6); ctx.stroke();
+      }
+
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='500 '+fs+'px "Noto Sans SC",sans-serif';
+      ctx.fillStyle = s.isAns ? hexA(C.amber, a) : hexA(s.color, a);
+      ctx.fillText(s.text, cx, y);
+
+      if(!s.isAns && a>0.6){
+        ctx.globalAlpha = a*0.6;
+        ctx.font='400 11px Rajdhani, sans-serif';
+        ctx.fillStyle = hexA(C.muted, 0.8);
+        ctx.fillText(s.sub, cx, y+26);
+      }
+      ctx.restore();
+    }
+
+    // 标签
+    const tp = clamp((p-0.05)/0.2,0,1);
+    if(tp>0){
+      drawLabel('CHAIN-OF-THOUGHT REASONING', W/2, H*0.92, C.cyan, tp*0.8, Math.min(W*0.018,18));
+    }
+  }
+},
+
+/* 06 FINALE - 总结 */
+{
+  id:'finale', num:'06', title:'FINALE', sub:'终章 · 学会与 AI 对话',
+  caption:'提示词工程 — 连接人类意图与机器智能的桥梁。',
+  duration: 8000, cta:true,
+  init(){
+    this.t=0;
+    const cx=W/2, cy=H*0.42;
+    this.rays = [];
+    for(let i=0;i<24;i++){
+      this.rays.push({ ang:(i/24)*TAU, sp:rand(0.3,1.2), len:rand(0.2,0.6), c:pick([C.cyan,C.purple,C.pink]) });
+    }
+    this.parts = [];
+    for(let i=0;i<120;i++){
+      this.parts.push({ ang:Math.random()*TAU, r:rand(40,Math.max(W,H)*0.5),
+        sp:rand(0.2,0.8)*(Math.random()<0.5?-1:1), c:pick([C.cyan,C.purple,C.pink,C.white]),
+        tw:Math.random()*TAU });
+    }
+  },
+  update(ctx,p,dt){
+    this.t += dt;
+    const cx=W/2, cy=H*0.42;
+    ctx.globalCompositeOperation='lighter';
+    for(const r of this.rays){
+      const len = (Math.min(W,H)*0.5) * r.len * (0.7+0.3*Math.sin(this.t*0.002+r.ang));
+      const x1 = cx+Math.cos(r.ang)*30, y1 = cy+Math.sin(r.ang)*30;
+      const x2 = cx+Math.cos(r.ang)*len, y2 = cy+Math.sin(r.ang)*len;
+      const g = ctx.createLinearGradient(x1,y1,x2,y2);
+      g.addColorStop(0, hexA(r.c,0.5));
+      g.addColorStop(1, hexA(r.c,0));
+      ctx.strokeStyle=g; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    }
+    for(const pt of this.parts){
+      pt.r += pt.sp*dt*0.03;
+      pt.tw += dt*0.003;
+      const x = cx+Math.cos(pt.ang)*Math.abs(pt.r);
+      const y = cy+Math.sin(pt.ang)*Math.abs(pt.r)*0.6;
+      glowDot(x,y, 1.6+Math.sin(pt.tw)*0.8, pt.c, 0.5+0.4*Math.sin(pt.tw));
+    }
+    ctx.globalCompositeOperation='source-over';
+    glowDot(cx,cy, 28, C.cyan, 0.7);
+    glowDot(cx,cy, 14, C.white, 0.9);
+    const tp = clamp(p/0.25,0,1);
+    gradText(cx, cy-Math.min(W*0.05,60), 'PROMPT', Math.min(W*0.092,110), tp, 40*tp);
+  }
+}
+];
+
+/* ---- Director ---- */
+const totalDur = SCENES.reduce((s,sc)=>s+sc.duration,0);
+function sceneStart(i){ let s=0; for(let k=0;k<i;k++) s+=SCENES[k].duration; return s; }
+
+const Director = {
+  idx: PARAMS.start-1,
+  t: 0, paused: false, lastTs: 0, switching: false,
+  go(i, keepTime){
+    i = ((i % SCENES.length)+SCENES.length)%SCENES.length;
+    this.idx = i; this.t = keepTime? this.t : 0;
+    const sc = SCENES[i]; if(sc.init) sc.init();
+    updateSceneDOM(i);
+    broadcast({event:'sceneChange', index:i, id:sc.id, title:sc.title});
+  },
+  next(){ this.go(this.idx+1); },
+  prev(){ this.go(this.idx-1); },
+  toggle(){
+    this.paused = !this.paused;
+    document.getElementById('btnPlay').textContent = this.paused?'▶':'⏸';
+    document.getElementById('pausedBadge').classList.toggle('show', this.paused);
+    document.body.classList.toggle('playing', !this.paused && PARAMS.controls);
+    broadcast({event:this.paused?'paused':'played'});
+  },
+  seekGlobal(gms){
+    let acc=0, i=0;
+    for(let k=0;k<SCENES.length;k++){
+      if(acc+SCENES[k].duration > gms){ i=k; break; }
+      acc += SCENES[k].duration; i=k;
+    }
+    this.idx = i; this.t = gms - sceneStart(i);
+    const sc = SCENES[i]; if(sc.init) sc.init();
+    updateSceneDOM(i);
+  },
+  step(dt){
+    if(this.paused) return;
+    this.t += dt;
+    const sc = SCENES[this.idx];
+    if(this.t >= sc.duration){
+      if(this.idx === SCENES.length-1){
+        if(PARAMS.loop){ this.t = 0; this.go(0); }
+        else { this.paused = true; broadcast({event:'ended'}); }
+      } else {
+        this.t = 0; this.go(this.idx+1);
+      }
+    }
+  },
+  progress(){ return (sceneStart(this.idx) + this.t) / totalDur; }
+};
+
+/* ---- DOM ---- */
+const elNum=document.getElementById('sceneNum'), elTitle=document.getElementById('sceneTitle');
+const elSub=document.getElementById('sceneSub'), elCaption=document.getElementById('caption');
+const elCta=document.getElementById('ctaWrap'), elProgress=document.getElementById('progressFill');
+const elTime=document.getElementById('timeLabel'), elInfo=document.getElementById('sceneInfo');
+let curCta=false;
+
+function updateSceneDOM(i){
+  const sc = SCENES[i];
+  elInfo.classList.add('hide'); elCaption.classList.remove('show');
+  setTimeout(()=>{
+    elNum.textContent = '// '+sc.num; elTitle.textContent = sc.title;
+    elSub.textContent = sc.sub; elCaption.textContent = sc.caption;
+    elInfo.classList.remove('hide'); elCaption.classList.add('show');
+  }, 280);
+  if(sc.cta && !curCta){ elCta.classList.add('show'); curCta=true; }
+  else if(!sc.cta && curCta){ elCta.classList.remove('show'); curCta=false; }
+  document.querySelectorAll('.chapter-marks .mk').forEach((m,k)=>m.classList.toggle('cur', k===i));
+  document.querySelectorAll('.chapter-pop .item').forEach((m,k)=>m.classList.toggle('active', k===i));
+}
+
+/* ---- chapter marks ---- */
+const elMarks = document.getElementById('chapterMarks');
+SCENES.forEach((sc,i)=>{
+  const g = (sceneStart(i)+sc.duration/2)/totalDur*100;
+  const mk = document.createElement('div');
+  mk.className='mk'; mk.style.left = g+'%';
+  mk.title = sc.num+' · '+sc.title;
+  mk.addEventListener('click', e=>{ e.stopPropagation(); Director.go(i); });
+  elMarks.appendChild(mk);
+});
+
+/* ---- chapter popup ---- */
+const elPop = document.getElementById('chapterPop');
+SCENES.forEach((sc,i)=>{
+  const it = document.createElement('div');
+  it.className='item'; it.innerHTML = '<span class="n">'+sc.num+'</span><span>'+sc.title+'</span>';
+  it.addEventListener('click', ()=>{ Director.go(i); elPop.classList.remove('show'); });
+  elPop.appendChild(it);
+});
+
+/* ---- controls ---- */
+document.getElementById('btnPrev').addEventListener('click', ()=>Director.prev());
+document.getElementById('btnNext').addEventListener('click', ()=>Director.next());
+document.getElementById('btnPlay').addEventListener('click', ()=>Director.toggle());
+document.getElementById('btnChapters').addEventListener('click', ()=>elPop.classList.toggle('show'));
+document.getElementById('btnFs').addEventListener('click', ()=>{
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.(); }
+  else { document.exitFullscreen?.(); }
+});
+document.getElementById('progressTrack').addEventListener('click', e=>{
+  const r = e.currentTarget.getBoundingClientRect();
+  Director.seekGlobal(((e.clientX-r.left)/r.width)*totalDur);
+});
+canvas.addEventListener('click', ()=>Director.toggle());
+window.addEventListener('keydown', e=>{
+  if(e.key===' '){ e.preventDefault(); Director.toggle(); }
+  else if(e.key==='ArrowRight'){ Director.next(); }
+  else if(e.key==='ArrowLeft'){ Director.prev(); }
+  else if(e.key==='f'||e.key==='F'){ toggleFullscreen(); }
+  else if(e.key==='Escape'){ elPop.classList.remove('show'); }
+});
+
+function broadcast(msg){
+  msg.type='prompt-cg-event';
+  try{ window.parent.postMessage(msg,'*'); }catch(e){}
+}
+window.addEventListener('message', e=>{
+  const d = e.data;
+  if(!d || d.type!=='prompt-cg') return;
+  switch(d.cmd){
+    case 'play': if(Director.paused) Director.toggle(); break;
+    case 'pause': if(!Director.paused) Director.toggle(); break;
+    case 'toggle': Director.toggle(); break;
+    case 'next': Director.next(); break;
+    case 'prev': Director.prev(); break;
+    case 'goto': if(d.chapter) Director.go(d.chapter-1); break;
+  }
+});
+
+let idleTimer = null;
+function poke(){
+  document.body.classList.remove('ui-hidden');
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(()=>{ if(!Director.paused && PARAMS.controls) document.body.classList.add('ui-hidden'); }, 3500);
+}
+window.addEventListener('mousemove', poke);
+window.addEventListener('keydown', poke);
+
+function fmt(ms){ ms=Math.max(0,ms); const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+function loop(ts){
+  if(!Director.lastTs) Director.lastTs = ts;
+  let dt = ts - Director.lastTs;
+  Director.lastTs = ts;
+  if(dt>80) dt=80;
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle = 'rgba(10,10,26,0.16)';
+  ctx.fillRect(0,0,W,H);
+  drawStars(dt);
+  const sc = SCENES[Director.idx];
+  let p = clamp(Director.t / sc.duration, 0, 1);
+  try{ sc.update(ctx, p, dt); }catch(err){}
+  Director.step(dt);
+  const prog = Director.progress();
+  elProgress.style.width = (prog*100)+'%';
+  elTime.textContent = fmt(sceneStart(Director.idx)+Director.t)+' / '+fmt(totalDur);
+  document.querySelectorAll('.chapter-marks .mk').forEach((m,k)=>{ m.classList.toggle('passed', k<Director.idx); });
+  broadcast({event:'progress', time:sceneStart(Director.idx)+Director.t, total:totalDur, progress:prog});
+  requestAnimationFrame(loop);
+}
+
+resize();
+Director.go(PARAMS.start-1);
+if(PARAMS.autoplay){ document.body.classList.add('playing'); }
+else { Director.paused=true; document.getElementById('btnPlay').textContent='▶'; }
+poke();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

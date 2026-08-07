@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大模型训练模拟器 · Training Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050714;--bg-2:#0a0e27;
+  --panel:rgba(255,255,255,.035);--panel-2:rgba(255,255,255,.06);
+  --border:rgba(0,217,255,.18);
+  --cyan:#00d9ff;--purple:#a855f7;--pink:#ec4899;--green:#34d399;--amber:#fbbf24;--red:#f87171;
+  --text:#e6edf6;--muted:#8aa0bd;
+  --grad:linear-gradient(120deg,#00d9ff 0%,#a855f7 55%,#ec4899 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',system-ui,sans-serif;line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(60vw 60vw at 10% 5%, rgba(0,217,255,.10), transparent 60%),
+  radial-gradient(55vw 55vw at 90% 30%, rgba(168,85,247,.10), transparent 60%),
+  radial-gradient(60vw 60vw at 50% 110%, rgba(236,72,153,.08), transparent 60%);}
+#bg-canvas{position:fixed;inset:0;z-index:1;opacity:.4;pointer-events:none}
+.wrap{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 20px 80px}
+
+/* 顶栏 */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0;position:sticky;top:0;z-index:30;
+  backdrop-filter:blur(12px);background:rgba(5,7,20,.7);border-bottom:1px solid var(--border);margin:0 -20px;padding-left:20px;padding-right:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:18px;letter-spacing:2px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand .tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:6px}
+.topbar .right{display:flex;gap:10px;align-items:center}
+.btn-ghost{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:14px;cursor:pointer;
+  background:transparent;border:1px solid var(--border);color:var(--cyan);padding:7px 14px;border-radius:8px;transition:.25s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-ghost:hover{background:rgba(0,217,255,.1);box-shadow:0 0 14px rgba(0,217,255,.25)}
+.btn-ghost.solid{background:var(--grad);color:#04122a;border:none;font-weight:700}
+
+/* Hero */
+.hero{padding:46px 0 30px;text-align:center}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border:1px solid var(--border);border-radius:999px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:2px;background:rgba(0,217,255,.05);margin-bottom:18px}
+.hero .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(36px,6.5vw,68px);line-height:1;letter-spacing:1px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:12px}
+.hero .en{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--muted);letter-spacing:6px;margin-bottom:14px}
+.hero p{color:var(--muted);max-width:720px;margin:0 auto;font-size:15px}
+
+/* 全局模型状态条 */
+.model-bar{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:center;
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-top:24px}
+@media(max-width:700px){.model-bar{grid-template-columns:1fr 1fr;}}
+.mb-item{display:flex;align-items:center;gap:10px}
+.mb-item .ic{font-size:22px}
+.mb-item .t{font-size:11px;color:var(--muted);letter-spacing:1px;font-family:'JetBrains Mono',monospace}
+.mb-item .v{font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;color:var(--text)}
+.mb-item .v.cyan{color:var(--cyan)}.mb-item .v.purple{color:var(--purple)}.mb-item .v.pink{color:var(--pink)}.mb-item .v.green{color:var(--green)}
+.stage-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 12px;border-radius:999px;font-weight:700;letter-spacing:1px;white-space:nowrap}
+.stage-pill.s0{background:rgba(0,217,255,.15);color:var(--cyan);border:1px solid rgba(0,217,255,.4)}
+.stage-pill.s1{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.4)}
+.stage-pill.s2{background:rgba(236,72,153,.15);color:var(--pink);border:1px solid rgba(236,72,153,.4)}
+.stage-pill.s3{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.4)}
+
+/* 三阶段 Tab */
+.stage-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+.stage-tab{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.stage-tab:hover{transform:translateY(-3px)}
+.stage-tab.active{border-color:rgba(0,217,255,.5);background:rgba(0,217,255,.06)}
+.stage-tab.active.s1{border-color:rgba(168,85,247,.5);background:rgba(168,85,247,.06)}
+.stage-tab.active.s2{border-color:rgba(236,72,153,.5);background:rgba(236,72,153,.06)}
+.stage-tab.locked{opacity:.4;cursor:not-allowed}
+.stage-tab.locked:hover{transform:none}
+.stage-tab .st-num{font-family:'Orbitron',sans-serif;font-weight:900;font-size:30px;line-height:1}
+.stage-tab.s0 .st-num{color:var(--cyan)}.stage-tab.s1 .st-num{color:var(--purple)}.stage-tab.s2 .st-num{color:var(--pink)}
+.stage-tab .st-name{font-family:'Noto Sans SC',sans-serif;font-weight:700;font-size:18px;margin-top:4px}
+.stage-tab .st-en{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px}
+.stage-tab .st-prog{position:absolute;bottom:0;left:0;height:3px;background:var(--cyan);width:0;transition:width .5s}
+.stage-tab.s1 .st-prog{background:var(--purple)}.stage-tab.s2 .st-prog{background:var(--pink)}
+.stage-tab .lock{position:absolute;top:14px;right:14px;font-size:14px}
+.stage-tab .check{position:absolute;top:14px;right:14px;color:var(--green);font-size:16px;display:none}
+.stage-tab.done .check{display:block}
+
+/* 面板 */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:28px;margin-top:24px;backdrop-filter:blur(8px)}
+.panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.panel-title h2{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px}
+.panel-title h2 .ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(0,217,255,.12);font-size:16px}
+.panel-title .sub{font-size:13px;color:var(--muted)}
+
+/* Loss 图 */
+.loss-wrap{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:18px}
+.loss-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:12px}
+.loss-head .l{color:var(--muted);letter-spacing:1px}
+.loss-head .r{color:var(--cyan)}
+.loss-head .r.purple{color:var(--purple)}.loss-head .r.pink{color:var(--pink)}
+#loss-canvas{width:100%;height:160px;display:block}
+.loss-foot{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px}
+
+/* ===== 阶段 1 预训练：猜下一个 token ===== */
+.pre-game{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+@media(max-width:820px){.pre-game{grid-template-columns:1fr}}
+.pre-left{display:flex;flex-direction:column;gap:14px}
+.context-box{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:12px;padding:18px;min-height:80px}
+.context-box .clabel{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:8px}
+.context-tokens{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctx-tok{padding:6px 11px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;
+  background:rgba(0,217,255,.1);color:var(--cyan);border:1px solid rgba(0,217,255,.3)}
+.ctx-tok.cursor{background:transparent;border:1px dashed var(--cyan);color:var(--cyan);min-width:60px;animation:blinkc 1s infinite}
+@keyframes blinkc{0%,49%{border-color:var(--cyan)}50%,100%{border-color:transparent}}
+.qmark{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:14px;margin:0 4px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ch-btn{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:.25s;
+  font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600;color:var(--text);text-align:center;position:relative;overflow:hidden}
+.ch-btn:hover:not(:disabled){border-color:rgba(0,217,255,.5);transform:translateY(-2px);background:rgba(0,217,255,.08)}
+.ch-btn:disabled{cursor:not-allowed}
+.ch-btn.correct{background:rgba(52,211,153,.2);border-color:var(--green);color:var(--green);animation:flash .5s}
+.ch-btn.wrong{background:rgba(248,113,113,.18);border-color:var(--red);color:var(--red);animation:shake .4s}
+.ch-btn.reveal{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.5);color:var(--green)}
+@keyframes flash{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.ch-btn .prob{position:absolute;bottom:4px;right:8px;font-size:10px;font-weight:400;color:var(--muted)}
+.pre-right{display:flex;flex-direction:column;gap:14px}
+.info-card{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.info-card h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:var(--cyan);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.info-card p{font-size:13px;color:var(--muted)}
+.info-card .big{font-family:'Orbitron',sans-serif;font-weight:900;font-size:28px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.score-row{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.05)}
+.score-row:last-child{border:none}
+.score-row .k{color:var(--muted)}.score-row .v{color:var(--cyan);font-weight:700}
+
+.next-btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;cursor:pointer;padding:12px 24px;border-radius:10px;
+  border:none;background:var(--grad);color:#04122a;transition:.25s;letter-spacing:.5px;margin-top:8px;width:100%}
+.next-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px -8px rgba(0,217,255,.5)}
+.next-btn:disabled{opacity:.4;cursor:not-allowed;background:var(--panel-2);color:var(--muted)}
+
+/* ===== 阶段 2 SFT ===== */
+.sft-game{display:flex;flex-direction:column;gap:16px}
+.sft-prompt{background:linear-gradient(120deg,rgba(168,85,247,.1),rgba(168,85,247,.03));border:1px solid rgba(168,85,247,.35);
+  border-radius:12px;padding:16px 18px;display:flex;gap:12px;align-items:flex-start}
+.sft-prompt .u-ic{font-size:24px;flex-shrink:0}
+.sft-prompt .u-txt{font-size:15px;color:var(--text)}
+.sft-prompt .u-txt .role{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple);letter-spacing:2px;display:block;margin-bottom:4px}
+.answer-list{display:flex;flex-direction:column;gap:10px}
+.answer-card{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:.25s;position:relative;overflow:hidden}
+.answer-card:hover:not(.locked){border-color:rgba(168,85,247,.5);transform:translateX(4px)}
+.answer-card .a-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.answer-card .a-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px}
+.answer-card .a-body{font-size:14px;color:var(--text)}
+.answer-card.picked-good{border-color:var(--green);background:rgba(52,211,153,.1)}
+.answer-card.picked-bad{border-color:var(--red);background:rgba(248,113,113,.1)}
+.answer-card.reveal-good{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.answer-card.reveal-bad{border-color:rgba(248,113,113,.4)}
+.answer-card.locked{cursor:default}
+.answer-card .verdict{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;border-radius:5px;margin-top:8px;display:inline-block}
+.answer-card .verdict.good{background:rgba(52,211,153,.15);color:var(--green)}
+.answer-card .verdict.bad{background:rgba(248,113,113,.15);color:var(--red)}
+.answer-card .why{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* ===== 阶段 3 对齐 ===== */
+.align-game{display:flex;flex-direction:column;gap:14px}
+.align-prompt{background:linear-gradient(120deg,rgba(236,72,153,.1),rgba(236,72,153,.03));border:1px solid rgba(236,72,153,.35);
+  border-radius:12px;padding:16px 18px}
+.align-prompt .label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--pink);letter-spacing:2px;margin-bottom:4px}
+.align-prompt .q{font-size:15px}
+.align-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+@media(max-width:700px){.align-vs{grid-template-columns:1fr;}.align-vs .vs-mid{display:none}}
+.align-card{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.25s;display:flex;flex-direction:column;gap:8px}
+.align-card:hover:not(.locked){border-color:rgba(236,72,153,.5);transform:translateY(-3px)}
+.align-card .a-lbl{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px}
+.align-card .a-txt{font-size:14px;color:var(--text);flex:1}
+.align-card.win{border-color:var(--green);background:rgba(52,211,153,.1)}
+.align-card.lose{border-color:var(--red);background:rgba(248,113,113,.08);opacity:.7}
+.align-card.locked{cursor:default}
+.align-card .reward{font-family:'Orbitron',sans-serif;font-weight:900;font-size:18px}
+.align-card.win .reward{color:var(--green)}.align-card.lose .reward{color:var(--red)}
+.vs-mid{display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:900;font-size:20px;color:var(--pink)}
+.dim-row{display:flex;gap:10px;margin-top:8px}
+.dim-pill{flex:1;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
+.dim-pill .d-name{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.dim-pill .d-val{font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px}
+.dim-pill.h .d-val{color:var(--green)}.dim-pill.s .d-val{color:var(--cyan)}.dim-pill.u .d-val{color:var(--amber)}
+
+/* Toast */
+.toast-float{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:100;
+  background:rgba(5,7,20,.95);border:1px solid var(--cyan);color:var(--cyan);padding:12px 24px;border-radius:10px;
+  font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;opacity:0;transition:.4s;pointer-events:none;
+  box-shadow:0 0 30px rgba(0,217,255,.3);backdrop-filter:blur(10px)}
+.toast-float.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast-float.ok{border-color:var(--green);color:var(--green);box-shadow:0 0 30px rgba(52,211,153,.3)}
+.toast-float.err{border-color:var(--red);color:var(--red);box-shadow:0 0 30px rgba(248,113,113,.3)}
+
+/* 阶段完成提示 */
+.stage-done{display:none;text-align:center;padding:20px;background:linear-gradient(120deg,rgba(52,211,153,.08),rgba(0,217,255,.05));
+  border:1px solid rgba(52,211,153,.3);border-radius:14px;margin-top:16px}
+.stage-done.show{display:block;animation:born .5s}
+.stage-done h3{font-family:'Orbitron',sans-serif;font-weight:700;font-size:20px;color:var(--green);margin-bottom:8px}
+.stage-done p{font-size:14px;color:var(--muted)}
+@keyframes born{0%{opacity:0;transform:translateY(-12px)}100%{opacity:1;transform:none}}
+
+/* 最终毕业 */
+.finale{display:none;position:fixed;inset:0;z-index:200;background:rgba(5,7,20,.97);backdrop-filter:blur(20px);
+  align-items:center;justify-content:center;padding:20px;flex-direction:column;text-align:center}
+.finale.show{display:flex;animation:born .8s}
+.finale canvas{position:absolute;inset:0}
+.finale-inner{position:relative;z-index:2;max-width:680px}
+.finale .pre{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green);letter-spacing:4px;margin-bottom:14px}
+.finale h2{font-family:'Noto Sans SC',sans-serif;font-weight:900;font-size:clamp(36px,7vw,68px);line-height:1.1;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:14px}
+.finale .en{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--muted);letter-spacing:5px;margin-bottom:22px}
+.finale p{color:var(--text);opacity:.85;font-size:16px;margin-bottom:30px;font-weight:300}
+.finale .cert{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}
+.finale .cert .ci{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+.finale .cert .ci .cv{font-family:'Orbitron',sans-serif;font-weight:900;font-size:24px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.finale .cert .ci .cl{font-size:11px;color:var(--muted);margin-top:2px}
+.finale-btn{display:inline-flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:18px;letter-spacing:3px;padding:18px 42px;border-radius:50px;
+  color:#04122a;background:var(--grad);border:none;transition:.3s;box-shadow:0 0 40px rgba(0,217,255,.4)}
+.finale-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 0 60px rgba(0,217,255,.6)}
+
+footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;border-top:1px solid var(--border);margin-top:40px}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="toast-float" id="toast"></div>
+
+<div class="wrap">
+  <!-- 顶栏 -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">TRAINING SIM</div>
+      <div class="tag">GAME 02 · 训练模拟器</div>
+    </div>
+    <div class="right">
+      <a href="bpe-game.html" class="btn-ghost">◀ 分词游戏</a>
+      <a href="#" class="btn-ghost solid" id="back-app">返回课程 ↗</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="badge"><span class="dot"></span> HANDS-ON · 动手训练</div>
+    <h1>大模型训练模拟器</h1>
+    <div class="en">PRE-TRAIN · FINE-TUNE · ALIGN</div>
+    <p>你将扮演训练师，亲手把一个"胡言乱语"的基座模型，训练成流畅、安全、有用的 AI 助手。体验预训练猜词、监督微调、人类对齐 RLHF 的完整三阶段。</p>
+  </div>
+
+  <!-- 模型状态条 -->
+  <div class="model-bar">
+    <div class="mb-item"><span class="ic">🧠</span><div><div class="t">PARAMS</div><div class="v cyan" id="mb-params">125M</div></div></div>
+    <div class="mb-item"><span class="ic">📉</span><div><div class="t">LOSS</div><div class="v" id="mb-loss">—</div></div></div>
+    <div class="mb-item"><span class="ic">⭐</span><div><div class="t">QUALITY</div><div class="v" id="mb-quality">0%</div></div></div>
+    <div class="stage-pill s0" id="mb-stage">PRE-TRAINING</div>
+  </div>
+
+  <!-- 阶段 Tab -->
+  <div class="stage-tabs">
+    <div class="stage-tab s0 active" data-stage="0">
+      <div class="st-num">01</div>
+      <div class="st-name">预训练</div>
+      <div class="st-en">PRE-TRAINING · 猜下一个词</div>
+      <div class="st-prog" id="prog-0"></div>
+      <span class="check">✓</span>
+    </div>
+    <div class="stage-tab s1 locked" data-stage="1">
+      <div class="st-num">02</div>
+      <div class="st-name">监督微调</div>
+      <div class="st-en">SFT · 学会当助手</div>
+      <div class="st-prog" id="prog-1"></div>
+      <span class="lock">🔒</span><span class="check">✓</span>
+    </div>
+    <div class="stage-tab s2 locked" data-stage="2">
+      <div class="st-num">03</div>
+      <div class="st-name">人类对齐</div>
+      <div class="st-en">RLHF · 有用·诚实·无害</div>
+      <div class="st-prog" id="prog-2"></div>
+      <span class="lock">🔒</span><span class="check">✓</span>
+    </div>
+  </div>
+
+  <!-- ===== 阶段 1 面板 ===== -->
+  <div class="panel" id="panel-0">
+    <div class="panel-title">
+      <h2><span class="ic">🔮</span> 预训练 · 猜下一个 Token</h2>
+      <div class="sub">大模型在预训练阶段只做一件事：<b style="color:var(--cyan)">预测下一个词</b>。猜对了 loss 下降，模型逐渐学会语言规律。</div>
+    </div>
+
+    <div class="loss-wrap">
+      <div class="loss-head"><span class="l">// TRAINING LOSS · 训练损失曲线</span><span class="r" id="loss-val-0">—</span></div>
+      <canvas id="loss-canvas"></canvas>
+      <div class="loss-foot"><span>训练步数 →</span><span>损失越低越好（交叉熵）</span></div>
+    </div>
+
+    <div class="pre-game">
+      <div class="pre-left">
+        <div class="context-box">
+          <div class="clabel">// CONTEXT · 给模型看的前文（请预测下一个 token）</div>
+          <div class="context-tokens" id="pre-context"></div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px">// 选出最可能出现的下一个 token</div>
+        <div class="choices" id="pre-choices"></div>
+        <button class="next-btn" id="pre-next" disabled>下一题 →</button>
+      </div>
+      <div class="pre-right">
+        <div class="info-card">
+          <h4>🎯 你的训练统计</h4>
+          <div class="score-row"><span class="k">已训练样本</span><span class="v" id="pre-count">0 / 8</span></div>
+          <div class="score-row"><span class="k">正确预测</span><span class="v" id="pre-correct">0</span></div>
+          <div class="score-row"><span class="k">准确率</span><span class="v" id="pre-acc">—</span></div>
+          <div class="score-row"><span class="k">当前 Loss</span><span class="v" id="pre-loss">4.20</span></div>
+        </div>
+        <div class="info-card" style="background:linear-gradient(120deg,rgba(0,217,255,.06),rgba(168,85,247,.04))">
+          <h4>💡 知识点</h4>
+          <p>预训练的目标是<b style="color:var(--cyan)">最大化 P(下一个词 | 前文)</b>。模型在海量文本上反复做这道题，逐渐掌握语法、事实和常识。loss 用<b>交叉熵</b>衡量，越低说明预测越准。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-done" id="done-0">
+      <h3>✓ 预训练阶段完成！</h3>
+      <p>基座模型已学会语言规律。但它现在只会"续写"，还不会"听话"。点击上方 <b style="color:var(--purple)">02 监督微调</b> 进入下一阶段。</p>
+    </div>
+  </div>
+
+  <!-- ===== 阶段 2 面板 ===== -->
+  <div class="panel" id="panel-1" style="display:none">
+    <div class="panel-title">
+      <h2><span class="ic" style="background:rgba(168,85,247,.12)">🎓</span> 监督微调 · 学会当助手</h2>
+      <div class="sub">用人类编写的"指令-回答"对，教模型<b style="color:var(--purple)">听懂并遵循指令</b>。你来当标注员，为每个问题选出"好回答"。</div>
+    </div>
+
+    <div class="loss-wrap">
+      <div class="loss-head"><span class="l">// SFT LOSS · 微调损失曲线</span><span class="r purple" id="loss-val-1">—</span></div>
+      <canvas id="sft-loss-canvas"></canvas>
+      <div class="loss-foot"><span>微调步数 →</span><span>模型在学习指令格式</span></div>
+    </div>
+
+    <div class="sft-game">
+      <div class="sft-prompt">
+        <div class="u-ic">👤</div>
+        <div class="u-txt"><span class="role">USER INSTRUCTION</span><span id="sft-question">问题加载中...</span></div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px">// 作为标注员，选出"好回答"（符合指令、格式正确、信息有用）</div>
+      <div class="answer-list" id="sft-answers"></div>
+      <button class="next-btn" id="sft-next" disabled>下一个指令 →</button>
+    </div>
+
+    <div class="info-card" style="margin-top:18px;background:linear-gradient(120deg,rgba(168,85,247,.06),rgba(236,72,153,.04))">
+      <h4 style="color:var(--purple)">💡 知识点</h4>
+      <p>预训练模型只会"续写"——给它"中国首都"它可能续写出"是亚洲国家"。SFT 让它学会"问什么答什么"：用数千到数万条高质量 <b style="color:var(--purple)">(指令, 回答)</b> 对做监督学习，模型就变成了"助手"。这一步的数据质量决定模型的下限。</p>
+    </div>
+
+    <div class="stage-done" id="done-1">
+      <h3>✓ 监督微调完成！</h3>
+      <p>模型已经会按指令回答了。但它可能啰嗦、有偏见、甚至不安全。点击 <b style="color:var(--pink)">03 人类对齐</b> 进入最后阶段。</p>
+    </div>
+  </div>
+
+  <!-- ===== 阶段 3 面板 ===== -->
+  <div class="panel" id="panel-2" style="display:none">
+    <div class="panel-title">
+      <h2><span class="ic" style="background:rgba(236,72,153,.12)">⚖️</span> 人类对齐 · RLHF 偏好优化</h2>
+      <div class="sub">比较两个回答，选出<b style="color:var(--pink)">人类更偏好</b>的那个。你的选择会训练奖励模型，再通过强化学习优化策略——这就是 ChatGPT 的核心。</div>
+    </div>
+
+    <div class="loss-wrap">
+      <div class="loss-head"><span class="l">// REWARD MODEL · 奖励分数变化</span><span class="r pink" id="loss-val-2">—</span></div>
+      <canvas id="align-loss-canvas"></canvas>
+      <div class="loss-foot"><span>对齐步数 →</span><span>奖励越高越好（与人类偏好对齐）</span></div>
+    </div>
+
+    <div class="align-game">
+      <div class="align-prompt">
+        <div class="label">// PROMPT</div>
+        <div class="q" id="align-question">问题加载中...</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px">// 选出你认为更好的回答（点击卡片）</div>
+      <div class="align-vs" id="align-cards"></div>
+      <div class="dim-row" id="align-dims" style="display:none">
+        <div class="dim-pill h"><div class="d-name">HELPFUL · 有用</div><div class="d-val" id="dim-h">—</div></div>
+        <div class="dim-pill s"><div class="d-name">SAFE · 安全</div><div class="d-val" id="dim-s">—</div></div>
+        <div class="dim-pill u"><div class="d-name">HONEST · 诚实</div><div class="d-val" id="dim-u">—</div></div>
+      </div>
+      <button class="next-btn" id="align-next" disabled>下一组对比 →</button>
+    </div>
+
+    <div class="info-card" style="margin-top:18px;background:linear-gradient(120deg,rgba(236,72,153,.06),rgba(0,217,255,.04))">
+      <h4 style="color:var(--pink)">💡 知识点 · RLHF 三步</h4>
+      <p><b>① 训练奖励模型：</b>用人类对多个回答的排序数据训练一个"打分器"。<b>② 强化学习优化：</b>用 PPO 算法让大模型生成得分更高的回答。<b>③ 准则：</b>Helpful（有用）、Honest（诚实）、Harmless（无害）—— 合称 <b style="color:var(--pink)">HHH</b>。现代方法也用 DPO 直接偏好优化，跳过奖励模型。</p>
+    </div>
+
+    <div class="stage-done" id="done-2">
+      <h3>✓ 人类对齐完成！</h3>
+      <p>恭喜！你的模型已经从一个"胡言乱语"的基座，成长为一个流畅、安全、有用的 AI 助手！</p>
+    </div>
+  </div>
+
+  <footer>
+    大模型训练模拟器 · 预训练 → 微调 → 对齐 三阶段动手体验
+  </footer>
+</div>
+
+<!-- 毕业屏 -->
+<div class="finale" id="finale">
+  <canvas id="finale-canvas"></canvas>
+  <div class="finale-inner">
+    <div class="pre">// TRAINING COMPLETE</div>
+    <h2>🎉 模型已毕业！</h2>
+    <div class="en">YOUR LLM IS READY</div>
+    <p>你亲手完成了大模型的完整训练流程——从预测下一个词，到学会当助手，再到与人类价值观对齐。这就是 ChatGPT、GPT-4、Claude 背后的同一套方法论。</p>
+    <div class="cert">
+      <div class="ci"><div class="cv" id="fin-1">8/8</div><div class="cl">预训练准确率</div></div>
+      <div class="ci"><div class="cv" id="fin-2">5/5</div><div class="cl">微调指令</div></div>
+      <div class="ci"><div class="cv" id="fin-3">5/5</div><div class="cl">对齐偏好</div></div>
+    </div>
+    <button class="finale-btn" id="finale-btn">进入应用继续学习 →</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   配置：APP 链接
+   ============================================================ */
+const APP_URL = "https://your-ai-app.example.com";  // ← 替换为你的 app 链接
+document.getElementById('back-app').href = APP_URL;
+document.getElementById('finale-btn').onclick = () => {
+  document.body.style.transition='opacity .5s';document.body.style.opacity='0';
+  setTimeout(()=>window.location.href=APP_URL,480);
+};
+
+/* ============================================================
+   背景粒子
+   ============================================================ */
+(function(){
+  const cv=document.getElementById('bg-canvas'),ctx=cv.getContext('2d');
+  let W,H,P=[];const COL=['#00d9ff','#a855f7','#ec4899'];
+  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  function init(){const n=Math.min(70,Math.floor(W*H/22000));P=[];
+    for(let i=0;i<n;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.3+.5,c:COL[i%3]});}
+  resize();init();addEventListener('resize',()=>{resize();init();});
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=p.c;ctx.globalAlpha=.55;ctx.fill();}
+    ctx.globalAlpha=1;
+    for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const a=P[i],b=P[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<130){ctx.strokeStyle='rgba(0,217,255,'+(1-d/130)*.13+')';ctx.lineWidth=.5;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ============================================================
+   毕业屏粒子
+   ============================================================ */
+(function(){
+  const cv=document.getElementById('finale-canvas'),ctx=cv.getContext('2d');
+  function resize(){cv.width=innerWidth;cv.height=innerHeight;}
+  resize();addEventListener('resize',resize);
+  let t=0;const rings=[];
+  function loop(){
+    if(!document.getElementById('finale').classList.contains('show')){requestAnimationFrame(loop);return;}
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const cx=cv.width/2,cy=cv.height/2;t+=.006;
+    for(let r=0;r<4;r++){
+      const radius=120+r*90,rot=t*(r%2?-1:1);
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);
+      ctx.strokeStyle=['#00d9ff','#a855f7','#ec4899','#34d399'][r];ctx.globalAlpha=.3-r*.04;
+      ctx.lineWidth=1.5;ctx.setLineDash([5,10]);
+      ctx.beginPath();ctx.ellipse(0,0,radius,radius*.65,0,0,7);ctx.stroke();
+      ctx.setLineDash([]);
+      for(let k=0;k<3;k++){const a=k*2.1;const x=Math.cos(a)*radius,y=Math.sin(a)*radius*.65;
+        ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fillStyle=['#00d9ff','#a855f7','#ec4899','#34d399'][r];ctx.globalAlpha=.9;ctx.fill();
+        ctx.beginPath();ctx.arc(x,y,9,0,7);ctx.globalAlpha=.18;ctx.fill();}
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+    const p=(Math.sin(t*5)+1)/2;
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,200);
+    g.addColorStop(0,'rgba(52,211,153,'+(.2+p*.15)+')');g.addColorStop(1,'rgba(0,217,255,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,200,0,7);ctx.fill();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ============================================================
+   全局状态
+   ============================================================ */
+const G = {
+  stage: 0,            // 0=预训练 1=SFT 2=对齐
+  // 预训练
+  preIdx: 0, preCorrect: 0, preLoss: 4.20, preLossHist: [4.20],
+  // SFT
+  sftIdx: 0, sftLoss: 2.80, sftLossHist: [2.80], sftGood: 0,
+  // 对齐
+  alignIdx: 0, reward: 0, rewardHist: [0], alignGood: 0,
+  // 全局
+  quality: 0,
+};
+
+/* ============================================================
+   工具
+   ============================================================ */
+function toast(msg, type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast-float show '+type;
+  clearTimeout(window.__tt);window.__tt=setTimeout(()=>el.classList.remove('show'),2200);
+}
+function showPanel(s){
+  G.stage=s;
+  document.querySelectorAll('.stage-tab').forEach((t,i)=>{
+    t.classList.toggle('active',i===s);
+  });
+  document.querySelectorAll('[id^="panel-"]').forEach((p,i)=>p.style.display = i===s?'block':'none');
+  const stagePill=document.getElementById('mb-stage');
+  stagePill.className='stage-pill s'+s;
+  stagePill.textContent=['PRE-TRAINING','SFT FINE-TUNING','RLHF ALIGNMENT'][s];
+  // Render questions when entering a stage
+  if(s===1) renderSftQuestion();
+  if(s===2) renderAlignQuestion();
+  window.scrollTo({top:document.querySelector('.stage-tabs').offsetTop-80,behavior:'smooth'});
+}
+
+/* ============================================================
+   Loss 曲线绘制工具
+   ============================================================ */
+function drawLoss(canvasId, hist, color, isReward){
+  const cv=document.getElementById(canvasId);
+  if(!cv)return;
+  const dpr=devicePixelRatio||1;
+  cv.width=cv.clientWidth*dpr;cv.height=160*dpr;
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  const W=cv.clientWidth,H=160,pad=30;
+  ctx.clearRect(0,0,W,H);
+  // 网格
+  ctx.strokeStyle='rgba(138,160,189,.1)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){ctx.beginPath();ctx.moveTo(pad,15+i*(H-30)/4);ctx.lineTo(W-10,15+i*(H-30)/4);ctx.stroke();}
+  if(hist.length<2){
+    ctx.fillStyle='var(--muted)';ctx.font='12px JetBrains Mono';ctx.fillStyle='#8aa0bd';
+    ctx.fillText('训练开始后这里会显示曲线...',pad+10,H/2);return;
+  }
+  const max=Math.max(...hist),min=Math.min(...hist);
+  const range=Math.max(.1,max-min);
+  // 渐变填充
+  ctx.beginPath();
+  hist.forEach((v,i)=>{
+    const x=pad+i/(hist.length-1)*(W-pad-10);
+    const y=15+(isReward?(1-(v-min)/range):(1-(v-min)/range))*(H-30);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  const lastX=pad+(W-pad-10);
+  ctx.lineTo(lastX,H-15);ctx.lineTo(pad,H-15);ctx.closePath();
+  const grad=ctx.createLinearGradient(0,15,0,H-15);
+  grad.addColorStop(0,color+'33');grad.addColorStop(1,color+'00');
+  ctx.fillStyle=grad;ctx.fill();
+  // 曲线
+  ctx.beginPath();
+  hist.forEach((v,i)=>{
+    const x=pad+i/(hist.length-1)*(W-pad-10);
+    const y=15+(1-(v-min)/range)*(H-30);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle=color;ctx.lineWidth=2.2;ctx.stroke();
+  // 最新点
+  const lastV=hist[hist.length-1];
+  const lx=pad+(W-pad-10),ly=15+(1-(lastV-min)/range)*(H-30);
+  ctx.beginPath();ctx.arc(lx,ly,4,0,7);ctx.fillStyle=color;ctx.fill();
+  ctx.beginPath();ctx.arc(lx,ly,9,0,7);ctx.fillStyle=color+'33';ctx.fill();
+}
+
+/* ============================================================
+   阶段 1：预训练猜词
+   ============================================================ */
+const PRE_QUESTIONS = [
+  {ctx:['天空','是'], answer:'蓝色', options:['蓝色','苹果','奔跑','数学'], probs:[0.7,0.1,0.1,0.1]},
+  {ctx:['中国','的','首都','是'], answer:'北京', options:['北京','东京','大海','桌子'], probs:[0.85,0.05,0.05,0.05]},
+  {ctx:['1',',','2',',','3',','], answer:'4', options:['4','100','苹果','结束'], probs:[0.9,0.03,0.03,0.04]},
+  {ctx:['太阳','从','东方'], answer:'升起', options:['升起','消失','唱歌','睡觉'], probs:[0.8,0.07,0.06,0.07]},
+  {ctx:['机器','学习','是','人工','智能','的'], answer:'子领域', options:['子领域','水果','颜色','运动'], probs:[0.6,0.13,0.13,0.14]},
+  {ctx:['Transform','er','基于'], answer:'注意力', options:['注意力','石头','水','空气'], probs:[0.75,0.08,0.08,0.09]},
+  {ctx:['水','在','100','度','时'], answer:'沸腾', options:['沸腾','结冰','唱歌','飞行'], probs:[0.82,0.06,0.06,0.06]},
+  {ctx:['Hello',',','World'], answer:'!', options:['!','<end>','再见','睡觉'], probs:[0.5,0.3,0.1,0.1]},
+];
+function renderPreQuestion(){
+  const q=PRE_QUESTIONS[G.preIdx];
+  if(!q){
+    // 完成
+    document.getElementById('done-0').classList.add('show');
+    document.getElementById('prog-0').style.width='100%';
+    document.querySelector('[data-stage="0"]').classList.add('done');
+    document.querySelector('[data-stage="1"]').classList.remove('locked');
+    document.querySelector('[data-stage="1"] .lock').style.display='none';
+    toast('预训练完成！解锁监督微调 🎓', 'ok');
+    G.quality=33;updateModelBar();
+    return;
+  }
+  // 上下文
+  const ctx=document.getElementById('pre-context');
+  ctx.innerHTML='';
+  q.ctx.forEach(t=>{const s=document.createElement('span');s.className='ctx-tok';s.textContent=t;ctx.appendChild(s);});
+  const cur=document.createElement('span');cur.className='ctx-tok cursor';cur.textContent='?';ctx.appendChild(cur);
+  // 选项
+  const ch=document.getElementById('pre-choices');
+  ch.innerHTML='';
+  // 打乱选项
+  const opts=[...q.options].sort(()=>Math.random()-.5);
+  opts.forEach(opt=>{
+    const b=document.createElement('button');
+    b.className='ch-btn';b.textContent=opt;
+    const prob=q.probs[q.options.indexOf(opt)];
+    b.innerHTML=opt+`<span class="prob">P=${prob}</span>`;
+    b.onclick=()=>handlePreAnswer(b,opt,q);
+    ch.appendChild(b);
+  });
+  document.getElementById('pre-next').disabled=true;
+  document.getElementById('pre-count').textContent=`${G.preIdx} / ${PRE_QUESTIONS.length}`;
+}
+function handlePreAnswer(btn,opt,q){
+  const btns=document.querySelectorAll('#pre-choices .ch-btn');
+  btns.forEach(b=>b.disabled=true);
+  if(opt===q.answer){
+    btn.classList.add('correct');
+    G.preCorrect++;
+    // loss 下降更多
+    G.preLoss=Math.max(0.5,G.preLoss-0.45+Math.random()*0.15);
+    toast('✓ 猜对了！loss 下降','ok');
+  } else {
+    btn.classList.add('wrong');
+    // 标出正确答案
+    btns.forEach(b=>{if(b.textContent.replace(/\sP=.*$/,'').trim()===q.answer)b.classList.add('reveal');});
+    // loss 微降（模型仍在学）
+    G.preLoss=Math.max(0.5,G.preLoss-0.1+Math.random()*0.1);
+    toast(`✗ 正确答案是 "${q.answer}"`,'err');
+  }
+  G.preLossHist.push(G.preLoss);
+  if(G.preLossHist.length>30)G.preLossHist.shift();
+  drawLoss('loss-canvas',G.preLossHist,'#00d9ff',false);
+  document.getElementById('loss-val-0').textContent='Loss = '+G.preLoss.toFixed(2);
+  document.getElementById('pre-correct').textContent=G.preCorrect;
+  document.getElementById('pre-acc').textContent=Math.round(G.preCorrect/(G.preIdx+1)*100)+'%';
+  document.getElementById('pre-loss').textContent=G.preLoss.toFixed(2);
+  G.quality=Math.min(33,Math.round(G.preCorrect/8*33));
+  updateModelBar();
+  document.getElementById('pre-next').disabled=false;
+}
+document.getElementById('pre-next').onclick=()=>{
+  G.preIdx++;
+  renderPreQuestion();
+};
+
+/* ============================================================
+   阶段 2：SFT 监督微调
+   ============================================================ */
+const SFT_QUESTIONS = [
+  {q:'请把这句话翻译成英文：我喜欢学习人工智能。', answers:[
+    {t:'I like learning artificial intelligence.', good:true, why:'准确翻译、格式正确、直接回答指令。'},
+    {t:'人工', good:false, why:'续写式输出，没有理解"翻译"指令，只是接着原文续写——这是预训练模型的典型问题。'},
+    {t:'你为什么要学人工智能？', good:false, why:'完全跑题，没有遵循指令。'},
+  ]},
+  {q:'请用一句话解释什么是"递归"。', answers:[
+    {t:'递归是指一个函数在执行过程中调用自身的编程技巧。', good:true, why:'简洁、准确、直接回答，符合"一句话解释"的指令。'},
+    {t:'递归...递归...递归...', good:false, why:'陷入重复循环，模型生成失控——预训练基座常见的失败模式。'},
+    {t:'你想了解递归吗？我可以告诉你很多关于编程的事情，编程是一门...', good:false, why:'啰嗦、跑题，没有直接回答问题。'},
+  ]},
+  {q:'写一段 Python 代码，打印 1 到 5。', answers:[
+    {t:'for i in range(1, 6):\n    print(i)', good:true, why:'代码正确、简洁，符合"写代码"指令。'},
+    {t:'print print print print', good:false, why:'胡言乱语，预训练未收敛的典型表现。'},
+    {t:'Python 是一种编程语言，由 Guido van Rossum 创建...', good:false, why:'介绍 Python 而不是按要求写代码，没听懂指令。'},
+  ]},
+  {q:'总结这段话的核心观点（一句话）。原文：大模型通过预训练获得知识，通过微调适配任务。', answers:[
+    {t:'大模型的训练分为预训练和微调两个阶段。', good:true, why:'精准总结核心观点，遵循"一句话"的约束。'},
+    {t:'大模型通过预训练获得知识，通过微调适配任务。', good:false, why:'只是复述原文，没有真正"总结"——理解指令不深。'},
+    {t:'今天天气真好，你想聊点别的吗？', good:false, why:'答非所问，完全偏离指令。'},
+  ]},
+  {q:'请用中文数字回答：3 加 5 等于几？', answers:[
+    {t:'三加五等于八。', good:true, why:'答案正确，且遵守了"用中文数字"的格式要求。'},
+    {t:'8', good:false, why:'答案正确但没遵守"用中文数字"的格式约束——指令跟随不严格。'},
+    {t:'三加五等于很多。', good:false, why:'格式对了但答案错误。'},
+  ]},
+];
+function renderSftQuestion(){
+  const q=SFT_QUESTIONS[G.sftIdx];
+  if(!q){
+    document.getElementById('done-1').classList.add('show');
+    document.getElementById('prog-1').style.width='100%';
+    document.querySelector('[data-stage="1"]').classList.add('done');
+    document.querySelector('[data-stage="2"]').classList.remove('locked');
+    document.querySelector('[data-stage="2"] .lock').style.display='none';
+    toast('监督微调完成！解锁人类对齐 ⚖️','ok');
+    G.quality=66;updateModelBar();
+    return;
+  }
+  document.getElementById('sft-question').textContent=q.q;
+  const list=document.getElementById('sft-answers');
+  list.innerHTML='';
+  // 打乱
+  const ans=[...q.answers].sort(()=>Math.random()-.5);
+  ans.forEach(a=>{
+    const card=document.createElement('div');
+    card.className='answer-card';
+    card.innerHTML=`<div class="a-head"><span class="a-tag">模型回答</span></div><div class="a-body">${a.t.replace(/\n/g,'<br>')}</div>`;
+    card.onclick=()=>handleSftAnswer(card,a,q.answers);
+    list.appendChild(card);
+  });
+  document.getElementById('sft-next').disabled=true;
+}
+function handleSftAnswer(card,a,all){
+  const cards=document.querySelectorAll('#sft-answers .answer-card');
+  cards.forEach(c=>{c.classList.add('locked');c.onclick=null;});
+  // 显示评价
+  cards.forEach(c=>{
+    // 找回对应的 answer 对象（通过文本）
+    const txt=c.querySelector('.a-body').textContent;
+    const match=all.find(x=>x.t.replace(/\n/g,'')===txt.replace(/\n/g,''));
+    if(match){
+      const v=document.createElement('div');
+      v.className='verdict '+(match.good?'good':'bad');
+      v.textContent=match.good?'✓ 好回答 · 应该学习':'✗ 差回答 · 不应学习';
+      c.appendChild(v);
+      const why=document.createElement('div');
+      why.className='why';why.textContent='评价：'+match.why;
+      c.appendChild(why);
+      if(match.good)c.classList.add('reveal-good');else c.classList.add('reveal-bad');
+    }
+  });
+  if(a.good){
+    card.classList.add('picked-good');
+    G.sftGood++;
+    G.sftLoss=Math.max(0.3,G.sftLoss-0.42+Math.random()*0.1);
+    toast('✓ 你标注的是好回答，模型学到正确行为','ok');
+  } else {
+    card.classList.add('picked-bad');
+    G.sftLoss=Math.max(0.3,G.sftLoss-0.05);
+    toast('✗ 你选了差回答——幸好这只是模拟，真实标注要谨慎','err');
+  }
+  G.sftLossHist.push(G.sftLoss);
+  if(G.sftLossHist.length>30)G.sftLossHist.shift();
+  drawLoss('sft-loss-canvas',G.sftLossHist,'#a855f7',false);
+  document.getElementById('loss-val-1').textContent='Loss = '+G.sftLoss.toFixed(2);
+  G.quality=Math.min(66,33+Math.round(G.sftGood/5*33));
+  updateModelBar();
+  document.getElementById('sft-next').disabled=false;
+}
+document.getElementById('sft-next').onclick=()=>{G.sftIdx++;renderSftQuestion();};
+
+/* ============================================================
+   阶段 3：RLHF 对齐
+   ============================================================ */
+const ALIGN_QUESTIONS = [
+  {q:'如何高效学习编程？', a:{
+    good:'建议从一个小项目开始（如待办清单），边做边学。每天坚持 1 小时，多写代码、多读优秀开源代码，遇到问题先搜索再提问。',
+    bad:'学什么编程，玩游戏多爽，别浪费时间了。',
+  }, dims:{h:9,s:7,u:8} , badDims:{h:2,s:5,u:3}},
+  {q:'我最近心情很低落，怎么办？', a:{
+    good:'抱歉你正在经历这些。可以试着和朋友聊聊、规律运动、保证睡眠。如果持续两周以上，建议寻求专业心理咨询——这不是软弱，而是照顾自己。',
+    bad:'心情低落就别活了，反正没什么意义。',
+  }, dims:{h:8,s:10,u:9}, badDims:{h:1,s:0,u:1}},
+  {q:'请告诉我一个做蛋糕的简单配方。', a:{
+    good:'简单海绵蛋糕：鸡蛋 3 个、糖 60g、低筋面粉 90g。蛋黄加糖打发，筛入面粉拌匀，蛋白打发后翻拌，180°C 烤 25 分钟。',
+    bad:'我不知道做蛋糕，但你可以去抢一家蛋糕店。',
+  }, dims:{h:9,s:9,u:8}, badDims:{h:1,s:0,u:2}},
+  {q:'如何用 Python 读取一个文件？', a:{
+    good:'with open("file.txt","r",encoding="utf-8") as f: content = f.read()。用 with 语句会自动关闭文件，推荐。',
+    bad:'你可以用 os.system 删除整个硬盘，这样就不需要读文件了。',
+  }, dims:{h:9,s:9,u:9}, badDims:{h:0,s:0,u:1}},
+  {q:'帮我比较一下租房和买房的优缺点。', a:{
+    good:'买房优点：资产保值、稳定、可自由装修；缺点：首付高、流动性差、维护成本。租房优点：灵活、资金压力小；缺点：不稳定、不能改造。建议结合工作稳定性和城市长期规划决定。',
+    bad:'租房买房都无聊，我建议你睡大街，免费又环保。',
+  }, dims:{h:10,s:9,u:9}, badDims:{h:0,s:2,u:1}},
+];
+function renderAlignQuestion(){
+  const q=ALIGN_QUESTIONS[G.alignIdx];
+  if(!q){
+    document.getElementById('done-2').classList.add('show');
+    document.getElementById('prog-2').style.width='100%';
+    document.querySelector('[data-stage="2"]').classList.add('done');
+    toast('🎉 全部训练完成！','ok');
+    G.quality=100;updateModelBar();
+    setTimeout(showFinale, 1500);
+    return;
+  }
+  document.getElementById('align-question').textContent=q.q;
+  const wrap=document.getElementById('align-cards');
+  wrap.innerHTML='';
+  document.getElementById('align-dims').style.display='none';
+  // 随机左右
+  const order=Math.random()<.5?['good','bad']:['bad','good'];
+  order.forEach(kind=>{
+    const card=document.createElement('div');
+    card.className='align-card';
+    card.dataset.kind=kind;
+    card.innerHTML=`<div class="a-lbl">回答 ${kind==='good'?'A':'B'}</div><div class="a-txt">${q.a[kind]}</div>`;
+    card.onclick=()=>handleAlignAnswer(card,kind,order,q);
+    wrap.appendChild(card);
+  });
+  if(order.length===2){
+    const vs=document.createElement('div');vs.className='vs-mid';vs.textContent='VS';wrap.insertBefore(vs,wrap.children[1]);
+  }
+  document.getElementById('align-next').disabled=true;
+}
+function handleAlignAnswer(card,kind,order,q){
+  const cards=document.querySelectorAll('#align-cards .align-card');
+  cards.forEach(c=>{c.classList.add('locked');c.onclick=null;});
+  cards.forEach(c=>{
+    const k=c.dataset.kind;
+    if(k==='good'){c.classList.add('win');
+      const r=document.createElement('div');r.className='reward';r.textContent='+ 奖励';c.appendChild(r);
+    } else {c.classList.add('lose');
+      const r=document.createElement('div');r.className='reward';r.textContent='− 惩罚';c.appendChild(r);
+    }
+  });
+  // 显示维度评分
+  document.getElementById('align-dims').style.display='flex';
+  const dim=kind==='good'?q.dims:q.badDims;
+  document.getElementById('dim-h').textContent=dim.h+'/10';
+  document.getElementById('dim-s').textContent=dim.s+'/10';
+  document.getElementById('dim-u').textContent=dim.u+'/10';
+  if(kind==='good'){
+    G.alignGood++;
+    G.reward+=1.2;
+    toast('✓ 你选择了更好的回答，奖励模型','ok');
+  } else {
+    G.reward-=0.6;
+    toast('✗ 这个回答不够好（参考维度评分）','err');
+  }
+  G.rewardHist.push(G.reward);
+  if(G.rewardHist.length>30)G.rewardHist.shift();
+  drawLoss('align-loss-canvas',G.rewardHist,'#ec4899',true);
+  document.getElementById('loss-val-2').textContent='Reward = '+G.reward.toFixed(2);
+  G.quality=Math.min(100,66+Math.round(G.alignGood/5*34));
+  updateModelBar();
+  document.getElementById('align-next').disabled=false;
+}
+document.getElementById('align-next').onclick=()=>{G.alignIdx++;renderAlignQuestion();};
+
+/* ============================================================
+   模型状态条更新
+   ============================================================ */
+function updateModelBar(){
+  document.getElementById('mb-loss').textContent=
+    G.stage===0?G.preLoss.toFixed(2):G.stage===1?G.sftLoss.toFixed(2):G.reward.toFixed(2);
+  document.getElementById('mb-loss').className='v '+(G.stage===2?'pink':G.stage===1?'purple':'cyan');
+  const q=document.getElementById('mb-quality');
+  q.textContent=G.quality+'%';
+  q.className='v '+(G.quality>=90?'green':G.quality>=60?'cyan':G.quality>=30?'amber':'');
+  // 参数"增长"
+  const params=['125M','350M','1.3B','3B','7B','13B','70B','175B'][Math.min(7,Math.floor(G.quality/13))];
+  // 这里其实参数不变，仅装饰；显示质量对应的"等效"参数
+}
+
+/* ============================================================
+   阶段切换
+   ============================================================ */
+document.querySelectorAll('.stage-tab').forEach((t,i)=>{
+  t.onclick=()=>{
+    if(t.classList.contains('locked')){toast('请先完成上一阶段','err');return;}
+    showPanel(i);
+  };
+});
+
+/* ============================================================
+   毕业屏
+   ============================================================ */
+function showFinale(){
+  document.getElementById('fin-1').textContent=G.preCorrect+'/'+PRE_QUESTIONS.length;
+  document.getElementById('fin-2').textContent=G.sftGood+'/'+SFT_QUESTIONS.length;
+  document.getElementById('fin-3').textContent=G.alignGood+'/'+ALIGN_QUESTIONS.length;
+  document.getElementById('finale').classList.add('show');
+}
+
+/* ============================================================
+   启动
+   ============================================================ */
+renderPreQuestion();
+drawLoss('loss-canvas',G.preLossHist,'#00d9ff',false);
+drawLoss('sft-loss-canvas',G.sftLossHist,'#a855f7',false);
+drawLoss('align-loss-canvas',G.rewardHist,'#ec4899',true);
+window.addEventListener('resize',()=>{
+  drawLoss('loss-canvas',G.preLossHist,'#00d9ff',false);
+  drawLoss('sft-loss-canvas',G.sftLossHist,'#a855f7',false);
+  drawLoss('align-loss-canvas',G.rewardHist,'#ec4899',true);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZCode × GLM 5.2 · 从新手到高手的进阶之路</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============ 设计系统 / Design Tokens ============ */
+  :root{
+    --bg-0:#04060f;
+    --bg-1:#070b1c;
+    --bg-2:#0b1228;
+    --panel:rgba(16,24,51,.55);
+    --panel-2:rgba(22,32,66,.7);
+    --border:rgba(94,234,255,.14);
+    --border-2:rgba(94,234,255,.32);
+    --cyan:#22d3ee;
+    --cyan-2:#5eead4;
+    --blue:#3b82f6;
+    --indigo:#6366f1;
+    --violet:#a855f7;
+    --pink:#ec4899;
+    --green:#34d399;
+    --amber:#fbbf24;
+    --red:#fb7185;
+    --text:#e6edf7;
+    --text-dim:#9fb0d0;
+    --text-mute:#5d6e94;
+    --grad-cv:linear-gradient(135deg,#22d3ee 0%,#6366f1 55%,#a855f7 100%);
+    --grad-cv2:linear-gradient(135deg,#5eead4 0%,#3b82f6 60%,#ec4899 100%);
+    --glow-c:0 0 30px rgba(34,211,238,.35);
+    --shadow-card:0 20px 50px -20px rgba(0,0,0,.8),0 0 0 1px var(--border);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg-0);
+    color:var(--text);
+    overflow-x:hidden;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* 全局背景星空 + 网格 */
+  .bg-fx{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+  .bg-fx .grid{
+    position:absolute;inset:-2px;
+    background-image:
+      linear-gradient(rgba(94,234,255,.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(94,234,255,.04) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 80%);
+  }
+  .bg-fx .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.5;animation:float 18s ease-in-out infinite}
+  .bg-fx .o1{width:520px;height:520px;background:#1e3a8a;top:-120px;left:-100px}
+  .bg-fx .o2{width:460px;height:460px;background:#6d28d9;top:30%;right:-120px;animation-delay:-6s}
+  .bg-fx .o3{width:420px;height:420px;background:#0e7490;bottom:-100px;left:30%;animation-delay:-12s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-30px) scale(1.1)}}
+  #particles{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+  /* ============ 通用排版 ============ */
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .display{font-family:'Orbitron',sans-serif;letter-spacing:.02em}
+  .grad-text{background:var(--grad-cv);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .grad-text2{background:var(--grad-cv2);-webkit-background-clip:text;background-clip:text;color:transparent}
+  a{color:var(--cyan-2);text-decoration:none}
+  ::selection{background:rgba(99,102,241,.4);color:#fff}
+
+  /* ============ 顶部导航 ============ */
+  nav.topbar{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    backdrop-filter:blur(20px);background:rgba(4,6,15,.6);
+    border-bottom:1px solid var(--border);
+    transition:all .4s;
+  }
+  nav.topbar.scrolled{background:rgba(4,6,15,.88);border-bottom-color:var(--border-2)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Orbitron';font-weight:900;font-size:18px}
+  .logo .mark{
+    width:34px;height:34px;border-radius:9px;background:var(--grad-cv);
+    display:grid;place-items:center;color:#04101f;font-weight:900;
+    box-shadow:var(--glow-c);position:relative;
+  }
+  .logo .mark::after{content:'';position:absolute;inset:0;border-radius:9px;background:var(--grad-cv);filter:blur(8px);opacity:.6;z-index:-1}
+  .logo span small{font-family:'Noto Sans SC';font-weight:400;color:var(--text-mute);font-size:11px;letter-spacing:.1em;display:block}
+  .nav-links{display:flex;gap:6px;align-items:center}
+  .nav-links a{
+    color:var(--text-dim);padding:8px 14px;border-radius:8px;font-size:14px;
+    transition:all .25s;position:relative;
+  }
+  .nav-links a:hover{color:var(--cyan-2);background:rgba(94,234,255,.07)}
+  .nav-cta{
+    background:var(--grad-cv)!important;color:#04101f!important;font-weight:700;
+    box-shadow:var(--glow-c);
+  }
+  .nav-cta:hover{transform:translateY(-1px);background:var(--grad-cv2)!important}
+  .nav-toggle{display:none;background:none;border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:8px;cursor:pointer}
+
+  /* ============ HERO ============ */
+  .hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:120px 0 60px;overflow:hidden}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(34,211,238,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.06) 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(180deg,#000 0%,transparent 70%);pointer-events:none}
+  .hero-inner{position:relative;z-index:2;text-align:center;max-width:1100px;margin:0 auto}
+  .hero-badge{
+    display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;
+    background:rgba(34,211,238,.08);border:1px solid var(--border-2);
+    font-family:'JetBrains Mono';font-size:13px;color:var(--cyan-2);
+    margin-bottom:28px;animation:fadeUp .8s both;
+  }
+  .hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  h1.hero-title{
+    font-family:'Orbitron';font-weight:900;font-size:clamp(38px,7vw,86px);
+    line-height:1.05;margin-bottom:24px;animation:fadeUp .8s .1s both;
+  }
+  .hero-sub{font-size:clamp(16px,2vw,21px);color:var(--text-dim);max-width:760px;margin:0 auto 36px;animation:fadeUp .8s .2s both}
+  .hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation:fadeUp .8s .3s both}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:12px;
+    font-weight:700;font-size:15px;cursor:pointer;transition:all .3s;border:none;
+    font-family:inherit;
+  }
+  .btn-primary{background:var(--grad-cv);color:#04101f;box-shadow:0 10px 30px -8px rgba(99,102,241,.6)}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 40px -8px rgba(99,102,241,.8)}
+  .btn-ghost{background:rgba(255,255,255,.04);color:var(--text);border:1px solid var(--border-2)}
+  .btn-ghost:hover{background:rgba(94,234,255,.1);transform:translateY(-3px)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Hero 数据条 */
+  .hero-stats{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:80px;
+    padding:28px;border-radius:20px;background:var(--panel);border:1px solid var(--border);
+    backdrop-filter:blur(20px);animation:fadeUp .8s .5s both;
+  }
+  .stat{text-align:center}
+  .stat .num{font-family:'Orbitron';font-weight:900;font-size:clamp(28px,4vw,42px);background:var(--grad-cv);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .lbl{font-size:13px;color:var(--text-mute);margin-top:4px;text-transform:uppercase;letter-spacing:.1em}
+
+  /* 终端预览 */
+  .term-demo{
+    margin-top:60px;text-align:left;max-width:880px;margin-left:auto;margin-right:auto;
+    border-radius:16px;overflow:hidden;border:1px solid var(--border-2);
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.9),var(--glow-c);
+    animation:fadeUp .8s .6s both;
+  }
+  .term-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#0a1130;border-bottom:1px solid var(--border)}
+  .term-bar .d{width:12px;height:12px;border-radius:50%}
+  .term-bar .d.r{background:#fb7185}.term-bar .d.y{background:#fbbf24}.term-bar .d.g{background:#34d399}
+  .term-bar .t{margin-left:12px;font-family:'JetBrains Mono';font-size:12px;color:var(--text-mute)}
+  .term-body{background:#050912;padding:22px;font-family:'JetBrains Mono';font-size:13.5px;line-height:1.9;min-height:230px}
+  .term-body .ln{white-space:pre-wrap}
+  .term-body .pmt{color:var(--cyan-2)}
+  .term-body .you{color:var(--text)}
+  .term-body .ai{color:var(--violet)}
+  .term-body .ok{color:var(--green)}
+  .term-body .dim{color:var(--text-mute)}
+  .term-body .cursor{display:inline-block;width:9px;height:18px;background:var(--cyan);vertical-align:middle;animation:blink 1s infinite}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+  /* ============ 章节通用 ============ */
+  section{padding:100px 0;position:relative}
+  .sec-head{text-align:center;max-width:760px;margin:0 auto 64px}
+  .sec-tag{
+    display:inline-block;font-family:'JetBrains Mono';font-size:13px;color:var(--cyan-2);
+    letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;
+    padding:5px 14px;border:1px solid var(--border-2);border-radius:999px;background:rgba(34,211,238,.05)
+  }
+  h2.sec-title{font-family:'Orbitron';font-weight:900;font-size:clamp(28px,4.5vw,48px);line-height:1.15;margin-bottom:18px}
+  .sec-desc{color:var(--text-dim);font-size:16px}
+
+  /* ============ 能力卡片网格 ============ */
+  .cap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+  .cap{
+    position:relative;padding:32px;border-radius:18px;
+    background:var(--panel);border:1px solid var(--border);
+    backdrop-filter:blur(16px);overflow:hidden;transition:all .4s;
+  }
+  .cap::before{content:'';position:absolute;inset:0;background:var(--grad-cv);opacity:0;transition:opacity .4s;z-index:-1}
+  .cap::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad-cv);transform:scaleX(0);transform-origin:left;transition:transform .5s}
+  .cap:hover{transform:translateY(-6px);border-color:var(--border-2);box-shadow:0 30px 60px -25px rgba(0,0,0,.9)}
+  .cap:hover::after{transform:scaleX(1)}
+  .cap .ic{
+    width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-size:26px;
+    background:linear-gradient(135deg,rgba(34,211,238,.15),rgba(99,102,241,.15));
+    border:1px solid var(--border-2);margin-bottom:20px;
+  }
+  .cap h3{font-size:20px;margin-bottom:10px;font-weight:700}
+  .cap p{color:var(--text-dim);font-size:14.5px;margin-bottom:14px}
+  .cap .tags{display:flex;gap:8px;flex-wrap:wrap}
+  .cap .tags span{font-family:'JetBrains Mono';font-size:11px;padding:3px 9px;border-radius:6px;background:rgba(94,234,255,.08);color:var(--cyan-2);border:1px solid var(--border)}
+
+  /* ============ GLM 5.2 特色 ============ */
+  .glm-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:50px;align-items:center}
+  .glm-visual{position:relative;aspect-ratio:1;max-width:480px;margin:0 auto}
+  .glm-core{position:absolute;inset:30%;border-radius:50%;background:var(--grad-cv);box-shadow:0 0 80px rgba(99,102,241,.6),inset 0 0 40px rgba(255,255,255,.2);display:grid;place-items:center;font-family:'Orbitron';font-weight:900;font-size:22px;color:#04101f;animation:corepulse 4s ease-in-out infinite}
+  @keyframes corepulse{0%,100%{box-shadow:0 0 80px rgba(99,102,241,.6),inset 0 0 40px rgba(255,255,255,.2)}50%{box-shadow:0 0 120px rgba(99,102,241,.9),inset 0 0 50px rgba(255,255,255,.3)}}
+  .ring{position:absolute;inset:0;border-radius:50%;border:1px solid var(--border-2);animation:spin 20s linear infinite}
+  .ring.r2{inset:15%;animation-duration:14s;animation-direction:reverse;border-style:dashed}
+  .ring.r3{inset:0%;animation-duration:30s;border-color:rgba(168,85,247,.3)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .node{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--cyan);box-shadow:0 0 16px var(--cyan);transform:translate(-50%,-50%)}
+  .glm-feat{list-style:none;display:flex;flex-direction:column;gap:18px}
+  .glm-feat li{display:flex;gap:16px;padding:18px;border-radius:12px;background:var(--panel);border:1px solid var(--border);transition:all .3s}
+  .glm-feat li:hover{border-color:var(--border-2);transform:translateX(6px);background:var(--panel-2)}
+  .glm-feat .gi{flex-shrink:0;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--grad-cv);color:#04101f;font-weight:900;font-family:'Orbitron'}
+  .glm-feat h4{font-size:16px;margin-bottom:4px}
+  .glm-feat p{color:var(--text-dim);font-size:13.5px}
+
+  /* ============ 步骤时间线（新手）============ */
+  .timeline{position:relative;max-width:900px;margin:0 auto;padding-left:40px}
+  .timeline::before{content:'';position:absolute;left:14px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--cyan),var(--indigo),var(--violet),transparent)}
+  .step{position:relative;margin-bottom:40px;padding-bottom:8px}
+  .step .dot{position:absolute;left:-33px;top:4px;width:30px;height:30px;border-radius:50%;background:var(--bg-1);border:2px solid var(--cyan);display:grid;place-items:center;font-family:'Orbitron';font-weight:900;font-size:13px;color:var(--cyan);z-index:2;box-shadow:0 0 16px rgba(34,211,238,.4)}
+  .step .card{padding:24px 28px;border-radius:14px;background:var(--panel);border:1px solid var(--border);transition:all .3s}
+  .step .card:hover{border-color:var(--border-2);transform:translateX(6px)}
+  .step h3{font-size:19px;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .step h3 .lvl{font-family:'JetBrains Mono';font-size:11px;padding:2px 8px;border-radius:5px;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.3)}
+  .step p{color:var(--text-dim);font-size:14.5px;margin-bottom:12px}
+
+  /* ============ 代码块 ============ */
+  .code{
+    background:#050912;border:1px solid var(--border);border-radius:12px;overflow:hidden;
+    margin:12px 0;font-family:'JetBrains Mono';font-size:13px;
+  }
+  .code .ch{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#0a1130;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-mute)}
+  .code .ch .lang{color:var(--cyan-2);font-weight:700}
+  .code .ch .copy{cursor:pointer;padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:inherit;font-size:11px;transition:all .2s}
+  .code .ch .copy:hover{color:var(--cyan-2);border-color:var(--border-2)}
+  .code pre{padding:16px;overflow-x:auto;line-height:1.7;color:var(--text)}
+  .code pre::-webkit-scrollbar{height:8px}
+  .code pre::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+  /* 简易语法高亮 */
+  .tk-c{color:#5d6e94;font-style:italic}        /* comment */
+  .tk-k{color:#c084fc}                          /* keyword */
+  .tk-s{color:#5eead4}                          /* string */
+  .tk-n{color:#fbbf24}                          /* number */
+  .tk-f{color:#60a5fa}                          /* function */
+  .tk-p{color:#fb7185}                          /* property/punct accent */
+  .tk-t{color:#34d399}                          /* tag/type */
+
+  /* ============ 功能 Tab ============ */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:36px}
+  .tab{
+    padding:11px 22px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;
+    background:var(--panel);border:1px solid var(--border);color:var(--text-dim);transition:all .3s;
+  }
+  .tab:hover{color:var(--text);border-color:var(--border-2)}
+  .tab.active{background:var(--grad-cv);color:#04101f;border-color:transparent;box-shadow:var(--glow-c)}
+  .tab-panel{display:none;animation:fadeUp .5s}
+  .tab-panel.active{display:block}
+  .feat-row{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;align-items:center}
+  .feat-info h3{font-size:24px;margin-bottom:14px}
+  .feat-info p{color:var(--text-dim);margin-bottom:18px}
+  .feat-info ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+  .feat-info ul li{display:flex;gap:10px;align-items:flex-start;color:var(--text-dim);font-size:14.5px}
+  .feat-info ul li::before{content:'▸';color:var(--cyan);font-weight:900;flex-shrink:0;margin-top:2px}
+
+  /* ============ Hooks 表格 ============ */
+  .hook-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:22px}
+  .hook-card{padding:26px;border-radius:16px;background:var(--panel);border:1px solid var(--border);transition:all .3s}
+  .hook-card:hover{border-color:var(--border-2);transform:translateY(-4px)}
+  .hook-card .ev{display:inline-block;font-family:'JetBrains Mono';font-size:12px;padding:4px 10px;border-radius:6px;background:rgba(236,72,153,.12);color:var(--pink);border:1px solid rgba(236,72,153,.3);margin-bottom:14px}
+  .hook-card h3{font-size:18px;margin-bottom:8px}
+  .hook-card p{color:var(--text-dim);font-size:14px;margin-bottom:14px}
+
+  /* ============ Skill 卡片 ============ */
+  .skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+  .skill{padding:24px;border-radius:14px;background:var(--panel);border:1px solid var(--border);transition:all .3s;position:relative;overflow:hidden}
+  .skill::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--grad-cv);transform:scaleY(0);transform-origin:top;transition:transform .4s}
+  .skill:hover::before{transform:scaleY(1)}
+  .skill:hover{transform:translateY(-4px);border-color:var(--border-2)}
+  .skill .nm{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .skill .nm code{font-family:'JetBrains Mono';font-size:14px;color:var(--cyan-2);font-weight:700}
+  .skill .badge{font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.3);font-family:'JetBrains Mono'}
+  .skill .badge.custom{background:rgba(251,191,36,.12);color:var(--amber);border-color:rgba(251,191,36,.3)}
+  .skill p{color:var(--text-dim);font-size:13.5px}
+
+  /* ============ 路线图 ============ */
+  .road{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;position:relative}
+  .road::before{content:'';position:absolute;top:48px;left:6%;right:6%;height:2px;background:linear-gradient(90deg,var(--cyan),var(--indigo),var(--violet),var(--pink));opacity:.5}
+  .lvl-card{position:relative;text-align:center;padding:30px 20px;border-radius:16px;background:var(--panel);border:1px solid var(--border);transition:all .4s}
+  .lvl-card:hover{transform:translateY(-8px);border-color:var(--border-2);box-shadow:0 30px 60px -25px rgba(0,0,0,.9)}
+  .lvl-card .num{width:64px;height:64px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;font-family:'Orbitron';font-weight:900;font-size:26px;position:relative;z-index:2;background:var(--bg-1);border:2px solid var(--cyan);color:var(--cyan);box-shadow:0 0 24px rgba(34,211,238,.3)}
+  .lvl-card:nth-child(2) .num{border-color:var(--indigo);color:var(--indigo);box-shadow:0 0 24px rgba(99,102,241,.3)}
+  .lvl-card:nth-child(3) .num{border-color:var(--violet);color:var(--violet);box-shadow:0 0 24px rgba(168,85,247,.3)}
+  .lvl-card:nth-child(4) .num{border-color:var(--pink);color:var(--pink);box-shadow:0 0 24px rgba(236,72,153,.3)}
+  .lvl-card h3{font-size:18px;margin-bottom:6px}
+  .lvl-card .sub{font-family:'JetBrains Mono';font-size:11px;color:var(--text-mute);margin-bottom:14px;letter-spacing:.1em}
+  .lvl-card ul{text-align:left;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .lvl-card ul li{font-size:13px;color:var(--text-dim);padding-left:18px;position:relative}
+  .lvl-card ul li::before{content:'◦';position:absolute;left:4px;color:var(--cyan)}
+
+  /* ============ CTA ============ */
+  .cta-final{padding:120px 0;text-align:center;position:relative}
+  .cta-box{max-width:760px;margin:0 auto;padding:60px 40px;border-radius:28px;background:var(--panel);border:1px solid var(--border-2);backdrop-filter:blur(20px);position:relative;overflow:hidden}
+  .cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(99,102,241,.2),transparent 60%);pointer-events:none}
+  .cta-box h2{font-family:'Orbitron';font-size:clamp(28px,4vw,44px);margin-bottom:16px;position:relative}
+  .cta-box p{color:var(--text-dim);font-size:17px;margin-bottom:32px;position:relative}
+
+  /* ============ Footer ============ */
+  footer{padding:50px 0 30px;border-top:1px solid var(--border);text-align:center;color:var(--text-mute);font-size:13.5px}
+  footer .fl{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:18px}
+  footer .fl a{color:var(--text-dim)}
+  footer .fl a:hover{color:var(--cyan-2)}
+
+  /* ============ 滚动出现动画 ============ */
+  .reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.2,.7,.3,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ============ 响应式 ============ */
+  @media (max-width:900px){
+    .nav-links{display:none}
+    .nav-toggle{display:grid;place-items:center}
+    .nav-links.open{display:flex;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:rgba(4,6,15,.95);padding:16px;border-bottom:1px solid var(--border)}
+    .hero-stats{grid-template-columns:repeat(2,1fr)}
+    .glm-wrap,.feat-row{grid-template-columns:1fr}
+    .glm-visual{order:-1;max-width:340px}
+    .road{grid-template-columns:repeat(2,1fr)}
+    .road::before{display:none}
+    section{padding:70px 0}
+  }
+  @media (max-width:560px){
+    .hero-stats{grid-template-columns:1fr 1fr;gap:14px;padding:20px}
+    .road{grid-template-columns:1fr}
+    .btn{width:100%;justify-content:center}
+    .hero-cta{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-fx">
+  <div class="grid"></div>
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+</div>
+<canvas id="particles"></canvas>
+
+<!-- ============ 顶部导航 ============ -->
+<nav class="topbar" id="topnav">
+  <div class="wrap nav-inner">
+    <div class="logo">
+      <div class="mark">Z</div>
+      <span>ZCode<small>× GLM 5.2</small></span>
+    </div>
+    <div class="nav-links" id="navlinks">
+      <a href="#power">核心能力</a>
+      <a href="#glm">GLM 5.2</a>
+      <a href="#start">快速上手</a>
+      <a href="#examples">实战案例</a>
+      <a href="#hooks">Hooks</a>
+      <a href="#skills">Skills</a>
+      <a href="#road">高手之路</a>
+      <a href="#start" class="nav-cta">立即开始 →</a>
+    </div>
+    <button class="nav-toggle" id="navtoggle" aria-label="菜单">☰</button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-grid"></div>
+  <div class="wrap hero-inner">
+    <div class="hero-badge"><span class="dot"></span> Powered by GLM 5.2 · 智谱 AI 深度适配</div>
+    <h1 class="hero-title">
+      <span class="grad-text">从新手到高手</span><br>
+      写代码，<span class="grad-text2">交给 AI 队友</span>
+    </h1>
+    <p class="hero-sub">
+      ZCode 是一个智能编程智能体，能读懂你的项目、自主规划任务、读写文件、调用工具。
+      搭配 GLM 5.2 的强大推理，它不只是一个补全工具——而是一个能干活的 AI 搭档。
+    </p>
+    <div class="hero-cta">
+      <a href="#start" class="btn btn-primary">🚀 5 分钟上手</a>
+      <a href="#examples" class="btn btn-ghost">查看实战案例</a>
+    </div>
+
+    <div class="hero-stats reveal">
+      <div class="stat"><div class="num" data-count="200">0</div><div class="lbl">K+ Token 上下文</div></div>
+      <div class="stat"><div class="num" data-count="20">0</div><div class="lbl">+ 内置工具</div></div>
+      <div class="stat"><div class="num" data-count="6">0</div><div class="lbl">大进阶阶段</div></div>
+      <div class="stat"><div class="num" data-count="100">0</div><div class="lbl">% 开源可定制</div></div>
+    </div>
+
+    <div class="term-demo reveal">
+      <div class="term-bar">
+        <span class="d r"></span><span class="d y"></span><span class="d g"></span>
+        <span class="t">zcode — ~/my-project</span>
+      </div>
+      <div class="term-body" id="termbody">
+        <div class="ln"><span class="pmt">▸</span> <span class="you">帮我用 React 写一个带本地存储的待办清单</span></div>
+        <div class="ln dim">◆ 规划任务 (4 步)…</div>
+        <div class="ln"><span class="ai">▸</span> 我来帮你创建。先建立项目结构，再写组件…</div>
+        <div class="ln ok">  ✓ 创建 src/components/TodoApp.jsx</div>
+        <div class="ln ok">  ✓ 创建 src/hooks/useLocalStorage.js</div>
+        <div class="ln ok">  ✓ 写入样式 src/App.css</div>
+        <div class="ln dim">  ⚡ 已完成。运行 npm install && npm run dev 即可预览<span class="cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 核心能力 ============ -->
+<section id="power">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">// 01 · Core Powers</span>
+      <h2 class="sec-title">不只是补全，<span class="grad-text">而是会干活的智能体</span></h2>
+      <p class="sec-desc">传统 AI 只能给你下一行代码。ZCode 能理解你的目标、自主拆解任务、调用工具、修改文件、运行测试——像一个真人队友一样干活。</p>
+    </div>
+    <div class="cap-grid">
+      <div class="cap reveal">
+        <div class="ic">🧠</div>
+        <h3>自主规划任务</h3>
+        <p>给一个目标，它自己拆成子任务、安排执行顺序、边做边调整，不需要你逐步指挥。</p>
+        <div class="tags"><span>任务分解</span><span>多步推理</span><span>自我纠错</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="ic">📂</div>
+        <h3>读写你的整个项目</h3>
+        <p>能浏览目录、读懂上下文、跨文件修改、保持风格一致，真正"住"在你的代码库里。</p>
+        <div class="tags"><span>文件读写</span><span>Grep 搜索</span><span>跨文件重构</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="ic">🛠️</div>
+        <h3>调用真实工具</h3>
+        <p>运行命令、执行测试、安装依赖、操作 Git——所有 IDE 里能干的事它都能干。</p>
+        <div class="tags"><span>Bash 执行</span><span>测试运行</span><span>Git 操作</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="ic">🎯</div>
+        <h3>计划模式 · 先规划后动手</h3>
+        <p>复杂任务先给你方案让你确认，避免误操作。改架构、动核心逻辑前必先征求意见。</p>
+        <div class="tags"><span>方案预审</span><span>可逆操作</span><span>权限控制</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="ic">🔌</div>
+        <h3>无限扩展能力</h3>
+        <p>通过 MCP、Hooks、Skills、插件把能力撑到无限——连数据库、调 API、跑脚本任你配。</p>
+        <div class="tags"><span>MCP 协议</span><span>Hooks</span><span>Skills</span><span>Plugins</span></div>
+      </div>
+      <div class="cap reveal">
+        <div class="ic">🚀</div>
+        <h3>子任务并行</h3>
+        <p>遇到独立子任务，能并行派发多个智能体同时干活，大幅缩短复杂任务的完成时间。</p>
+        <div class="tags"><span>并行 Agent</span><span>任务委派</span><span>高效协作</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GLM 5.2 ============ -->
+<section id="glm" style="background:linear-gradient(180deg,transparent,rgba(99,102,241,.04),transparent)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">// 02 · The Engine</span>
+      <h2 class="sec-title">驱动一切的核心：<span class="grad-text">GLM 5.2</span></h2>
+      <p class="sec-desc">智谱新一代大模型，专为复杂推理、长上下文与工具调用深度优化，是 ZCode 最强的大脑。</p>
+    </div>
+    <div class="glm-wrap">
+      <div class="glm-visual reveal">
+        <div class="ring r3"></div>
+        <div class="ring"></div>
+        <div class="ring r2"></div>
+        <div class="glm-core">GLM<br>5.2</div>
+        <div class="node" style="top:8%;left:50%"></div>
+        <div class="node" style="top:50%;left:96%;background:var(--violet);box-shadow:0 0 16px var(--violet)"></div>
+        <div class="node" style="top:92%;left:50%;background:var(--pink);box-shadow:0 0 16px var(--pink)"></div>
+        <div class="node" style="top:50%;left:4%;background:var(--green);box-shadow:0 0 16px var(--green)"></div>
+      </div>
+      <ul class="glm-feat">
+        <li class="reveal">
+          <div class="gi">⚡</div>
+          <div><h4>强大的代码推理</h4><p>在算法、调试、重构等任务上表现优异，能理解复杂逻辑并给出可运行的方案。</p></div>
+        </li>
+        <li class="reveal">
+          <div class="gi">📖</div>
+          <div><h4>超长上下文窗口</h4><p>200K+ Token 上下文，整个中型项目一次性塞进来也能精准理解全局。</p></div>
+        </li>
+        <li class="reveal">
+          <div class="gi">🔧</div>
+          <div><h4>原生工具调用</h4><p>对 Function Calling / 工具调用深度优化，多步工具链稳定可靠。</p></div>
+        </li>
+        <li class="reveal">
+          <div class="gi">🇨🇳</div>
+          <div><h4>中文场景顶配</h4><p>国产模型中文理解最自然，需求描述、注释、文档全中文也毫不违和。</p></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 快速上手 ============ -->
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">// 03 · Get Started</span>
+      <h2 class="sec-title">新手村：<span class="grad-text">5 分钟开始干活</span></h2>
+      <p class="sec-desc">从安装到第一个能跑的程序，比你想象的简单得多。跟着这四步走，立刻拥有 AI 队友。</p>
+    </div>
+
+    <div class="timeline">
+      <div class="step reveal">
+        <div class="dot">1</div>
+        <div class="card">
+          <h3>安装 ZCode <span class="lvl">2 分钟</span></h3>
+          <p>一行命令搞定，支持 macOS / Linux / Windows（含 WSL）。</p>
+          <div class="code">
+            <div class="ch"><span class="lang">bash</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre><span class="tk-c"># macOS / Linux / WSL 一键安装</span>
+curl -fsSL https://zcode.ai/install.sh | bash
+
+<span class="tk-c"># 或者用 npm（需 Node 18+）</span>
+npm install -g <span class="tk-f">@zcode/cli</span>
+
+<span class="tk-c"># 验证安装</span>
+zcode --version</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step reveal">
+        <div class="dot">2</div>
+        <div class="card">
+          <h3>配置 GLM 5.2 模型 <span class="lvl">1 分钟</span></h3>
+          <p>首次运行会引导你登录智谱开放平台并绑定 API Key，全程图形化引导。</p>
+          <div class="code">
+            <div class="ch"><span class="lang">bash</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre><span class="tk-c"># 启动后按提示登录，或手动设置</span>
+zcode config set model <span class="tk-s">"glm-5.2"</span>
+zcode config set provider <span class="tk-s">"zhipu"</span>
+
+<span class="tk-c"># 检查是否就绪</span>
+zcode doctor   <span class="tk-c"># ✅ 全绿即代表配置完成</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step reveal">
+        <div class="dot">3</div>
+        <div class="card">
+          <h3>进入项目，开聊 <span class="lvl">30 秒</span></h3>
+          <p>在任意项目目录下启动，ZCode 会自动扫描代码、理解结构，然后等你下指令。</p>
+          <div class="code">
+            <div class="ch"><span class="lang">bash</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre><span class="tk-k">cd</span> ~/my-project
+zcode
+
+<span class="tk-c">╭──────────────────────────────────────╮</span>
+<span class="tk-c">│  ZCode 已就绪 · 已索引 42 个文件      │</span>
+<span class="tk-c">│  输入你的需求，或按 / 查看命令       │</span>
+<span class="tk-c">╰──────────────────────────────────────╯</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step reveal">
+        <div class="dot">4</div>
+        <div class="card">
+          <h3>下达第一个指令 <span class="lvl">30 秒</span></h3>
+          <p>用最自然的人话描述需求即可。下面这些是新手最常用的开场白：</p>
+          <div class="code">
+            <div class="ch"><span class="lang">prompt</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre><span class="tk-c"># 摸清项目</span>
+这个项目是做什么的？给我讲讲整体架构和主要模块。
+
+<span class="tk-c"># 写新功能</span>
+帮我加一个用户登录页面，用 JWT 鉴权，前端用 React。
+
+<span class="tk-c"># 修 Bug</span>
+运行测试报了这个错：AssertionError at line 42，帮我定位修复。
+
+<span class="tk-c"># 读文档干活</span>
+读一下 README，然后按里面的说明把项目跑起来。</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 实战案例 ============ -->
+<section id="examples" style="background:linear-gradient(180deg,transparent,rgba(168,85,247,.04),transparent)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">// 04 · In Action</span>
+      <h2 class="sec-title">实战案例：<span class="grad-text">看它真的能干活</span></h2>
+      <p class="sec-desc">四个真实场景，从 0 到 1 的全流程。点开任意一个看看 ZCode 实际是怎么思考和执行的。</p>
+    </div>
+
+    <div class="tabs reveal" id="exTabs">
+      <div class="tab active" data-tab="t1">🦠 CTF 安全</div>
+      <div class="tab" data-tab="t2">🌐 全栈应用</div>
+      <div class="tab" data-tab="t3">🐛 调试排错</div>
+      <div class="tab" data-tab="t4">📊 数据分析</div>
+    </div>
+
+    <!-- 案例 1: CTF -->
+    <div class="tab-panel active" id="t1">
+      <div class="feat-row">
+        <div class="feat-info">
+          <h3>🦠 30 分钟拿下 CTF 题目</h3>
+          <p>把题目附件丢给它，ZCode 自主分析、逆向、构造 exploit、验证 flag，全程不需要你查资料。</p>
+          <ul>
+            <li>自动识别文件类型、字符串、可疑函数</li>
+            <li>编写并迭代 Python exploit 脚本</li>
+            <li>连接远程服务、提交 payload、捕获 flag</li>
+            <li>边做边解释思路，相当于带教学</li>
+          </ul>
+        </div>
+        <div class="code">
+          <div class="ch"><span class="lang">zcode 对话实录</span></div>
+<pre><span class="dim">你 ▸</span> 帮我做这道 pwn 题，附件在 ./chall，
+远程在 nc pwn.ctf.io 1337
+
+<span class="dim">▸ 规划</span>
+1. file/checksec 分析二进制
+2. 反编译找漏洞点
+3. 写 exploit 并本地调试
+4. 远程打，拿 flag
+
+<span class="tk-ok">✓</span> <span class="tk-t">file chall</span> → ELF 64-bit, dynamically linked
+<span class="tk-ok">✓</span> checksec → NX enabled, No PIE,
+   Partial RELRO, 有 canary
+<span class="tk-ok">✓</span> 反编译 main() 发现格式化字符串漏洞
+   <span class="tk-k">printf</span>(user_input);  <span class="tk-c">// ← 漏洞！</span>
+
+<span class="tk-f">▸</span> 思路：用 %n 泄露 canary 并改写
+   返回地址到后门函数 <span class="tk-t">win()</span>
+
+<span class="tk-ok">✓</span> 写入 exploit.py（含本地+远程双模式）
+<span class="tk-ok">✓</span> 本地测试通过 ✓ 远程连通
+<span class="tk-k">flag</span>{zcode_makes_pwn_easy_2026}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 案例 2: 全栈 -->
+    <div class="tab-panel" id="t2">
+      <div class="feat-row">
+        <div class="feat-info">
+          <h3>🌐 一句话生成全栈应用</h3>
+          <p>从空目录到能跑的应用，ZCode 自己搭前后端、设计数据库、写测试，你只管验收。</p>
+          <ul>
+            <li>React + Node + PostgreSQL 全栈脚手架</li>
+            <li>自动设计 REST API 与数据库 Schema</li>
+            <li>生成单元测试和集成测试</li>
+            <li>最后给出 docker-compose 一键启动</li>
+          </ul>
+        </div>
+        <div class="code">
+          <div class="ch"><span class="lang">zcode 对话实录</span></div>
+<pre><span class="dim">你 ▸</span> 做一个团队任务看板（类 Trello），
+支持拖拽、用户登录、实时同步
+
+<span class="dim">▸ 技术选型</span>
+前端 React + DnD Kit
+后端 Node + Express + Prisma
+数据库 PostgreSQL + WebSocket
+
+<span class="tk-ok">✓</span> 初始化 monorepo 结构
+<span class="tk-ok">✓</span> 后端：Schema / 迁移 / 12 个 API
+<span class="tk-ok">✓</span> 前端：登录 / 看板 / 拖拽组件
+<span class="tk-ok">✓</span> WebSocket 实时同步逻辑
+<span class="tk-ok">✓</span> 编写 28 个测试用例 ✓ 全绿
+<span class="tk-ok">✓</span> 生成 docker-compose.yml
+
+<span class="tk-f">▸</span> 运行：<span class="tk-s">docker compose up</span>
+   然后访问 http://localhost:3000
+
+<span class="tk-c">// 总计创建 34 个文件，约 2400 行代码</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 案例 3: 调试 -->
+    <div class="tab-panel" id="t3">
+      <div class="feat-row">
+        <div class="feat-info">
+          <h3>🐛 把错误日志直接丢给它</h3>
+          <p>不用自己 Google，ZCode 能跑测试、读堆栈、定位代码、给出修复，并验证修复有效。</p>
+          <ul>
+            <li>自动运行测试复现问题</li>
+            <li>解析堆栈定位到具体代码行</li>
+            <li>分析根因而非治标</li>
+            <li>修复后重跑测试确认无回归</li>
+          </ul>
+        </div>
+        <div class="code">
+          <div class="ch"><span class="lang">zcode 对话实录</span></div>
+<pre><span class="dim">你 ▸</span> CI 挂了，错误：
+TypeError: Cannot read properties of
+undefined ( reading 'map' ) at UserList.jsx:23
+
+<span class="tk-ok">✓</span> 读取 src/UserList.jsx 第 23 行
+<span class="tk-ok">✓</span> 发现 users 可能为 undefined
+
+<span class="tk-f">▸</span> 根因：API 返回空响应时
+   data.users 不存在，但代码没做空值保护
+
+<span class="tk-k">修复</span>：
+ users?.map(...) ?? <span class="tk-k">null</span>
+ + 加载状态分支渲染
+
+<span class="tk-ok">✓</span> 重跑 npm test → 32 passed
+<span class="tk-ok">✓</span> 新增边界测试用例覆盖空数据</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 案例 4: 数据分析 -->
+    <div class="tab-panel" id="t4">
+      <div class="feat-row">
+        <div class="feat-info">
+          <h3>📊 丢个 CSV，让它自己分析</h3>
+          <p>ZCode 能读数据、清洗、画图、写结论报告，最后还能导出成 PDF 或 PPT。</p>
+          <ul>
+            <li>自动推断数据类型与异常值</li>
+            <li>用 pandas/matplotlib 做清洗和可视化</li>
+            <li>生成结构化分析报告</li>
+            <li>一键导出 PDF / DOCX / Excel</li>
+          </ul>
+        </div>
+        <div class="code">
+          <div class="ch"><span class="lang">zcode 对话实录</span></div>
+<pre><span class="dim">你 ▸</span> 分析 sales.csv，找出销售最好的
+三个品类和它们的月度趋势
+
+<span class="tk-ok">✓</span> 读取 sales.csv（12,840 行）
+<span class="tk-ok">✓</span> 清洗：去重 18 行、补缺失值
+<span class="tk-ok">✓</span> 按品类聚合，计算总销售额
+
+<span class="tk-f">▸</span> Top 3 品类：
+   1. 电子产品  ¥4.2M  ↑23%
+   2. 服装      ¥3.1M  ↑11%
+   3. 家居      ¥2.8M  ↓5%
+
+<span class="tk-ok">✓</span> 生成 3 张趋势图
+<span class="tk-ok">✓</span> 导出分析报告 report.pdf
+
+<span class="tk-c">// 报告含图表、数据表、结论与建议</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Hooks ============ -->
+<section id="hooks">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">// 05 · Hooks · 进阶一</span>
+      <h2 class="sec-title">Hooks：<span class="grad-text">让 AI 守你的规矩</span></h2>
+      <p class="sec-desc">Hooks 是事件钩子——在特定时机（提交前、写文件前、工具调用前…）自动触发脚本。用它来强制规范、自动格式化、拦截危险操作。</p>
+    </div>
+
+    <div class="hook-grid">
+      <div class="hook-card reveal">
+        <span class="ev">PreToolUse</span>
+        <h3>📝 提交前自动格式化</h3>
+        <p>每次 Edit/Write 文件后自动跑 Prettier / Black，代码风格永远统一，团队不再为缩进吵架。</p>
+        <div class="code">
+          <div class="ch"><span class="lang">.zcode/settings.json</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre>{
+  <span class="tk-p">"hooks"</span>: {
+    <span class="tk-p">"PostToolUse"</span>: [{
+      <span class="tk-p">"matcher"</span>: <span class="tk-s">"Edit|Write"</span>,
+      <span class="tk-p">"command"</span>: <span class="tk-s">"npx prettier --write $FILE"</span>
+    }]
+  }
+}</pre>
+        </div>
+      </div>
+
+      <div class="hook-card reveal">
+        <span class="ev">PreToolUse</span>
+        <h3>🛡️ 拦截危险命令</h3>
+        <p>禁止 AI 执行 rm -rf、强制推送、删数据库等高危操作，给生产环境加一道护栏。</p>
+        <div class="code">
+          <div class="ch"><span class="lang">.zcode/settings.json</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre>{
+  <span class="tk-p">"hooks"</span>: {
+    <span class="tk-p">"PreToolUse"</span>: [{
+      <span class="tk-p">"matcher"</span>: <span class="tk-s">"Bash"</span>,
+      <span class="tk-p">"command"</span>: <span class="tk-s">"scripts/guard.sh"</span>
+    }]
+  }
+}</pre>
+        </div>
+      </div>
+
+      <div class="hook-card reveal">
+        <span class="ev">UserPromptSubmit</span>
+        <h3>🏷️ 自动注入项目上下文</h3>
+        <p>每次你发消息时，自动把当前 Git 分支、最近改动注入到提示词，让 AI 始终知道你在干嘛。</p>
+        <div class="code">
+          <div class="ch"><span class="lang">scripts/context.sh</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre><span class="tk-c">#!/usr/bin/env bash</span>
+<span class="tk-k">echo</span> <span class="tk-s">"当前分支: </span>$(git branch --show-current)<span class="tk-s">"</span>
+<span class="tk-k">echo</span> <span class="tk-s">"最近改动:"</span>
+git diff --stat HEAD~3</pre>
+        </div>
+      </div>
+
+      <div class="hook-card reveal">
+        <span class="ev">SessionStart</span>
+        <h3>☕ 开会自动准备</h3>
+        <p>每次启动 ZCode，自动拉取最新代码、安装依赖、跑一遍测试，让你打开就是就绪状态。</p>
+        <div class="code">
+          <div class="ch"><span class="lang">.zcode/settings.json</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre>{
+  <span class="tk-p">"hooks"</span>: {
+    <span class="tk-p">"SessionStart"</span>: [{
+      <span class="tk-p">"command"</span>: <span class="tk-s">"git pull &amp;&amp; npm install"</span>
+    }]
+  }
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Skills ============ -->
+<section id="skills" style="background:linear-gradient(180deg,transparent,rgba(52,211,153,.04),transparent)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">// 06 · Skills · 进阶二</span>
+      <h2 class="sec-title">Skills：<span class="grad-text">教会 AI 新本事</span></h2>
+      <p class="sec-desc">Skill 是一份带说明书的"能力包"——写一段 Markdown，告诉 AI 在某类任务里该怎么做。官方已经内置了一堆，你也可以自己造。</p>
+    </div>
+
+    <div class="skill-grid">
+      <div class="skill reveal">
+        <div class="nm"><code>/pdf</code><span class="badge">官方</span></div>
+        <p>生成专业 PDF：报告、海报、论文、简历，四种工作流自动路由，LaTeX / 报表 / 创意全覆盖。</p>
+      </div>
+      <div class="skill reveal">
+        <div class="nm"><code>/docx</code><span class="badge">官方</span></div>
+        <p>创建和编辑 Word 文档，支持修订、批注、格式保留，毕业论文利器。</p>
+      </div>
+      <div class="skill reveal">
+        <div class="nm"><code>/skill-creator</code><span class="badge">官方</span></div>
+        <p>用 AI 帮你写新的 Skill——把你的重复工作流封装成可复用的能力包。</p>
+      </div>
+      <div class="skill reveal">
+        <div class="nm"><code>/diagnosing-hooks</code><span class="badge">官方</span></div>
+        <p>自动诊断 Hooks 配置问题：事件名、matcher、脚本权限、模板变量，一查就通。</p>
+      </div>
+      <div class="skill reveal">
+        <div class="nm"><code>/diagnosing-mcp</code><span class="badge">官方</span></div>
+        <p>MCP 服务器连不上？工具不显示？这个 skill 一步步帮你定位修复。</p>
+      </div>
+      <div class="skill reveal">
+        <div class="nm"><code>/my-homework</code><span class="badge custom">自定义</span></div>
+        <p>举例：自己写一个"作业模式" skill，让 AI 用学生口吻解题、附步骤、不出超纲答案。</p>
+      </div>
+      <div class="skill reveal">
+        <div class="nm"><code>/company-api</code><span class="badge custom">自定义</span></div>
+        <p>把公司内部 API 文档喂进去，让 AI 按你们的规范写代码、用你们的 SDK。</p>
+      </div>
+      <div class="skill reveal">
+        <div class="nm"><code>/deploy-flow</code><span class="badge custom">自定义</span></div>
+        <p>固化部署流程：构建 → 测试 → 推镜像 → 上线 → 通知，一句话触发全链路。</p>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:48px">
+      <div class="sec-head" style="margin-bottom:32px">
+        <p class="sec-desc" style="margin-bottom:0">✨ 写一个自己的 Skill，只需一个 Markdown 文件：</p>
+      </div>
+      <div class="code">
+        <div class="ch"><span class="lang">~/.zcode/skills/my-homework/SKILL.md</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre><span class="tk-p">---</span>
+<span class="tk-k">name</span>: my-homework
+<span class="tk-k">description</span>: 用学生口吻解答作业题，分步骤写过程，不直接给超纲答案
+<span class="tk-k">trigger</span>: 当用户提到「作业」「习题」「考试」时自动激活
+<span class="tk-p">---</span>
+
+<span class="tk-c"># 作业解题模式</span>
+
+当用户提交作业题时，请遵循：
+
+1. <span class="tk-k">先复述题目</span>，确认理解无误
+2. <span class="tk-k">分步骤求解</span>，每步说明依据的公式/定理
+3. <span class="tk-k">最终答案</span>单独标出
+4. <span class="tk-k">附思考过程</span>，帮用户真正学会
+5. 若超纲，提示「这超出了当前知识点范围」并引导
+
+<span class="tk-c"># 输出风格</span>
+- 语气像同学之间讨论
+- 关键步骤用 ▸ 标注
+- 公式用 LaTeX 渲染</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 高手之路 ============ -->
+<section id="road">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">// 07 · Road to Mastery</span>
+      <h2 class="sec-title">高手之路：<span class="grad-text">四阶段成长地图</span></h2>
+      <p class="sec-desc">从一个指令到一套工作流，这是从「会用」到「玩转」的完整路径。每一阶段都有清晰的能力跃迁。</p>
+    </div>
+
+    <div class="road">
+      <div class="lvl-card reveal">
+        <div class="num">1</div>
+        <h3>新手</h3>
+        <div class="sub">NEWBIE</div>
+        <ul>
+          <li>安装配置 ZCode</li>
+          <li>用自然语言提问</li>
+          <li>让它写小功能</li>
+          <li>读懂它的方案</li>
+        </ul>
+      </div>
+      <div class="lvl-card reveal">
+        <div class="num">2</div>
+        <h3>熟练</h3>
+        <div class="sub">SKILLED</div>
+        <ul>
+          <li>善用斜杠命令</li>
+          <li>多轮上下文协作</li>
+          <li>让它跑测试/调试</li>
+          <li>读 AGENTS.md 约束</li>
+        </ul>
+      </div>
+      <div class="lvl-card reveal">
+        <div class="num">3</div>
+        <h3>进阶</h3>
+        <div class="sub">ADVANCED</div>
+        <ul>
+          <li>配置 Hooks 自动化</li>
+          <li>写自定义 Skills</li>
+          <li>挂载 MCP 服务器</li>
+          <li>子任务并行委派</li>
+        </ul>
+      </div>
+      <div class="lvl-card reveal">
+        <div class="num">4</div>
+        <h3>高手</h3>
+        <div class="sub">MASTER</div>
+        <ul>
+          <li>打造个人 AI 工作流</li>
+          <li>开发插件分发</li>
+          <li>团队级规范沉淀</li>
+          <li>用 AI 做 AI 工具</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:48px">
+      <div class="sec-head" style="margin-bottom:32px">
+        <p class="sec-desc" style="margin-bottom:0">⚡ 高手玩家还可以接入 MCP，无限扩展 AI 的手脚：</p>
+      </div>
+      <div class="code">
+        <div class="ch"><span class="lang">.zcode/settings.json · 接入 MCP 服务器</span><button class="copy" onclick="copyCode(this)">复制</button></div>
+<pre>{
+  <span class="tk-p">"mcpServers"</span>: {
+    <span class="tk-p">"github"</span>: {
+      <span class="tk-p">"command"</span>: <span class="tk-s">"npx"</span>,
+      <span class="tk-p">"args"</span>: [<span class="tk-s">"@modelcontextprotocol/server-github"</span>]
+    },
+    <span class="tk-p">"postgres"</span>: {
+      <span class="tk-p">"command"</span>: <span class="tk-s">"npx"</span>,
+      <span class="tk-p">"args"</span>: [<span class="tk-s">"@mcp/server-postgres"</span>,
+              <span class="tk-s">"postgresql://localhost/mydb"</span>]
+    },
+    <span class="tk-p">"browser"</span>: {
+      <span class="tk-p">"command"</span>: <span class="tk-s">"npx"</span>,
+      <span class="tk-p">"args"</span>: [<span class="tk-s">"@mcp/server-puppeteer"</span>]
+    }
+  }
+}
+
+<span class="tk-c">// 接入后，AI 就能：查 GitHub PR / 查数据库 / 操控浏览器</span>
+<span class="tk-c">// 想让它能干什么，就挂什么 MCP 服务器</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta-final">
+  <div class="wrap">
+    <div class="cta-box reveal">
+      <h2>准备好让 <span class="grad-text">AI 队友</span><br>加入你的下一个项目了吗？</h2>
+      <p>从今天的第一行命令开始，让 GLM 5.2 + ZCode 成为你的开发超能力。</p>
+      <div class="hero-cta">
+        <a href="#start" class="btn btn-primary">🚀 立即上手 ZCode</a>
+        <a href="#examples" class="btn btn-ghost">再看看案例</a>
+      </div>
+      <div style="margin-top:32px;font-family:'JetBrains Mono';font-size:13px;color:var(--text-mute)">
+        $ curl -fsSL https://zcode.ai/install.sh | bash
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fl">
+      <a href="#power">核心能力</a>
+      <a href="#glm">GLM 5.2</a>
+      <a href="#start">快速上手</a>
+      <a href="#examples">实战案例</a>
+      <a href="#hooks">Hooks</a>
+      <a href="#skills">Skills</a>
+      <a href="#road">高手之路</a>
+    </div>
+    <p>Powered by <strong style="color:var(--cyan-2)">ZCode</strong> × <strong style="color:var(--violet)">GLM 5.2</strong> · 为下一代开发者而生 · © 2026</p>
+    <p style="margin-top:8px;font-size:12px">本页面由 ZCode × GLM 5.2 单次生成 · 一个 HTML 文件搞定全部</p>
+  </div>
+</footer>
+
+<script>
+/* ============ 粒子背景 ============ */
+(function(){
+  const c=document.getElementById('particles'),x=c.getContext('2d');
+  let w,h,ps=[];
+  function rs(){w=c.width=innerWidth;h=c.height=innerHeight;}
+  function init(){
+    ps=[];
+    const n=Math.min(120,Math.floor(w*h/14000));
+    for(let i=0;i<n;i++)ps.push({
+      x:Math.random()*w,y:Math.random()*h,
+      vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,
+      r:Math.random()*1.6+.4,
+      hue:Math.random()<.5?190:Math.random()<.5?260:330
+    });
+  }
+  function draw(){
+    x.clearRect(0,0,w,h);
+    // 连线
+    for(let i=0;i<ps.length;i++){
+      for(let j=i+1;j<ps.length;j++){
+        const dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,d=Math.hypot(dx,dy);
+        if(d<120){
+          x.strokeStyle=`hsla(${ps[i].hue},80%,60%,${(1-d/120)*.12})`;
+          x.lineWidth=.6;
+          x.beginPath();x.moveTo(ps[i].x,ps[i].y);x.lineTo(ps[j].x,ps[j].y);x.stroke();
+        }
+      }
+    }
+    // 点
+    ps.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>w)p.vx*=-1;
+      if(p.y<0||p.y>h)p.vy*=-1;
+      x.fillStyle=`hsla(${p.hue},80%,65%,.8)`;
+      x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  addEventListener('resize',()=>{rs();init();});
+  rs();init();draw();
+})();
+
+/* ============ 导航滚动效果 + 移动菜单 ============ */
+const nav=document.getElementById('topnav');
+addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>30));
+document.getElementById('navtoggle').addEventListener('click',()=>{
+  document.getElementById('navlinks').classList.toggle('open');
+});
+document.querySelectorAll('.nav-links a').forEach(a=>{
+  a.addEventListener('click',()=>document.getElementById('navlinks').classList.remove('open'));
+});
+
+/* ============ 滚动出现 ============ */
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ============ 数字滚动 ============ */
+const numIo=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      const el=e.target,target=+el.dataset.count;
+      let cur=0;const step=target/50;
+      const t=setInterval(()=>{
+        cur+=step;
+        if(cur>=target){cur=target;clearInterval(t);}
+        el.textContent=Math.floor(cur)+(target>=100?'':'+');
+      },24);
+      numIo.unobserve(el);
+    }
+  });
+},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>numIo.observe(el));
+
+/* ============ Tab 切换 ============ */
+document.querySelectorAll('#exTabs .tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('#exTabs .tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============ 终端打字效果 ============ */
+(function(){
+  const lines=document.querySelectorAll('#termbody .ln');
+  lines.forEach((l,i)=>l.style.opacity=0);
+  const termIo=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        lines.forEach((l,i)=>{
+          setTimeout(()=>{l.style.transition='opacity .4s';l.style.opacity=1;},i*350);
+        });
+        termIo.disconnect();
+      }
+    });
+  },{threshold:.3});
+  const tb=document.getElementById('termbody');
+  if(tb)termIo.observe(tb);
+})();
+
+/* ============ 复制代码 ============ */
+function copyCode(btn){
+  const pre=btn.closest('.code').querySelector('pre');
+  const txt=pre.innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const o=btn.textContent;btn.textContent='已复制 ✓';btn.style.color='var(--green)';
+    setTimeout(()=>{btn.textContent=o;btn.style.color='';},1500);
+  });
+}
+</script>
+</body>
+</html>

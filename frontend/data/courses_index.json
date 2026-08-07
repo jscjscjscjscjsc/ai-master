@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "title": "大模型基础原理",
+    "icon": "🧠",
+    "description": "深入理解大语言模型的核心概念、发展历程、基础工作原理",
+    "ppt_url": "https://feishu.doubao.com/slides/WqhSsdj0sliQIFdl9sacvjuznlh",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 2,
+    "title": "Transformer 架构详解",
+    "icon": "🏗️",
+    "description": "深入理解 Transformer 架构：自注意力机制、多头注意力、位置编码等核心组件",
+    "ppt_url": "",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 3,
+    "title": "提示词工程基础",
+    "icon": "✍️",
+    "description": "掌握提示词（Prompt）工程的核心概念、系统化编写原则和主流范式",
+    "ppt_url": "https://feishu.doubao.com/slides/VHDcsc4s4l7Rdpd3ajMcjju5nLb",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 4,
+    "title": "驾驭框架与智能体概念",
+    "icon": "⚙️",
+    "description": "从 LangChain 到 Agent 架构，掌握 LLM 开发框架和 AI 智能体设计思维",
+    "ppt_url": "https://feishu.doubao.com/slides/HJaUswQb3lmwG1d4UDKcJec9n9d",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 5,
+    "title": "Claude Code 入门细致讲解",
+    "icon": "🔧",
+    "description": "从安装配置到项目实战，全面掌握 Claude Code CLI 的核心功能与开发技巧",
+    "ppt_url": "https://feishu.doubao.com/slides/BosBsWNc0lGZUkdF4MicowCCnig",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 6,
+    "title": "RAG 技术详解",
+    "icon": "🔍",
+    "description": "深入讲解 RAG 技术的核心原理、工程实践",
+    "ppt_url": "https://feishu.doubao.com/slides/ZF5gsFtDvlyeBEdetoocM7enncc",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 7,
+    "title": "阿里云ACP大模型认证（上）",
+    "icon": "☁️",
+    "description": "ACP认证核心技术栈：模型服务、训练平台、部署与评估指标",
+    "ppt_url": "",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 8,
+    "title": "阿里云ACP大模型认证（下）",
+    "icon": "📜",
+    "description": "ACP进阶：模型部署优化、量化技术、向量数据库与安全合规",
+    "ppt_url": "",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 9,
+    "title": "大模型应用实战",
+    "icon": "🔬",
+    "description": "综合实战：构建生产级 RAG 系统、AI Agent 开发、多工具编排与成本优化",
+    "ppt_url": "",
+    "knowledge_count": 6,
+    "exercise_count": 6
+  },
+  {
+    "id": 10,
+    "title": "各类 Agent 教学与测试",
+    "icon": "🤖",
+    "description": "探索各类 AI Agent 的原理、特性与实战技巧",
+    "ppt_url": "",
+    "knowledge_count": 3,
+    "exercise_count": 0
+  }
+]

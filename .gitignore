@@ -26,3 +26,13 @@ credentials.json
 .DS_Store
 Thumbs.db
 .vscode/
+
+# AI Master local runtime data - never publish user records or local secrets
+frontend/.local/
+frontend/data/users.json
+frontend/data/licenses.db
+frontend/data/.session_secret
+frontend/data/.auth_server_url
+frontend/data/*token*
+frontend/data/*secret*
+frontend/data/*.log

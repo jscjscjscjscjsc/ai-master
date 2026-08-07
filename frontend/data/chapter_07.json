@@ -1,0 +1,91 @@
+{
+  "id": 7,
+  "title": "阿里云ACP大模型认证（上）",
+  "icon": "☁️",
+  "description": "阿里云 ACP 认证考试中大模型相关的核心知识点、PAI 平台、DashScope 服务、百炼平台和模型评估体系",
+  "knowledge_points": [
+    {
+      "title": "阿里云ACP认证概述",
+      "content": ""
+    },
+    {
+      "title": "灵积（DashScope）模型服务",
+      "content": "<h3>DashScope 简介</h3><p>DashScope（灵积）是阿里云的<strong>一站式模型服务平台</strong>，提供统一 API 调用各类 AI 模型的能力。它是阿里云大模型服务的核心入口。</p><h3>通义千问系列模型</h3><table><tr><th>模型</th><th>特点</th><th>适用场景</th></tr><tr><td>Qwen-Max</td><td>旗舰版，最强综合能力</td><td>复杂推理、高质量内容生成</td></tr><tr><td>Qwen-Plus</td><td>增强版，性价比优秀</td><td>日常开发、通用场景</td></tr><tr><td>Qwen-Turbo</td><td>轻量版，响应速度快</td><td>简单任务、高频调用</td></tr><tr><td>Qwen-VL-Max</td><td>视觉理解版</td><td>图像分析、OCR</td></tr><tr><td>Qwen-Long</td><td>超长上下文版（10M tokens）</td><td>长文档处理</td></tr><tr><td>Qwen-Coder</td><td>代码专用版</td><td>编程任务</td></tr></table><h3>API 调用</h3><pre><code># DashScope API 示例\nimport dashscope\nfrom dashscope import Generation\n\ndashscope.api_key = \"your-api-key\"\n\nresponse = Generation.call(\n    model=\"qwen-max\",\n    prompt=\"解释什么是大语言模型\",\n    temperature=0.7,\n    max_tokens=500\n)\nprint(response.output.text)</code></pre>"
+    },
+    {
+      "title": "百炼平台",
+      "content": "<h3>百炼平台定位</h3><p>百炼是阿里云的<strong>大模型应用开发平台</strong>，提供从数据准备、模型调优到应用评测的全链路 AI 开发能力。比 DashScope 更偏上层应用开发。</p><h3>核心功能模块</h3><ul><li><strong>数据管理</strong>：支持上传多种格式数据（TXT/PDF/Excel），提供标注工具</li><li><strong>模型调优</strong>：支持 SFT（监督微调）和 DPO 两种微调方式</li><li><strong>模型评测</strong>：内置评测数据集，自动评分并生成报告</li><li><strong>应用部署</strong>：一键部署为 API 或在线应用</li><li><strong>Prompt 管理</strong>：提示词版本管理和批量测试</li><li><strong>RAG 应用</strong>：内置知识库搭建和检索增强生成能力</li></ul><h3>百炼 vs DashScope</h3><table><tr><th>维度</th><th>百炼</th><th>DashScope</th></tr><tr><td>定位</td><td>应用开发平台</td><td>模型服务 API</td></tr><tr><td>主要功能</td><td>数据→训练→评测→部署</td><td>模型推理调用</td></tr><tr><td>用户</td><td>AI 应用开发者</td><td>所有开发者</td></tr><tr><td>低代码</td><td>是（可视化操作）</td><td>否（API 调用）</td></tr></table>"
+    },
+    {
+      "title": "PAI 平台全流程",
+      "content": "<h3>PAI 平台组件</h3><table><tr><th>组件</th><th>功能</th><th>适用场景</th></tr><tr><td>PAI-Studio</td><td>可视化建模，拖拽式 ML 流程</td><td>低代码 ML 开发</td></tr><tr><td>PAI-DSW</td><td>交互式 Notebook（Jupyter）</td><td>算法探索、原型开发</td></tr><tr><td>PAI-DLC</td><td>分布式训练集群</td><td>大规模模型训练</td></tr><tr><td>PAI-EAS</td><td>在线推理服务</td><td>模型部署为 API</td></tr></table><h3>全流程 MLOps</h3><pre><code>1. 数据准备（PAI-Studio / DataWorks）\n   - 数据采集、清洗、标注\n   - 特征工程、数据分割\n\n2. 模型训练（PAI-DLC）\n   - 配置训练任务（镜像、资源、超参）\n   - 分布式训练（数据并行+模型并行）\n   - 训练监控（Loss、GPU 利用率）\n\n3. 模型评估（PAI 评估模块）\n   - 内置评测集评测\n   - 对比实验（A/B 测试）\n\n4. 模型部署（PAI-EAS）\n   - 一键部署为在线 API\n   - 弹性伸缩配置\n   - 蓝绿部署/灰度发布</code></pre>"
+    },
+    {
+      "title": "ACP 高频考点总结",
+      "content": "<h3>云计算基础考点</h3><ul><li>ECS 实例规格族（通用型/计算型/内存型/GPU 型）及适用场景</li><li>OSS 存储类型（标准/低频/归档/冷归档）</li><li>SLB 负载均衡调度算法（轮询/最小连接数/一致性哈希）</li><li>VPC 网络规划（CIDR 划分、安全组规则）</li></ul><h3>AI 平台考点</h3><ul><li>PAI 各组件功能区分（尤其是 DSW/DLC/EAS 的定位差异）</li><li>分布式训练策略（数据并行、模型并行、流水线并行）</li><li>模型部署配置（实例规格、副本数、弹性伸缩策略）</li><li>GPU 资源管理（vGPU、MIG、资源共享）</li></ul><h3>大模型应用考点</h3><ul><li>Prompt 工程在百炼平台中的实现</li><li>RAG 架构中的向量检索配置</li><li>模型微调参数对效果的影响</li><li>模型评估指标含义和计算方法</li></ul><h3>安全考点</h3><ul><li>RAM 权限策略配置（最小权限原则）</li><li>数据加密方案（KMS 密钥管理）</li><li>内容安全审核策略</li><li>操作审计（ActionTrail）</li></ul>"
+    },
+    {
+      "title": "模型评估指标",
+      "content": "<h3>分类任务指标</h3><pre><code># 混淆矩阵\n            预测正类    预测负类\n实际正类      TP          FN\n实际负类      FP          TN\n\n# 核心指标\n准确率 Accuracy = (TP + TN) / (TP + TN + FP + FN)\n精确率 Precision = TP / (TP + FP)\n召回率 Recall = TP / (TP + FN)\nF1-Score = 2 × Precision × Recall / (Precision + Recall)</code></pre><h3>生成任务指标</h3><ul><li><strong>BLEU</strong>：基于 n-gram 精确度，衡量生成文本和参考文本的词汇重叠度（0-1）</li><li><strong>ROUGE-L</strong>：基于最长公共子序列（LCS），衡量生成文本和参考文本的相似度</li><li><strong>Perplexity</strong>：困惑度，衡量模型对文本的预测能力（越低越好）</li><li><strong>LLM-as-Judge</strong>：用另一个 LLM 评估生成质量，覆盖准确性、相关性、流畅性等维度</li></ul><h3>评估方法论</h3><ul><li><strong>人工评估</strong>：最准确但成本高，适合小规模精测</li><li><strong>自动评估</strong>：使用 BLEU/ROUGE 等指标，适合大规模回归</li><li><strong>混合评估</strong>：自动指标初筛 + 人工抽样复核</li><li><strong>对抗评估</strong>：红队测试、边界测试</li></ul>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "阿里云 PAI 平台中，PAI-DSW、PAI-DLC、PAI-EAS 三个组件的正确功能对应是？",
+      "options": [
+        "A. 分布式训练、在线推理、交互式开发",
+        "B. 交互式开发、分布式训练、在线推理",
+        "C. 在线推理、交互式开发、分布式训练",
+        "D. 分布式训练、交互式开发、在线推理"
+      ],
+      "answer": 1,
+      "explanation": "PAI-DSW = 交互式开发（Notebook），PAI-DLC = 分布式训练（Deep Learning Cluster），PAI-EAS = 在线推理（Elastic Algorithm Service）。这是常考题型。"
+    },
+    {
+      "question": "在模型评估中，当正负样本极度不平衡时（如欺诈检测：正样本仅占 1%），以下哪个评估指标最合适？",
+      "options": [
+        "A. 准确率（Accuracy）",
+        "B. 精确率（Precision）和召回率（Recall）以及 F1-Score",
+        "C. BLEU 分数",
+        "D. 模型参数量"
+      ],
+      "answer": 1,
+      "explanation": "当正负样本极度不平衡时，准确率会虚假偏高（全部预测为负类也有 99% 准确率）。Precision、Recall 和 F1-Score 能更好反映模型在<strong>少数类（正类）</strong>上的表现。"
+    },
+    {
+      "question": "百炼平台相比 DashScope 的核心差异是什么？",
+      "options": [
+        "A. 百炼是底层 API 调用，DashScope 是上层应用平台",
+        "B. 百炼提供完整的 AI 应用开发工作流（数据→训练→评测→部署），DashScope 主要提供模型推理 API",
+        "C. 百炼只支持通义千问系列，DashScope 支持所有模型",
+        "D. 两者功能完全相同"
+      ],
+      "answer": 1,
+      "explanation": "百炼是<strong>应用开发平台</strong>，提供数据管理、模型调优、评测、部署等全链路能力。DashScope 是<strong>模型服务 API</strong>，主要提供模型推理调用。百炼包含 DashScope 的底层能力。"
+    },
+    {
+      "question": "在 ACP 认证考试中，以下哪个不属于阿里云 PAI 平台的功能组件？",
+      "options": [
+        "A. PAI-Studio（可视化建模）",
+        "B. PAI-DataWorks（数据集成与开发）",
+        "C. PAI-DSW（交互式 Notebook）",
+        "D. PAI-EAS（在线推理服务）"
+      ],
+      "answer": 1,
+      "explanation": "DataWorks 是阿里云的<strong>独立大数据开发治理平台</strong>，不属于 PAI 平台组件。PAI 平台的组件包括 Studio（可视化）、DSW（Notebook）、DLC（训练）、EAS（推理）。"
+    },
+    {
+      "type": "code",
+      "question": "实现评估指标计算函数",
+      "code_prompt": "实现函数计算混淆矩阵的各项指标：accuracy(y_true, y_pred), precision(y_true, y_pred), recall(y_true, y_pred), f1_score(y_true, y_pred)。支持处理除零情况。",
+      "explanation": "从混淆矩阵的 TP/TN/FP/FN 出发，逐项实现。注意除零保护（返回 0.0）。"
+    },
+    {
+      "type": "code",
+      "question": "模拟 DashScope API 调用",
+      "code_prompt": "实现一个 DashScopeClient 类：1) 支持设置 API Key 2) call(model, prompt, **kwargs) 方法 3) 模拟不同模型的响应 4) 错误处理（认证失败、速率限制）。",
+      "explanation": "使用 requests 库或模拟响应。注意实现重试机制和错误处理。"
+    }
+  ],
+  "ppt_url": ""
+}

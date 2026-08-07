@@ -1,0 +1,90 @@
+{
+  "id": 2,
+  "title": "Transformer 架构详解",
+  "icon": "🏗️",
+  "description": "深入理解 Transformer 架构：自注意力机制、多头注意力、位置编码等核心组件的数学原理与工程实现",
+  "knowledge_points": [
+    {
+      "title": "Transformer 整体架构",
+      "content": "<h3>为什么是 Transformer？</h3><p>2017 年 Google 在《Attention Is All You Need》中提出 Transformer，它用<strong>自注意力机制</strong>替代了传统的 RNN/LSTM，解决了长序列建模和并行化训练两大难题。</p><h3>架构概览</h3><p>Transformer 采用 Encoder-Decoder 结构（现代 LLM 多只用 Decoder）：</p><ul><li><strong>Encoder</strong>：将输入序列编码为上下文表示</li><li><strong>Decoder</strong>：基于编码表示自回归生成输出</li></ul><h3>核心组件</h3><table><tr><th>组件</th><th>作用</th></tr><tr><td>Self-Attention</td><td>让每个位置关注序列中所有位置，捕获全局依赖</td></tr><tr><td>Multi-Head Attention</td><td>从多个角度计算注意力，捕获不同类型的关系</td></tr><tr><td>Position Encoding</td><td>为模型提供位置信息（Attention 本身不感知顺序）</td></tr><tr><td>Feed Forward Network</td><td>非线性变换增强表达能力（两层线性 + ReLU）</td></tr><tr><td>Layer Normalization</td><td>稳定训练，加速收敛（在序列维度做归一化）</td></tr><tr><td>Residual Connection</td><td>缓解深层网络梯度消失（x + F(x)）</td></tr></table><h3>数据流</h3><pre><code>输入序列 -→ Embedding + Position Encoding\n  -→ [Multi-Head Attention + Residual + LayerNorm]\n  -→ [FFN + Residual + LayerNorm]\n  -→ × N 层\n  -→ 输出表示</code></pre>"
+    },
+    {
+      "title": "自注意力机制（Self-Attention）",
+      "content": "<h3>核心思想</h3><p>Self-Attention 让输入序列中的<strong>每个位置都与其他所有位置建立直接联系</strong>，捕获全局依赖关系。与 RNN 的逐步传递不同，Self-Attention 一步到位建立所有位置间的连接。</p><h3>QKV 机制详解</h3><pre><code># 每个 Token 产生三个向量\nQ (Query)  = X × W_Q  # 查询：我在找什么？\nK (Key)    = X × W_K  # 键：我有什么可匹配的？\nV (Value)  = X × W_V  # 值：我的内容是什么？\n\n# 注意力计算（核心公式）\nAttention(Q, K, V) = softmax(QK^T / √d_k) × V\n\n# 其中 d_k 是 Key 的维度，除以 √d_k 是为了缩放\n# 防止点积结果过大导致 softmax 梯度消失</code></pre><h3>计算步骤（矩阵形式）</h3><ol><li>通过线性变换生成 Q, K, V 三个矩阵（形状: n×d_k, n×d_k, n×d_v）</li><li>计算 Q 与 K 的点积相似度，得到 n×n 的注意力分数矩阵</li><li>除以 √d_k 缩放（防止方差过大导致 softmax 饱和）</li><li>对每行做 Softmax 归一化，得到注意力权重（每行和为 1）</li><li>用权重对 V 加权求和，得到输出（n×d_v）</li></ol><h3>直观理解</h3><p>类比搜索引擎：Query = 搜索词，Key = 网页标题，Value = 网页内容。系统先匹配 Q-K 相似度，再返回最相关的 V（加权求和）。</p><h3>时间复杂度</h3><p>Self-Attention 的时间复杂度为 <strong>O(n²·d)</strong>，其中 n 是序列长度，d 是维度。这解释了为什么长上下文计算的成本会平方级增长。</p>"
+    },
+    {
+      "title": "注意力公式推导与数学原理",
+      "content": "<h3>为什么需要缩放？</h3><p>假设 q 和 k 是 d_k 维的独立随机向量，每个分量的均值为 0、方差为 1，则点积 q·k 的均值为 0、方差为 d_k。方差越大，softmax 的输入值就越大，导致梯度趋近于 0。</p><pre><code># 证明（简化）：\nq · k = Σ_{i=1}^{d_k} q_i · k_i\nVar(q_i · k_i) = 1（假设 q_i, k_i ~ N(0,1) 且独立）\nVar(q · k) = Σ Var(q_i · k_i) = d_k\nStd(q · k) = √d_k\n\n# 因此除以 √d_k 后方差变为 1</code></pre><h3>Softmax 的梯度性质</h3><p>当输入很大时，softmax 输出接近 one-hot，梯度趋近于 0（饱和区）。缩放保证了输入值落入 softmax 的非饱和区，维持梯度流动。</p><h3>掩码（Masking）</h3><p>Decoder 中的因果掩码（Causal Mask）确保位置 i 只能关注位置 1 到 i（不能「看到」未来）：</p><pre><code># 因果掩码矩阵（上三角设为 -∞）\nMask = [[0, -∞, -∞, -∞],\n        [0,    0, -∞, -∞],\n        [0,    0,    0, -∞],\n        [0,    0,    0,    0]]\n\n# 掩码加到注意力分数上：\nAttention = softmax(QK^T/√d_k + Mask) × V</code></pre>"
+    },
+    {
+      "title": "多头注意力与位置编码（RoPE）",
+      "content": "<h3>多头注意力（Multi-Head Attention）</h3><p>不是只做一次注意力计算，而是<strong>并行做多次</strong>，每次关注不同的方面：</p><pre><code>MultiHead(Q, K, V) = Concat(head_1, ..., head_h) × W_O\nhead_i = Attention(Q × W_{Qi}, K × W_{Ki}, V × W_{Vi})\n\n# 其中每个 head_i 的维度为 d_k/h\n# 总计算量与单头注意力基本相同（分而治之）</code></pre><p>不同「头」可能学会关注：语法结构、指代关系、语义相似性、长距离依赖、实体关系等。</p><h3>位置编码</h3><p>Attention 本身<strong>不感知顺序</strong>，需要额外注入位置信息：</p><ul><li><strong>正弦位置编码</strong>（原论文）：PE(pos,2i) = sin(pos/10000^{2i/d}), PE(pos,2i+1) = cos(pos/10000^{2i/d})</li><li><strong>可学习位置编码</strong>：让模型自己学位置表示（BERT 使用）</li><li><strong>RoPE（旋转位置编码）</strong>：通过旋转矩阵编码相对位置，当前主流方案（Claude/GPT-4/LLaMA）</li></ul><h3>RoPE 原理</h3><p>RoPE 的核心思想是对 Q 和 K 向量施加与位置相关的旋转：</p><pre><code># RoPE 在二维子空间上的旋转\nf(q, m) = (q_1 cos mθ - q_2 sin mθ, q_1 sin mθ + q_2 cos mθ)\n# m 是位置，θ 是预定义的旋转角\n# 内积会自然地编码相对位置信息：\n<f(q, m), f(k, n)> = <q, k> · cos((m-n)θ)</code></pre>"
+    },
+    {
+      "title": "KV-Cache 与推理优化",
+      "content": "<h3>什么是 KV-Cache？</h3><p>在自回归生成中，每步生成一个新 token，但前面的 token 已经计算过的 K 和 V 矩阵可以<strong>缓存复用</strong>，避免重复计算。</p><pre><code># 无 KV-Cache（每一步重算所有）\nstep 1: 计算 token_1 的 K,V\nstep 2: 计算 token_1, token_2 的 K,V ← token_1 重复计算！\nstep 3: 计算 token_1, token_2, token_3 的 K,V ← 越来越慢\n\n# 有 KV-Cache\nstep 1: 计算并缓存 token_1 的 K1,V1\nstep 2: 只计算 token_2 的 K2,V2，拼接缓存 [K1|K2, V1|V2]\nstep 3: 只计算 token_3 的 K3,V3，拼接缓存\n# 每步计算量恒定 O(1)，而非 O(n)</code></pre><h3>KV-Cache 的内存消耗</h3><p>KV-Cache 的内存消耗非常大：</p><pre><code># 估算：一个 70B 模型，h=80 层，d=8192，b=1\nKV_cache_size = 2（K和V）× h × n × d × bytes_per_element\n# 对于 4096 tokens：约 80 × 4096 × 8192 × 2 × 2 bytes ≈ 10 GB</code></pre><h3>推理优化技术</h3><ul><li><strong>Grouped Query Attention（GQA）</strong>：多个 Query 头共享一组 Key/Value 头，减少 KV-Cache 占用（LLaMA 2/3 使用）</li><li><strong>Multi-Query Attention（MQA）</strong>：所有 Query 头只用一个 Key/Value 头，极致减少缓存（PaLM 使用）</li><li><strong>PagedAttention</strong>：vLLM 的核心技术，像虚拟内存一样管理 KV-Cache，减少碎片</li><li><strong>推测解码（Speculative Decoding）</strong>：用小模型先生成草稿，大模型验证，加速 2-3 倍</li></ul>"
+    },
+    {
+      "title": "FlashAttention 原理",
+      "content": "<h3>FlashAttention 的核心问题</h3><p>标准注意力计算在 GPU 上存在显存带宽瓶颈：</p><pre><code># 标准实现\nS = QK^T           # (n×d) × (d×n) = n×n\nP = softmax(S)     # n×n ← 写入 HBM（高带宽显存）\nO = P × V          # n×n × n×d = n×d\n# 两次 HBM 读写，S 和 P 都是 n×n 矩阵</code></pre><h3>FlashAttention 的解决思路</h3><p>FlashAttention 通过<strong>分块计算（Tiling）</strong>和<strong>内核融合</strong>避免显式实例化 n×n 的注意力矩阵：</p><ul><li>将 Q, K, V 分块，每个块完全在 SRAM（片上高速缓存）中计算</li><li>重新计算部分注意力（用计算换带宽，在 SRAM 上算比从 HBM 读更快）</li><li>从 O(n²) 显存需求降低到 O(n) </li></ul><h3>性能提升</h3><table><tr><th>指标</th><th>标准 Attention</th><th>FlashAttention</th></tr><tr><td>显存占用</td><td>O(n²)</td><td>O(n)</td></tr><tr><td>速度（GPT-3 训练）</td><td>基线</td><td>快 2-4 倍</td></tr><tr><td>HBM 读写</td><td>大量</td><td>减少到 1/10</td></tr><tr><td>精度</td><td>标准</td><td>完全等价（数学等值）</td></tr></table><h3>FlashAttention-2</h3><ul><li>减少非矩阵运算（重计算 mask 等）</li><li>更好的块调度策略</li><li>在 A100/H100 上达到理论峰值 FLOPS 的 70-80%</li></ul>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "为什么 Self-Attention 计算中需要将 QK^T 的结果除以 √d_k？",
+      "options": [
+        "A. 为了减少模型参数数量",
+        "B. 为了防止点积结果方差过大导致 softmax 梯度消失",
+        "C. 为了加速矩阵乘法运算",
+        "D. 为了增加注意力权重的稀疏性"
+      ],
+      "answer": 1,
+      "explanation": "当 d_k 较大时，点积结果的方差为 d_k。除以 √d_k 后方差变为 1，确保 softmax 的输入值落入非饱和区，维持梯度正常流动。"
+    },
+    {
+      "question": "在 Transformer 的 Decoder 中，因果掩码（Causal Mask）的作用是？",
+      "options": [
+        "A. 防止模型过拟合训练数据",
+        "B. 确保每个位置只能关注前面的位置，不能看到未来 token",
+        "C. 减少注意力计算的参数量",
+        "D. 允许每个位置关注所有其他位置"
+      ],
+      "answer": 1,
+      "explanation": "因果掩码将上三角矩阵设为 -∞，确保位置 i 只能关注位置 1 到 i。这是自回归生成的关键设计——每个 token 只能基于已生成的内容进行预测。"
+    },
+    {
+      "question": "以下关于 KV-Cache 的描述，哪项是错误的？",
+      "options": [
+        "A. KV-Cache 通过缓存已计算的 Key 和 Value 矩阵避免重复计算",
+        "B. KV-Cache 能显著降低自回归生成的计算延迟",
+        "C. KV-Cache 的内存消耗随序列长度线性增长，可能成为长上下文瓶颈",
+        "D. KV-Cache 能减少模型推理时的参数量"
+      ],
+      "answer": 3,
+      "explanation": "KV-Cache 不影响模型参数量，它缓存的是 K 和 V 矩阵的计算结果。内存消耗确实随序列长度线性增长，这也是 GQA 等技术被提出的原因。"
+    },
+    {
+      "question": "FlashAttention 通过什么技术降低显存占用？",
+      "options": [
+        "A. 减少模型的层数",
+        "B. 分块计算（Tiling）和内核融合，避免实例化完整注意力矩阵",
+        "C. 使用更低精度的数据类型",
+        "D. 减少注意力头的数量"
+      ],
+      "answer": 1,
+      "explanation": "FlashAttention 的核心创新是<strong>分块计算</strong>：将 Q/K/V 切分成小块，每个块完全在 GPU 的 SRAM 中计算，避免将 n×n 的注意力矩阵写入 HBM，将显存需求从 O(n²) 降到 O(n)。"
+    },
+    {
+      "type": "code",
+      "question": "实现 Self-Attention 计算",
+      "code_prompt": "用 numpy 实现 self_attention(Q, K, V) 函数。1) 计算 Q@K^T 2) 除以 sqrt(d_k) 3) softmax 4) 加权求和。添加 mask 参数支持因果掩码。",
+      "explanation": "核心公式：softmax(QK^T/sqrt(d_k)) @ V。注意 softmax 的 axis 参数和数值稳定性（减最大值）。"
+    },
+    {
+      "type": "code",
+      "question": "模拟 KV-Cache 加速效果",
+      "code_prompt": "实现两个生成函数：一个带 KV-Cache，一个不带。对相同长度的序列，对比计算每一步的矩阵乘法次数，验证带缓存的计算量是 O(1) 而不仅是 O(n)。",
+      "explanation": "带 KV-Cache 时每一步只计算新 token 的 Q, K, V，拼接历史缓存，每步计算量恒定。"
+    }
+  ]
+}

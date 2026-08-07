@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRANSFORMER · CG · Attention Is All You Need</title>
+
+<!-- 字体（沿用 transformer.html 设计语言） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- KaTeX 公式 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<style>
+:root{
+  --bg:#060818;
+  --cyan:#00d9ff; --purple:#a855f7; --pink:#ec4899;
+  --green:#34d399; --amber:#fbbf24;
+  --text:#e6edf6; --muted:#8aa0bd;
+  --grad:linear-gradient(120deg,#00d9ff 0%,#a855f7 60%,#ec4899 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
+body{
+  font-family:'Noto Sans SC','Rajdhani',system-ui,sans-serif;
+  color:var(--text);position:relative;cursor:default;
+}
+body.playing{cursor:none}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(60vw 60vw at 12% 8%, rgba(0,217,255,.10), transparent 60%),
+    radial-gradient(50vw 50vw at 88% 22%, rgba(168,85,247,.12), transparent 60%),
+    radial-gradient(60vw 60vw at 50% 100%, rgba(236,72,153,.08), transparent 60%);
+}
+#stage{position:fixed;inset:0;z-index:1;display:block;width:100%;height:100%}
+#overlay{position:fixed;inset:0;z-index:2;pointer-events:none}
+
+/* 品牌水印 */
+.brand{
+  position:absolute;top:24px;left:28px;
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:15px;letter-spacing:2px;
+  opacity:.55;
+}
+.brand span{color:var(--cyan)}
+
+/* 场景信息（左下） */
+.scene-info{
+  position:absolute;left:6vw;bottom:130px;max-width:62vw;
+  transition:opacity .55s ease;
+}
+.scene-info.hide{opacity:0}
+.scene-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--cyan);letter-spacing:4px;opacity:.85}
+.scene-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(34px,5.6vw,76px);line-height:.98;letter-spacing:-1px;
+  margin:6px 0 10px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.scene-sub{font-family:'Rajdhani',sans-serif;font-weight:500;font-size:clamp(15px,1.6vw,20px);color:var(--muted);letter-spacing:1px}
+
+/* 字幕 */
+.caption{
+  position:absolute;left:50%;bottom:96px;transform:translateX(-50%);
+  text-align:center;max-width:84vw;font-size:clamp(14px,1.5vw,18px);
+  color:var(--text);font-style:italic;opacity:0;transition:opacity .6s;
+  text-shadow:0 2px 24px rgba(0,0,0,.7);pointer-events:none;
+}
+.caption.show{opacity:.95}
+
+/* 公式层 */
+.formula-layer{
+  position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);
+  pointer-events:none;opacity:0;transition:opacity .6s, transform .6s;
+  background:rgba(0,0,0,.4);border:1px solid rgba(0,217,255,.28);
+  border-radius:14px;padding:20px 34px;backdrop-filter:blur(8px);
+  box-shadow:0 0 50px rgba(0,217,255,.15);
+}
+.formula-layer.show{opacity:1;transform:translate(-50%,-54%)}
+.formula-layer .katex{font-size:1.55em;color:var(--text)}
+.formula-layer .katex .mord{color:var(--text)}
+.formula-layer .label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:2px;margin-bottom:10px;text-align:center}
+
+/* CTA */
+.cta-wrap{
+  position:absolute;left:50%;top:62%;transform:translate(-50%,-50%) scale(.92);
+  text-align:center;opacity:0;pointer-events:none;transition:opacity .8s ease, transform .8s ease;
+}
+.cta-wrap.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.cta{
+  display:inline-block;cursor:pointer;pointer-events:auto;text-decoration:none;
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(17px,2vw,24px);
+  letter-spacing:3px;color:#03122b;
+  padding:18px 50px;border-radius:60px;background:var(--grad);position:relative;
+  box-shadow:0 0 40px rgba(0,217,255,.55),0 0 90px rgba(168,85,247,.3);
+  transition:transform .25s, box-shadow .25s;animation:ctaPulse 2.6s ease-in-out infinite;
+}
+.cta:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 0 64px rgba(0,217,255,.85),0 0 130px rgba(236,72,153,.45)}
+.cta .arrow{display:inline-block;transition:transform .25s}
+.cta:hover .arrow{transform:translateX(7px)}
+.cta-sub{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:3px}
+@keyframes ctaPulse{0%,100%{box-shadow:0 0 40px rgba(0,217,255,.55),0 0 90px rgba(168,85,247,.3)}50%{box-shadow:0 0 64px rgba(0,217,255,.8),0 0 130px rgba(236,72,153,.5)}}
+
+/* 底部进度 + 控制 */
+.bottom-bar{position:absolute;left:0;right:0;bottom:0;padding:0 6vw 22px;pointer-events:none;transition:opacity .4s}
+body.ui-hidden .bottom-bar,body.ui-hidden .brand,body.ui-hidden .scene-info{opacity:0}
+.progress-track{position:relative;height:3px;background:rgba(255,255,255,.09);border-radius:2px;cursor:pointer;pointer-events:auto;margin-bottom:14px}
+.progress-fill{position:absolute;left:0;top:0;height:100%;border-radius:2px;background:var(--grad);width:0%;box-shadow:0 0 10px rgba(0,217,255,.6)}
+.chapter-marks{position:absolute;inset:0}
+.chapter-marks .mk{position:absolute;top:-3px;width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.22);transform:translate(-50%,0);cursor:pointer;pointer-events:auto;transition:.2s;border:0}
+.chapter-marks .mk:hover{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.chapter-marks .mk.passed{background:rgba(0,217,255,.55)}
+.chapter-marks .mk.cur{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.bar-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.time-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px}
+.controls{display:flex;gap:10px;pointer-events:auto}
+.ctrl-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.05);border:1px solid rgba(0,217,255,.22);
+  color:var(--text);cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:.25s;backdrop-filter:blur(8px);font-family:inherit;
+}
+.ctrl-btn:hover{background:rgba(0,217,255,.16);border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(0,217,255,.4)}
+
+/* 章节浮层 */
+.chapter-pop{
+  position:absolute;right:6vw;bottom:82px;
+  background:rgba(6,8,24,.9);border:1px solid rgba(0,217,255,.22);
+  border-radius:14px;padding:10px;backdrop-filter:blur(14px);
+  opacity:0;pointer-events:none;transform:translateY(10px);transition:.3s;
+  display:flex;flex-direction:column;gap:2px;min-width:200px;
+}
+.chapter-pop.show{opacity:1;pointer-events:auto;transform:none}
+.chapter-pop .item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:.2s}
+.chapter-pop .item:hover{background:rgba(0,217,255,.1);color:var(--text)}
+.chapter-pop .item.active{color:var(--cyan);background:rgba(0,217,255,.08)}
+.chapter-pop .item .n{font-family:'JetBrains Mono',monospace;font-size:11px;width:22px}
+
+/* 暂停徽章 */
+.paused-badge{
+  position:absolute;top:24px;left:50%;transform:translateX(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--amber);
+  letter-spacing:3px;opacity:0;transition:.3s;
+  padding:5px 16px;border:1px solid rgba(251,191,36,.4);border-radius:999px;background:rgba(251,191,36,.06);
+}
+.paused-badge.show{opacity:1}
+
+/* 嵌入提示（可选） */
+.embed-hint{
+  position:absolute;top:24px;right:28px;font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--muted);opacity:.5;letter-spacing:1px;
+}
+
+@media(max-width:640px){
+  .scene-info{bottom:118px;left:5vw}
+  .bottom-bar{padding:0 5vw 16px}
+  .ctrl-btn{width:34px;height:34px}
+  .formula-layer{padding:14px 18px}
+  .formula-layer .katex{font-size:1.1em}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+
+<div id="overlay">
+  <div class="brand">TRANSFORMER<span>//</span>CG</div>
+  <div class="embed-hint" id="embedHint"></div>
+
+  <div class="scene-info" id="sceneInfo">
+    <div class="scene-num" id="sceneNum">// 01</div>
+    <div class="scene-title" id="sceneTitle">PROLOGUE</div>
+    <div class="scene-sub" id="sceneSub">序章</div>
+  </div>
+
+  <div class="caption" id="caption"></div>
+
+  <div class="formula-layer" id="formulaLayer">
+    <div class="label">// SCALED DOT-PRODUCT ATTENTION</div>
+    <div id="formulaInner"></div>
+  </div>
+
+  <div class="cta-wrap" id="ctaWrap">
+    <a class="cta" id="ctaBtn" href="/chapter/2">
+      开始学习 &nbsp;BEGIN LEARNING <span class="arrow">→</span>
+    </a>
+    <div class="cta-sub">ATTENTION IS ALL YOU NEED</div>
+  </div>
+
+  <div class="paused-badge" id="pausedBadge">// PAUSED · PRESS SPACE</div>
+  <div class="chapter-pop" id="chapterPop"></div>
+
+  <div class="bottom-bar" id="bottomBar">
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-fill" id="progressFill"></div>
+      <div class="chapter-marks" id="chapterMarks"></div>
+    </div>
+    <div class="bar-row">
+      <div class="time-label" id="timeLabel">00:00 / 00:00</div>
+      <div class="controls">
+        <button class="ctrl-btn" id="btnPrev" title="上一章 (←)">⏮</button>
+        <button class="ctrl-btn" id="btnPlay" title="播放/暂停 (Space)">⏸</button>
+        <button class="ctrl-btn" id="btnNext" title="下一章 (→)">⏭</button>
+        <button class="ctrl-btn" id="btnChapters" title="章节">☰</button>
+        <button class="ctrl-btn" id="btnFs" title="全屏 (F)">⛶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   TRANSFORMER · CG 宣传片引擎
+   单文件 · 流式自动播放 · 可嵌入 (iframe URL 参数 / postMessage)
+   ============================================================ */
+
+/* ---------- 工具 ---------- */
+const TAU = Math.PI * 2;
+const C = { cyan:'#00d9ff', purple:'#a855f7', pink:'#ec4899', green:'#34d399', amber:'#fbbf24', white:'#e6edf6', muted:'#8aa0bd' };
+const lerp  = (a,b,t)=>a+(b-a)*t;
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const easeInOut = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+const easeOut   = t => 1-Math.pow(1-t,3);
+const easeIn    = t => t*t*t;
+const rand      = (a,b)=>a+Math.random()*(b-a);
+const pick      = arr => arr[Math.floor(Math.random()*arr.length)];
+
+/* ---------- URL 参数 ---------- */
+const PARAMS = (function(){
+  const q = new URL(location.href).searchParams;
+  return {
+    autoplay: q.get('autoplay')!=='0',
+    loop:     q.get('loop')!=='0',
+    start:    clamp(parseInt(q.get('start')||'1',10)||1, 1, 6),
+    controls: q.get('controls')!=='0',
+    learn:    q.get('learn') || '/chapter/2',
+    embed:    q.get('embed')==='1'
+  };
+})();
+document.getElementById('ctaBtn').href = PARAMS.learn;
+if(PARAMS.embed){
+  document.getElementById('embedHint').textContent = '// EMBEDDED MODE';
+}
+if(!PARAMS.controls){
+  document.body.classList.add('ui-hidden');
+}
+
+/* ---------- Canvas ---------- */
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+let W=0, H=0, DPR = Math.min(window.devicePixelRatio||1, 2);
+function resize(){
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  initStars();
+}
+window.addEventListener('resize', resize);
+
+/* ---------- 背景星尘 ---------- */
+let stars = [];
+function initStars(){
+  stars = [];
+  const n = Math.min(150, Math.floor(W*H/13000));
+  const cols = [C.cyan, C.purple, C.pink, C.white];
+  for(let i=0;i<n;i++){
+    stars.push({ x:Math.random()*W, y:Math.random()*H, z:Math.random()*0.9+0.1,
+      c:pick(cols), tw:Math.random()*TAU, sp:rand(0.2,0.8) });
+  }
+}
+function drawStars(dt){
+  for(const s of stars){
+    s.tw += dt*0.001*(0.5+s.z);
+    s.y  += s.z*0.012*dt*0.06*s.sp;
+    if(s.y>H+2) s.y = -2;
+    const a = (0.25+0.55*Math.abs(Math.sin(s.tw)))*s.z;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = s.c;
+    const r = s.z*1.7;
+    ctx.fillRect(s.x, s.y, r, r);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- 通用绘制 ---------- */
+function glowDot(x,y,r,color,alpha){
+  ctx.globalCompositeOperation='lighter';
+  const grd = ctx.createRadialGradient(x,y,0,x,y,Math.max(0.1,r));
+  grd.addColorStop(0, color);
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(x,y,Math.max(0.1,r),0,TAU); ctx.fill();
+  ctx.globalCompositeOperation='source-over';
+  ctx.globalAlpha = 1;
+}
+function gradText(cx,cy,text,fs,alpha,blur){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='900 '+fs+'px Orbitron, sans-serif';
+  const w = ctx.measureText(text).width;
+  const g = ctx.createLinearGradient(cx-w/2,cy-fs/2,cx+w/2,cy+fs/2);
+  g.addColorStop(0,'#00d9ff'); g.addColorStop(0.5,'#a855f7'); g.addColorStop(1,'#ec4899');
+  ctx.fillStyle = g;
+  if(blur>0){ ctx.shadowColor='rgba(0,217,255,.6)'; ctx.shadowBlur=blur; }
+  ctx.fillText(text, cx, cy);
+  ctx.restore();
+}
+
+/* 程序化霓虹侧影肖像（无版权） */
+function drawPortrait(x,y,r,color,alpha,seed){
+  ctx.save();
+  // 光晕盘
+  const grd = ctx.createRadialGradient(x,y,0,x,y,r);
+  grd.addColorStop(0, hexA(color,0.85*alpha));
+  grd.addColorStop(0.55, hexA(color,0.18*alpha));
+  grd.addColorStop(1, hexA(color,0));
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.fill();
+  // 抽象侧脸轮廓
+  ctx.strokeStyle = hexA(color, 0.9*alpha);
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  const j = (seed%5)*0.04;
+  ctx.moveTo(x-r*0.22, y-r*0.5);
+  ctx.bezierCurveTo(x-r*0.05+j, y-r*0.62, x+r*0.3, y-r*0.55, x+r*0.34, y-r*0.22);
+  ctx.bezierCurveTo(x+r*0.4, y-r*0.02, x+r*0.36, y+r*0.12, x+r*0.22, y+r*0.26); // 鼻
+  ctx.lineTo(x+r*0.14, y+r*0.4);
+  ctx.bezierCurveTo(x+r*0.12, y+r*0.5, x-r*0.2-j, y+r*0.5, x-r*0.24, y+r*0.34);
+  ctx.bezierCurveTo(x-r*0.32, y+r*0.1, x-r*0.34, y-r*0.2, x-r*0.22, y-r*0.5);
+  ctx.closePath(); ctx.stroke();
+  // 眼
+  ctx.fillStyle = hexA(color, alpha);
+  ctx.beginPath(); ctx.arc(x+r*0.1, y-r*0.12, 1.5, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+function hexA(hex,a){
+  // #rrggbb -> rgba
+  const n = parseInt(hex.slice(1),16);
+  return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+}
+function drawLabel(txt,x,y,color,alpha,size){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font = '600 '+(size||12)+'px Rajdhani, sans-serif';
+  ctx.fillText(txt, x, y);
+  ctx.restore();
+}
+
+/* ============================================================
+   场景定义  ·  每场景 { id, num, title, sub, caption, duration, init, update }
+   update(ctx, p, dt)  p∈[0,1] 本场景进度
+   ============================================================ */
+
+const SCENES = [
+
+/* ---------- 01 PROLOGUE 序章 ---------- */
+{
+  id:'prologue', num:'01', title:'PROLOGUE', sub:'序章 · 一个想法改变了 AI',
+  caption:'2017 年 6 月 — 一个想法，改变了人工智能的轨迹。',
+  duration: 8000,
+  init(){
+    this.parts = [];
+    const cx=W/2, cy=H/2;
+    for(let i=0;i<280;i++){
+      const ang = Math.random()*TAU;
+      const dist = Math.max(W,H)*rand(0.55,0.85);
+      this.parts.push({
+        x:cx+Math.cos(ang)*dist, y:cy+Math.sin(ang)*dist,
+        tx:cx+rand(-6,6), ty:cy+rand(-6,6),
+        vx:0, vy:0, r:rand(0.8,2.4),
+        c:pick([C.cyan,C.purple,C.pink,C.white]), life:1
+      });
+    }
+    this.burst=false; this.burstT=0; this.rings=[];
+  },
+  update(ctx,p,dt){
+    const cx=W/2, cy=H/2;
+    if(p < 0.55){
+      const cv = easeOut(clamp(p/0.45,0,1));
+      for(const pt of this.parts){
+        pt.x = lerp(pt.x, pt.tx, 0.03+cv*0.13);
+        pt.y = lerp(pt.y, pt.ty, 0.03+cv*0.13);
+        glowDot(pt.x, pt.y, pt.r*(0.8+cv*1.2), pt.c, 0.7);
+      }
+      if(p>0.38){
+        const g = clamp((p-0.38)/0.17,0,1);
+        glowDot(cx, cy, lerp(6,70,easeIn(g)), C.white, g);
+        glowDot(cx, cy, lerp(4,45,easeIn(g)), C.cyan, g*0.8);
+      }
+    } else {
+      if(!this.burst){
+        this.burst = true; this.burstT = 0;
+        for(const pt of this.parts){
+          const ang = Math.atan2(pt.y-cy, pt.x-cx)+rand(-0.3,0.3);
+          const sp = rand(2.5,9);
+          pt.vx = Math.cos(ang)*sp; pt.vy = Math.sin(ang)*sp;
+        }
+        this.rings.push({r:12,a:1}); this.rings.push({r:6,a:1});
+      }
+      this.burstT += dt;
+      if(Math.random()<0.05) this.rings.push({r:8,a:1});
+      for(const r of this.rings){ r.r += dt*0.55; r.a -= dt*0.0009; }
+      this.rings = this.rings.filter(r=>r.a>0);
+      ctx.globalCompositeOperation='lighter';
+      for(const r of this.rings){
+        ctx.strokeStyle = hexA(C.cyan, r.a*0.5);
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(cx,cy,r.r,0,TAU); ctx.stroke();
+      }
+      ctx.globalCompositeOperation='source-over';
+      for(const pt of this.parts){
+        pt.x += pt.vx*dt*0.06; pt.y += pt.vy*dt*0.06;
+        pt.vx *= 0.985; pt.vy *= 0.985;
+        pt.life -= dt*0.00018;
+        if(pt.life>0) glowDot(pt.x, pt.y, pt.r, pt.c, clamp(pt.life,0,1)*0.85);
+      }
+      if(this.burstT > 350){
+        const tg = clamp((this.burstT-350)/900,0,1);
+        gradText(cx, cy-Math.min(W*0.04,40), 'TRANSFORMER', Math.min(W*0.105,130), tg, 50*tg);
+      }
+    }
+  }
+},
+
+/* ---------- 02 BEFORE 前夜 · RNN 瓶颈 ---------- */
+{
+  id:'before', num:'02', title:'BEFORE', sub:'前夜 · 串行 · 缓慢 · 遗忘',
+  caption:'RNN 必须逐字传递。序列越长，越慢，越容易遗忘。',
+  duration: 7000,
+  init(){
+    this.t = 0; this.cursors = []; this.spawnT = 0;
+  },
+  update(ctx,p,dt){
+    const n = 8;
+    const gap = Math.min(W*0.9, 760)/(n-1);
+    const startX = W/2 - gap*(n-1)/2;
+    const baseY = H*0.52;
+    const nodeR = Math.min(20, W*0.022);
+    // 节点链
+    for(let i=0;i<n;i++){
+      const x = startX + i*gap;
+      const fade = 1 - i*0.09; // 越往后越暗（信息衰减）
+      const active = (this.t/900) % (n+2) > i && (this.t/900) % (n+2) < i+2.5;
+      const a = (0.25 + fade*0.5) * (active?1.4:1);
+      glowDot(x, baseY, nodeR*(active?1.3:1), active?C.amber:(fade>0.5?C.purple:C.pink), clamp(a,0,1)*0.9);
+      // 节点环
+      ctx.strokeStyle = hexA(active?C.amber:C.muted, 0.5);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(x,baseY,nodeR,0,TAU); ctx.stroke();
+      // 连接线（串行链条）
+      if(i<n-1){
+        const x2 = startX + (i+1)*gap;
+        ctx.strokeStyle = hexA(C.muted, 0.25+ (active?0.3:0));
+        ctx.lineWidth = active?2:1;
+        ctx.beginPath(); ctx.moveTo(x+nodeR, baseY); ctx.lineTo(x2-nodeR, baseY); ctx.stroke();
+      }
+      drawLabel('t='+(i+1), x, baseY+nodeR+18, C.muted, 0.7, 12);
+    }
+    // 沿链传递的光点
+    this.spawnT += dt;
+    if(this.spawnT > 1100){
+      this.spawnT = 0;
+      this.cursors.push({i:0, life:1});
+    }
+    for(const c of this.cursors){
+      c.i += dt*0.0016;
+      const idx = Math.floor(c.i);
+      const frac = c.i - idx;
+      if(idx < n-1){
+        const x = lerp(startX+idx*gap, startX+(idx+1)*gap, frac);
+        const fade = 1 - idx*0.1;
+        glowDot(x, baseY, 6, C.amber, c.life*fade);
+      } else if(idx >= n){
+        c.life -= dt*0.002;
+      }
+    }
+    this.cursors = this.cursors.filter(c=>c.life>0);
+    this.t += dt;
+    // 标签
+    drawLabel('SEQUENTIAL · SLOW · FORGETFUL', W/2, baseY-nodeR-40, C.pink, clamp(p*2,0,1)*0.8, Math.min(W*0.018,18));
+  }
+},
+
+/* ---------- 03 THE PAPER 诞生 · 论文 + 8 作者星座 ---------- */
+{
+  id:'paper', num:'03', title:'THE PAPER', sub:'诞生 · 8 位研究者，一个想法',
+  caption:'《Attention Is All You Need》— Vaswani et al., NeurIPS 2017',
+  duration: 9000,
+  init(){
+    const authors = ['A. Vaswani','N. Shazeer','N. Parmar','J. Uszkoreit','L. Jones','A. Gomez','Ł. Kaiser','I. Polosukhin'];
+    const cols = [C.cyan,C.purple,C.pink,C.green,C.amber,C.cyan,C.purple,C.pink];
+    this.nodes = authors.map((name,i)=>{
+      const ang = (i/authors.length)*TAU - Math.PI/2;
+      const R = Math.min(W,H)*0.27;
+      return {
+        name, color:cols[i], seed:i,
+        x: W/2 + Math.cos(ang)*R, y: H*0.52 + Math.sin(ang)*R*0.7,
+        delay: i*0.08
+      };
+    });
+  },
+  update(ctx,p,dt){
+    const cx=W/2, cy=H*0.52;
+    // 标题（论文）
+    const tp = clamp(p/0.3,0,1);
+    ctx.save();
+    ctx.globalAlpha = tp*0.95;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const fs = Math.min(W*0.04, 40);
+    ctx.font='700 '+fs+'px Orbitron, sans-serif';
+    ctx.fillStyle = C.white;
+    ctx.shadowColor='rgba(0,217,255,.5)'; ctx.shadowBlur=24*tp;
+    ctx.fillText('“Attention Is All You Need”', cx, H*0.2);
+    ctx.shadowBlur=0;
+    ctx.font='400 '+(fs*0.42)+'px JetBrains Mono, monospace';
+    ctx.fillStyle = C.muted;
+    ctx.fillText('Vaswani et al.  ·  NeurIPS  ·  June 2017', cx, H*0.2+fs*0.7);
+    ctx.restore();
+
+    // 星座连线（先于节点出现）
+    const lineOn = clamp((p-0.25)/0.4,0,1);
+    if(lineOn>0){
+      ctx.globalCompositeOperation='lighter';
+      for(let i=0;i<this.nodes.length;i++){
+        const a=this.nodes[i], b=this.nodes[(i+1)%this.nodes.length];
+        ctx.strokeStyle = hexA(C.cyan, lineOn*0.18);
+        ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        // 到中心
+        ctx.strokeStyle = hexA(C.purple, lineOn*0.12);
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(cx,cy); ctx.stroke();
+      }
+      ctx.globalCompositeOperation='source-over';
+    }
+    // 中心光核
+    if(p>0.5){
+      const cg = clamp((p-0.5)/0.3,0,1);
+      glowDot(cx, cy, 40, C.cyan, cg*0.7);
+      glowDot(cx, cy, 22, C.white, cg);
+    }
+    // 节点（肖像）
+    for(let i=0;i<this.nodes.length;i++){
+      const nd = this.nodes[i];
+      const lp = clamp((p - nd.delay)/0.35, 0, 1);
+      if(lp<=0) continue;
+      const ap = easeOut(lp);
+      const r = Math.min(W,H)*0.05 * ap;
+      drawPortrait(nd.x, nd.y, r, nd.color, ap, nd.seed);
+      drawLabel(nd.name, nd.x, nd.y + r + 16, nd.color, ap*0.9, Math.min(W*0.013,13));
+    }
+  }
+},
+
+/* ---------- 04 SELF-ATTENTION 灵魂 · Q/K/V + 公式 ---------- */
+{
+  id:'attention', num:'04', title:'SELF-ATTENTION', sub:'灵魂 · 每个词，看见所有词',
+  caption:'Q × K → 注意力权重 → 加权汇聚 V。一切依赖，一步直达。',
+  duration: 10000, formula:true,
+  init(){
+    this.t = 0;
+    const n = 7;
+    this.words = ['The','cat','sat','on','the','mat','today'];
+    this.nodes = [];
+    const gap = Math.min(W*0.86,760)/(n-1);
+    const startX = W/2 - gap*(n-1)/2;
+    for(let i=0;i<n;i++){
+      this.nodes.push({ x:startX+i*gap, y:H*0.7, w:this.words[i] });
+    }
+    this.lineSeed = 0;
+  },
+  update(ctx,p,dt){
+    this.t += dt;
+    const cy = H*0.7;
+    // Q/K/V 三球
+    if(p>0.05){
+      const qp = clamp((p-0.05)/0.2,0,1);
+      const balls = [
+        {x:W*0.3, y:H*0.32, c:C.pink,  l:'Q · Query'},
+        {x:W*0.5, y:H*0.28, c:C.amber, l:'K · Key'},
+        {x:W*0.7, y:H*0.32, c:C.green, l:'V · Value'}
+      ];
+      for(const b of balls){
+        glowDot(b.x,b.y, 18*qp, b.c, qp);
+        glowDot(b.x,b.y, 8*qp, C.white, qp);
+        drawLabel(b.l, b.x, b.y-32, b.c, qp*0.9, Math.min(W*0.015,15));
+      }
+    }
+    // 注意力全连线
+    if(p>0.25){
+      const lp = clamp((p-0.25)/0.35,0,1);
+      ctx.globalCompositeOperation='lighter';
+      const phase = this.t*0.002;
+      for(let i=0;i<this.nodes.length;i++){
+        for(let j=0;j<this.nodes.length;j++){
+          if(i===j) continue;
+          const dist = Math.abs(i-j);
+          const pulse = (Math.sin(phase + i*0.6 + j*0.4)+1)/2;
+          const a = lp * (0.5 - dist*0.05) * (0.4+pulse*0.6);
+          if(a<=0.02) continue;
+          const A=this.nodes[i], B=this.nodes[j];
+          const g = ctx.createLinearGradient(A.x,A.y,B.x,B.y);
+          g.addColorStop(0, hexA(C.cyan, a));
+          g.addColorStop(1, hexA(C.pink, a*0.7));
+          ctx.strokeStyle = g; ctx.lineWidth = 1 + pulse;
+          ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();
+        }
+      }
+      ctx.globalCompositeOperation='source-over';
+    }
+    // 节点
+    const np = clamp(p/0.2,0,1);
+    for(const nd of this.nodes){
+      glowDot(nd.x, nd.y, 7*np, C.cyan, np*0.9);
+      drawLabel(nd.w, nd.x, nd.y+24, C.muted, np*0.9, Math.min(W*0.014,14));
+    }
+  }
+},
+
+/* ---------- 05 IMPACT 影响 · 时间线扩展 ---------- */
+{
+  id:'impact', num:'05', title:'IMPACT', sub:'影响 · 一种架构，所有模态',
+  caption:'从 BERT 到 GPT-4，从文本到图像、语音、视频 — 统一于 Transformer。',
+  duration: 8000,
+  init(){
+    this.tl = [
+      {y:'2017', t:'Transformer',  v:0.06, c:C.cyan},
+      {y:'2018', t:'BERT · GPT',   v:0.14, c:C.purple},
+      {y:'2020', t:'GPT-3 · 175B', v:0.55, c:C.pink},
+      {y:'2022', t:'ChatGPT',      v:0.72, c:C.amber},
+      {y:'2023', t:'GPT-4 · 多模态',v:0.95, c:C.green}
+    ];
+  },
+  update(ctx,p,dt){
+    const left = W*0.1, right = W*0.9;
+    const baseY = H*0.74;
+    const topY  = H*0.42;
+    const n = this.tl.length;
+    // 基线
+    ctx.strokeStyle = hexA(C.muted,0.25); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(left, baseY); ctx.lineTo(right, baseY); ctx.stroke();
+    // 渐进出现
+    for(let i=0;i<n;i++){
+      const it = this.tl[i];
+      const x = left + (right-left)*(i/(n-1));
+      const ip = clamp((p - i*0.13)/0.3, 0, 1);
+      if(ip<=0) continue;
+      const ap = easeOut(ip);
+      // 柱
+      const barH = (baseY - topY) * it.v * ap;
+      const bx = x - Math.min(W*0.03,28);
+      const grd = ctx.createLinearGradient(0, baseY-barH, 0, baseY);
+      grd.addColorStop(0, it.c); grd.addColorStop(1, hexA(it.c,0.15));
+      ctx.fillStyle = grd;
+      ctx.fillRect(bx, baseY-barH, Math.min(W*0.06,56), barH);
+      // 顶部光
+      glowDot(x, baseY-barH, 10, it.c, ap);
+      // 节点
+      ctx.fillStyle = hexA(it.c, ap);
+      ctx.beginPath(); ctx.arc(x, baseY, 5, 0, TAU); ctx.fill();
+      // 标签
+      drawLabel(it.y, x, baseY+22, C.cyan, ap*0.95, Math.min(W*0.014,14));
+      drawLabel(it.t, x, baseY+44, C.muted, ap*0.85, Math.min(W*0.012,12));
+    }
+    // 标题
+    const tp = clamp(p*2,0,1);
+    drawLabel('ONE ARCHITECTURE · EVERY MODALITY', W/2, topY-30, C.pink, tp*0.85, Math.min(W*0.02,20));
+  }
+},
+
+/* ---------- 06 FINALE 终章 · CTA 开始学习 ---------- */
+{
+  id:'finale', num:'06', title:'FINALE', sub:'终章 · 现在，由你深入',
+  caption:'这只是序章。完整的架构、公式与可视化，正等待你探索。',
+  duration: 8000, cta:true,
+  init(){
+    this.t = 0;
+    const cx=W/2, cy=H*0.42;
+    this.rays = [];
+    for(let i=0;i<24;i++){
+      this.rays.push({ ang:(i/24)*TAU, sp:rand(0.3,1.2), len:rand(0.2,0.6), c:pick([C.cyan,C.purple,C.pink]) });
+    }
+    this.parts = [];
+    for(let i=0;i<120;i++){
+      this.parts.push({ ang:Math.random()*TAU, r:rand(40,Math.max(W,H)*0.5),
+        sp:rand(0.2,0.8)*(Math.random()<0.5?-1:1), c:pick([C.cyan,C.purple,C.pink,C.white]),
+        tw:Math.random()*TAU });
+    }
+  },
+  update(ctx,p,dt){
+    this.t += dt;
+    const cx=W/2, cy=H*0.42;
+    // 中心放射光环
+    ctx.globalCompositeOperation='lighter';
+    for(const r of this.rays){
+      const len = (Math.min(W,H)*0.5) * r.len * (0.7+0.3*Math.sin(this.t*0.002+r.ang));
+      const x1 = cx+Math.cos(r.ang)*30, y1 = cy+Math.sin(r.ang)*30;
+      const x2 = cx+Math.cos(r.ang)*len, y2 = cy+Math.sin(r.ang)*len;
+      const g = ctx.createLinearGradient(x1,y1,x2,y2);
+      g.addColorStop(0, hexA(r.c,0.5));
+      g.addColorStop(1, hexA(r.c,0));
+      ctx.strokeStyle=g; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    }
+    // 环绕粒子
+    for(const pt of this.parts){
+      pt.r += pt.sp*dt*0.03;
+      pt.tw += dt*0.003;
+      const x = cx+Math.cos(pt.ang)*Math.abs(pt.r);
+      const y = cy+Math.sin(pt.ang)*Math.abs(pt.r)*0.6;
+      glowDot(x,y, 1.6+Math.sin(pt.tw)*0.8, pt.c, 0.5+0.4*Math.sin(pt.tw));
+    }
+    ctx.globalCompositeOperation='source-over';
+    // 中心核
+    glowDot(cx,cy, 28, C.cyan, 0.7);
+    glowDot(cx,cy, 14, C.white, 0.9);
+    // 标题
+    const tp = clamp(p/0.25,0,1);
+    gradText(cx, cy-Math.min(W*0.05,60), 'TRANSFORMER', Math.min(W*0.092,110), tp, 40*tp);
+  }
+}
+
+];
+
+/* ============================================================
+   Director 导演 · 时间轴、循环、暂停、章节跳转
+   ============================================================ */
+const totalDur = SCENES.reduce((s,sc)=>s+sc.duration,0);
+function sceneStart(i){ let s=0; for(let k=0;k<i;k++) s+=SCENES[k].duration; return s; }
+
+const Director = {
+  idx: PARAMS.start-1,
+  t: 0,            // 当前场景内累计时间 ms
+  paused: false,
+  lastTs: 0,
+  switching: false,
+
+  go(i, keepTime){
+    i = ((i % SCENES.length)+SCENES.length)%SCENES.length;
+    this.idx = i;
+    this.t = keepTime? this.t : 0;
+    const sc = SCENES[i];
+    if(sc.init) sc.init();
+    updateSceneDOM(i);
+    broadcast({event:'sceneChange', index:i, id:sc.id, title:sc.title});
+  },
+  next(){ this.go(this.idx+1); },
+  prev(){ this.go(this.idx-1); },
+  toggle(){
+    this.paused = !this.paused;
+    document.getElementById('btnPlay').textContent = this.paused?'▶':'⏸';
+    document.getElementById('pausedBadge').classList.toggle('show', this.paused);
+    document.body.classList.toggle('playing', !this.paused && PARAMS.controls);
+    broadcast({event:this.paused?'paused':'played'});
+  },
+  seekGlobal(gms){
+    // gms: 全局时间 ms
+    let acc=0, i=0;
+    for(let k=0;k<SCENES.length;k++){
+      if(acc+SCENES[k].duration > gms){ i=k; break; }
+      acc += SCENES[k].duration; i=k;
+    }
+    this.idx = i; this.t = gms - sceneStart(i);
+    const sc = SCENES[i]; if(sc.init) sc.init();
+    updateSceneDOM(i);
+  },
+  step(dt){
+    if(this.paused) return;
+    this.t += dt;
+    const sc = SCENES[this.idx];
+    if(this.t >= sc.duration){
+      if(this.idx === SCENES.length-1){
+        if(PARAMS.loop){ this.t = 0; this.go(0); }
+        else { this.paused = true; broadcast({event:'ended'}); }
+      } else {
+        this.t = 0; this.go(this.idx+1);
+      }
+    }
+  },
+  progress(){
+    return (sceneStart(this.idx) + this.t) / totalDur;
+  }
+};
+
+/* ---------- DOM 同步 ---------- */
+const elNum=document.getElementById('sceneNum');
+const elTitle=document.getElementById('sceneTitle');
+const elSub=document.getElementById('sceneSub');
+const elCaption=document.getElementById('caption');
+const elFormula=document.getElementById('formulaLayer');
+const elFormulaInner=document.getElementById('formulaInner');
+const elCta=document.getElementById('ctaWrap');
+const elProgress=document.getElementById('progressFill');
+const elTime=document.getElementById('timeLabel');
+const elInfo=document.getElementById('sceneInfo');
+
+let curFormula=false, curCta=false;
+function updateSceneDOM(i){
+  const sc = SCENES[i];
+  elInfo.classList.add('hide');
+  elCaption.classList.remove('show');
+  setTimeout(()=>{
+    elNum.textContent = '// '+sc.num;
+    elTitle.textContent = sc.title;
+    elSub.textContent = sc.sub;
+    elCaption.textContent = sc.caption;
+    elInfo.classList.remove('hide');
+    elCaption.classList.add('show');
+  }, 280);
+
+  // 公式
+  if(sc.formula && !curFormula){
+    renderFormula();
+    elFormula.classList.add('show'); curFormula=true;
+  } else if(!sc.formula && curFormula){
+    elFormula.classList.remove('show'); curFormula=false;
+  }
+  // CTA
+  if(sc.cta && !curCta){ elCta.classList.add('show'); curCta=true; }
+  else if(!sc.cta && curCta){ elCta.classList.remove('show'); curCta=false; }
+  // 章节高亮
+  document.querySelectorAll('.chapter-marks .mk').forEach((m,k)=>m.classList.toggle('cur', k===i));
+  document.querySelectorAll('.chapter-pop .item').forEach((m,k)=>m.classList.toggle('active', k===i));
+}
+function renderFormula(){
+  const tex = 'Attention(Q,K,V)=softmax\\!\\left(\\frac{QK^{T}}{\\sqrt{d_k}}\\right)V';
+  try{
+    if(window.katex){
+      katex.render(tex, elFormulaInner, {throwOnError:false, displayMode:true});
+    } else {
+      elFormulaInner.textContent = 'Attention(Q,K,V) = softmax( QKᵀ / √d_k ) V';
+    }
+  }catch(e){ elFormulaInner.textContent = 'Attention(Q,K,V) = softmax( QKᵀ / √d_k ) V'; }
+}
+
+/* ---------- 章节刻度 ---------- */
+const elMarks = document.getElementById('chapterMarks');
+SCENES.forEach((sc,i)=>{
+  const g = (sceneStart(i)+sc.duration/2)/totalDur*100;
+  const mk = document.createElement('div');
+  mk.className='mk'; mk.style.left = g+'%';
+  mk.title = sc.num+' · '+sc.title;
+  mk.addEventListener('click', e=>{ e.stopPropagation(); Director.go(i); });
+  elMarks.appendChild(mk);
+});
+
+/* ---------- 章节浮层 ---------- */
+const elPop = document.getElementById('chapterPop');
+SCENES.forEach((sc,i)=>{
+  const it = document.createElement('div');
+  it.className='item'; it.innerHTML = '<span class="n">'+sc.num+'</span><span>'+sc.title+'</span>';
+  it.addEventListener('click', ()=>{ Director.go(i); elPop.classList.remove('show'); });
+  elPop.appendChild(it);
+});
+
+/* ---------- 控制 ---------- */
+document.getElementById('btnPrev').addEventListener('click', ()=>Director.prev());
+document.getElementById('btnNext').addEventListener('click', ()=>Director.next());
+document.getElementById('btnPlay').addEventListener('click', ()=>Director.toggle());
+document.getElementById('btnChapters').addEventListener('click', ()=>elPop.classList.toggle('show'));
+document.getElementById('btnFs').addEventListener('click', toggleFullscreen);
+function toggleFullscreen(){
+  if(!document.fullscreenElement){ (document.documentElement.requestFullscreen||function(){}).call(document.documentElement); }
+  else { document.exitFullscreen&&document.exitFullscreen(); }
+}
+// 进度条跳转
+document.getElementById('progressTrack').addEventListener('click', e=>{
+  const r = e.currentTarget.getBoundingClientRect();
+  const ratio = (e.clientX-r.left)/r.width;
+  Director.seekGlobal(ratio*totalDur);
+});
+// 画面点击 暂停/播放
+canvas.addEventListener('click', ()=>Director.toggle());
+// 键盘
+window.addEventListener('keydown', e=>{
+  if(e.key===' '){ e.preventDefault(); Director.toggle(); }
+  else if(e.key==='ArrowRight'){ Director.next(); }
+  else if(e.key==='ArrowLeft'){ Director.prev(); }
+  else if(e.key==='f'||e.key==='F'){ toggleFullscreen(); }
+  else if(e.key==='Escape'){ elPop.classList.remove('show'); }
+});
+
+/* ---------- postMessage 嵌入通信 ---------- */
+function broadcast(msg){
+  msg.type='transformer-cg-event';
+  try{ window.parent.postMessage(msg,'*'); }catch(e){}
+}
+window.addEventListener('message', e=>{
+  const d = e.data;
+  if(!d || d.type!=='transformer-cg') return;
+  switch(d.cmd){
+    case 'play':   if(Director.paused) Director.toggle(); break;
+    case 'pause':  if(!Director.paused) Director.toggle(); break;
+    case 'toggle': Director.toggle(); break;
+    case 'next':   Director.next(); break;
+    case 'prev':   Director.prev(); break;
+    case 'goto':   if(d.chapter) Director.go(d.chapter-1); break;
+    case 'seek':   if(typeof d.time==='number') Director.seekGlobal(d.time); break;
+  }
+});
+
+/* ---------- UI 自动隐藏（播放中无人操作） ---------- */
+let idleTimer = null;
+function poke(){
+  document.body.classList.remove('ui-hidden');
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(()=>{ if(!Director.paused && PARAMS.controls) document.body.classList.add('ui-hidden'); }, 3500);
+}
+window.addEventListener('mousemove', poke);
+window.addEventListener('keydown', poke);
+
+/* ---------- 主循环 ---------- */
+function fmt(ms){ ms=Math.max(0,ms); const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+let reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function loop(ts){
+  if(!Director.lastTs) Director.lastTs = ts;
+  let dt = ts - Director.lastTs;
+  Director.lastTs = ts;
+  if(dt>80) dt=80; // 防卡顿跳变
+
+  // 拖影：半透明覆盖代替清屏 -> 光迹效果
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle = 'rgba(6,8,24,0.16)';
+  ctx.fillRect(0,0,W,H);
+
+  drawStars(dt);
+
+  const sc = SCENES[Director.idx];
+  let p = clamp(Director.t / sc.duration, 0, 1);
+  try{ sc.update(ctx, p, dt); }catch(err){ /* 容错，避免单帧错误中断 */ }
+
+  Director.step(dt);
+
+  // 进度 UI
+  const prog = Director.progress();
+  elProgress.style.width = (prog*100)+'%';
+  elTime.textContent = fmt(sceneStart(Director.idx)+Director.t)+' / '+fmt(totalDur);
+  document.querySelectorAll('.chapter-marks .mk').forEach((m,k)=>{
+    m.classList.toggle('passed', k<Director.idx);
+  });
+
+  broadcast({event:'progress', time:sceneStart(Director.idx)+Director.t, total:totalDur, progress:prog});
+
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 启动 ---------- */
+resize();
+Director.go(PARAMS.start-1);
+if(PARAMS.autoplay){ document.body.classList.add('playing'); }
+else { Director.paused=true; document.getElementById('btnPlay').textContent='▶'; }
+poke();
+requestAnimationFrame(loop);
+
+// KaTeX 加载后再渲染一次（若首场景含公式）
+window.addEventListener('load', ()=>{ if(curFormula) renderFormula(); });
+</script>
+</body>
+</html>

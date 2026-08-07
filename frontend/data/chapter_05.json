@@ -1,0 +1,91 @@
+{
+  "id": 5,
+  "title": "Claude Code 入门细致讲解",
+  "icon": "🔧",
+  "description": "从安装配置到项目实战，全面掌握 Claude Code CLI 的核心功能与开发技巧",
+  "ppt_url": "https://feishu.doubao.com/slides/BosBsWNc0lGZUkdF4MicowCCnig",
+  "knowledge_points": [
+    {
+      "title": "Claude Code 安装与首次配置",
+      "content": "<h3>什么是 Claude Code？</h3><p>Claude Code 是 Anthropic 推出的<strong>命令行 AI 编程助手</strong>，直接在终端中与 Claude 协作编程。它不是一个简单的聊天工具——它能<strong>读取整个项目、编辑文件、执行命令、管理 Git</strong>，是一个真正的 AI 编程搭档。</p><h3>安装步骤</h3><pre><code># Windows (PowerShell 管理员模式)\nnpm install -g @anthropic-ai/claude-code\n\n# macOS / Linux\ncurl -fsSL https://claude.ai/install.sh | bash\n\n# 首次启动\nclaude</code></pre><h3>认证配置</h3><pre><code># 方式一：OAuth 登录（推荐）\nclaude login\n\n# 方式二：API Key 配置\n# 创建 ~/.claude.json 或在项目 .claude/settings.json 中：\n{\n  \"env\": {\n    \"ANTHROPIC_AUTH_TOKEN\": \"sk-ant-...\",\n    \"ANTHROPIC_BASE_URL\": \"https://api.anthropic.com\"\n  }\n}\n\n# 方式三：通过第三方 API（如 DeepSeek）\n{\n  \"env\": {\n    \"ANTHROPIC_AUTH_TOKEN\": \"sk-...\",\n    \"ANTHROPIC_BASE_URL\": \"https://api.deepseek.com/anthropic\",\n    \"ANTHROPIC_DEFAULT_OPUS_MODEL\": \"deepseek-v4-pro\",\n    \"ANTHROPIC_DEFAULT_SONNET_MODEL\": \"deepseek-v4-pro\"\n  }\n}</code></pre><h3>验证安装</h3><pre><code>claude --version\nclaude --help\n# 在项目目录启动：\ncd my-project && claude</code></pre><h3>关键配置项</h3><ul><li>模型选择：--model 或 settings.json 中的 model 字段</li><li>权限控制：settings.json 中的 permissions 配置（allow/deny/ask）</li><li>语言设置：language 字段设为 \"chinese\"</li></ul>"
+    },
+    {
+      "title": "核心命令与斜杠指令",
+      "content": "<h3>启动与基础命令</h3><pre><code># 在项目目录启动\nclaude                              # 交互模式\nclaude -p \"解释这个项目\"             # 单次提问\nclaude -p \"修复 login 的 bug\" --model opus  # 指定模型\nclaude --resume                     # 恢复上次会话\n\n# 管道模式\ncat error.log | claude -p \"分析这些错误\"\ngit diff | claude -p \"review 这些改动\"</code></pre><h3>核心斜杠命令</h3><table><tr><th>命令</th><th>功能</th><th>使用场景</th></tr><tr><td><code>/help</code></td><td>查看帮助</td><td>任何时候</td></tr><tr><td><code>/clear</code></td><td>清空对话上下文</td><td>切换话题</td></tr><tr><td><code>/compact</code></td><td>压缩上下文总结</td><td>长对话节省 token</td></tr><tr><td><code>/init</code></td><td>初始化项目 CLAUDE.md</td><td>新项目配置</td></tr><tr><td><code>/review</code></td><td>代码审查</td><td>提交前检查</td></tr><tr><td><code>/model</code></td><td>切换模型</td><td>不同任务选不同模型</td></tr><tr><td><code>/cost</code></td><td>查看 token 消耗</td><td>成本控制</td></tr><tr><td><code>/add-dir</code></td><td>添加工作目录</td><td>多目录项目</td></tr><tr><td><code>/permissions</code></td><td>管理权限</td><td>安全配置</td></tr></table><h3>对话技巧</h3><ul><li>@文件名 引用特定文件让 Claude 聚焦</li><li>Shift+Enter 多行输入</li><li>Ctrl+C 中断当前操作</li><li>Ctrl+R 搜索历史命令</li></ul>"
+    },
+    {
+      "title": "Hooks 系统：事件驱动的自动化",
+      "content": "<h3>什么是 Hooks？</h3><p>Hooks 是 Claude Code 的<strong>事件驱动扩展机制</strong>。在特定事件发生时自动触发自定义脚本或 Prompt，实现工作流自动化。类似于 Git Hooks 但作用于 Claude Code 的操作生命周期。</p><h3>Hook 事件类型</h3><pre><code>// .claude/settings.json\n{\n  \"hooks\": {\n    \"PreToolUse\": [{      // 工具执行前\n      \"matcher\": \"Bash\",  // 仅匹配 Bash 工具\n      \"command\": \"安全检查脚本\"\n    }],\n    \"PostToolUse\": [{     // 工具执行后\n      \"matcher\": \"Write\",\n      \"command\": \"自动格式化代码\"\n    }],\n    \"UserPromptSubmit\": [{ // 用户提问前\n      \"prompt\": \"请使用中文回答，代码注释也用中文\"\n    }],\n    \"PreCompact\": [{     // 上下文压缩前\n      \"command\": \"备份对话历史\"\n    }]\n  }\n}</code></pre><h3>实战：安全防护 Hook</h3><pre><code>// 阻止危险操作\n{\n  \"PreToolUse\": [{\n    \"matcher\": \"Bash\",\n    \"command\": \"bash -c 'cmd=$(cat | jq -r .tool_input.command); if echo \\\"$cmd\\\" | grep -Eq \\\"rm -rf |git push.*--force\\\"; then echo '{\\\"block\\\":true}'; else echo '{}'; fi'\"\n  }]\n}</code></pre><h3>实战：自动代码格式化</h3><pre><code>{\n  \"PostToolUse\": [{\n    \"matcher\": \"Write\",\n    \"command\": \"bash -c 'file=$(cat | jq -r .tool_input.path); case $file in *.py) black $file ;; *.js) prettier --write $file ;; esac'\"\n  }]\n}</code></pre>"
+    },
+    {
+      "title": "Skills 开发：自定义技能体系",
+      "content": "<h3>Skills 是什么？</h3><p>Skills 是 Claude Code 的<strong>可复用专业能力模块</strong>——将特定领域的知识、工作流程和最佳实践封装为可加载的「技能卡」。当 Claude 识别到任务匹配时，自动加载相应 Skill 的完整上下文。</p><h3>Skill 文件结构</h3><pre><code># .claude/skills/my-skill.md\n---\nname: code-review\ndescription: 代码审查专用技能\n---\n\n# Code Review Skill\n\n## 审查维度\n1. 正确性：逻辑是否有 bug？边界条件是否处理？\n2. 安全：是否有注入风险？权限检查是否完整？\n3. 性能：N+1 查询？不必要的循环？\n4. 可维护性：命名是否清晰？是否有足够的注释？\n\n## 审查流程\n1. 先读取所有改动的文件\n2. 按照以上4个维度逐一检查\n3. 按严重程度排序输出发现的问题\n4. 对每个问题给出具体修复建议</code></pre><h3>创建 Skill 的命令</h3><pre><code># 直接让 Claude 创建\n> 帮我创建一个 review-python 技能，用于审查 Python 代码\n\n# 手动创建文件\nmkdir -p .claude/skills\n# 编辑 .claude/skills/my-skill.md</code></pre><h3>Skill 触发机制</h3><p>Skill 通过 description 字段自动匹配：当用户任务与某个 Skill 的 description 相关时，Claude 自动加载该 Skill 的完整指令。一个项目的 Skills 在 .claude/skills/ 目录下管理，通过 / 前缀即可手动调用。</p>"
+    },
+    {
+      "title": "MCP 协议：连接外部工具与数据",
+      "content": "<h3>MCP（Model Context Protocol）</h3><p>MCP 是 Anthropic 推出的<strong>开放协议标准</strong>，让 Claude 能安全地连接外部工具和数据源。就像 USB-C 统一了硬件接口——MCP 统一了 AI 与外部系统的交互方式。</p><h3>MCP 架构</h3><pre><code>┌──────────┐    MCP 协议    ┌──────────────┐\n│  Claude  │ ◄────────────► │  MCP Server   │\n│  (Host)  │   JSON-RPC     │  (数据库/API)  │\n└──────────┘                └──────────────┘\n\n核心能力：\n• Resources：暴露数据（文件、数据库记录）\n• Tools：暴露可执行功能（API调用、计算）\n• Prompts：预定义的提示模板</code></pre><h3>配置 MCP Server</h3><pre><code>// .claude/settings.json\n{\n  \"mcpServers\": {\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@anthropic-ai/mcp-server-filesystem\", \"/path/to/data\"]\n    },\n    \"database\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"my_mcp_server\"],\n      \"env\": { \"DB_URL\": \"postgresql://...\" }\n    }\n  }\n}</code></pre><h3>开发自定义 MCP Server</h3><pre><code># Python MCP Server 示例\nfrom mcp import Server, Tool\n\nserver = Server(\"my-tools\")\n\n@server.tool()\nasync def search_knowledge_base(query: str, top_k: int = 5):\n    \"\"\"在内部知识库中搜索相关文档\"\"\"\n    results = vector_db.search(query, limit=top_k)\n    return {\"matches\": [{\"content\": r.content, \"score\": r.score} for r in results]}\n\n@server.tool()\nasync def get_ticket_status(ticket_id: str):\n    \"\"\"查询工单状态\"\"\"\n    return db.query(\"SELECT * FROM tickets WHERE id = ?\", ticket_id)\n\nserver.run()</code></pre>"
+    },
+    {
+      "title": "Claude Code 项目实战全流程",
+      "content": "<h3>实战：用 Claude Code 构建一个 Web API</h3><pre><code># 1. 项目初始化\nmkdir my-api && cd my-api\nclaude\n> 帮我初始化一个 FastAPI 项目，包含用户认证模块\n> （Claude 会自动创建项目结构、安装依赖、写代码）\n\n# 2. 查看 CLAUDE.md——Claude 自动生成的项目文档\ncat CLAUDE.md\n\n# 3. 让 Claude 理解你的代码风格\n> /init  # 生成或更新 CLAUDE.md\n\n# 4. 迭代开发\n> 给 /users 接口添加分页和搜索功能\n> 数据验证用 Pydantic v2 的 model_validate\n\n# 5. 测试\n> 写 pytest 测试用例，覆盖所有 API 端点\n> 运行测试看看有什么问题\n\n# 6. 代码审查\n> /review  # 全面检查代码质量\n\n# 7. Git 提交\n> 帮我把改动分几个语义清晰的 commit 提交</code></pre><h3>高效工作流程</h3><table><tr><th>阶段</th><th>Claude Code 命令</th><th>产出</th></tr><tr><td>需求分析</td><td>帮我分析这个需求的技术方案</td><td>技术方案文档</td></tr><tr><td>架构设计</td><td>设计模块结构和数据流</td><td>架构图+接口定义</td></tr><tr><td>编码实现</td><td>实现 XXX 功能</td><td>代码+测试</td></tr><tr><td>代码审查</td><td>/review</td><td>审查报告</td></tr><tr><td>文档生成</td><td>更新 README 和 API 文档</td><td>文档</td></tr><tr><td>部署</td><td>写 Dockerfile 和部署脚本</td><td>部署配置</td></tr></table><h3>进阶技巧</h3><ul><li><strong>CLAUDE.md</strong>：项目级指令文件，Claude 每次启动都会读取——写好它等于给 Claude 配置了专属工作手册</li><li><strong>Worktree 隔离</strong>：/worktree 创建独立工作区，避免主分支被意外修改</li><li><strong>子代理并行</strong>：复杂任务让 Claude 自动拆分为多个子代理并行处理</li><li><strong>成本管理</strong>：用 /cost 关注 token 消耗，长对话用 /compact 压缩</li></ul>"
+    }
+  ],
+  "exercises": [
+    {
+      "question": "Claude Code 的 CLAUDE.md 文件的主要作用是什么？",
+      "options": [
+        "A. 只是一个 README 的别名，用于项目介绍",
+        "B. 项目级指令文件，Claude 每次启动都会读取，等于配置了专属工作手册",
+        "C. 用于存储 API Key 的加密文件",
+        "D. 记录项目的 Git 提交历史"
+      ],
+      "answer": 1,
+      "explanation": "CLAUDE.md 是 Claude Code 的核心配置文件。它像一个「发起人给助手的项目手册」——写清项目结构、代码规范、常用命令和项目约定，Claude 就能像熟悉项目的老员工一样工作。"
+    },
+    {
+      "question": "Claude Code 的 Hooks 系统中，如果你想在 Claude 每次写文件后自动运行 Python 代码格式化，应该使用哪种 Hook？",
+      "options": [
+        "A. PreToolUse，matcher 设为 \"Read\"",
+        "B. PostToolUse，matcher 设为 \"Write\"",
+        "C. UserPromptSubmit",
+        "D. PreCompact"
+      ],
+      "answer": 1,
+      "explanation": "PostToolUse 在工具执行后触发。matcher 设为 \"Write\" 意味着只在写文件操作后触发——这正是自动格式化代码的正确时机。"
+    },
+    {
+      "question": "MCP（Model Context Protocol）的核心价值是什么？",
+      "options": [
+        "A. 加速模型推理速度",
+        "B. 统一的开放协议标准，让 Claude 安全连接外部工具和数据源",
+        "C. 替代 REST API 的新通信方式",
+        "D. Claude Code 的插件市场"
+      ],
+      "answer": 1,
+      "explanation": "MCP 就像一个「AI 世界的 USB-C 协议」——定义了 AI 与外部系统交互的统一标准。通过 MCP Server，Claude 可以查询数据库、调用 API、操作文件系统，而不需要你手动写胶水代码。"
+    },
+    {
+      "question": "在 Claude Code 中，什么时候应该使用 /compact 命令？",
+      "options": [
+        "A. 每次输入命令前都要执行",
+        "B. 长对话中，当上下文过长导致响应变慢或 token 消耗过大时",
+        "C. 只在项目初始化时使用",
+        "D. 用于删除项目的缓存文件"
+      ],
+      "answer": 1,
+      "explanation": "/compact 将完整对话历史压缩为结构化摘要，保留关键信息的同时释放上下文空间。长对话中 token 成本会线性增长，适时压缩能显著降低费用并提高响应质量。"
+    },
+    {
+      "type": "code",
+      "question": "模拟 Claude Code Shell 环境",
+      "code_prompt": "编写一个 initialize_claude_environment() 函数：1) 检查系统中是否安装了 Node.js（>=18）和 npm 2) 模拟 claude --version 命令输出的解析 3) 创建示例 .claude/settings.json 配置（含 model、permissions、hooks）4) 创建示例 CLAUDE.md 文件 5) 输出完整的安装和配置报告。",
+      "explanation": "理解 Claude Code 的配置体系是高效使用它的基础。settings.json 控制行为，CLAUDE.md 定义项目上下文，hooks 实现自动化——三者协同构成完整的开发环境。"
+    },
+    {
+      "type": "code",
+      "question": "实现 MCP 工具注册系统",
+      "code_prompt": "实现一个简化版 MCP 工具注册和调用系统：1) 定义 Tool 类（name/description/parameters/execute）2) 实现 ToolRegistry（注册/查找/列出工具）3) 模拟 JSON-RPC 请求处理（解析 method/params → 找到工具 → 执行 → 返回结果）4) 注册3个不同功能的工具 5) 演示完整的 RPC 调用流程。",
+      "explanation": "MCP 的底层通信基于 JSON-RPC 协议。理解这个核心机制，你就能开发自己的 MCP Server，让 Claude 连接任何外部系统。"
+    }
+  ]
+}
