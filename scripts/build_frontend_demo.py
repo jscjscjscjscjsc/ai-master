@@ -174,6 +174,9 @@ def rewrite_project_urls():
         text = route_re.sub(lambda match: match.group(1) + page_url("/" + match.group(2) + match.group(3), source), text)
         text = text.replace("llm-training-game.html", "llm_training_game.html")
         text = text.replace("bpe-game.html", "bpe_game.html")
+        if source == "static/js/knowledge_stars.js":
+            # fetch() resolves relative to the document URL, not the script URL.
+            text = text.replace("../../data/knowledge-universe.json", "../data/knowledge-universe.json")
         if path.parts[-2:] in {("rag_cg", "index.html"), ("prompt_cg_starlab", "index.html"), ("agentic_cg", "index.html"), ("claude_cg", "index.html")}:
             text = text.replace('"/vite.svg"', '"vite.svg"').replace("'/vite.svg'", "'vite.svg'")
         path.write_text(text, encoding="utf-8")
