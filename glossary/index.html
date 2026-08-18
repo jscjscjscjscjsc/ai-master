@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>术语档案 · AI Master</title>
+  <link rel="stylesheet" href="../static/css/style.css" />
+  <link rel="stylesheet" href="../static/css/dashboard.css" />
+  <style>
+    body{min-height:100vh;background:#030611;color:#edf5ff}.archive{width:min(1180px,calc(100% - 40px));margin:0 auto;padding:110px 0 70px}.archive-head{display:flex;justify-content:space-between;gap:30px;align-items:end;margin-bottom:32px}.archive h1{font-size:clamp(38px,6vw,76px);font-weight:500;line-height:1.05;margin:12px 0}.archive p{color:#9eacc8;line-height:1.8}.back{color:#72f6e4;text-decoration:none;font:12px Consolas,monospace}.search{width:100%;padding:15px 18px;border:1px solid #72f6e455;border-radius:5px;background:#081027;color:#fff;font-size:14px;outline:none}.terms{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}.term{padding:20px;border:1px solid #aab9df2d;border-radius:8px;background:linear-gradient(135deg,#0b1430,#060a1b);cursor:pointer;transition:.2s}.term:hover{border-color:#72f6e4;transform:translateY(-3px)}.term small{color:#72f6e4;font:10px Consolas,monospace}.term h2{font-size:20px;margin:10px 0}.term div{color:#aab7d1;line-height:1.7;font-size:13px}@media(max-width:800px){.terms{grid-template-columns:1fr 1fr}}@media(max-width:540px){.archive{width:calc(100% - 28px);padding-top:80px}.archive-head{display:block}.terms{grid-template-columns:1fr}}
+  </style>
+</head>
+<body><canvas id="particles-canvas" aria-hidden="true"></canvas>
+  <main class="archive"><a class="back" href="../dashboard/">← 返回指挥舱</a><div class="archive-head"><div><p class="hero-kicker">SYSTEM 02 / ARCHIVE</p><h1>术语档案</h1><p>把模型、检索、智能体和部署术语收进一座可检索的知识档案馆。</p></div><span class="back">STATIC KNOWLEDGE INDEX</span></div><input class="search" id="termSearch" placeholder="搜索术语，例如：Embedding、RAG、Attention" /><section class="terms" id="terms"><p>正在读取档案...</p></section></main>
+  <script src="../static/js/glossary_static.js"></script>
+</body></html>

@@ -1,1 +1,210 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=../static/interview.html"><title>星辰学习中心 · AI Master</title></head><body><p>正在进入 <a href="../static/interview.html">星辰学习教练静态演示</a>...</p></body></html>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>星辰学习中心 - AI Master</title>
+    <link rel="stylesheet" href="../static/css/learning_center.css" />
+  </head>
+  <body>
+    <canvas id="stars"></canvas>
+    <header>
+      <a href="../dashboard/" class="brand"
+        >AI MASTER <small>/ STELLAR LEARNING CENTER</small></a
+      >
+      <nav>
+        <button data-view="dashboard" class="active">总览</button
+        ><button data-view="practice">沉浸刷题</button
+        ><button data-view="review">错题与收藏</button
+        ><button data-view="interview">压力面试</button
+        ><a href="../static/interview.html">费曼路线</a>
+      </nav>
+    </header>
+    <main>
+      <section id="dashboard" class="view active">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">PERSONAL LEARNING INTELLIGENCE</p>
+            <h1>把练习、反馈与<br /><em>成长记录连成闭环。</em></h1>
+            <p class="sub">
+              问答理解、场景推演与代码实践均独立计入你的学习画像；星辰教练会据此调整下一步训练。
+            </p>
+          </div>
+          <div class="portrait">
+            <div class="avatar" id="avatar">A</div>
+            <div>
+              <p id="userName">探索者</p>
+              <strong id="progress">0%</strong><span>全题库探索进度</span>
+            </div>
+          </div>
+        </div>
+        <div class="metrics">
+          <article>
+            <span>已完成题目</span><strong id="answered">0 / 480</strong
+            ><small id="qaProgress">理解 0 / 240</small>
+          </article>
+          <article>
+            <span>代码实践</span><strong id="codeProgress">0 / 240</strong
+            ><small>每题保留 3 次提交</small>
+          </article>
+          <article>
+            <span>平均掌握度</span><strong id="average">0</strong
+            ><small>综合问答与代码评分</small>
+          </article>
+          <article>
+            <span>待复习错题</span><strong id="wrong">0</strong
+            ><small id="favorite">收藏重点 0</small>
+          </article>
+        </div>
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">CAPABILITY MAP</p>
+              <h2>六个能力星域</h2>
+            </div>
+            <button class="text-button" data-go="practice">开始训练 →</button>
+          </div>
+          <div id="categoryGrid" class="category-grid"></div>
+        </section>
+        <section class="section split">
+          <div class="coach-panel" id="coach">
+            <p class="eyebrow">STELLAR COACH</p>
+            <h2>与星辰教练对话</h2>
+            <div id="coachMessages" class="messages" aria-live="polite"></div>
+            <div class="chat-bar">
+              <button id="mic" title="开始语音输入">开始说话</button
+              ><input
+                id="coachInput"
+                placeholder="说出你的学习问题或困惑"
+              /><button id="sendCoach">发送</button>
+            </div>
+            <div class="voice-actions">
+              <button id="stopMic" type="button" disabled>结束并发送</button>
+              <span id="voiceMeter" aria-hidden="true"></span>
+            </div>
+            <small id="voiceStatus" role="status" aria-live="polite"
+              >点击“开始说话”后允许麦克风权限；识别完成后可手动结束并发送。</small
+            >
+          </div>
+          <div class="badge-panel">
+            <p class="eyebrow">EXPEDITION BADGES</p>
+            <h2>远征称号</h2>
+            <div id="badges" class="badges"></div>
+            <p class="badge-note">
+              初级 30% + 初级面试通过，中级 70% + 中级面试通过，高级 100% +
+              高级面试通过。
+            </p>
+          </div>
+        </section>
+      </section>
+      <section id="practice" class="view">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">FOCUSED PRACTICE</p>
+            <h1>沉浸刷题</h1>
+          </div>
+          <div class="filters">
+            <select id="categoryFilter">
+              <option value="">全部模块</option></select
+            ><select id="typeFilter">
+              <option value="">全部题型</option>
+              <option value="qa">问答理解</option>
+              <option value="qa_scenario">场景推演</option>
+              <option value="code">代码实践</option></select
+            ><select id="difficultyFilter">
+              <option value="">全部难度</option>
+              <option>初级</option>
+              <option>中级</option>
+              <option>高级</option></select
+            ><button id="loadQuestions">刷新题目</button>
+          </div>
+        </div>
+        <p class="practice-note">
+          当前题库 480 题：120 问答理解、120 场景推演、240
+          代码实践。每题已标注所属模块与能力标签。
+        </p>
+        <div class="practice-layout">
+          <aside id="questionList"></aside>
+          <article id="questionCard" class="question-card">
+            <p>从左侧选择一题开始。</p>
+          </article>
+        </div>
+      </section>
+      <section id="review" class="view">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">RECALL VAULT</p>
+            <h1>错题与收藏</h1>
+          </div>
+          <button id="refreshReview">刷新记录</button>
+        </div>
+        <div class="review-grid">
+          <article>
+            <h2>需要回看的题目</h2>
+            <div id="wrongList"></div>
+          </article>
+          <article>
+            <h2>收藏重点</h2>
+            <div id="favoriteList"></div>
+          </article>
+        </div>
+      </section>
+      <section id="interview" class="view">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">60 MINUTE PRESSURE TEST</p>
+            <h1>压力面试</h1>
+          </div>
+        </div>
+        <div id="interviewSetup" class="interview-setup">
+          <h2>十题，六十分钟，真实作答。</h2>
+          <p>
+            选择难度后，星辰教练从大模型问答与场景题库中抽取 10
+            道题目。完成后即时给出总分、薄弱项与称号判定。
+          </p>
+          <div class="difficulty">
+            <button data-difficulty="初级">初级</button
+            ><button data-difficulty="中级">中级</button
+            ><button data-difficulty="高级">高级</button>
+          </div>
+        </div>
+        <div id="interviewRun" hidden>
+          <div class="timer" id="timer">60:00</div>
+          <div id="interviewQuestions"></div>
+          <button id="finishInterview" class="primary">提交面试</button>
+        </div>
+      </section>
+    </main>
+    <div id="codeModal" class="modal" hidden>
+      <div class="modal-backdrop" data-close-code></div>
+      <section
+        class="code-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="codeModalTitle"
+      >
+        <button class="modal-close" data-close-code title="关闭">×</button>
+        <p class="eyebrow">INTEGRATED CODE LAB</p>
+        <h2 id="codeModalTitle">代码实践</h2>
+        <p id="codeModalPrompt" class="sub"></p>
+        <textarea
+          id="codeEditor"
+          class="code-editor"
+          spellcheck="false"
+        ></textarea>
+        <div class="action-row">
+          <button id="runCode" class="primary">运行代码</button
+          ><button id="submitCode">提交并评分</button>
+        </div>
+        <pre id="codeOutput" class="code-output">等待运行结果。</pre>
+        <div id="codeFeedback"></div>
+        <section class="history-panel">
+          <p class="eyebrow">LAST THREE SUBMISSIONS</p>
+          <div id="codeHistory">暂无提交记录。</div>
+        </section>
+      </section>
+    </div>
+    <audio id="voice"></audio>
+    <script src="../static/js/learning_center_static.js"></script>
+  </body>
+</html>
