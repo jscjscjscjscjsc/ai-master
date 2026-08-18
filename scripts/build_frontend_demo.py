@@ -7,12 +7,31 @@ from __future__ import annotations
 
 import html
 import json
+import posixpath
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 DATA = FRONTEND / "data"
+
+
+def page_url(target: str, source: str) -> str:
+    """Resolve a site route relative to a generated page.
+
+    GitHub Pages publishes this repository below ``/ai-master/`` while local
+    preview serves ``frontend`` at ``/``. Relative URLs work in both places.
+    """
+    if not target.startswith("/") or target.startswith("//"):
+        return target
+    clean = target.lstrip("/")
+    source_dir = posixpath.dirname(source.replace("\\", "/")) or "."
+    if not clean:
+        return "./"
+    resolved = posixpath.relpath(clean, source_dir)
+    if target.endswith("/") and not resolved.endswith("/"):
+        resolved += "/"
+    return resolved
 
 
 def load(name: str):
@@ -37,8 +56,12 @@ def target_for(chapter_id: int) -> str:
     return special.get(chapter_id, f"/chapter/{chapter_id}/")
 
 
-def nav():
-    return """<nav class="demo-nav"><a class="demo-brand" href="/dashboard/"><i></i><span>AI MASTER <em>/ FRONTEND EDITION</em></span></a><div class="demo-nav-links"><a href="/knowledge-stars/">知识星海</a><a href="/static/ai_odyssey.html">沉浸远征</a><a href="/static/interview.html">学习教练</a></div></nav>"""
+def nav(source: str):
+    dashboard = page_url("/dashboard/", source)
+    stars = page_url("/knowledge-stars/", source)
+    odyssey = page_url("/static/ai_odyssey.html", source)
+    coach = page_url("/static/interview.html", source)
+    return f'''<nav class="demo-nav"><a class="demo-brand" href="{dashboard}"><i></i><span>AI MASTER <em>/ FRONTEND EDITION</em></span></a><div class="demo-nav-links"><a href="{stars}">知识星海</a><a href="{odyssey}">沉浸远征</a><a href="{coach}">学习教练</a></div></nav>'''
 
 
 def shell_css():
@@ -72,6 +95,7 @@ def static_coach_js():
 
 
 def build_dashboard(courses):
+    source = "dashboard/index.html"
     tools = [
         ("SYSTEM 01 / KNOWLEDGE", "思维画布", "组织你的知识航线", "/canvas/"),
         ("SYSTEM 02 / ARCHIVE", "术语档案", "浏览知识概念", "/chapter/1/"),
@@ -80,29 +104,30 @@ def build_dashboard(courses):
         ("SYSTEM 05 / PROLOGUE", "学习序章", "返回主前端入口", "/"),
         ("SYSTEM 06 / ODYSSEY", "沉浸远征", "沿着 3D 航线进入 AI 学习章节", "/static/ai_odyssey.html"),
     ]
-    tool_html = "".join(f'<a class="tool" href="{url}"><i class="tool-icon"></i><span><mark>{code}</mark><b>{title}</b><small>{desc}</small></span><em>↗</em></a>' for code,title,desc,url in tools)
+    tool_html = "".join(f'<a class="tool" href="{page_url(url, source)}"><i class="tool-icon"></i><span><mark>{code}</mark><b>{title}</b><small>{desc}</small></span><em>↗</em></a>' for code,title,desc,url in tools)
     sector_html = ""
     for course in courses:
         cid = int(course["id"])
-        sector_html += f'''<a class="sector" href="{target_for(cid)}"><div class="sector-index"><span>{cid:02d}</span><i></i></div><div class="sector-planet"></div><div class="sector-copy"><p class="code">SECTOR {cid:02d} / AVAILABLE</p><h3>{html.escape(course['title'])}</h3><p>{html.escape(course.get('description',''))}</p><div class="sector-meta"><span>{course.get('knowledge_count',0)} 知识节点</span><i></i><span>{course.get('exercise_count',0)} 训练任务</span></div></div><span class="sector-go">进入星域 <i>→</i></span></a>'''
-    return f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Master - 前端演示</title><link rel="stylesheet" href="/assets/frontend.css"><link rel="stylesheet" href="/assets/dashboard-demo.css"></head><body><canvas id="demo-stars" class="dash-space"></canvas>{nav()}<main class="demo-page"><section class="hero"><div class="hero-copy"><p class="kicker">FRONTEND LEARNING UNIVERSE / DEMO</p><h1>欢迎归航，探索者。<br><em>下一片星域正在苏醒。</em></h1><p>这是从 AI Master 本地项目导出的前端复现版。星海、章节航线、CG 页面与本地交互均可直接体验；账户、授权、AI 服务和用户数据不包含在本仓库。</p><div class="hero-actions"><a class="btn btn-primary" href="/knowledge-stars/">步入 3D 星海 <i>↗</i></a><a class="btn" href="#route">浏览章节航线 <i>↓</i></a><a class="btn" href="/static/ai_odyssey.html">开启沉浸远征 <i>↗</i></a></div></div><div class="orbital"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><div class="planet"><strong>10</strong><span>SECTORS</span></div><p class="metric m1"><i></i>10 星域</p><p class="metric m2"><i></i>57 知识节点</p><p class="metric m3"><i></i>FRONTEND READY</p></div></section><section class="systems"><header class="systems-head"><p>EXPEDITION SYSTEMS</p><span>静态演示模式 / 无用户数据</span></header><div class="dock">{tool_html}</div></section><section id="route" class="route"><header class="route-head"><div><p class="kicker">LEARNING CONSTELLATION</p><h2>十个星域，一条通往<br>智能工程的远征航线。</h2></div><small>所有章节入口均已映射至静态页面</small></header><div class="route-list">{sector_html}</div></section><footer class="footer"><span>AI MASTER / FRONTEND REPRODUCTION EDITION</span><i></i><span>无后端、无账号、无授权数据</span></footer></main><script src="/assets/frontend.js"></script></body></html>'''
+        sector_html += f'''<a class="sector" href="{page_url(target_for(cid), source)}"><div class="sector-index"><span>{cid:02d}</span><i></i></div><div class="sector-planet"></div><div class="sector-copy"><p class="code">SECTOR {cid:02d} / AVAILABLE</p><h3>{html.escape(course['title'])}</h3><p>{html.escape(course.get('description',''))}</p><div class="sector-meta"><span>{course.get('knowledge_count',0)} 知识节点</span><i></i><span>{course.get('exercise_count',0)} 训练任务</span></div></div><span class="sector-go">进入星域 <i>→</i></span></a>'''
+    return f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Master - 前端演示</title><link rel="stylesheet" href="{page_url('/assets/frontend.css', source)}"><link rel="stylesheet" href="{page_url('/assets/dashboard-demo.css', source)}"></head><body><canvas id="demo-stars" class="dash-space"></canvas>{nav(source)}<main class="demo-page"><section class="hero"><div class="hero-copy"><p class="kicker">FRONTEND LEARNING UNIVERSE / DEMO</p><h1>欢迎归航，探索者。<br><em>下一片星域正在苏醒。</em></h1><p>这是从 AI Master 本地项目导出的前端复现版。星海、章节航线、CG 页面与本地交互均可直接体验；账户、授权、AI 服务和用户数据不包含在本仓库。</p><div class="hero-actions"><a class="btn btn-primary" href="{page_url('/knowledge-stars/', source)}">步入 3D 星海 <i>↗</i></a><a class="btn" href="#route">浏览章节航线 <i>↓</i></a><a class="btn" href="{page_url('/static/ai_odyssey.html', source)}">开启沉浸远征 <i>↗</i></a></div></div><div class="orbital"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><div class="planet"><strong>10</strong><span>SECTORS</span></div><p class="metric m1"><i></i>10 星域</p><p class="metric m2"><i></i>57 知识节点</p><p class="metric m3"><i></i>FRONTEND READY</p></div></section><section class="systems"><header class="systems-head"><p>EXPEDITION SYSTEMS</p><span>静态演示模式 / 无用户数据</span></header><div class="dock">{tool_html}</div></section><section id="route" class="route"><header class="route-head"><div><p class="kicker">LEARNING CONSTELLATION</p><h2>十个星域，一条通往<br>智能工程的远征航线。</h2></div><small>所有章节入口均已映射至静态页面</small></header><div class="route-list">{sector_html}</div></section><footer class="footer"><span>AI MASTER / FRONTEND REPRODUCTION EDITION</span><i></i><span>无后端、无账号、无授权数据</span></footer></main><script src="{page_url('/assets/frontend.js', source)}"></script></body></html>'''
 
 
 def chapter_page(chapter):
     cid = int(chapter["id"])
+    source = f"chapter/{cid}/index.html"
     cards = []
     for index, point in enumerate(chapter.get("knowledge_points", []), 1):
         title = html.escape(str(point.get("title", f"知识点 {index}")))
         content = str(point.get("content", "")).replace("\n", "<br>")
         extra = ""
-        if cid == 1 and index == 3: extra = '<a href="/static/bpe_game.html">BPE 分词游戏 ↗</a>'
-        if cid == 1 and index == 6: extra += '<a href="/static/llm_training_game.html">LLM 训练流程模拟 ↗</a>'
-        if cid == 2 and index == 1: extra += '<a href="/static/transformer_lab.html">Transformer 实验室 ↗</a>'
-        if cid == 3 and index == 1: extra += '<a href="/static/prompt_cg_starlab/index.html">提示词工程引导 CG ↗</a>'
+        if cid == 1 and index == 3: extra = f'<a href="{page_url("/static/bpe_game.html", source)}">BPE 分词游戏 ↗</a>'
+        if cid == 1 and index == 6: extra += f'<a href="{page_url("/static/llm_training_game.html", source)}">LLM 训练流程模拟 ↗</a>'
+        if cid == 2 and index == 1: extra += f'<a href="{page_url("/static/transformer_lab.html", source)}">Transformer 实验室 ↗</a>'
+        if cid == 3 and index == 1: extra += f'<a href="{page_url("/static/prompt_cg_starlab/index.html", source)}">提示词工程引导 CG ↗</a>'
         cards.append(f'''<article class="knowledge" id="kp-{index}"><div class="knowledge-node">{index:02d}</div><details class="knowledge-card" {"open" if index == 1 else ""}><summary><h2>{title}</h2><span>EXPLORE +</span></summary><div class="knowledge-content">{content}<div class="chapter-actions">{extra}</div></div></details></article>''')
     ppt = chapter.get("ppt_url", "")
     ppt_link = f'<a class="btn" target="_blank" rel="noreferrer" href="{html.escape(ppt)}">查看本章档案 ↗</a>' if ppt else ""
-    return f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Master - {html.escape(chapter['title'])}</title><link rel="stylesheet" href="/assets/frontend.css"><link rel="stylesheet" href="/assets/chapter-demo.css"></head><body><canvas id="demo-stars" class="dash-space"></canvas>{nav()}<main class="demo-page"><section class="chapter-hero"><p class="kicker">SECTOR {cid:02d} / KNOWLEDGE EXPEDITION</p><h1>{html.escape(chapter['title'])}</h1><p>{html.escape(chapter.get('description',''))}</p><div class="hero-actions"><a class="btn btn-primary" href="/dashboard/">返回指挥舱 ↗</a>{ppt_link}</div></section><section class="knowledge-route">{''.join(cards)}</section><footer class="footer"><span>AI MASTER / STATIC CHAPTER EDITION</span><i></i><a href="/knowledge-stars/">返回知识星海 ↗</a></footer></main><script src="/assets/frontend.js"></script></body></html>'''
+    return f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Master - {html.escape(chapter['title'])}</title><link rel="stylesheet" href="{page_url('/assets/frontend.css', source)}"><link rel="stylesheet" href="{page_url('/assets/chapter-demo.css', source)}"></head><body><canvas id="demo-stars" class="dash-space"></canvas>{nav(source)}<main class="demo-page"><section class="chapter-hero"><p class="kicker">SECTOR {cid:02d} / KNOWLEDGE EXPEDITION</p><h1>{html.escape(chapter['title'])}</h1><p>{html.escape(chapter.get('description',''))}</p><div class="hero-actions"><a class="btn btn-primary" href="{page_url('/dashboard/', source)}">返回指挥舱 ↗</a>{ppt_link}</div></section><section class="knowledge-route">{''.join(cards)}</section><footer class="footer"><span>AI MASTER / STATIC CHAPTER EDITION</span><i></i><a href="{page_url('/knowledge-stars/', source)}">返回知识星海 ↗</a></footer></main><script src="{page_url('/assets/frontend.js', source)}"></script></body></html>'''
 
 
 def build_universe(courses, chapters):
@@ -112,7 +137,7 @@ def build_universe(courses, chapters):
         cid = int(course["id"]); chapter = chapters[cid]
         stars=[]
         for idx, point in enumerate(chapter.get("knowledge_points", [])):
-            stars.append({"chapter":cid,"index":idx,"title":point.get("title",f"知识点 {idx+1}"),"desc":re.sub(r"\s+"," ",str(point.get("content", "")))[:280],"status":"available","url":f"/chapter/{cid}/#kp-{idx+1}"})
+            stars.append({"chapter":cid,"index":idx,"title":point.get("title",f"知识点 {idx+1}"),"desc":re.sub(r"\s+"," ",str(point.get("content", "")))[:280],"status":"available","url":page_url(f"/chapter/{cid}/#kp-{idx+1}", "knowledge-stars/index.html")})
         connections=[]
         for idx in range(max(0,len(stars)-1)): connections.append([idx,idx+1,"sequence"])
         if len(stars)>3: connections.extend([[0,2,"concept"],[1,3,"concept"]])
@@ -137,6 +162,22 @@ def patch_static_assets():
     (FRONTEND / "static" / "js" / "learning_coach_static.js").write_text(static_coach_js(), encoding="utf-8")
 
 
+def rewrite_project_urls():
+    """Make legacy static pages work from both local root and GitHub project path."""
+    route_re = re.compile(r'(["\'`])/(assets|data|static|dashboard|knowledge-stars|chapter|canvas|playground|transition)([^"\'` ]*)')
+    for path in FRONTEND.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in {".html", ".js", ".css"}:
+            continue
+        source = path.relative_to(FRONTEND).as_posix()
+        text = path.read_text(encoding="utf-8")
+        text = route_re.sub(lambda match: match.group(1) + page_url("/" + match.group(2) + match.group(3), source), text)
+        text = text.replace("llm-training-game.html", "llm_training_game.html")
+        text = text.replace("bpe-game.html", "bpe_game.html")
+        if path.parts[-2:] in {("rag_cg", "index.html"), ("prompt_cg_starlab", "index.html"), ("agentic_cg", "index.html"), ("claude_cg", "index.html")}:
+            text = text.replace('"/vite.svg"', '"vite.svg"').replace("'/vite.svg'", "'vite.svg'")
+        path.write_text(text, encoding="utf-8")
+
+
 def main():
     courses = load("courses_index.json")
     chapters = {i: load(f"chapter_{i:02d}.json") for i in range(1, 11)}
@@ -148,12 +189,18 @@ def main():
     write("dashboard/index.html", build_dashboard(courses))
     for cid, chapter in chapters.items(): write(f"chapter/{cid}/index.html", chapter_page(chapter))
     write("data/knowledge-universe.json", json.dumps(build_universe(courses, chapters), ensure_ascii=False, indent=2))
-    write("knowledge-stars/index.html", (FRONTEND / "static" / "knowledge_stars.html").read_text(encoding="utf-8"))
-    write("canvas/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/assets/frontend.css"><title>AI Master - 思维画布</title></head><body>''' + nav() + '''<main class="demo-page"><section class="chapter-hero"><p class="kicker">KNOWLEDGE CANVAS</p><h1>思维画布</h1><p>前端复现版保留知识导航与互动页面。完整的云端保存、AI 辅助生成与个人数据同步需要后端服务。</p><a class="btn btn-primary" href="/dashboard/">返回指挥舱 ↗</a></section></main></body></html>''')
-    write("playground/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/assets/frontend.css"><link rel="stylesheet" href="/assets/chapter-demo.css"><title>AI Master - 训练舱</title></head><body>''' + nav() + '''<main class="demo-page"><section class="chapter-hero"><p class="kicker">PRACTICE BAY</p><h1>训练舱</h1><p>选择任一章节进入知识节点和实验页面。本前端版本不保存答题记录，但所有课程导航、交互实验与高级页面均可直接打开。</p><a class="btn btn-primary" href="/dashboard/#route">选择学习章节 ↗</a></section></main></body></html>''')
-    write("transition/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/dashboard/"><title>AI Master</title></head><body></body></html>''')
+    atlas = (FRONTEND / "static" / "knowledge_stars.html").read_text(encoding="utf-8")
+    atlas = atlas.replace('href="css/knowledge_stars.css"', 'href="../static/css/knowledge_stars.css"')
+    atlas = atlas.replace('src="bgm.mp3"', 'src="../static/bgm.mp3"')
+    atlas = atlas.replace('src="vendor/three.r128.min.js"', 'src="../static/vendor/three.r128.min.js"')
+    atlas = atlas.replace('src="js/knowledge_stars.js"', 'src="../static/js/knowledge_stars.js"')
+    write("knowledge-stars/index.html", atlas)
+    write("canvas/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/frontend.css"><title>AI Master - 思维画布</title></head><body>''' + nav("canvas/index.html") + '''<main class="demo-page"><section class="chapter-hero"><p class="kicker">KNOWLEDGE CANVAS</p><h1>思维画布</h1><p>前端复现版保留知识导航与互动页面。完整的云端保存、AI 辅助生成与个人数据同步需要后端服务。</p><a class="btn btn-primary" href="../dashboard/">返回指挥舱 ↗</a></section></main></body></html>''')
+    write("playground/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/frontend.css"><link rel="stylesheet" href="../assets/chapter-demo.css"><title>AI Master - 训练舱</title></head><body>''' + nav("playground/index.html") + '''<main class="demo-page"><section class="chapter-hero"><p class="kicker">PRACTICE BAY</p><h1>训练舱</h1><p>选择任一章节进入知识节点和实验页面。本前端版本不保存答题记录，但所有课程导航、交互实验与高级页面均可直接打开。</p><a class="btn btn-primary" href="../dashboard/#route">选择学习章节 ↗</a></section></main></body></html>''')
+    write("transition/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../dashboard/"><title>AI Master</title></head><body></body></html>''')
     write("start-demo.bat", '''@echo off\nsetlocal\ncd /d "%~dp0"\necho AI Master frontend demo: http://127.0.0.1:8080/dashboard/\nstart "" http://127.0.0.1:8080/dashboard/\npython -m http.server 8080\n''')
     patch_static_assets()
+    rewrite_project_urls()
     print("Generated static frontend routes and data.")
 
 

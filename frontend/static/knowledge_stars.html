@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#030510" />
   <title>知识星海 · AI Master</title>
-  <link rel="stylesheet" href="/static/css/knowledge_stars.css" />
+  <link rel="stylesheet" href="css/knowledge_stars.css" />
 </head>
 <body data-view="universe">
   <canvas id="space" aria-label="可交互知识星海"></canvas>
@@ -35,14 +35,14 @@
     <p class="panel-code" id="panelCode">STAR / 00</p><div class="planet-preview" id="planetPreview"><i></i><b></b></div>
     <h2 id="panelTitle"></h2><p id="panelDesc"></p>
     <div class="relation-list" id="relationList"></div>
-    <div class="panel-actions"><button class="listen-button" id="listenButton" type="button">聆听星语</button><a class="learn-button" id="learnButton" href="/dashboard/">进入知识学习 <span>→</span></a></div>
+    <div class="panel-actions"><button class="listen-button" id="listenButton" type="button">聆听星语</button><a class="learn-button" id="learnButton" href="../dashboard/">进入知识学习 <span>→</span></a></div>
   </aside>
 
   <div class="loading" id="loading"><div class="loading-orbit"><i></i></div><p>正在校准知识星图</p><span id="loadingNote">CONNECTING TO LOCAL ATLAS</span></div>
   <div class="error-card" id="errorCard"><span>信号中断</span><h2>知识星图暂时无法抵达</h2><p id="errorMessage">请检查本地服务后重试。</p><button id="retryButton" type="button">重新连接</button></div>
   <div class="toast" id="toast" role="status"></div>
-  <audio id="bgm" loop preload="none" src="/static/bgm.mp3"></audio>
-  <script src="/static/vendor/three.r128.min.js"></script>
-  <script src="/static/js/knowledge_stars.js"></script>
+  <audio id="bgm" loop preload="none" src="bgm.mp3"></audio>
+  <script src="vendor/three.r128.min.js"></script>
+  <script src="js/knowledge_stars.js"></script>
 </body>
 </html>
