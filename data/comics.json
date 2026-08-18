@@ -1,0 +1,89 @@
+{
+  "1_0": {
+    "title": "揭开大语言模型的神秘面纱",
+    "chapter_title": "大模型基础原理",
+    "kp_title": "什么是大语言模型（LLM）？",
+    "panels": [
+      {
+        "panel_id": 1,
+        "character": "teacher",
+        "character_name": "蛇蛇老师",
+        "avatar": "🤖",
+        "dialog": "同学们好！今天我们来聊聊最热门的话题——大语言模型，也就是 LLM。你知道你平时用的 ChatGPT、Claude，背后都是 LLM 在驱动！",
+        "expression": "happy",
+        "scene": "classroom",
+        "knowledge_bite": "LLM 是当前 AI 的核心技术"
+      },
+      {
+        "panel_id": 2,
+        "character": "student",
+        "character_name": "小码",
+        "avatar": "🐣",
+        "dialog": "老师，大语言模型到底是个什么东西？我听说它读了全世界的书，是真的吗？",
+        "expression": "questioning",
+        "scene": "classroom",
+        "knowledge_bite": "学生好奇 LLM 的本质"
+      },
+      {
+        "panel_id": 3,
+        "character": "teacher",
+        "character_name": "蛇蛇老师",
+        "avatar": "🤖",
+        "dialog": "可以这么理解！大语言模型就像一个超级聪明的「文字接龙大师」。它通过阅读海量文本——互联网、书籍、论文、代码，学会了人类语言的规律和模式。",
+        "expression": "explaining",
+        "scene": "whiteboard",
+        "knowledge_bite": "LLM 是通过海量文本训练的文字接龙大师"
+      },
+      {
+        "panel_id": 4,
+        "character": "student",
+        "character_name": "小码",
+        "avatar": "🐣",
+        "dialog": "文字接龙？那不是很简单吗？它怎么就能写诗、编程、回答问题呢？",
+        "expression": "thinking",
+        "scene": "thought_bubble",
+        "knowledge_bite": "学生疑惑简单原理如何产生复杂能力"
+      },
+      {
+        "panel_id": 5,
+        "character": "teacher",
+        "character_name": "蛇蛇老师",
+        "avatar": "🤖",
+        "dialog": "问得好！LLM 内部就像一个「黑盒魔法工厂」。它的核心是 Transformer 架构，里面有数千亿个参数协同工作。当你输入一个问题，它会经历几个步骤……",
+        "expression": "explaining",
+        "scene": "whiteboard",
+        "knowledge_bite": "LLM 内部是复杂的神经网络黑盒"
+      },
+      {
+        "panel_id": 6,
+        "character": "teacher",
+        "character_name": "蛇蛇老师",
+        "avatar": "🤖",
+        "dialog": "第一步，把你的文字拆成小碎片（Token）。第二步，用自注意力机制一次性理解所有词语之间的关系。第三步，预测最可能的下一个词。然后重复第三步，逐字生成完整回答！",
+        "expression": "explaining",
+        "scene": "computer_screen",
+        "knowledge_bite": "LLM 工作流程：Token化 → 理解语义 → 逐词预测生成"
+      },
+      {
+        "panel_id": 7,
+        "character": "student",
+        "character_name": "小码",
+        "avatar": "🐣",
+        "dialog": "所以它其实不是真的「理解」，而是超级厉害的模式匹配和概率预测？那它会有不懂的时候吗？",
+        "expression": "inspired",
+        "scene": "thought_bubble",
+        "knowledge_bite": "学生意识到 LLM 本质是概率预测"
+      },
+      {
+        "panel_id": 8,
+        "character": "teacher",
+        "character_name": "蛇蛇老师",
+        "avatar": "🤖",
+        "dialog": "没错！LLM 本质上是一个基于统计的概率模型。它会「幻觉」，会编造事实，也会犯低级错误。所以我们需要学习提示词工程、RAG 等技巧来驾驭它。这就是这门课的意义！",
+        "expression": "happy",
+        "scene": "classroom",
+        "knowledge_bite": "LLM 有局限性，学习驾驭技巧很重要"
+      }
+    ]
+  }
+}

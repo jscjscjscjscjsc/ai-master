@@ -1,0 +1,941 @@
+{
+  "success": true,
+  "summary": {
+    "galaxies": 10,
+    "stars": 57,
+    "completed": 0
+  },
+  "galaxies": [
+    {
+      "id": "chapter-1",
+      "chapter": 1,
+      "name": "大模型基础原理",
+      "name_en": "SECTOR 01",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 1,
+          "index": 0,
+          "title": "什么是大语言模型（LLM）？",
+          "desc": "<h3>定义与本质</h3><p>大语言模型（Large Language Model, LLM）是一种基于<strong>深度学习</strong>的神经网络模型，通过在<strong>海量文本数据</strong>上进行自监督学习，掌握人类语言的统计规律、语法结构和语义关系。其核心思想是：给定上文，预测下文——即<strong>自回归语言建模</strong>（Autoregressive Language Modeling, ARLM）。</p><h3>自回归生成原理</h3><p>LLM 的核心数学框架是条件概率链式法则（Chain Rule）：",
+          "status": "available",
+          "url": "../chapter/1/#kp-1"
+        },
+        {
+          "chapter": 1,
+          "index": 1,
+          "title": "LLM 的核心能力与局限性",
+          "desc": "<h3>基础能力矩阵</h3><ul><li><strong>文本生成</strong>：基于概率分布的自回归生成，每个 token 的预测都依赖于前面的全部上下文。</li><li><strong>语言理解</strong>：通过注意力机制捕获长距离依赖关系，理解文本的语义、情感、意图甚至言外之意。</li><li><strong>上下文学习</strong>（In-Context Learning）：不需要梯度更新，仅通过提示词中的示例就能学习新任务。研究表明 ICL 相当于在隐式地执行梯度下降。</li><li><strong>代码生成与推理</s",
+          "status": "available",
+          "url": "../chapter/1/#kp-2"
+        },
+        {
+          "chapter": 1,
+          "index": 2,
+          "title": "Token 与 Tokenization 算法（BPE）",
+          "desc": "<h3>Token 的本质</h3><p>Token 是 LLM 处理文本的<strong>最小语义单位</strong>。模型不是按字符或单词处理文本，而是通过 Tokenizer（分词器）将文本映射为整数序列。</p><h3>为什么需要 Tokenization？</h3><p>神经网络无法直接处理文本，需要将文本转换为数字序列。Tokenization 解决了三个关键问题：(1) 处理任意长度的输入；(2) 处理未知词（OOV）；(3) 在模型效率和表达能力间取得平衡。</p><h3>BPE（Byte Pair Encoding）算法详解</h3>",
+          "status": "available",
+          "url": "../chapter/1/#kp-3"
+        },
+        {
+          "chapter": 1,
+          "index": 3,
+          "title": "预训练与微调",
+          "desc": "<h3>预训练（Pre-training）—— 构建基础能力</h3><p>预训练是在<strong>海量无标注数据</strong>上训练模型的核心阶段：</p><pre><code># 预训练目标函数（自回归语言建模） Loss = -Σ log P(token_i | token_1, ..., token_{i-1}) # 即：最大化给定上文条件下，下一个 token 的概率</code></pre><ul><li><strong>训练数据</strong>：CommonCrawl（数万亿 token）、书籍、论文、代码、维基百科等</li><l",
+          "status": "available",
+          "url": "../chapter/1/#kp-4"
+        },
+        {
+          "chapter": 1,
+          "index": 4,
+          "title": "缩放定律（Scaling Laws）",
+          "desc": "<h3>核心发现</h3><p>2020 年 OpenAI 发表的 Scaling Laws 揭示了一个关键规律：模型的性能与<strong>模型参数量 N、数据量 D、计算量 C</strong> 之间存在可预测的幂律关系。</p><pre><code># 缩放定律的核心公式（幂律关系） Loss(N) ≈ a/N^α + c （损失随参数量增大而下降） Loss(D) ≈ b/D^β + c （损失随数据量增大而下降） # 其中 α ≈ 0.076, β ≈ 0.095</code></pre><h3>Chinchilla 最优计算分配</h3><p",
+          "status": "available",
+          "url": "../chapter/1/#kp-5"
+        },
+        {
+          "chapter": 1,
+          "index": 5,
+          "title": "RLHF 与人类对齐",
+          "desc": "<h3>为什么需要对齐？</h3><p>预训练模型的目标是「预测下一个 token」，而非「输出有用且安全的回答」。对齐（Alignment）的目标是让模型行为符合人类价值观和期望。</p><h3>RLHF 三阶段详解</h3><pre><code>阶段一：监督微调（SFT） 收集人工编写的示范数据（问题+理想回答） 在预训练模型上做标准的监督学习 阶段二：训练奖励模型（Reward Model） 收集对比数据：对同一问题，让模型生成多个回答 人工排序（A > B > C > D） 训练一个分类模型预测人类偏好 RM 损失：Loss = -log(σ(r",
+          "status": "available",
+          "url": "../chapter/1/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0x6ee7f5",
+        "0x2f75c9"
+      ]
+    },
+    {
+      "id": "chapter-2",
+      "chapter": 2,
+      "name": "Transformer 架构详解",
+      "name_en": "SECTOR 02",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 2,
+          "index": 0,
+          "title": "Transformer 整体架构",
+          "desc": "<h3>为什么是 Transformer？</h3><p>2017 年 Google 在《Attention Is All You Need》中提出 Transformer，它用<strong>自注意力机制</strong>替代了传统的 RNN/LSTM，解决了长序列建模和并行化训练两大难题。</p><h3>架构概览</h3><p>Transformer 采用 Encoder-Decoder 结构（现代 LLM 多只用 Decoder）：</p><ul><li><strong>Encoder</strong>：将输入序列编码为上下文表示</li><li>",
+          "status": "available",
+          "url": "../chapter/2/#kp-1"
+        },
+        {
+          "chapter": 2,
+          "index": 1,
+          "title": "自注意力机制（Self-Attention）",
+          "desc": "<h3>核心思想</h3><p>Self-Attention 让输入序列中的<strong>每个位置都与其他所有位置建立直接联系</strong>，捕获全局依赖关系。与 RNN 的逐步传递不同，Self-Attention 一步到位建立所有位置间的连接。</p><h3>QKV 机制详解</h3><pre><code># 每个 Token 产生三个向量 Q (Query) = X × W_Q # 查询：我在找什么？ K (Key) = X × W_K # 键：我有什么可匹配的？ V (Value) = X × W_V # 值：我的内容是什么？ # 注意力计",
+          "status": "available",
+          "url": "../chapter/2/#kp-2"
+        },
+        {
+          "chapter": 2,
+          "index": 2,
+          "title": "注意力公式推导与数学原理",
+          "desc": "<h3>为什么需要缩放？</h3><p>假设 q 和 k 是 d_k 维的独立随机向量，每个分量的均值为 0、方差为 1，则点积 q·k 的均值为 0、方差为 d_k。方差越大，softmax 的输入值就越大，导致梯度趋近于 0。</p><pre><code># 证明（简化）： q · k = Σ_{i=1}^{d_k} q_i · k_i Var(q_i · k_i) = 1（假设 q_i, k_i ~ N(0,1) 且独立） Var(q · k) = Σ Var(q_i · k_i) = d_k Std(q · k) = √d_k # 因此除以 √d",
+          "status": "available",
+          "url": "../chapter/2/#kp-3"
+        },
+        {
+          "chapter": 2,
+          "index": 3,
+          "title": "多头注意力与位置编码（RoPE）",
+          "desc": "<h3>多头注意力（Multi-Head Attention）</h3><p>不是只做一次注意力计算，而是<strong>并行做多次</strong>，每次关注不同的方面：</p><pre><code>MultiHead(Q, K, V) = Concat(head_1, ..., head_h) × W_O head_i = Attention(Q × W_{Qi}, K × W_{Ki}, V × W_{Vi}) # 其中每个 head_i 的维度为 d_k/h # 总计算量与单头注意力基本相同（分而治之）</code></pre><p>不同「头」可",
+          "status": "available",
+          "url": "../chapter/2/#kp-4"
+        },
+        {
+          "chapter": 2,
+          "index": 4,
+          "title": "KV-Cache 与推理优化",
+          "desc": "<h3>什么是 KV-Cache？</h3><p>在自回归生成中，每步生成一个新 token，但前面的 token 已经计算过的 K 和 V 矩阵可以<strong>缓存复用</strong>，避免重复计算。</p><pre><code># 无 KV-Cache（每一步重算所有） step 1: 计算 token_1 的 K,V step 2: 计算 token_1, token_2 的 K,V ← token_1 重复计算！ step 3: 计算 token_1, token_2, token_3 的 K,V ← 越来越慢 # 有 KV-Cache s",
+          "status": "available",
+          "url": "../chapter/2/#kp-5"
+        },
+        {
+          "chapter": 2,
+          "index": 5,
+          "title": "FlashAttention 原理",
+          "desc": "<h3>FlashAttention 的核心问题</h3><p>标准注意力计算在 GPU 上存在显存带宽瓶颈：</p><pre><code># 标准实现 S = QK^T # (n×d) × (d×n) = n×n P = softmax(S) # n×n ← 写入 HBM（高带宽显存） O = P × V # n×n × n×d = n×d # 两次 HBM 读写，S 和 P 都是 n×n 矩阵</code></pre><h3>FlashAttention 的解决思路</h3><p>FlashAttention 通过<strong>分块计算（Tilin",
+          "status": "available",
+          "url": "../chapter/2/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0xba9aff",
+        "0x7148bf"
+      ]
+    },
+    {
+      "id": "chapter-3",
+      "chapter": 3,
+      "name": "提示词工程基础",
+      "name_en": "SECTOR 03",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 3,
+          "index": 0,
+          "title": "什么是提示词工程？",
+          "desc": "<h3>定义</h3><p>提示词工程（Prompt Engineering）是<strong>设计和优化输入给 LLM 的提示文本</strong>，以引导模型生成期望输出的系统性方法。它既是艺术（需要直觉和创造力）也是科学（有可重复的方法论）。</p><h3>为什么重要？</h3><ul><li>同一模型，不同提示词，输出质量差异可达 10 倍以上</li><li>好的提示词能让小模型（7B）超越差提示词下的大模型（175B）</li><li>无需微调即可定制模型行为，是成本最低的 AI 优化手段</li><li>是当前 AI 应用开发的核心技能，直",
+          "status": "available",
+          "url": "../chapter/3/#kp-1"
+        },
+        {
+          "chapter": 3,
+          "index": 1,
+          "title": "提示词编写核心原则",
+          "desc": "<h3>四大黄金法则</h3><ol><li><strong>清晰明确</strong>：避免模糊，具体说明需求<pre><code>错误: \"写一个排序\" 正确: \"用 Python 实现快速排序算法，要求包含详细注释， 时间复杂度分析，并给出 3 个测试用例\"</code></pre></li><li><strong>提供上下文</strong>：告知背景和目标<pre><code>错误: \"翻译这句话\" 正确: \"将以下技术文档从英文翻译成中文，保持专业术语 的准确性，面向有 3 年经验的软件工程师\"</code></pre></li><li><s",
+          "status": "available",
+          "url": "../chapter/3/#kp-2"
+        },
+        {
+          "chapter": 3,
+          "index": 2,
+          "title": "角色扮演提示法",
+          "desc": "<h3>为什么角色扮演有效？</h3><p>给模型设定角色会激活训练数据中与该角色相关的<strong>知识分布和语言风格</strong>。本质上，角色设定相当于在隐式地选择一条推理路径——模型会调用其参数空间中与角色相关的子网络。</p><h3>经典角色模板</h3><pre><code># 专家角色 \"你是一位拥有 20 年经验的 {领域} 专家。 请以专业、严谨的风格回答以下问题：\" # 导师角色 \"你是一位耐心的 {学科} 老师。请用通俗易懂的方式 向初学者解释以下概念，使用类比和实例：\" # 批判性角色 \"请用苏格拉底式提问法，通过一系列引导",
+          "status": "available",
+          "url": "../chapter/3/#kp-3"
+        },
+        {
+          "chapter": 3,
+          "index": 3,
+          "title": "Zero-shot / Few-shot / Many-shot",
+          "desc": "<h3>Zero-shot（零样本）</h3>不给示例，直接描述任务。适用于简单、常见的任务，模型已具备能力。<pre><code>\"将以下句子分类为积极、消极或中性： '这部电影让我非常感动'\"</code></pre><h3>Few-shot（少样本）</h3>提供 1-5 个示例，让模型学习任务模式。<pre><code>\"分类句子情感： 句子：'服务态度很差' → 消极 句子：'性价比还不错' → 积极 句子：'今天天气阴天' → 中性 句子：'产品质量超出预期' →\"</code></pre><h3>Many-shot（多样本）</h3>提供几",
+          "status": "available",
+          "url": "../chapter/3/#kp-4"
+        },
+        {
+          "chapter": 3,
+          "index": 4,
+          "title": "Prompt 模式系统性分类",
+          "desc": "<h3>六大 Prompt 模式</h3><ol><li><strong>指令模式</strong>：直接告诉模型做什么，最简单直接<pre><code>\"列出 Python 中 5 种常用设计模式及其适用场景\"</code></pre></li><li><strong>角色模式</strong>：赋予角色设定后提问<pre><code>\"你是一名资深架构师，请分析这个系统的扩展性问题\"</code></pre></li><li><strong>示例模式</strong>：通过示例让模型学习模式和格式<pre><code>\"以下是一些示例，请按相同格式输",
+          "status": "available",
+          "url": "../chapter/3/#kp-5"
+        },
+        {
+          "chapter": 3,
+          "index": 5,
+          "title": "复杂约束工程与输出控制",
+          "desc": "<h3>输出格式控制</h3><pre><code># JSON 输出控制 \"请以 JSON 格式返回，严格按照以下 schema： { 'sentiment': 'positive|negative|neutral', 'confidence': 0.0-1.0, 'evidence': ['引文1', '引文2'] }\"</code></pre><h3>约束技术</h3><ul><li><strong>分隔符</strong>：用 XML/自定义标签分割不同部分（<text>...</text>）</li><li><strong>结构化输出</str",
+          "status": "available",
+          "url": "../chapter/3/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0xffce7b",
+        "0xc96a39"
+      ]
+    },
+    {
+      "id": "chapter-4",
+      "chapter": 4,
+      "name": "驾驭框架与智能体概念",
+      "name_en": "SECTOR 04",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 4,
+          "index": 0,
+          "title": "LangChain 核心：Chain 与 Prompt 模板",
+          "desc": "<h3>为什么需要框架？</h3><p>直接调用 LLM API 只能做单轮问答。一个完整的 AI 应用需要：<strong>提示词管理、多步推理、工具调用、记忆管理、流式输出</strong>。框架将这些能力封装为可组合的模块。</p><h3>LangChain 核心概念</h3><p>LangChain 是最流行的 LLM 应用框架，核心抽象是 <strong>Chain（链）</strong>——将多个组件串联为一条处理流水线。</p><pre><code>from langchain.prompts import ChatPromptTempla",
+          "status": "available",
+          "url": "../chapter/4/#kp-1"
+        },
+        {
+          "chapter": 4,
+          "index": 1,
+          "title": "LlamaIndex：数据连接与 RAG 框架",
+          "desc": "<h3>LangChain vs LlamaIndex</h3><table><tr><th>维度</th><th>LangChain</th><th>LlamaIndex</th></tr><tr><td>定位</td><td>通用 LLM 应用框架</td><td>数据索引与检索框架</td></tr><tr><td>强项</td><td>Chain 编排、Agent、工具调用</td><td>文档解析、索引构建、检索增强</td></tr><tr><td>核心抽象</td><td>Chain / Agent / Tool</td><td>Index",
+          "status": "available",
+          "url": "../chapter/4/#kp-2"
+        },
+        {
+          "chapter": 4,
+          "index": 2,
+          "title": "AI Agent 架构：感知-决策-执行循环",
+          "desc": "<h3>什么是 AI Agent？</h3><p>Agent（智能体）是一个<strong>能自主感知环境、制定计划、调用工具、执行动作</strong>的 AI 系统。不同于简单的问答模型，Agent 能自己决定「下一步该做什么」。</p><h3>Agent 核心循环（ReAct 范式）</h3><pre><code>class AIAgent: def __init__(self, llm, tools): self.llm = llm self.tools = tools self.memory = [] def run(self, task): ",
+          "status": "available",
+          "url": "../chapter/4/#kp-3"
+        },
+        {
+          "chapter": 4,
+          "index": 3,
+          "title": "工具调用（Function Calling）深度实践",
+          "desc": "<h3>Function Calling 原理</h3><p>LLM 不直接执行函数，而是输出 JSON 描述「调用哪个函数、传什么参数」，由你的代码实际执行。</p><pre><code>tools = [{ \"type\": \"function\", \"function\": { \"name\": \"search_database\", \"description\": \"按姓名/邮箱/ID搜索用户数据库\", \"parameters\": { \"type\": \"object\", \"properties\": { \"query\": {\"type\": \"string\", ",
+          "status": "available",
+          "url": "../chapter/4/#kp-4"
+        },
+        {
+          "chapter": 4,
+          "index": 4,
+          "title": "多 Agent 协作与通信机制",
+          "desc": "<h3>单 Agent 的局限与多 Agent 架构</h3><p>单个 Agent 面对复杂项目时：上下文超限、不同任务需不同专长、缺乏第二意见。</p><h3>多 Agent 模式</h3><pre><code># 层级式（Manager-Worker） class MultiAgentSystem: def __init__(self): self.manager = Agent(role=\"项目经理\") self.coder = Agent(role=\"代码专家\", tools=[\"write_code\"]) self.reviewer = Ag",
+          "status": "available",
+          "url": "../chapter/4/#kp-5"
+        },
+        {
+          "chapter": 4,
+          "index": 5,
+          "title": "生产级框架选型与工程化落地",
+          "desc": "<h3>框架选型决策</h3><pre><code>你需要什么？ ├── RAG 问答 → LlamaIndex（数据索引）或 LangChain + 向量库 ├── Agent 系统 → LangChain / LangGraph（流程编排） ├── 可视化编排 → Dify / Coze（低代码平台） ├── 生产 API → FastAPI + OpenAI SDK（轻量可控） ├── 多模型调度 → LiteLLM（统一 API 代理） └── 成本优化 → 缓存 + 模型路由 + Token 预算</code></pre><h3>原型→生产的关",
+          "status": "available",
+          "url": "../chapter/4/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0x75efbd",
+        "0x239b77"
+      ]
+    },
+    {
+      "id": "chapter-5",
+      "chapter": 5,
+      "name": "Claude Code 入门细致讲解",
+      "name_en": "SECTOR 05",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 5,
+          "index": 0,
+          "title": "Claude Code 安装与首次配置",
+          "desc": "<h3>什么是 Claude Code？</h3><p>Claude Code 是 Anthropic 推出的<strong>命令行 AI 编程助手</strong>，直接在终端中与 Claude 协作编程。它不是一个简单的聊天工具——它能<strong>读取整个项目、编辑文件、执行命令、管理 Git</strong>，是一个真正的 AI 编程搭档。</p><h3>安装步骤</h3><pre><code># Windows (PowerShell 管理员模式) npm install -g @anthropic-ai/claude-code # macO",
+          "status": "available",
+          "url": "../chapter/5/#kp-1"
+        },
+        {
+          "chapter": 5,
+          "index": 1,
+          "title": "核心命令与斜杠指令",
+          "desc": "<h3>启动与基础命令</h3><pre><code># 在项目目录启动 claude # 交互模式 claude -p \"解释这个项目\" # 单次提问 claude -p \"修复 login 的 bug\" --model opus # 指定模型 claude --resume # 恢复上次会话 # 管道模式 cat error.log | claude -p \"分析这些错误\" git diff | claude -p \"review 这些改动\"</code></pre><h3>核心斜杠命令</h3><table><tr><th>命令</th><th>功",
+          "status": "available",
+          "url": "../chapter/5/#kp-2"
+        },
+        {
+          "chapter": 5,
+          "index": 2,
+          "title": "Hooks 系统：事件驱动的自动化",
+          "desc": "<h3>什么是 Hooks？</h3><p>Hooks 是 Claude Code 的<strong>事件驱动扩展机制</strong>。在特定事件发生时自动触发自定义脚本或 Prompt，实现工作流自动化。类似于 Git Hooks 但作用于 Claude Code 的操作生命周期。</p><h3>Hook 事件类型</h3><pre><code>// .claude/settings.json { \"hooks\": { \"PreToolUse\": [{ // 工具执行前 \"matcher\": \"Bash\", // 仅匹配 Bash 工具 \"comma",
+          "status": "available",
+          "url": "../chapter/5/#kp-3"
+        },
+        {
+          "chapter": 5,
+          "index": 3,
+          "title": "Skills 开发：自定义技能体系",
+          "desc": "<h3>Skills 是什么？</h3><p>Skills 是 Claude Code 的<strong>可复用专业能力模块</strong>——将特定领域的知识、工作流程和最佳实践封装为可加载的「技能卡」。当 Claude 识别到任务匹配时，自动加载相应 Skill 的完整上下文。</p><h3>Skill 文件结构</h3><pre><code># .claude/skills/my-skill.md --- name: code-review description: 代码审查专用技能 --- # Code Review Skill ## 审查维度",
+          "status": "available",
+          "url": "../chapter/5/#kp-4"
+        },
+        {
+          "chapter": 5,
+          "index": 4,
+          "title": "MCP 协议：连接外部工具与数据",
+          "desc": "<h3>MCP（Model Context Protocol）</h3><p>MCP 是 Anthropic 推出的<strong>开放协议标准</strong>，让 Claude 能安全地连接外部工具和数据源。就像 USB-C 统一了硬件接口——MCP 统一了 AI 与外部系统的交互方式。</p><h3>MCP 架构</h3><pre><code>┌──────────┐ MCP 协议 ┌──────────────┐ │ Claude │ ◄────────────► │ MCP Server │ │ (Host) │ JSON-RPC │ (数据库",
+          "status": "available",
+          "url": "../chapter/5/#kp-5"
+        },
+        {
+          "chapter": 5,
+          "index": 5,
+          "title": "Claude Code 项目实战全流程",
+          "desc": "<h3>实战：用 Claude Code 构建一个 Web API</h3><pre><code># 1. 项目初始化 mkdir my-api && cd my-api claude > 帮我初始化一个 FastAPI 项目，包含用户认证模块 > （Claude 会自动创建项目结构、安装依赖、写代码） # 2. 查看 CLAUDE.md——Claude 自动生成的项目文档 cat CLAUDE.md # 3. 让 Claude 理解你的代码风格 > /init # 生成或更新 CLAUDE.md # 4. 迭代开发 > 给 /users 接口添加分页和",
+          "status": "available",
+          "url": "../chapter/5/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0xff92bf",
+        "0xb44c83"
+      ]
+    },
+    {
+      "id": "chapter-6",
+      "chapter": 6,
+      "name": "RAG 技术详解",
+      "name_en": "SECTOR 06",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 6,
+          "index": 0,
+          "title": "RAG 架构设计与核心流程",
+          "desc": "<h3>为什么需要 RAG？</h3><p>大语言模型虽然知识渊博，但存在两个致命缺陷：<strong>知识截止</strong>（训练数据有截止日期，无法感知新知识）和<strong>幻觉</strong>（可能编造看似合理但事实错误的内容）。RAG（Retrieval-Augmented Generation）通过<strong>检索外部知识库</strong>来增强生成能力，像一个学者在回答问题前先去查资料。</p><pre><code># RAG 核心三阶段 # 1. 索引（Indexing）：将文档切片、向量化，构建可检索的知识库 # 2. 检",
+          "status": "available",
+          "url": "../chapter/6/#kp-1"
+        },
+        {
+          "chapter": 6,
+          "index": 1,
+          "title": "向量数据库与 Embedding",
+          "desc": "<h3>Embedding：把语义变成数学</h3><p>Embedding 是将文本、图片等非结构化数据映射到高维向量空间的技术。语义相近的文本在向量空间中距离更近——这是 RAG 检索的数学基础。</p><pre><code># Embedding 的核心思想：语义相似度 = 向量距离 # 模型：text-embedding-3-small (OpenAI), bge-large (BAAI), # m3e (Moka), stella (infgrad) # 输出维度：384 ~ 3072 维向量 def cosine_similarity(vec",
+          "status": "available",
+          "url": "../chapter/6/#kp-2"
+        },
+        {
+          "chapter": 6,
+          "index": 2,
+          "title": "检索策略：从朴素到智能",
+          "desc": "<h3>检索方法的进化谱系</h3><p>RAG 的检索策略经历了从简单到复杂的演进，理解每种方法的优劣是构建高质量 RAG 系统的关键。</p><h3>1. 稠密检索（Dense Retrieval）</h3><p>用双编码器（Dual Encoder）架构将查询和文档分别编码为向量，通过向量相似度检索。</p><pre><code>class DenseRetriever: def __init__(self, model_name=\"BAAI/bge-large-zh\"): self.encoder = SentenceTransformer(mo",
+          "status": "available",
+          "url": "../chapter/6/#kp-3"
+        },
+        {
+          "chapter": 6,
+          "index": 3,
+          "title": "高阶 RAG 范式",
+          "desc": "<h3>RAG 的智能进化</h3><p>基础 RAG（检索→生成）虽然有效，但在复杂场景下暴露出诸多问题：检索结果不相关、多步推理困难、无法自我修正。于是，一系列高阶 RAG 范式应运而生。</p><h3>1. Corrective RAG（CRAG）</h3><p>CRAG 在检索后增加<strong>质量评估</strong>环节：如果检索结果不可靠，自动触发网络搜索或知识回退。</p><pre><code>def corrective_rag(question): docs = retrieve(question) relevance = eva",
+          "status": "available",
+          "url": "../chapter/6/#kp-4"
+        },
+        {
+          "chapter": 6,
+          "index": 4,
+          "title": "RAG 评估与质量保障",
+          "desc": "<h3>RAG 评估的三维框架</h3><p>一个 RAG 系统的好坏不能只看最终回答是否准确，需要从三个独立维度评估：</p><pre><code># RAG 评估三维度 # 1. Retrieval Quality（检索质量） # - Context Relevance：检索到的上下文与问题的相关度 # - Hit Rate：关键信息是否被成功召回 # - MRR (Mean Reciprocal Rank)：正确答案的排位 # # 2. Generation Quality（生成质量） # - Answer Relevance：回答是否直接回应问题",
+          "status": "available",
+          "url": "../chapter/6/#kp-5"
+        },
+        {
+          "chapter": 6,
+          "index": 5,
+          "title": "RAG 的局限性与未来方向",
+          "desc": "<h3>RAG 的先天局限</h3><p>RAG 并非万能。在追求 RAG 的同时，我们需要清醒认识它的边界：</p><ul><li><strong>「垃圾进，垃圾出」</strong>：如果知识库本身质量不高、信息过时或存在偏见，RAG 只是让 LLM 更高效地重复这些错误。RAG 增强的是<strong>知识的可信度</strong>，而非知识的<strong>真理性</strong>。</li><li><strong>检索瓶颈</strong>：再好的检索算法也有召回极限。如果关键信息不在 top-k 中，后续生成再好也无济于事。</li><li>",
+          "status": "available",
+          "url": "../chapter/6/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0x94aeff",
+        "0x4b55bc"
+      ]
+    },
+    {
+      "id": "chapter-7",
+      "chapter": 7,
+      "name": "阿里云ACP大模型认证（上）",
+      "name_en": "SECTOR 07",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 7,
+          "index": 0,
+          "title": "阿里云ACP认证概述",
+          "desc": "",
+          "status": "available",
+          "url": "../chapter/7/#kp-1"
+        },
+        {
+          "chapter": 7,
+          "index": 1,
+          "title": "灵积（DashScope）模型服务",
+          "desc": "<h3>DashScope 简介</h3><p>DashScope（灵积）是阿里云的<strong>一站式模型服务平台</strong>，提供统一 API 调用各类 AI 模型的能力。它是阿里云大模型服务的核心入口。</p><h3>通义千问系列模型</h3><table><tr><th>模型</th><th>特点</th><th>适用场景</th></tr><tr><td>Qwen-Max</td><td>旗舰版，最强综合能力</td><td>复杂推理、高质量内容生成</td></tr><tr><td>Qwen-Plus</td><td>增强版，性价比优",
+          "status": "available",
+          "url": "../chapter/7/#kp-2"
+        },
+        {
+          "chapter": 7,
+          "index": 2,
+          "title": "百炼平台",
+          "desc": "<h3>百炼平台定位</h3><p>百炼是阿里云的<strong>大模型应用开发平台</strong>，提供从数据准备、模型调优到应用评测的全链路 AI 开发能力。比 DashScope 更偏上层应用开发。</p><h3>核心功能模块</h3><ul><li><strong>数据管理</strong>：支持上传多种格式数据（TXT/PDF/Excel），提供标注工具</li><li><strong>模型调优</strong>：支持 SFT（监督微调）和 DPO 两种微调方式</li><li><strong>模型评测</strong>：内置评测数据集，自动",
+          "status": "available",
+          "url": "../chapter/7/#kp-3"
+        },
+        {
+          "chapter": 7,
+          "index": 3,
+          "title": "PAI 平台全流程",
+          "desc": "<h3>PAI 平台组件</h3><table><tr><th>组件</th><th>功能</th><th>适用场景</th></tr><tr><td>PAI-Studio</td><td>可视化建模，拖拽式 ML 流程</td><td>低代码 ML 开发</td></tr><tr><td>PAI-DSW</td><td>交互式 Notebook（Jupyter）</td><td>算法探索、原型开发</td></tr><tr><td>PAI-DLC</td><td>分布式训练集群</td><td>大规模模型训练</td></tr><tr><td>PAI-",
+          "status": "available",
+          "url": "../chapter/7/#kp-4"
+        },
+        {
+          "chapter": 7,
+          "index": 4,
+          "title": "ACP 高频考点总结",
+          "desc": "<h3>云计算基础考点</h3><ul><li>ECS 实例规格族（通用型/计算型/内存型/GPU 型）及适用场景</li><li>OSS 存储类型（标准/低频/归档/冷归档）</li><li>SLB 负载均衡调度算法（轮询/最小连接数/一致性哈希）</li><li>VPC 网络规划（CIDR 划分、安全组规则）</li></ul><h3>AI 平台考点</h3><ul><li>PAI 各组件功能区分（尤其是 DSW/DLC/EAS 的定位差异）</li><li>分布式训练策略（数据并行、模型并行、流水线并行）</li><li>模型部署配置（实例规格、副",
+          "status": "available",
+          "url": "../chapter/7/#kp-5"
+        },
+        {
+          "chapter": 7,
+          "index": 5,
+          "title": "模型评估指标",
+          "desc": "<h3>分类任务指标</h3><pre><code># 混淆矩阵 预测正类 预测负类 实际正类 TP FN 实际负类 FP TN # 核心指标 准确率 Accuracy = (TP + TN) / (TP + TN + FP + FN) 精确率 Precision = TP / (TP + FP) 召回率 Recall = TP / (TP + FN) F1-Score = 2 × Precision × Recall / (Precision + Recall)</code></pre><h3>生成任务指标</h3><ul><li><strong>BL",
+          "status": "available",
+          "url": "../chapter/7/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0xf2b0ff",
+        "0x9954b8"
+      ]
+    },
+    {
+      "id": "chapter-8",
+      "chapter": 8,
+      "name": "阿里云ACP大模型认证（下）",
+      "name_en": "SECTOR 08",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 8,
+          "index": 0,
+          "title": "模型部署与优化",
+          "desc": "<h3>部署架构选择</h3><table><tr><th>方式</th><th>适用场景</th><th>特点</th></tr><tr><td>PAI-EAS 在线推理</td><td>实时 API 服务</td><td>低延迟（<100ms），自动扩缩</td></tr><tr><td>PAI-DLC 分布式训练</td><td>大规模模型训练</td><td>GPU 集群调度，弹性资源</td></tr><tr><td>函数计算 FC + GPU</td><td>轻量推理</td><td>按需付费，事件驱动，冷启动</td></tr><tr><t",
+          "status": "available",
+          "url": "../chapter/8/#kp-1"
+        },
+        {
+          "chapter": 8,
+          "index": 1,
+          "title": "模型量化原理",
+          "desc": "<h3>为什么需要量化？</h3><p>大模型通常使用 FP32（32 位浮点数）训练，每个参数占 4 字节。一个 70B 模型仅参数就需要 280GB 显存，远超单张 GPU 容量。量化通过<strong>降低数值精度</strong>来压缩模型。</p><h3>量化类型</h3><pre><code># 量化精度对比 FP32: 0 00000000 00000000000000000000000 → 4 字节/参数 FP16: 0 00000 0000000000 → 2 字节/参数 INT8: 00000000 → 1 字节/参数 INT4: 0",
+          "status": "available",
+          "url": "../chapter/8/#kp-2"
+        },
+        {
+          "chapter": 8,
+          "index": 2,
+          "title": "RAG 架构与向量数据库",
+          "desc": "<h3>RAG 完整流程</h3><pre><code>RAG 系统流程： 用户提问 → 1. 向量化：将问题转为 embedding 向量 → 2. 检索：在向量数据库中搜索最相似的文档 → 3. 重排序：对检索结果精排 → 4. 注入：将相关文档注入 Prompt → 5. 生成：LLM 基于上下文生成答案 → 6. 溯源：附上引用来源</code></pre><h3>向量检索核心原理</h3><pre><code># 余弦相似度 similarity(A, B) = cos(θ) = (A · B) / (||A|| × ||B||) # 向量检索",
+          "status": "available",
+          "url": "../chapter/8/#kp-3"
+        },
+        {
+          "chapter": 8,
+          "index": 3,
+          "title": "RAG 评估框架",
+          "desc": "<h3>RAG 评估维度</h3><table><tr><th>维度</th><th>指标</th><th>测量方法</th></tr><tr><td>检索准确率</td><td>Recall@k, Precision@k, MRR</td><td>标注的相关文档 vs 检索结果</td></tr><tr><td>生成质量</td><td>Faithfulness, Answer Relevance</td><td>LLM-as-Judge 评分</td></tr><tr><td>端到端</td><td>Context Precision, Contex",
+          "status": "available",
+          "url": "../chapter/8/#kp-4"
+        },
+        {
+          "chapter": 8,
+          "index": 4,
+          "title": "大模型安全与合规",
+          "desc": "<h3>大模型安全挑战</h3><ul><li><strong>Prompt 注入</strong>：恶意提示词绕过安全限制，诱使模型执行未授权操作</li><li><strong>数据泄露</strong>：模型输出中包含训练数据中的敏感信息</li><li><strong>有害内容生成</strong>：输出违法、暴力、歧视性内容</li><li><strong>偏见与歧视</strong>：训练数据中的社会偏见被模型继承和放大</li></ul><h3>阿里云安全方案</h3><ul><li><strong>内容安全</strong>：文本/图片审",
+          "status": "available",
+          "url": "../chapter/8/#kp-5"
+        },
+        {
+          "chapter": 8,
+          "index": 5,
+          "title": "安全评测方法论",
+          "desc": "<h3>红队测试（Red Teaming）</h3><p>红队测试是<strong>模拟攻击者行为</strong>对模型进行安全评估的方法，目的是在大规模部署前发现安全漏洞。</p><pre><code>红队测试流程： 1. 威胁建模：识别可能的攻击面 - Prompt 注入、越狱、角色反转 - 数据投毒、后门触发 - 拒绝服务、资源耗尽 2. 测试用例生成 - 手工编写：领域专家设计 - 自动生成：LLM 辅助生成变体 - 对抗生成：GAN/遗传算法 3. 执行测试 - 黑盒测试：只访问 API - 白盒测试：可访问模型权重 - 灰盒测试：部分信息<",
+          "status": "available",
+          "url": "../chapter/8/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0x84d9ff",
+        "0x357fb8"
+      ]
+    },
+    {
+      "id": "chapter-9",
+      "chapter": 9,
+      "name": "大模型应用实战",
+      "name_en": "SECTOR 09",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 9,
+          "index": 0,
+          "title": "构建 RAG 问答系统",
+          "desc": "<h3>完整 RAG 系统设计</h3><pre><code>系统架构： 用户输入 → Query Understanding（查询理解：改写、扩展） → Retriever（检索器：稠密检索 + BM25 混合） → Reranker（重排序：cross-encoder 精排） → Prompt Constructor（提示词构造：上下文注入+引用标记） → LLM Generator（生成器：基于上下文回答） → Output Validator（输出验证：引用检查+格式校验）</code></pre><h3>文档处理策略</h3><ul><li><",
+          "status": "available",
+          "url": "../chapter/9/#kp-1"
+        },
+        {
+          "chapter": 9,
+          "index": 1,
+          "title": "AI Agent 开发",
+          "desc": "<h3>Agent 核心架构</h3><pre><code>Agent 核心循环： 用户请求 → Plan（规划：分解任务为子步骤） → Execute（执行：调用工具处理每个子步骤） → Observe（观察：收集执行结果） → Reflect（反思：是否需要调整计划？） → Repeat / Final Answer</code></pre><h3>Agent 组件详解</h3><ul><li><strong>LLM 大脑</strong>：推理和决策的核心</li><li><strong>工具集</strong>：Search, Calculato",
+          "status": "available",
+          "url": "../chapter/9/#kp-2"
+        },
+        {
+          "chapter": 9,
+          "index": 2,
+          "title": "多工具编排",
+          "desc": "<h3>编排模式</h3><pre><code># 顺序执行（Pipeline） A → B → C → D 适用：有明确依赖的数据处理流程 # 并行执行（Parallel） A → B → Done → C → 适用：相互独立的子任务（如同时搜索+计算） # 条件分支（Condition） A → if X: B → Done → else: C → Done 适用：结果依赖前一步输出 # 映射-归约（Map-Reduce） A → [B1, B2, B3] → C → Done 适用：大规模数据处理</code></pre><h3>工具编排引擎设计<",
+          "status": "available",
+          "url": "../chapter/9/#kp-3"
+        },
+        {
+          "chapter": 9,
+          "index": 3,
+          "title": "评估驱动开发（EDD）",
+          "desc": "<h3>什么是 EDD？</h3><p>评估驱动开发（Evaluation-Driven Development）借鉴了 TDD（测试驱动开发）的思路：<strong>先定义评估指标，再开发模型应用</strong>，确保每次改动都有可量化的效果验证。</p><h3>EDD 工作流</h3><pre><code>1. 定义评估集 - 收集 100-1000 个代表性用例 - 人工标注标准答案 - 覆盖正常场景和边界 Case 2. 建立评估 Pipeline - 自动化运行评估 - 计算核心指标（准确率、F1、BLEU 等） - 生成对比报告 3. 迭代",
+          "status": "available",
+          "url": "../chapter/9/#kp-4"
+        },
+        {
+          "chapter": 9,
+          "index": 4,
+          "title": "Prompt 缓存与成本优化",
+          "desc": "<h3>Prompt Caching 原理</h3><p>对于重复使用的长前缀（如系统提示词、Few-shot 示例、工具定义），API 会缓存计算结果。后续请求只需计算增量部分，显著降低成本。</p><pre><code># 缓存策略 [系统角色设定 + 规则说明] ← 缓存命中区域（几千 tokens） [Few-shot 示例] ← 缓存命中区域 [用户动态输入] ← 每次不同（只有这里需要全量计算） [模型输出] ← 每次生成</code></pre><h3>成本优化策略</h3><ul><li><strong>利用 Prompt Caching",
+          "status": "available",
+          "url": "../chapter/9/#kp-5"
+        },
+        {
+          "chapter": 9,
+          "index": 5,
+          "title": "生产级部署架构",
+          "desc": "<h3>典型生产架构</h3><pre><code>用户客户端 ↓ CDN（静态资源加速） ↓ API Gateway（流量控制、认证、限流、日志） ↓ 应用服务层（业务逻辑、Prompt 管理、会话管理） ↓ ↗ 模型推理层 缓存层 (PAI-EAS/vLLM) (Redis/Memcached) ↓ ↗ 向量检索层（检索增强生成 RAG） ↑ 数据处理层（ETL、文档更新、索引重建）</code></pre><h3>关键组件设计</h3><ul><li><strong>API Gateway</strong>：限流（Token Bucket）、认证（",
+          "status": "available",
+          "url": "../chapter/9/#kp-6"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ],
+        [
+          2,
+          3,
+          "sequence"
+        ],
+        [
+          3,
+          4,
+          "sequence"
+        ],
+        [
+          4,
+          5,
+          "sequence"
+        ],
+        [
+          0,
+          2,
+          "concept"
+        ],
+        [
+          1,
+          3,
+          "concept"
+        ]
+      ],
+      "palette": [
+        "0xffaa72",
+        "0xb45158"
+      ]
+    },
+    {
+      "id": "chapter-10",
+      "chapter": 10,
+      "name": "各类 Agent 教学与测试",
+      "name_en": "SECTOR 10",
+      "progress": 0,
+      "stars": [
+        {
+          "chapter": 10,
+          "index": 0,
+          "title": "Trae 智能体 — 产品介绍与使用指南",
+          "desc": "<h3>Trae 智能体介绍</h3><p>Trae 是字节跳动推出的 AI 原生集成开发环境（IDE），内置智能体能力，支持 Skill、Hooks、MCP 等高级功能。下面提供了视频讲解和交互式教程两种学习方式。</p><div style=\"margin:18px 0;\"><a href=\"/static/trae_tutorial/index.html\" target=\"_blank\" class=\"btn-interactive\" style=\"display:inline-flex;align-items:center;gap:8px;bac",
+          "status": "available",
+          "url": "../chapter/10/#kp-1"
+        },
+        {
+          "chapter": 10,
+          "index": 1,
+          "title": "ZCode GLM — 大模型展示",
+          "desc": "<h3>ZCode GLM 介绍</h3><p>ZCode GLM 是一个大模型综合展示平台，展示了多种 GLM 模型的能力与特性。</p><div style=\"margin:18px 0;\"><a href=\"/static/zcode_showcase.html\" target=\"_blank\" class=\"btn-interactive\" style=\"display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#10b981,#059669)",
+          "status": "available",
+          "url": "../chapter/10/#kp-2"
+        },
+        {
+          "chapter": 10,
+          "index": 2,
+          "title": "WorkBuddy — 智能助手",
+          "desc": "<h3>WorkBuddy 智能助手</h3><p>WorkBuddy 是一款智能工作助手，帮助用户高效完成各类工作任务。</p><div style=\"margin:18px 0;\"><a href=\"/static/workbuddy_showcase.html\" target=\"_blank\" class=\"btn-interactive\" style=\"display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#3b82f6,#2563eb);",
+          "status": "available",
+          "url": "../chapter/10/#kp-3"
+        }
+      ],
+      "connections": [
+        [
+          0,
+          1,
+          "sequence"
+        ],
+        [
+          1,
+          2,
+          "sequence"
+        ]
+      ],
+      "palette": [
+        "0x96f4d5",
+        "0x368f9b"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>知识宇宙 · AI Master</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#020108;color:#e6edf6;font-family:'Georgia','Noto Serif SC',serif}
+canvas{position:fixed;inset:0;z-index:1}
+
+#hud{position:fixed;z-index:10;padding:18px 24px;pointer-events:none}
+#hud h1{font-size:clamp(12px,1.4vw,16px);font-weight:300;letter-spacing:5px;color:rgba(255,255,255,.1)}
+#hud .s{font-size:8px;color:rgba(255,255,255,.05);letter-spacing:4px;font-family:'Courier New',monospace}
+
+#back-btn{position:fixed;top:14px;left:14px;z-index:30;display:none;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.35);padding:5px 14px;border-radius:5px;cursor:pointer;font-size:10px;font-family:'Noto Serif SC',serif;transition:.3s;backdrop-filter:blur(6px);letter-spacing:1px}
+#back-btn:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+
+#ctrl-btm{position:fixed;bottom:16px;right:16px;z-index:30;display:flex;gap:6px}
+#ctrl-btm button{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.25);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:10px;font-family:'Noto Serif SC',serif;transition:.3s;backdrop-filter:blur(6px);letter-spacing:1px}
+#ctrl-btm button:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5)}
+
+#gal-name{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:20;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.5s}
+#gal-name.show{opacity:1}
+#gal-name h2{font-size:clamp(18px,2.2vw,28px);font-weight:700;letter-spacing:4px}
+#gal-name .en{font-size:8px;letter-spacing:5px;font-family:'Courier New',monospace;color:rgba(255,255,255,.18);margin-top:2px}
+
+#star-info{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:20;pointer-events:none;opacity:0;transition:opacity 1.5s;text-align:center}
+#star-info.show{opacity:1}
+#star-info .n{font-size:clamp(11px,1.2vw,15px);font-weight:300;letter-spacing:3px;color:rgba(255,255,255,.15)}
+
+#star-label{position:fixed;z-index:22;pointer-events:none;background:rgba(2,1,8,.92);backdrop-filter:blur(16px);border:1px solid rgba(0,212,255,.12);border-radius:6px;padding:4px 10px;font-size:10px;display:none;color:#e6edf6;font-family:'Noto Serif SC',serif;max-width:200px}
+
+#info-panel{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:30;width:min(560px,88vw);max-height:38vh;background:rgba(6,8,24,.96);backdrop-filter:blur(20px);border:1px solid rgba(0,212,255,.1);border-radius:12px;padding:16px 20px;display:none;overflow-y:auto}
+#info-panel.show{display:block;animation:pU .35s ease}
+@keyframes pU{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#info-panel .ch{font-size:8px;color:rgba(168,85,247,.45);letter-spacing:3px;font-family:'Courier New',monospace;margin-bottom:1px}
+#info-panel .ti{font-size:15px;font-weight:700;margin-bottom:3px}
+#info-panel .de{font-size:11px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:7px}
+#info-panel .ac{display:flex;gap:5px}
+#info-panel .bt{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18);color:#00d4ff;padding:4px 12px;border-radius:5px;cursor:pointer;font-size:10px;transition:.2s;font-family:'Noto Serif SC',serif}
+#info-panel .bt:hover{background:rgba(0,212,255,.13)}
+#info-panel .cl{position:absolute;top:7px;right:10px;background:none;border:none;color:rgba(255,255,255,.18);font-size:14px;cursor:pointer}
+
+#agent-ov{position:fixed;inset:0;z-index:50;background:rgba(2,1,8,.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+#agent-ov.show{display:flex;animation:fi .5s ease}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.ag-c{text-align:center;max-width:440px}
+.ag-a{font-size:clamp(36px,5vw,52px);margin-bottom:12px;display:block;filter:drop-shadow(0 0 30px rgba(168,85,247,.3))}
+.ag-m{font-size:clamp(13px,1.5vw,16px);color:rgba(255,255,255,.85);line-height:1.7;margin-bottom:14px;font-weight:300}
+.ag-i{display:flex;gap:6px;max-width:360px;margin:0 auto}
+.ag-i input{flex:1;padding:7px 12px;border-radius:6px;border:1px solid rgba(168,85,247,.18);background:rgba(6,8,24,.8);color:#e6edf6;font-size:12px;outline:none;font-family:'Noto Serif SC',serif}
+.ag-i input:focus{border-color:rgba(168,85,247,.35)}
+.ag-i button{padding:7px 18px;border-radius:6px;border:none;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-size:12px;cursor:pointer;font-family:'Noto Serif SC',serif;font-weight:600}
+.ag-i button:disabled{opacity:.4}
+.ag-lo{font-size:10px;color:rgba(168,85,247,.35);margin-top:6px;display:none}
+.ag-cl{position:absolute;top:10px;right:16px;background:none;border:none;color:rgba(255,255,255,.18);font-size:18px;cursor:pointer;z-index:5}
+#info-panel::-webkit-scrollbar{width:2px}
+#info-panel::-webkit-scrollbar-thumb{background:rgba(0,212,255,.2);border-radius:2px}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="hud"><h1>✦ 知识宇宙</h1><div class="s">104 STARS · 6 GALAXIES</div></div>
+<div id="ctrl-btm"><button onclick="toggleMusic()" id="music-btn">🎵 BGM</button><button onclick="window.open('/static/interview.html','_blank')">⚔️ 面试</button></div>
+<audio id="bgm-player" loop preload="none"><source src="/static/bgm.mp3" type="audio/mpeg"></audio>
+<button id="back-btn" onclick="backU()">← 返回宇宙</button>
+<div id="gal-name"><h2 id="gn"></h2><div class="en" id="ge"></div></div>
+<div id="star-info"><div class="n" id="si"></div></div>
+<div id="star-label"></div>
+<div id="info-panel">
+  <button class="cl" onclick="closeI()">✕</button>
+  <div class="ch" id="ip-ch"></div>
+  <div class="ti" id="ip-ti"></div>
+  <div class="de" id="ip-de"></div>
+  <div class="ac">
+    <button class="bt" onclick="openA()">🔮 聆听星语</button>
+    <button class="bt" onclick="goCh()">📖 前往学习</button>
+  </div>
+</div>
+<div id="agent-ov">
+  <button class="ag-cl" onclick="closeA()">✕</button>
+  <div class="ag-c">
+    <span class="ag-a">🌌</span>
+    <div class="ag-m" id="ag-msg">星辰低语...</div>
+    <div class="ag-i">
+      <input id="ag-inp" placeholder="说说你的理解..." onkeydown="if(event.key==='Enter')sendA()">
+      <button id="ag-btn" onclick="sendA()">诉说</button>
+    </div>
+    <div class="ag-lo" id="ag-lo">✦ 星辰汇聚...</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const cv=document.getElementById('cv');
+let S,C,R;
+let gals=[],galM=[],starM=[],lineM=[],deco=[],clickStars=[];
+let view='U',curG=null,curK=null,tm=0;
+let M=new THREE.Vector2(),ray=new THREE.Raycaster();
+let drag=false,cS={x:0,y:0},mP={x:0,y:0};
+let rX=-0.15,rY=0,zoom=180,tZ=180,tRX=-0.15,tRY=0,lS=0.08;
+let gC={llm:'#00d4ff',transformer:'#a855f7',prompt:'#f59e0b',framework:'#10b981',finetune:'#ef4444',rag:'#ec4899'};
+let gData,aH=[];
+
+fetch('/static/galaxy_data.json').then(r=>r.json()).then(d=>{gData=d.galaxies;init();buildU(d);loop();});
+
+function init(){
+  S=new THREE.Scene();C=new THREE.PerspectiveCamera(50,innerW()/innerH(),0.1,2000);
+  C.position.set(0,20,180);
+  R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
+  R.setSize(innerW(),innerH());R.setPixelRatio(Math.min(devicePixelRatio,2));
+  R.setClearColor(0x020108,1);
+  const bg=new THREE.BufferGeometry(),bc=2500,bp=new Float32Array(bc*3);
+  for(let i=0;i<bc*3;i++)bp[i]=(Math.random()-0.5)*3000;
+  bg.setAttribute('position',new THREE.BufferAttribute(bp,3));
+  S.add(new THREE.Points(bg,new THREE.PointsMaterial({color:0x334466,size:0.4,transparent:true,opacity:0.18})));
+  addEventListener('resize',()=>{C.aspect=innerW()/innerH();C.updateProjectionMatrix();R.setSize(innerW(),innerH());});
+}
+function innerW(){return window.innerWidth}
+function innerH(){return window.innerHeight}
+
+function buildU(data){
+  const UR=75;
+  data.galaxies.forEach((gal,gi)=>{
+    const a=gi/data.galaxies.length*Math.PI*2;
+    const gx=Math.cos(a)*UR*1.2,gz=Math.sin(a)*UR*1.2,gy=(Math.random()-0.5)*15;
+    const col=new THREE.Color(gC[gal.id]);
+
+    // --- Particle galaxy ---
+    const ptCount=500;
+    const pos=new Float32Array(ptCount*3),cols=new Float32Array(ptCount*3),sizes=new Float32Array(ptCount);
+
+    let shapeFn;
+    switch(gal.id){
+      case'llm': shapeFn=(i)=>{const t=i/ptCount,r=2+Math.pow(t,0.4)*15,a=t*8+gi;
+        return{x:Math.cos(a)*r,y:Math.sin(t*5)*0.8,z:Math.sin(a)*r};}; break;
+      case'transformer': shapeFn=(i)=>{const a=i*0.3+gi,r=5+Math.sin(i*0.5)*3;
+        return{x:Math.cos(a)*r*1.3,y:Math.sin(i*1.2)*0.3,z:Math.sin(a)*r};}; break;
+      case'prompt': shapeFn=(i)=>{const r=Math.pow(Math.random(),0.4)*12;
+        return{x:(Math.random()-0.5)*r*1.6,y:(Math.random()-0.5)*r*0.8,z:(Math.random()-0.5)*r};}; break;
+      case'framework': shapeFn=(i)=>{return{x:(Math.random()-0.5)*20+Math.sin(i)*4,y:(Math.random()-0.5)*15,z:(Math.random()-0.5)*12};}; break;
+      case'finetune': shapeFn=(i)=>{const t=i/ptCount,a=i*0.4+gi,r=3+Math.pow(t,0.6)*14;
+        return{x:Math.cos(a)*r*1.8,y:Math.cos(i*0.3)*r*0.4,z:Math.sin(a)*r*0.8};}; break;
+      case'rag': shapeFn=(i)=>{const t=i/ptCount,r=3+Math.pow(t,0.5)*14,a=t*10+gi+i%2*3.14*0.6;
+        return{x:Math.cos(a)*r,y:Math.sin(t*6)*0.6,z:Math.sin(a)*r};}; break;
+    }
+    for(let i=0;i<ptCount;i++){
+      const p=shapeFn(i);pos[i*3]=p.x;pos[i*3+1]=p.y;pos[i*3+2]=p.z;
+      const dim2=0.3+Math.random()*0.7;const c=col.clone().multiplyScalar(0.7+Math.random()*0.6);
+      cols[i*3]=c.r;cols[i*3+1]=c.g;cols[i*3+2]=c.b;
+      sizes[i]=0.08+Math.random()*0.3;
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('color',new THREE.BufferAttribute(cols,3));
+    const pMat=new THREE.PointsMaterial({size:0.35,vertexColors:true,transparent:true,opacity:0.9,
+      blending:THREE.AdditiveBlending,sizeAttenuation:true,depthWrite:false});
+    const pts=new THREE.Points(geo,pMat);pts.position.set(gx,gy,gz);
+    pts.userData={galId:gal.id,angle:0};S.add(pts);galM.push(pts);
+
+    // Extra bright core particles
+    const cPos=new Float32Array(60*3);
+    for(let i=0;i<60;i++){const r=Math.random()*3,a=Math.random()*7;
+      cPos[i*3]=Math.cos(a)*r;cPos[i*3+1]=(Math.random()-0.5)*1.5;cPos[i*3+2]=Math.sin(a)*r;}
+    const cGeo=new THREE.BufferGeometry();cGeo.setAttribute('position',new THREE.BufferAttribute(cPos,3));
+    const cMat=new THREE.PointsMaterial({size:0.5,color:col,transparent:true,opacity:0.6,
+      blending:THREE.AdditiveBlending,sizeAttenuation:true});
+    const core=new THREE.Points(cGeo,cMat);core.position.set(gx,gy,gz);S.add(core);galM.push(core);
+
+    // Click zone
+    const cz=new THREE.Mesh(new THREE.SphereGeometry(14,8,8),new THREE.MeshBasicMaterial({visible:false}));
+    cz.position.set(gx,gy,gz);cz.userData={galId:gal.id};S.add(cz);galM.push(cz);
+
+    gals.push({c:new THREE.Vector3(gx,gy,gz),data:gal,pts,core,angle:0,rS:0.05+Math.random()*0.06});
+  });
+}
+
+function buildGV(galId){
+  // Clear previous
+  starM.forEach(m=>S.remove(m));lineM.forEach(m=>S.remove(m));deco.forEach(m=>S.remove(m));
+  starM=[];lineM=[];deco=[];clickStars=[];
+
+  const gal=gData.find(g=>g.id===galId);if(!gal)return;
+  const col=new THREE.Color(gC[galId]);
+  const st=gal.stars,pos=[];
+
+  // Galaxy atmosphere
+  const at=new THREE.Mesh(new THREE.SphereGeometry(20,20,20),
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.02,wireframe:true}));
+  S.add(at);deco.push(at);
+
+  // Core glow
+  const core=new THREE.Mesh(new THREE.SphereGeometry(1.5,12,12),
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.25}));
+  S.add(core);deco.push(core);
+
+  // Star positioning - different per galaxy
+  const shapeFn = getShapeFn(gal.id, st.length);
+
+  st.forEach((kp,i)=>{
+    const {x,y,z}=shapeFn(i,st.length);
+    pos.push({x,y,z,kp});
+    const hue=((gals.findIndex(g=>g.data.id===galId)*0.12)+0.55)%1;
+    const sc=new THREE.Color().setHSL(hue,0.65,0.5+Math.random()*0.3);
+
+    // Halo
+    const hG=new THREE.SphereGeometry(0.4+Math.random()*0.15,8,8);
+    const hM=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.1});
+    const h=new THREE.Mesh(hG,hM);h.position.set(x,y,z);
+    S.add(h);deco.push(h);
+
+    // Core star - this is the clickable one
+    const sz=0.2+Math.random()*0.2;
+    const cG=new THREE.SphereGeometry(sz,8,8);
+    const cM=new THREE.MeshPhongMaterial({color:sc,emissive:col,emissiveIntensity:0.4});
+    const c=new THREE.Mesh(cG,cM);c.position.set(x,y,z);
+    c.userData={kp,galId};S.add(c);starM.push(c);clickStars.push(c);
+
+    // Highlight dot
+    const pG=new THREE.SphereGeometry(sz*0.3,6,6);
+    const pM=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.5});
+    const p=new THREE.Mesh(pG,pM);p.position.set(x,y,z);
+    S.add(p);deco.push(p);
+
+    // Label as sprite (replaced by HTML label on hover)
+  });
+
+  // Connections
+  gal.connections.forEach(conn=>{
+    if(conn[0]>=pos.length||conn[1]>=pos.length)return;
+    const p1=pos[conn[0]],p2=pos[conn[1]];
+    const pts=[new THREE.Vector3(p1.x,p1.y,p1.z),new THREE.Vector3(p2.x,p2.y,p2.z)];
+    const geo=new THREE.BufferGeometry().setFromPoints(pts);
+    const mat=new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0.06+Math.random()*0.06});
+    S.add(new THREE.Line(geo,mat.clone())).userData={line:true};
+    lineM.push(new THREE.Line(geo,mat));
+    starM.push(new THREE.Line(geo,mat));
+  });
+
+  // Drift particles
+  for(let i=0;i<50;i++){
+    const p=new THREE.Mesh(new THREE.SphereGeometry(0.03,4,4),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.15+Math.random()*0.2}));
+    p.position.set((Math.random()-0.5)*24,(Math.random()-0.5)*18,(Math.random()-0.5)*16);
+    p.userData={v:{x:(Math.random()-0.5)*0.008,y:(Math.random()-0.5)*0.008,z:(Math.random()-0.5)*0.008}};
+    S.add(p);deco.push(p);
+  }
+
+  document.getElementById('gn').textContent=gal.name;
+  document.getElementById('gn').style.color=gC[galId];
+  document.getElementById('ge').textContent=gal.name_en;
+  document.getElementById('si').textContent=`✦ ${st.length} 颗星辰 · 知识如星，汇聚成河`;
+  document.getElementById('gal-name').classList.add('show');
+  document.getElementById('star-info').classList.add('show');
+}
+
+function getShapeFn(shape, gid, count){
+  // Each galaxy gets a unique, carefully designed shape
+  const shapes={
+    llm:(i,t)=>{
+      // Dense spiral with central concentration
+      const sa=i*0.8+Math.sin(i*0.5)*0.3,r=2+Math.pow(t,0.6)*14;
+      return{x:Math.cos(sa)*r,z:Math.sin(sa)*r,y:Math.sin(i*1.3)*1.5};
+    },
+    transformer:(i,t)=>{
+      // Perfect rings with orbital precision
+      const ra=i*0.5+Math.sin(i*0.7)*0.1,r=4+Math.sin(i*1.1)*3+2;
+      return{x:Math.cos(ra)*r,z:Math.sin(ra)*r*1.2,y:Math.cos(i*0.9)*0.8};
+    },
+    prompt:(i,t)=>{
+      // Scattered constellation with bright clusters
+      const angle=i*2.4,r=2+Math.abs(Math.sin(i*1.7))*12;
+      return{x:Math.cos(angle)*r,z:Math.sin(angle*0.7)*r*0.8,y:(Math.random()-0.5)*8};
+    },
+    framework:(i,t)=>{
+      // Organic irregular web
+      const a=i*1.3+Math.sin(i)*0.5;
+      return{x:Math.cos(a)*(5+Math.sin(i*0.6)*8),z:Math.sin(a*0.8)*(4+Math.cos(i*0.7)*7),y:(Math.random()-0.5)*10};
+    },
+    finetune:(i,t)=>{
+      // Layered elliptical orbits
+      const ea=i*0.6,er=3+Math.pow(t,0.7)*10;
+      return{x:Math.cos(ea)*er*1.5,z:Math.sin(ea*0.8)*er*0.8,y:Math.cos(i*0.4)*2.5};
+    },
+    rag:(i,t)=>{
+      // Branching tree structure
+      const ba=i*0.9+Math.sin(i*0.4),br=3+Math.pow(t,0.5)*12;
+      return{x:Math.cos(ba)*br,z:Math.sin(ba*0.6)*br,y:Math.sin(i*0.7)*3};
+    }
+  };
+  // Fix: use 'shape' (galaxy ID string) to look up the correct shape function
+  return (i,c)=>(shapes[shape]||shapes.llm)(i,c);
+}
+
+// Mouse - CRITICAL FIX: drag works in BOTH views
+cv.addEventListener('mousedown',e=>{drag=true;cS.x=e.clientX;cS.y=e.clientY;mP.x=e.clientX;mP.y=e.clientY;});
+cv.addEventListener('mousemove',e=>{
+  M.x=(e.clientX/innerW())*2-1;M.y=-(e.clientY/innerH())*2+1;
+  if(drag){
+    const dx=e.clientX-mP.x,dy=e.clientY-mP.y;
+    if(view==='U'){
+      rY+=dx*0.004;rX+=dy*0.004;rX=Math.max(-1.2,Math.min(1.2,rX));
+    }else if(view==='G'){
+      rY+=dx*0.008;rX+=dy*0.008;rX=Math.max(-1,Math.min(1,rX));
+    }
+    mP.x=e.clientX;mP.y=e.clientY;
+  }else if(view==='G'){
+    // Hover labels for stars only
+    ray.setFromCamera(M,C);
+    const hits=ray.intersectObjects(clickStars);
+    const lbl=document.getElementById('star-label');
+    if(hits.length>0&&hits[0].object.userData.kp){
+      const kp=hits[0].object.userData.kp;
+      lbl.innerHTML=`<strong>${kp.title}</strong>`;
+      lbl.style.display='block';lbl.style.left=Math.min(e.clientX+12,innerW()-220)+'px';
+      lbl.style.top=Math.max(e.clientY-10,10)+'px';
+      cv.style.cursor='pointer';
+    }else{lbl.style.display='none';cv.style.cursor='grab';}
+  }
+});
+cv.addEventListener('mouseup',e=>{
+  if(!drag)return;drag=false;
+  const dist=Math.hypot(e.clientX-cS.x,e.clientY-cS.y);
+  if(dist>6)return; // Was a drag, not click
+  if(view==='U'){
+    ray.setFromCamera(M,C);
+    const hits=ray.intersectObjects(galM);
+    if(hits.length>0&&hits[0].object.userData.galId)enterG(hits[0].object.userData.galId);
+  }else if(view==='G'){
+    ray.setFromCamera(M,C);
+    const hits=ray.intersectObjects(clickStars);
+    if(hits.length>0&&hits[0].object.userData.kp)selS(hits[0].object.userData.kp);
+  }
+});
+cv.addEventListener('wheel',e=>{
+  if(view==='U'){tZ+=e.deltaY*0.4;tZ=Math.max(40,Math.min(400,tZ));}
+  else if(view==='G'){tZ+=e.deltaY*0.2;tZ=Math.max(15,Math.min(60,tZ));}
+});
+
+function enterG(id){
+  view='G';curG=id;
+  document.getElementById('back-btn').style.display='block';
+  document.getElementById('hud').style.display='none';
+  galM.forEach(m=>m.visible=false);
+  buildGV(id);
+  tZ=26;tRX=0.05;tRY=0;lS=0.12;
+  setTimeout(()=>{lS=0.05;},2000);
+}
+function backU(){
+  view='U';curG=null;
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('gal-name').classList.remove('show');
+  document.getElementById('star-info').classList.remove('show');
+  document.getElementById('hud').style.display='block';
+  closeI();
+  starM.forEach(m=>S.remove(m));lineM.forEach(m=>S.remove(m));deco.forEach(m=>S.remove(m));
+  starM=[];lineM=[];deco=[];clickStars=[];
+  galM.forEach(m=>m.visible=true);
+  tZ=180;tRX=-0.15;tRY=0;lS=0.12;
+  setTimeout(()=>{lS=0.05;},2000);
+}
+function selS(kp){curK=kp;
+  document.getElementById('ip-ch').textContent=`第${kp.chapter}章 · ${kp.chapter_title}`;
+  document.getElementById('ip-ti').textContent=kp.title;
+  document.getElementById('ip-de').textContent=kp.desc;
+  document.getElementById('info-panel').classList.add('show');}
+function closeI(){document.getElementById('info-panel').classList.remove('show');}
+function goCh(){if(curK)window.open('/chapter/'+curK.chapter,'_blank');}
+function openA(){
+  if(!curK)return;closeI();
+  document.getElementById('agent-ov').classList.add('show');
+  document.getElementById('ag-msg').textContent=`🌌 冒险者，你对「${curK.title}」感兴趣吗？`;
+  aH=[];setTimeout(startS,500);
+}
+function closeA(){document.getElementById('agent-ov').classList.remove('show');}
+async function startS(){
+  document.getElementById('ag-lo').style.display='block';
+  try{
+    const r=await fetch('/api/llm-agent',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'teach',personality:'sage',topic:curK.title,chapter:curK.chapter,desc:curK.desc,history:aH})});
+    const d=await r.json();
+    if(d.success&&d.answer){document.getElementById('ag-msg').textContent=d.answer;aH.push({role:'assistant',content:d.answer});}
+  }catch(e){}
+  document.getElementById('ag-lo').style.display='none';document.getElementById('ag-inp').focus();
+}
+async function sendA(){
+  const inp=document.getElementById('ag-inp'),btn=document.getElementById('ag-btn');
+  if(!inp.value.trim())return;const msg=inp.value.trim();inp.value='';
+  aH.push({role:'user',content:msg});btn.disabled=true;
+  document.getElementById('ag-lo').style.display='block';
+  try{
+    const r=await fetch('/api/llm-agent',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'teach',personality:'sage',topic:curK.title,chapter:curK.chapter,desc:curK.desc,history:aH})});
+    const d=await r.json();
+    if(d.success&&d.answer){document.getElementById('ag-msg').textContent=d.answer;aH.push({role:'assistant',content:d.answer});}
+  }catch(e){}
+  btn.disabled=false;document.getElementById('ag-lo').style.display='none';document.getElementById('ag-inp').focus();
+}
+
+function loop(){
+  requestAnimationFrame(loop);tm+=0.016;
+  if(view==='U'){
+    gals.forEach((g,i)=>{
+      g.angle+=0.002*g.rS;
+      const r=75*1.2,a=i/gals.length*Math.PI*2+g.angle;
+      g.c.x=Math.cos(a)*r;g.c.z=Math.sin(a)*r;
+      g.pts.position.copy(g.c);g.core.position.copy(g.c);
+      g.pts.rotation.y+=0.003;g.core.rotation.y+=0.002;
+      const pu=0.7+Math.sin(tm*0.5+i)*0.3;
+      g.pts.material.opacity=0.5+0.4*pu;
+    });
+  }else if(view==='G'){
+    // Animate stars
+    clickStars.forEach((m,i)=>{const s=1+Math.sin(tm*1.8+i*0.4)*0.05;m.scale.setScalar(s);});
+    // Animate lines
+    lineM.forEach((m,i)=>{if(m.material)m.material.opacity=0.06+Math.sin(tm*0.5+i*0.2)*0.04;});
+    // Drift particles
+    deco.forEach(m=>{
+      if(!m.userData||!m.userData.v)return;
+      const v=m.userData.v;
+      m.position.x+=v.x;m.position.y+=v.y;m.position.z+=v.z;
+      if(Math.abs(m.position.x)>24)m.position.x*=-0.9;
+      if(Math.abs(m.position.y)>18)m.position.y*=-0.9;
+      if(Math.abs(m.position.z)>16)m.position.z*=-0.9;
+    });
+  }
+  // Camera interpolation
+  zoom+=(tZ-zoom)*lS;rX+=(tRX-rX)*lS;rY+=(tRY-rY)*lS;
+  const px=zoom*Math.sin(rY)*Math.cos(rX),py=zoom*Math.sin(rX),pz=zoom*Math.cos(rY)*Math.cos(rX);
+  C.position.set(px,py,pz);C.lookAt(0,0,0);
+  R.render(S,C);
+}
+
+const ap=document.getElementById('bgm-player');let mp=false;
+function toggleMusic(){const b=document.getElementById('music-btn');if(!mp){ap.volume=0.25;ap.play().then(()=>{mp=true;b.textContent='🎵 BGM开';b.style.color='rgba(0,212,255,.6)'}).catch(()=>{b.textContent='🎵 无音频';});}else{ap.pause();mp=false;b.textContent='🎵 BGM';b.style.color='rgba(255,255,255,.25)';}}
+</script></body></html>

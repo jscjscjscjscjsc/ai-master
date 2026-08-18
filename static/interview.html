@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#030510" />
   <title>星辰学习教练 · AI Master</title>
-  <link rel="stylesheet" href="/static/css/learning_coach.css" />
+  <link rel="stylesheet" href="css/learning_coach.css" />
 </head>
 <body>
   <canvas id="coach-space" aria-hidden="true"></canvas>
@@ -13,9 +13,9 @@
   <div class="grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
 
   <header class="coach-header">
-    <a href="/dashboard" class="brand"><i></i><span>AI MASTER <em>/ LEARNING COACH</em></span></a>
+    <a href="../dashboard" class="brand"><i></i><span>AI MASTER <em>/ LEARNING COACH</em></span></a>
     <p><b></b> PERSONAL LEARNING SIGNAL</p>
-    <a href="/dashboard" class="return-link">返回指挥舱 <i>↗</i></a>
+    <a href="../dashboard" class="return-link">返回指挥舱 <i>↗</i></a>
   </header>
 
   <main class="coach-shell">
@@ -70,9 +70,9 @@
     </section>
   </main>
 
-  <div class="loading-overlay" id="loadingOverlay" hidden><div class="loading-orbit"><i></i></div><p id="loadingText">正在校准星图</p><span>DEEP LEARNING ROUTE INFERENCE</span></div>
+  <div class="loading-overlay" id="loadingOverlay" style="display:none"><div class="loading-orbit"><i></i></div><p id="loadingText">正在校准星图</p><span>DEEP LEARNING ROUTE INFERENCE</span></div>
   <div class="toast" id="toast" role="status"></div>
 
-  <script src="/static/js/learning_coach.js"></script>
+  <script src="js/learning_coach_static.js"></script>
 </body>
 </html>

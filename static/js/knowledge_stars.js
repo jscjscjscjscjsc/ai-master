@@ -366,8 +366,7 @@
   async function loadUniverse() {
     loading.classList.remove("hide"); errorCard.classList.remove("show");
     try {
-      const response = await fetch("/api/knowledge-universe", { credentials: "same-origin", cache: "no-store" });
-      if (response.status === 401 || response.url.includes("/login")) { location.assign("/login"); return; }
+      const response = await fetch("../../data/knowledge-universe.json", { cache: "no-store" });
       if (!response.ok) throw new Error(`服务器返回 ${response.status}`);
       const payload = await response.json(); if (!payload.success || !Array.isArray(payload.galaxies)) throw new Error("星图数据格式无效");
       mapData = payload; document.querySelector("#galaxyCount").textContent = payload.summary.galaxies; document.querySelector("#starCount").textContent = payload.summary.stars; document.querySelector("#completedCount").textContent = payload.summary.completed;
@@ -380,7 +379,7 @@
   function initControls() {
     canvas.addEventListener("pointerdown", onPointerDown); canvas.addEventListener("pointermove", onPointerMove); canvas.addEventListener("pointerup", onPointerUp); canvas.addEventListener("pointercancel", () => { drag = null; }); canvas.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("resize", resize, { passive: true }); document.addEventListener("visibilitychange", () => { paused = document.hidden; });
-    backButton.addEventListener("click", backToUniverse); document.querySelector("#homeButton").addEventListener("click", backToUniverse); document.querySelector("#dashboardButton").addEventListener("click", () => location.assign("/dashboard")); document.querySelector("#panelClose").addEventListener("click", () => { selectedPlanet = null; panel.classList.remove("show"); updateFocus(); }); document.querySelector("#retryButton").addEventListener("click", () => { errorCard.classList.remove("show"); paused = false; loadUniverse(); });
+    backButton.addEventListener("click", backToUniverse); document.querySelector("#homeButton").addEventListener("click", backToUniverse); document.querySelector("#dashboardButton").addEventListener("click", () => location.assign("../../dashboard")); document.querySelector("#panelClose").addEventListener("click", () => { selectedPlanet = null; panel.classList.remove("show"); updateFocus(); }); document.querySelector("#retryButton").addEventListener("click", () => { errorCard.classList.remove("show"); paused = false; loadUniverse(); });
     document.querySelector("#qualityButton").addEventListener("click", (event) => { quality = quality === "auto" ? "high" : quality === "high" ? "calm" : "auto"; event.currentTarget.textContent = `画质 / ${quality.toUpperCase()}`; resize(); showToast(quality === "calm" ? "已切换至轻量星图" : "星图画质已更新"); });
     document.querySelector("#musicButton").addEventListener("click", async (event) => { const audio = document.querySelector("#bgm"); try { if (ambientAudio) { audio.pause(); ambientAudio = false; } else { await audio.play(); ambientAudio = true; } event.currentTarget.textContent = `声音 / ${ambientAudio ? "ON" : "OFF"}`; } catch { showToast("浏览器需要一次点击后才能播放声音"); } });
     document.querySelector("#listenButton").addEventListener("click", () => { if (!selectedPlanet) return; if (!("speechSynthesis" in window)) { showToast("当前浏览器不支持语音朗读"); return; } speechSynthesis.cancel(); const text = `${selectedPlanet.userData.star.title}。${selectedPlanet.userData.star.desc}`; const utterance = new SpeechSynthesisUtterance(text); utterance.lang = "zh-CN"; utterance.rate = .92; speechSynthesis.speak(utterance); });

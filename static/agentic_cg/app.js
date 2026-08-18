@@ -1,5 +1,5 @@
 const CONFIG = {
-  learningUrl: "/chapter/4",
+  learningUrl: "../../chapter/4",
   sceneDuration: 6000,
   autoplay: true,
 };

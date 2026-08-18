@@ -124,7 +124,7 @@ function showToast(message, type) {
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
-      if (data.success) { showToast('登录成功！正在跳转...', 'success'); setTimeout(() => { window.location.href = '/transition'; }, 600); }
+      if (data.success) { showToast('登录成功！正在跳转...', 'success'); setTimeout(() => { window.location.href = '../../transition'; }, 600); }
       else showToast(data.message, 'error');
     } catch (err) { showToast('网络错误，请稍后重试', 'error'); }
   });
@@ -466,7 +466,7 @@ async function checkChapterComplete(chapterId) {
   if (isLastKpCompleted) {
     showToast('🌌 最后一题完成！即将进入星辰启示...', 'success');
     setTimeout(() => {
-      window.location.href = '/static/revelation_cg.html?ch=' + chapterId;
+      window.location.href = '../revelation_cg.html?ch=' + chapterId;
     }, 1500);
   }
 }
@@ -1399,7 +1399,7 @@ let bgmPlaying = false;
 function toggleBGM() {
   const label = document.getElementById('bgm-label');
   if (!bgmAudio) {
-    bgmAudio = new Audio('/static/bgm.mp3');
+    bgmAudio = new Audio('../bgm.mp3');
     bgmAudio.loop = true;
     bgmAudio.volume = 0.3;
   }
