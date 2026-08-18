@@ -186,7 +186,7 @@ def main():
     write("assets/dashboard-demo.css", dashboard_css())
     write("assets/chapter-demo.css", chapter_css())
     write("assets/frontend.js", runtime_js())
-    write("index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/dashboard/"><title>AI Master 前端演示</title></head><body><p>正在进入 <a href="/dashboard/">AI Master 前端演示</a>...</p></body></html>''')
+    write("index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=dashboard/"><title>AI Master 前端演示</title></head><body><p>正在进入 <a href="dashboard/">AI Master 前端演示</a>...</p></body></html>''')
     write("dashboard/index.html", build_dashboard(courses))
     for cid, chapter in chapters.items(): write(f"chapter/{cid}/index.html", chapter_page(chapter))
     write("data/knowledge-universe.json", json.dumps(build_universe(courses, chapters), ensure_ascii=False, indent=2))
