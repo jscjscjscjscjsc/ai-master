@@ -366,7 +366,7 @@
   async function loadUniverse() {
     loading.classList.remove("hide"); errorCard.classList.remove("show");
     try {
-      const response = await fetch("../../data/knowledge-universe.json", { cache: "no-store" });
+      const response = await fetch("../data/knowledge-universe.json", { cache: "no-store" });
       if (!response.ok) throw new Error(`服务器返回 ${response.status}`);
       const payload = await response.json(); if (!payload.success || !Array.isArray(payload.galaxies)) throw new Error("星图数据格式无效");
       mapData = payload; document.querySelector("#galaxyCount").textContent = payload.summary.galaxies; document.querySelector("#starCount").textContent = payload.summary.stars; document.querySelector("#completedCount").textContent = payload.summary.completed;
