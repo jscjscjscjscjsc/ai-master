@@ -27,6 +27,7 @@ PAGES = [
     "/knowledge-stars/",
     "/canvas/",
     "/playground/",
+    "/learning-center/",
     *[f"/chapter/{chapter_id}/" for chapter_id in range(1, 11)],
     "/static/llm_intro.html",
     "/static/transformer_cg.html",

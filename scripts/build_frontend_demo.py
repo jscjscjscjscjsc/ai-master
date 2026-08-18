@@ -100,9 +100,10 @@ def build_dashboard(courses):
         ("SYSTEM 01 / KNOWLEDGE", "思维画布", "组织你的知识航线", "/canvas/"),
         ("SYSTEM 02 / ARCHIVE", "术语档案", "浏览知识概念", "/chapter/1/"),
         ("SYSTEM 03 / KNOWLEDGE ATLAS", "步入 3D 星海", "进入可旋转的知识星系与关系网络", "/knowledge-stars/"),
-        ("SYSTEM 04 / LEARNING COACH", "星辰学习教练", "生成本地费曼学习路线", "/static/interview.html"),
-        ("SYSTEM 05 / PROLOGUE", "学习序章", "返回主前端入口", "/"),
-        ("SYSTEM 06 / ODYSSEY", "沉浸远征", "沿着 3D 航线进入 AI 学习章节", "/static/ai_odyssey.html"),
+        ("SYSTEM 04 / LEARNING CENTER", "星辰学习中心", "费曼路线、沉浸练习与学习教练", "/learning-center/"),
+        ("SYSTEM 05 / LEARNING COACH", "费曼学习教练", "生成本地费曼学习路线", "/static/interview.html"),
+        ("SYSTEM 06 / PROLOGUE", "学习序章", "返回主前端入口", "/"),
+        ("SYSTEM 07 / ODYSSEY", "沉浸远征", "沿着 3D 航线进入 AI 学习章节", "/static/ai_odyssey.html"),
     ]
     tool_html = "".join(f'<a class="tool" href="{page_url(url, source)}"><i class="tool-icon"></i><span><mark>{code}</mark><b>{title}</b><small>{desc}</small></span><em>↗</em></a>' for code,title,desc,url in tools)
     sector_html = ""
@@ -197,6 +198,7 @@ def main():
     write("knowledge-stars/index.html", atlas)
     write("canvas/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/frontend.css"><title>AI Master - 思维画布</title></head><body>''' + nav("canvas/index.html") + '''<main class="demo-page"><section class="chapter-hero"><p class="kicker">KNOWLEDGE CANVAS</p><h1>思维画布</h1><p>前端复现版保留知识导航与互动页面。完整的云端保存、AI 辅助生成与个人数据同步需要后端服务。</p><a class="btn btn-primary" href="../dashboard/">返回指挥舱 ↗</a></section></main></body></html>''')
     write("playground/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/frontend.css"><link rel="stylesheet" href="../assets/chapter-demo.css"><title>AI Master - 训练舱</title></head><body>''' + nav("playground/index.html") + '''<main class="demo-page"><section class="chapter-hero"><p class="kicker">PRACTICE BAY</p><h1>训练舱</h1><p>选择任一章节进入知识节点和实验页面。本前端版本不保存答题记录，但所有课程导航、交互实验与高级页面均可直接打开。</p><a class="btn btn-primary" href="../dashboard/#route">选择学习章节 ↗</a></section></main></body></html>''')
+    write("learning-center/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=../static/interview.html"><title>星辰学习中心 · AI Master</title></head><body><p>正在进入 <a href="../static/interview.html">星辰学习教练静态演示</a>...</p></body></html>''')
     write("transition/index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../dashboard/"><title>AI Master</title></head><body></body></html>''')
     write("start-demo.bat", '''@echo off\nsetlocal\ncd /d "%~dp0"\necho AI Master frontend demo: http://127.0.0.1:8080/dashboard/\nstart "" http://127.0.0.1:8080/dashboard/\npython -m http.server 8080\n''')
     patch_static_assets()
