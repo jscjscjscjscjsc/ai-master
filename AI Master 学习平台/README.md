@@ -264,3 +264,68 @@ STARLAB_AI_THINKING=disabled
 评审演示账号（可选）：设 `STARLAB_DEMO_USER=reviewer` 与
 `STARLAB_DEMO_PASSWORD=xxx` 后启动。它有一份预置的学习档案（能直接看到真实的
 修为、星器与进度，不是空壳），但所有改动只在内存里，重启即还原。
+
+---
+
+## 九、发布到 GitHub Pages
+
+线上地址：<https://jscjscjscjscjsc.github.io/ai-master/>
+
+### 发布结构（这个仓库有两条分支，别推错）
+
+| 分支 | 作用 |
+| --- | --- |
+| `main` | 源码：平台、CG 资产、教材数据、工具 |
+| `master` | **Pages 的发布分支** —— 只放导出的静态站 |
+
+Pages 的发布源是 `master` 分支根目录。所以改完 `main` 之后，
+还要把静态站推到 `master` 才会生效。
+
+### 一次完整发布
+
+```bash
+# 1) 导出静态站到 frontend/（同时也是仓库里的可运行副本）
+python tools/build_static_site.py --out ../frontend
+
+# 2) 本地验收（起一个静态服务器）
+python -m http.server 5194 --bind 127.0.0.1     # 在 frontend/ 下执行
+node tools/verify_static_site.mjs http://127.0.0.1:5194   # 功能 20 项
+node tools/check_static_images.mjs http://127.0.0.1:5194  # 教材截图
+python tools/check_links.py --scan ../frontend            # 内链零 404
+node tools/cgcheck.mjs                                     # CG 运行时 14 项
+
+# 3) 推到 main（源码）
+git push origin main
+
+# 4) 推到 master（Pages 发布）
+git worktree add --detach /tmp/pages origin/master
+cp -r frontend/. /tmp/pages/
+cd /tmp/pages && git add -A && git commit -m "feat: 更新 Pages 站点"
+git push origin HEAD:master
+```
+
+### 静态站做了什么改造
+
+Pages 上没有 Flask、没有 Python、没有大模型，所以导出时把「服务端算的东西」
+换成了「浏览器自己算」：
+
+| 服务端 | 静态站 |
+| --- | --- |
+| Jinja 渲染页面 | 用 `test_client` 取渲染结果，改写链接后写盘 |
+| `/api/cultivation/*` | `data/star_engine.json` + `static/js/starlab_static.js` 在浏览器里推导 |
+| `/api/roadmap` | 同一套排布规则（参数在 `data/rules.json`） |
+| `/api/training/*` | 题库整包下发，前端筛选与本地判分 |
+| `/api/ask-*`、coach | 明确提示"需要大模型"，不留转圈的加载态 |
+| 账号与存档 | localStorage（「清空本机进度」） |
+
+**关键取舍**：修为、路线、判分的**规则只在 Python 侧定义一次**，导出时序列化成
+JSON。所以两边的平衡参数不会漂移 —— 改一次 `star_engine.py`、重新导出即可。
+已用同一份假存档逐项比对过静态站与本地引擎的推导结果（18 项完全一致）。
+
+### 在线站能做什么 / 不能做什么
+
+可用：课程正文（含 46 张教材运行截图）、CG 与实验室、3D 星海、星际跃迁、
+刷题与选择题判分、逐日学习路线、星空修为（等级/星器/试炼/战力）、学习档案。
+
+不可用（都在界面上有明确说明）：AI 答疑、AI 评分与讲评、语音合成、模拟面试、
+组卷判卷、账号体系。这些需要大模型或后端，下载本地版即可。
