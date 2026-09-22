@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AIMaster | AI 闯关学习序章</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div class="scanline" aria-hidden="true"></div>
+
+    <main class="intro-shell">
+      <section class="cinema-stage" aria-label="AIMaster 产品开场动画">
+        <div class="brand-lockup">
+          <span class="brand-core" aria-hidden="true"></span>
+          <div>
+            <strong>AIMaster</strong>
+            <span>AI Learning Quest System</span>
+          </div>
+        </div>
+
+        <div class="scene-copy" aria-live="polite">
+          <p class="scene-kicker" id="sceneKicker">关卡 01 / 唤醒</p>
+          <h1 id="sceneTitle">把大模型装进一场可闯关的学习冒险</h1>
+          <p id="sceneText">
+            AIMaster 让每一次提问、实验、创作和复盘都变成一次升级。你不是旁观 AI 的人，而是亲手驾驭模型能力的探索者。
+          </p>
+        </div>
+
+        <div class="portal" aria-hidden="true">
+          <div class="portal-ring ring-a"></div>
+          <div class="portal-ring ring-b"></div>
+          <div class="portal-ring ring-c"></div>
+          <div class="portal-core">
+            <span>AI</span>
+          </div>
+          <div class="orbit-node node-a"></div>
+          <div class="orbit-node node-b"></div>
+          <div class="orbit-node node-c"></div>
+        </div>
+
+        <div class="feature-deck" id="featureDeck" aria-label="AIMaster 核心能力">
+          <button class="feature-card active" type="button" data-scene="0">
+            <span>01</span>
+            <strong>智能体问答</strong>
+            <small>随问随答，拆解复杂概念</small>
+          </button>
+          <button class="feature-card" type="button" data-scene="1">
+            <span>02</span>
+            <strong>模型实验室</strong>
+            <small>调参、对比、观察推理过程</small>
+          </button>
+          <button class="feature-card" type="button" data-scene="2">
+            <span>03</span>
+            <strong>PPT 与思维导图</strong>
+            <small>把知识组织成可表达的作品</small>
+          </button>
+          <button class="feature-card" type="button" data-scene="3">
+            <span>04</span>
+            <strong>LLM 代码模拟</strong>
+            <small>边练边懂，带练到升华</small>
+          </button>
+        </div>
+
+        <div class="mission-panel">
+          <div class="mission-line">
+            <span>学习路径</span>
+            <strong id="missionName">新手觉醒</strong>
+          </div>
+          <div class="progress-track" aria-label="动画进度">
+            <span id="progressFill"></span>
+          </div>
+          <div class="mission-stats">
+            <span>Agent</span>
+            <span>Lab</span>
+            <span>Deck</span>
+            <span>Code</span>
+          </div>
+        </div>
+
+        <div class="final-gate" id="finalGate" aria-hidden="true">
+          <p>准备好了吗，探索者？</p>
+          <h2>进入 AIMaster，开启你的 AI 闯关之旅</h2>
+          <a class="start-button" id="startButton" href="./login.html">
+            <span>点击开始</span>
+            <i data-lucide="arrow-right"></i>
+          </a>
+        </div>
+
+        <div class="stage-controls" aria-label="播放控制">
+          <button class="control-button" id="prevScene" type="button" aria-label="上一关">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <button class="control-button" id="playToggle" type="button" aria-label="暂停动画">
+            <i data-lucide="pause"></i>
+          </button>
+          <button class="control-button" id="nextScene" type="button" aria-label="下一关">
+            <i data-lucide="chevron-right"></i>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

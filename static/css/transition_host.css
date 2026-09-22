@@ -1,0 +1,78 @@
+/* 星际导航（跃迁）宿主页面样式。
+   原版只有 transition.css（管画布与引言），宿主页面的布局从来没做出来过 ——
+   这里补上，并且刻意做得极简：全屏黑、居中、没有导航栏。
+   理由：这是章节之间的过场，任何多余元素都会削弱「短暂离场」的感觉。 */
+
+.transition-page .nav { display: none; }
+.transition-page { overflow: hidden; }
+
+.tp-wrap {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: radial-gradient(ellipse at 50% 42%, #0b1730 0, #050714 45%, #01030a 100%);
+  overflow: hidden;
+}
+
+#yi-canvas {
+  position: relative; z-index: 2;
+  width: min(360px, 62vw); height: auto;
+  filter: drop-shadow(0 0 40px rgba(114, 246, 228, .3));
+}
+
+.tp-lines {
+  position: relative; z-index: 2;
+  width: min(760px, 88vw); margin-top: 26px; text-align: center;
+}
+.tp-kicker {
+  margin: 0 0 14px; color: var(--cyan);
+  font: 10px var(--mono); letter-spacing: .32em; text-transform: uppercase;
+}
+.tp-quote {
+  margin: 0; min-height: 1.6em;
+  color: var(--ink); font-family: var(--serif);
+  font-size: clamp(19px, 2.6vw, 30px); letter-spacing: .06em; line-height: 1.6;
+}
+.tp-quote .char {
+  /* 逐字淡入：比整体出现更像「被写出来」 */
+  display: inline-block; opacity: 0;
+  animation: tpCharIn .42s forwards;
+}
+@keyframes tpCharIn { to { opacity: 1; } }
+#quote-cursor {
+  display: inline-block; margin-left: 3px; color: var(--cyan);
+  animation: tpBlink 1s steps(2) infinite;
+}
+@keyframes tpBlink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+.tp-next {
+  margin: 22px 0 0; color: var(--muted);
+  font: 11px var(--mono); letter-spacing: .2em;
+}
+
+/* 关闭时的黑场：原版用它做「画面关上」的效果 */
+.tp-overlay {
+  position: absolute; z-index: 3; inset: 0;
+  background: #01030a; opacity: 0; pointer-events: none;
+  transition: opacity .7s ease;
+}
+.tp-overlay.fade-out { opacity: 1; }
+
+.tp-actions {
+  /* 底部要给「在线演示站」提示条让位（它约 46px 高）。
+     两者叠在一起时按钮会被完全盖住，用户点不到。 */
+  position: fixed; z-index: 4; bottom: 76px; left: 50%;
+  display: flex; gap: 10px; transform: translateX(-50%);
+}
+.tp-actions .btn { backdrop-filter: blur(8px); }
+
+/* 画布上的排版：画布与文字竖直排列 */
+.tp-wrap { grid-auto-flow: row; align-content: center; justify-items: center; }
+
+/* 星轨层：铺满全屏，压在剪影下面、背景之上。 */
+#warp-canvas {
+  position: absolute; z-index: 1; inset: 0;
+  width: 100%; height: 100%; pointer-events: none;
+}
+/* 剪影与文字要压在星轨之上，否则会被速度线穿过 */
+#yi-canvas { z-index: 2; }
+.tp-lines { z-index: 3; }

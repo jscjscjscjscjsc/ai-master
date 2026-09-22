@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}跃迁 · 星际导航 · AI Master{% endblock %}
+{% block bodyclass %}transition-page{% endblock %}
+{% block bodydata %}data-page="星际导航"{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/transition_host.css') }}">
+{% endblock %}
+
+{% block content %}
+{# ── 星际导航 ──────────────────────────────────────────────
+   原版 AI Master 的「跃迁」过场：一位大师在星空中打坐，一句话慢慢写出来，
+   然后画面关上、进入下一站。它是章节之间的转场，不是内容本身 ——
+   所以这一页**没有导航栏、没有别的按钮**，唯一的作用是「交代一下再走」。
+
+   原版的 js 把目的地和时长都写死了（5 秒后硬跳 dashboard），
+   这里改成可配置：?to=/chapter/5&title=...&next=下一站
+   并且支持 ?hold=1 停住不跳，方便截图验收。 #}
+<section class="tp-wrap" id="tp-wrap"
+         data-to="{{ to_url }}" data-hold="{{ '1' if hold else '0' }}">
+  {# 星轨层：画在剪影后面，给这一页真正的「星际穿越」推进感。
+     不放进 transition.js 是因为那份文件是原版资产，只负责大师剪影；
+     跃迁的视觉属于平台这一层。 #}
+  <canvas id="warp-canvas" aria-hidden="true"></canvas>
+  <canvas id="yi-canvas" width="300" height="400" aria-label="跃迁"></canvas>
+  <div class="tp-lines">
+    <p class="tp-kicker" id="tp-kicker">{{ kicker }}</p>
+    <p class="tp-quote" id="quote-text"></p>
+    <p class="tp-next" id="tp-next">{{ next_label }}</p>
+  </div>
+  <div class="tp-overlay" id="tp-overlay"></div>
+  <div class="tp-actions">
+    <a class="btn ghost sm" href="{{ to_url }}">跳过，直接进入 →</a>
+    <a class="btn ghost sm" href="/">回指挥舱</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* 这一页的逻辑很短，直接内联：它只有一个动作（画完 → 跳走），
+   拆成独立文件反而多一次请求。绘制部分复用原版的 transition.js。 */
+window.STARLAB_TRANSITION = {
+  to: document.getElementById('tp-wrap').dataset.to || '/',
+  hold: document.getElementById('tp-wrap').dataset.hold === '1',
+  quote: {{ quote | tojson }},
+  kicker: {{ kicker | tojson }},
+  nextLabel: {{ next_label | tojson }},
+  duration: {{ duration }},
+};
+</script>
+<script src="{{ url_for('static', filename='atlas/js/transition.js') }}"></script>
+<script>
+/* 星轨跃迁：从中心向外的放射轨迹，越接近边缘越快、越亮。
+   参数全在这里，改速度/密度只动这一处。 */
+(function () {
+  const canvas = document.getElementById('warp-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const SPEED = Number((window.STARLAB_TRANSITION || {}).warpSpeed || 1);
+  const STREAKS = 170;
+  let W = 0, H = 0, cx = 0, cy = 0, dpr = 1;
+  let streaks = [];
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.floor(W * dpr); canvas.height = Math.floor(H * dpr);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx = W / 2; cy = H * 0.44;
+    streaks = [];
+    for (let i = 0; i < STREAKS; i += 1) streaks.push(newStreak(true));
+  }
+
+  function newStreak(anywhere) {
+    const ang = Math.random() * Math.PI * 2;
+    const maxR = Math.hypot(W, H) * 0.62;
+    return {
+      ang,
+      r: anywhere ? Math.random() * maxR : 8 + Math.random() * 24,
+      len: 10 + Math.random() * 46,
+      // 越靠外的轨迹越快：这是「加速冲出去」的观感来源
+      speed: (0.8 + Math.random() * 1.5),
+      hue: Math.random() < 0.5 ? 190 : 268,
+      alpha: 0.18 + Math.random() * 0.5,
+    };
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const maxR = Math.hypot(W, H) * 0.62;
+    for (const s of streaks) {
+      s.r += (2 + s.r * 0.035) * s.speed * SPEED;
+      if (s.r > maxR) Object.assign(s, newStreak(false));
+      const x1 = cx + Math.cos(s.ang) * s.r;
+      const y1 = cy + Math.sin(s.ang) * s.r;
+      const tail = Math.max(6, s.len * (0.35 + s.r / maxR));
+      const x2 = cx + Math.cos(s.ang) * (s.r - tail);
+      const y2 = cy + Math.sin(s.ang) * (s.r - tail);
+      const k = Math.min(1, s.r / (maxR * 0.55));
+      const g = ctx.createLinearGradient(x2, y2, x1, y1);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(1, 'hsla(' + s.hue + ',100%,72%,' + (s.alpha * k) + ')');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1 + k * 2.2;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+    }
+    // 中心一点强光：跃迁的出口
+    const pulse = 0.5 + 0.5 * Math.sin(Date.now() * 0.0022);
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 240 + pulse * 60);
+    glow.addColorStop(0, 'rgba(160,240,255,' + (0.20 + pulse * 0.10) + ')');
+    glow.addColorStop(0.45, 'rgba(120,180,255,0.06)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  // 尊重「减少动态效果」偏好：这类全屏运动最容易引发不适
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    ctx.clearRect(0, 0, W, H);
+  } else {
+    requestAnimationFrame(draw);
+  }
+})();
+</script>
+{% endblock %}

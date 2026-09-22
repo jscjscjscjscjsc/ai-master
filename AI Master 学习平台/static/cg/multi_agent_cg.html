@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MULTI-AGENT & MCP · CG · 从一群 Agent 到一条协议</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./engine/star-cinema.css">
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="brand" id="brand">AI MASTER / MULTI-AGENT</div>
+
+<div class="scene-info">
+  <p class="scene-num" id="sceneNum">01</p>
+  <h1 class="scene-title" id="sceneTitle">PROLOGUE</h1>
+  <p class="scene-sub" id="sceneSub"></p>
+</div>
+<p class="caption" id="caption"></p>
+
+<div class="cta-wrap" id="ctaWrap">
+  <a class="cta" id="ctaBtn" href="/chapter/6">开始学习多智能体与 MCP <span class="arrow">→</span></a>
+  <p class="cta-sub" id="ctaSub">DAY 26 – 30 · 三种协作模式 · MCP 无状态协议 · 成本护栏</p>
+</div>
+
+<div class="bottom-bar">
+  <div class="progress-track" id="progressTrack">
+    <div class="progress-fill" id="progressFill"></div>
+    <div class="chapter-marks" id="chapterMarks"></div>
+  </div>
+  <div class="bar-row">
+    <span class="time-label" id="timeLabel">00:00 / 00:00</span>
+    <div class="controls">
+      <button class="ctrl-btn" id="ctrlPrev">◀◀</button>
+      <button class="ctrl-btn" id="ctrlPlay">暂停</button>
+      <button class="ctrl-btn" id="ctrlNext">▶▶</button>
+      <button class="ctrl-btn" id="ctrlSkip">跳过</button>
+      <button class="ctrl-btn" id="ctrlFull">全屏</button>
+    </div>
+  </div>
+</div>
+
+<script src="./engine/star-cinema.js"></script>
+<script>
+/* ===========================================================
+   第 6 章开场 CG：多智能体协作与 MCP（Day 26–30）
+   -----------------------------------------------------------
+   三种协作模式各用不同的画面运动方式表达，因为它们**结构确实不同**：
+     流水线 = 一条直线上的接力
+     辩论   = 两个节点来回弹跳，最后收敛
+     统筹   = 一个中心向四周分发、再收回
+   用同一种动画画三种模式，等于什么都没说。
+
+   MCP 那一幕刻意画成「无状态」：连接建立后立刻断开，每次请求自带全部
+   上下文。教材里说这是本节最重要的知识点，画面必须让人记住这一点。
+   =========================================================== */
+const S = StarCinema;
+const { C, TAU, lerp, clamp, easeOut, easeIn, easeInOut, rand, pick } = S;
+
+const SCENES = [
+
+/* ---------- 01 PROLOGUE 一个变一群 ---------- */
+{
+  id: 'prologue', num: '01', title: 'PROLOGUE',
+  sub: '序章 · 一个 Agent 会做，一群 Agent 会分工',
+  caption: '单个 Agent 的瓶颈不是能力，是它必须一个人做完全部的事。',
+  duration: 8000,
+  init() {
+    this.agents = [];
+    for (let i = 0; i < 7; i += 1) {
+      const ang = (i / 7) * TAU;
+      this.agents.push({ ang, r: Math.min(S.W, S.H) * 0.22, node: null });
+    }
+  },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const cx = W / 2, cy = H * 0.40;
+
+    // 前半：一个孤立的节点在转，所有工作都压在它身上
+    if (p < 0.46) {
+      const load = clamp(p / 0.4, 0, 1);
+      const r = 26 + load * 26;
+      S.glowDot(cx, cy, r * 0.5, load > 0.7 ? C.pink : C.cyan, 0.9);
+      ctx.save();
+      ctx.globalAlpha = 0.5 + load * 0.5;
+      ctx.strokeStyle = load > 0.7 ? C.pink : C.cyan;
+      ctx.lineWidth = 1.4 + load * 1.6;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r + load * 18, p * 8, p * 8 + TAU * 0.78);
+      ctx.stroke();
+      ctx.restore();
+      S.drawLabel('一个 Agent 承担全部', cx, cy + r + 54, C.muted, 0.85, 13, 'center');
+      if (load > 0.55) {
+        S.drawLabel('任务越多 → 上下文越长 → 越容易跑偏', cx, cy + r + 80,
+          C.pink, (load - 0.55) / 0.45 * 0.9, 12, 'center');
+      }
+      return;
+    }
+
+    // 后半：同一个任务分给七个角色，每个只负责一小块
+    const k = easeOut(clamp((p - 0.46) / 0.34, 0, 1));
+    S.drawLabel('拆成角色', cx, cy, C.cyan, k * 0.9, 14, 'center');
+    S.glowDot(cx, cy, 12 * (1 - k * 0.4), C.cyan, k);
+    this.agents.forEach((a, i) => {
+      const dist = a.r * k;
+      const x = cx + Math.cos(a.ang - Math.PI / 2) * dist;
+      const y = cy + Math.sin(a.ang - Math.PI / 2) * dist;
+      S.arrow(cx, cy, x, y, S.hexA(C.purple, 0.35 * k), k * 0.5, 1.1);
+      S.glowDot(x, y, 6.5, pick([C.purple, C.cyan, C.green]), k * 0.95);
+      S.glowDot(x, y, 3, C.white, k * 0.9);
+    });
+    if (p > 0.84) {
+      S.gradText('分工，然后协作', cx, H * 0.80, Math.min(32, W / 32), easeOut((p - 0.84) / 0.16), 700);
+    }
+  },
+},
+
+/* ---------- 02 三种模式 ---------- */
+{
+  id: 'patterns', num: '02', title: 'THREE PATTERNS',
+  sub: '第 26 天 · 流水线 / 辩论 / 统筹',
+  caption: '三种模式不是三种风格，是三种调用次数与代价结构。',
+  duration: 12000,
+  init() { this.t = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const colW = W / 3;
+    const midY = H * 0.40;
+
+    const specs = [
+      { key: 'pipeline', name: '流水线', sub: 'Planner → Executor → Reviewer', color: C.cyan, calls: '3 次调用' },
+      { key: 'debate', name: '辩论式', sub: '正方 ⇄ 反方 → 裁判', color: C.amber, calls: '2n+1 次调用' },
+      { key: 'manager', name: '统筹', sub: 'Manager → 多个 Worker', color: C.purple, calls: '1 + n 次调用' },
+    ];
+
+    specs.forEach((spec, i) => {
+      const cx = colW * (i + 0.5);
+      const k = clamp((p - i * 0.08) / 0.2, 0, 1);
+      if (k <= 0) return;
+
+      // 栏目分隔
+      if (i > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.10 * k;
+        ctx.strokeStyle = C.white;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(colW * i, H * 0.22);
+        ctx.lineTo(colW * i, H * 0.72);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      S.drawLabel(spec.name, cx, H * 0.24, spec.color, k, 19, 'center');
+      S.drawLabel(spec.sub, cx, H * 0.24 + 26, C.muted, k * 0.85, 11.5, 'center');
+
+      if (spec.key === 'pipeline') {
+        // 一条直线，三个节点，光点单向流动。
+        // 每个节点下面必须标出它是什么角色 —— 只画发光点的话，
+        // 观众看到的只是三个亮点，看不出"谁交给谁"。
+        const roles = ['规划', '执行', '复核'];
+        for (let j = 0; j < roles.length; j += 1) {
+          const x = cx - 96 + j * 96;
+          const appear = clamp((p - 0.2 - j * 0.08) / 0.14, 0, 1);
+          if (appear <= 0) continue;
+          S.glowDot(x, midY, 9 * appear, spec.color, appear);
+          S.roundRect(x - 30, midY + 32, 60, 24, 5, {
+            fill: S.hexA(spec.color, 0.14 * appear), stroke: S.hexA(spec.color, 0.5 * appear),
+            lw: 1, alpha: appear,
+          });
+          S.drawLabel(roles[j], x, midY + 44, spec.color, appear * 0.95, 12, 'center');
+        }
+        for (let j = 0; j < 2; j += 1) {
+          const x1 = cx - 96 + j * 96, x2 = x1 + 96;
+          S.arrow(x1, midY, x2, midY, S.hexA(spec.color, 0.5), k * 0.8, 1.4);
+          S.flowDot(x1, midY, x2, midY, p * 4 + j * 0.5, C.white, 0.8 * k);
+        }
+      } else if (spec.key === 'debate') {
+        // 两个节点来回弹，来回次数随进度增加；最后收敛到中间的裁判
+        const swing = Math.sin(p * 18) * 0.5 + 0.5;
+        const left = { x: cx - 74, y: midY - 26 };
+        const right = { x: cx + 74, y: midY - 26 };
+        S.glowDot(left.x, left.y, 9 * k, C.cyan, k);
+        S.glowDot(right.x, right.y, 9 * k, C.pink, k);
+        const ballX = lerp(left.x, right.x, swing);
+        S.glowDot(ballX, midY - 56, 4.5, C.white, k * 0.9);
+        S.arrow(left.x + 12, left.y, right.x - 12, right.y, S.hexA(C.muted, 0.3), k * 0.5, 1);
+        const judge = clamp((p - 0.62) / 0.16, 0, 1);
+        if (judge > 0) {
+          S.glowDot(cx, midY + 54, 11 * judge, C.amber, judge);
+          S.drawLabel('裁判', cx, midY + 80, C.amber, judge, 12, 'center');
+          S.arrow(left.x, left.y + 10, cx - 12, midY + 48, S.hexA(C.amber, 0.4), judge * 0.7, 1);
+          S.arrow(right.x, right.y + 10, cx + 12, midY + 48, S.hexA(C.amber, 0.4), judge * 0.7, 1);
+        }
+      } else {
+        // 中心向外分发，再收回；分发数随进度增加
+        const workers = 4;
+        const active = Math.ceil(clamp((p - 0.24) / 0.44, 0, 1) * workers);
+        S.glowDot(cx, midY - 34, 12 * k, spec.color, k);
+        S.drawLabel('Manager', cx, midY - 60, spec.color, k, 12, 'center');
+        for (let j = 0; j < workers; j += 1) {
+          const x = cx - 108 + j * 72;
+          const on = j < active;
+          const appear = clamp((p - 0.24 - j * 0.08) / 0.16, 0, 1);
+          if (appear <= 0) continue;
+          S.glowDot(x, midY + 46, on ? 8 * appear : 5 * appear, on ? spec.color : C.muted, appear * (on ? 1 : 0.45));
+          S.arrow(cx, midY - 22, x, midY + 34, S.hexA(spec.color, on ? 0.4 : 0.16), appear * (on ? 0.7 : 0.3), 1.1);
+          if (on) S.flowDot(cx, midY - 22, x, midY + 34, p * 6 + j * 0.4, C.white, 0.7);
+        }
+      }
+
+      S.drawLabel(spec.calls, cx, H * 0.66, spec.color, k * 0.9, 12.5, 'center');
+    });
+
+    if (p > 0.86) {
+      S.gradText('选模式，就是选代价', W / 2, H * 0.80, Math.min(31, W / 33),
+        easeOut((p - 0.86) / 0.14), 700);
+    }
+  },
+},
+
+/* ---------- 03 MCP 无状态 ---------- */
+{
+  id: 'mcp', num: '03', title: 'MCP 2026-07-28',
+  sub: '第 27 天 · 最重要的一个变化：协议变成无状态的',
+  caption: '没有握手、没有 Session、连接不等于会话。每次请求自带全部上下文。',
+  duration: 13000,
+  init() {
+    this.headers = [
+      { name: 'Mcp-Method', value: 'tools/call' },
+      { name: 'Mcp-Name', value: 'policy_lookup' },
+      { name: 'MCP-Protocol-Version', value: '2026-07-28' },
+    ];
+  },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const clientX = W * 0.16, serverX = W * 0.84, midY = H * 0.46;
+
+    // 旧协议：先握手建 Session，之后请求依赖这个状态
+    const oldK = 1 - clamp((p - 0.30) / 0.14, 0, 1);
+    if (oldK > 0.01) {
+      S.drawLabel('① 有状态：先握手，再依赖它', W / 2, H * 0.12, C.muted, oldK, 13, 'center');
+      // 旧协议的三个代价：握手成本、粘性会话、扩容受限。
+      // 这三条是教材 Day 27 明确讲到的工程影响，画出来这一块才不空。
+      const costs = ['每个新客户端都要重建连接', '请求必须落在同一个实例上', '扩缩容会打断在途会话'];
+      costs.forEach((text, i) => {
+        const k = oldK * clamp((p - 0.06 - i * 0.05) / 0.10, 0, 1);
+        if (k <= 0) return;
+        const y = H * 0.185 + i * 26;
+        S.drawLabel('✗', W * 0.30, y, C.pink, k * 0.9, 13);
+        S.drawLabel(text, W * 0.30 + 22, y, C.muted, k * 0.88, 12.5);
+      });
+      S.glowDot(clientX, midY, 12, C.purple, oldK);
+      S.glowDot(serverX, midY, 12, C.purple, oldK);
+      S.arrow(clientX + 16, midY, serverX - 16, midY, S.hexA(C.purple, 0.5 * oldK), oldK, 1.4);
+      ctx.save();
+      ctx.globalAlpha = oldK * (0.45 + 0.35 * Math.sin(p * 12));
+      ctx.strokeStyle = C.purple;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(clientX, midY + 26);
+      ctx.lineTo(serverX, midY + 26);
+      ctx.stroke();
+      ctx.restore();
+      S.drawLabel('Session（一直挂着）', W / 2, midY + 50, C.purple, oldK * 0.9, 12, 'center');
+      S.drawLabel('新增一个客户端就要新建一条连接', W / 2, midY + 74, C.muted, oldK * 0.8, 11.5, 'center');
+      // 划掉
+      ctx.save();
+      ctx.globalAlpha = clamp((p - 0.24) / 0.10, 0, 1) * 0.85;
+      ctx.strokeStyle = C.pink;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(W * 0.30, H * 0.16);
+      ctx.lineTo(W * 0.70, H * 0.16);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 新协议：每次请求都自带方法名、工具名、协议版本
+    const newK = clamp((p - 0.38) / 0.16, 0, 1);
+    if (newK <= 0) return;
+
+    S.drawLabel('② 无状态：每次请求自带全部上下文', W / 2, H * 0.32, C.cyan, newK, 13, 'center');
+    // 三个必需请求头的作用逐条说明 —— 否则光看字段名不知道它们在防什么
+    const roles = ['声明这次要调什么', '声明调的是哪个工具', '声明按哪一版规范解析'];
+    roles.forEach((text, i) => {
+      const k = newK * clamp((p - 0.56 - i * 0.06) / 0.12, 0, 1);
+      if (k <= 0) return;
+      const y = H * 0.62 + i * 25;
+      S.drawLabel('→', W * 0.30, y, C.green, k * 0.9, 13);
+      S.drawLabel(text, W * 0.30 + 22, y, C.muted, k * 0.85, 12.5);
+    });
+    S.glowDot(clientX, midY, 12, C.cyan, newK);
+    S.drawLabel('Client', clientX, midY + 30, C.cyan, newK * 0.9, 12, 'center');
+    S.glowDot(serverX, midY, 12, C.green, newK);
+    S.drawLabel('Server', serverX, midY + 30, C.green, newK * 0.9, 12, 'center');
+
+    // 请求块：里面装着三个必需的头
+    const boxW = Math.min(W * 0.46, 560);
+    const boxX = (W - boxW) / 2;
+    const boxY = midY - 52;
+    const appear = clamp((p - 0.44) / 0.14, 0, 1);
+    S.roundRect(boxX, boxY, boxW, 104, 10, {
+      fill: S.hexA(C.cyan, 0.07 * appear), stroke: S.hexA(C.cyan, 0.5 * appear),
+      lw: 1.3, alpha: appear, shadow: S.hexA(C.cyan, 0.25 * appear), blur: 18,
+    });
+    S.drawLabel('tools/call 请求', boxX + 16, boxY + 22, C.cyan, appear * 0.9, 11.5);
+    this.headers.forEach((header, i) => {
+      const hk = clamp((p - 0.50 - i * 0.06) / 0.12, 0, 1);
+      if (hk <= 0) return;
+      const y = boxY + 46 + i * 20;
+      S.drawLabel(header.name, boxX + 16, y, C.amber, hk, 11.5);
+      S.drawLabel(': ' + header.value, boxX + 210, y, C.white, hk * 0.92, 11.5);
+    });
+
+    // 请求→响应→断开：每次都重来
+    const cycle = (p - 0.44) / 0.56;
+    if (cycle > 0) {
+      const phase = (cycle * 3) % 1;
+      if (phase < 0.4) {
+        S.flowDot(clientX + 16, midY, serverX - 16, midY, cycle * 6, C.cyan, 0.95);
+      } else if (phase < 0.8) {
+        S.flowDot(serverX - 16, midY, clientX + 16, midY, cycle * 6, C.green, 0.95);
+      } else {
+        // 断开：画一个迅速散开的环
+        const k = (phase - 0.8) / 0.2;
+        ctx.save();
+        ctx.globalAlpha = (1 - k) * 0.6;
+        ctx.strokeStyle = C.muted;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(serverX, midY, 14 + k * 26, 0, TAU);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+    S.drawLabel('没有 Session 可以依赖 —— 所以服务器可以随便横向扩',
+      W / 2, boxY + 128, C.green, appear * 0.88, 12, 'center');
+
+    if (p > 0.88) {
+      S.gradText('连接 ≠ 会话', W / 2, H * 0.84, Math.min(34, W / 30), easeOut((p - 0.88) / 0.12), 700);
+    }
+  },
+},
+
+/* ---------- 04 护栏 ---------- */
+{
+  id: 'guards', num: '04', title: 'GUARDRAILS',
+  sub: '第 29 天 · 长任务的三个失控点',
+  caption: '步数会失控，预算会失控，上下文也会失控 —— 而且它们互相放大。',
+  duration: 11000,
+  init() { this.t = 0; this.events = []; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const cx = W * 0.5, cy = H * 0.34;
+
+    // 上面：步数在没有护栏时持续增长（对数曲线，看着就吓人）
+    const unguarded = clamp((p - 0.06) / 0.44, 0, 1);
+    const steps = Math.round(Math.pow(unguarded, 0.6) * 47);
+    S.drawLabel('没有护栏时的步数', W * 0.16, H * 0.16, C.pink, 0.9, 12.5);
+    S.drawLabel(String(steps), W * 0.16, H * 0.16 + 30, C.pink, 0.95, 34);
+
+    // 三条护栏，越晚出现说明它拦的是越靠后的问题
+    const guards = [
+      { name: '第一层 · 步数与超时', note: '超过 N 步就停，最基础也最容易被忘', color: C.cyan, at: 0.30 },
+      { name: '第二层 · 预算护栏', note: 'token 花超了就熔断，必须实现', color: C.amber, at: 0.46 },
+      { name: '第三层 · 上下文治理', note: '裁剪 / 压缩 / 外部化，三选一', color: C.green, at: 0.62 },
+    ];
+    guards.forEach((g, i) => {
+      const k = clamp((p - g.at) / 0.16, 0, 1);
+      if (k <= 0) return;
+      const y = H * 0.44 + i * 74;
+      const x = W * 0.20;
+      S.roundRect(x - 14, y - 26, Math.min(W * 0.60, 780), 56, 9, {
+        fill: S.hexA(g.color, 0.08 * k), stroke: S.hexA(g.color, 0.45 * k), lw: 1.2, alpha: k,
+      });
+      S.glowDot(x, y, 5, g.color, k);
+      S.drawLabel(g.name, x + 18, y - 8, g.color, k, 14);
+      S.drawLabel(g.note, x + 18, y + 13, C.muted, k * 0.88, 12);
+
+      // 护栏生效后，上面那个步数计数器被按住
+      if (k > 0.6) {
+        ctx.save();
+        ctx.globalAlpha = (k - 0.6) / 0.4 * 0.8;
+        ctx.strokeStyle = g.color;
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(W * 0.16 + 42, H * 0.16 + 30);
+        ctx.lineTo(x - 20, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+    });
+
+    // 三个失控点是互相放大的：用三角箭头表示
+    if (p > 0.72) {
+      const k = easeOut((p - 0.72) / 0.20);
+      const tri = [
+        { x: W * 0.72, y: H * 0.52, name: '步数↑' },
+        { x: W * 0.82, y: H * 0.66, name: '成本↑' },
+        { x: W * 0.62, y: H * 0.66, name: '上下文↑' },
+      ];
+      tri.forEach((n) => {
+        S.roundRect(n.x - 34, n.y - 15, 68, 30, 6, {
+          fill: S.hexA(C.pink, 0.12 * k), stroke: S.hexA(C.pink, 0.5 * k), lw: 1.1, alpha: k,
+        });
+        S.drawLabel(n.name, n.x, n.y, C.pink, k, 12, 'center');
+      });
+      S.arrow(tri[0].x, tri[0].y + 16, tri[1].x, tri[1].y - 16, S.hexA(C.pink, 0.5), k * 0.8, 1.2);
+      S.arrow(tri[1].x - 34, tri[1].y, tri[2].x + 34, tri[2].y, S.hexA(C.pink, 0.5), k * 0.8, 1.2);
+      S.arrow(tri[2].x, tri[2].y - 16, tri[0].x - 20, tri[0].y + 8, S.hexA(C.pink, 0.5), k * 0.8, 1.2);
+      S.drawLabel('互相放大', W * 0.73, H * 0.61, C.muted, k * 0.85, 11.5, 'center');
+    }
+
+    if (p > 0.88) {
+      S.gradText('护栏不是保险，是设计', W / 2, H * 0.87, Math.min(30, W / 33),
+        easeOut((p - 0.88) / 0.12), 700);
+    }
+  },
+},
+
+/* ---------- 05 FINALE ---------- */
+{
+  id: 'finale', num: '05', title: 'FINALE',
+  sub: '第 30 天 · 多 Agent + MCP + 可观测 + 护栏',
+  caption: '四个部件拼起来，才是一个能放手让它跑的系统。',
+  duration: 9500,
+  init() { this.t = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const cx = W / 2, cy = H * 0.42;
+    const parts = [
+      { name: '多 Agent', note: '分工协作', ang: -Math.PI / 2, color: C.purple },
+      { name: 'MCP Server', note: '外部能力接入', ang: 0, color: C.cyan },
+      { name: '可观测', note: '追踪每一层', ang: Math.PI / 2, color: C.green },
+      { name: '成本护栏', note: '跑不飞', ang: Math.PI, color: C.amber },
+    ];
+    const radius = Math.min(W, H) * 0.24;
+
+    // 中心：能上线的系统
+    const core = clamp(p / 0.5, 0, 1);
+    S.glowDot(cx, cy, 20 * core, C.cyan, core * 0.9);
+    S.glowDot(cx, cy, 9 * core, C.white, core);
+    ctx.save();
+    ctx.globalAlpha = 0.3 * core;
+    ctx.strokeStyle = C.cyan;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 30 + Math.sin(p * 6) * 3, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+
+    parts.forEach((part, i) => {
+      const k = clamp((p - 0.22 - i * 0.11) / 0.20, 0, 1);
+      if (k <= 0) return;
+      const dist = radius * easeOut(k);
+      const x = cx + Math.cos(part.ang) * dist;
+      const y = cy + Math.sin(part.ang) * dist;
+      S.arrow(cx + Math.cos(part.ang) * 34, cy + Math.sin(part.ang) * 34,
+        x - Math.cos(part.ang) * 30, y - Math.sin(part.ang) * 30,
+        S.hexA(part.color, 0.45), k * 0.75, 1.4);
+      S.glowDot(x, y, 11 * k, part.color, k);
+      S.roundRect(x - 56, y + 20, 112, 30, 6, {
+        fill: S.hexA(part.color, 0.12), stroke: S.hexA(part.color, 0.45), lw: 1, alpha: k,
+      });
+      S.drawLabel(part.name, x, y + 35, part.color, k, 12.5, 'center');
+      S.drawLabel(part.note, x, y + 64, C.muted, k * 0.85, 11, 'center');
+      // 数据在滴答流动，表示系统在运转
+      S.flowDot(cx + Math.cos(part.ang) * 34, cy + Math.sin(part.ang) * 34,
+        x - Math.cos(part.ang) * 30, y - Math.sin(part.ang) * 30,
+        p * 5 + i * 0.3, C.white, k * 0.7);
+    });
+
+    if (p > 0.82) {
+      S.gradText('这一章之后，你能交付一个系统', cx, H * 0.86, Math.min(30, W / 34),
+        easeOut((p - 0.82) / 0.18), 700);
+    }
+  },
+},
+];
+
+S.start({
+  title: 'AI MASTER / MULTI-AGENT',
+  learnUrl: '/chapter/6',
+  learnLabel: '开始学习多智能体与 MCP',
+  learnSub: 'DAY 26 – 30 · 三种协作模式 · MCP 无状态协议 · 成本护栏',
+  scenes: SCENES,
+});
+</script>
+</body>
+</html>

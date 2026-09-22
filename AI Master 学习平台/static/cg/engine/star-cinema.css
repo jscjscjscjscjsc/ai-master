@@ -1,0 +1,103 @@
+/* StarCinema 的宿主样式。
+   视觉语言直接沿用原版 transformer_cg：深空底色、青紫渐变标题、
+   Orbitron 大写标题 + JetBrains Mono 标注、底部极细进度条。
+   换的是引擎的组织方式，不是观感 —— 观感是这门课的资产。 */
+
+:root {
+  --bg: #060818;
+  --cyan: #00d9ff; --purple: #a855f7; --pink: #ec4899;
+  --green: #34d399; --amber: #fbbf24;
+  --text: #e6edf6; --muted: #8aa0bd;
+  --grad: linear-gradient(120deg, #00d9ff 0%, #a855f7 60%, #ec4899 100%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+body {
+  font-family: 'Noto Sans SC', 'Rajdhani', system-ui, sans-serif;
+  color: var(--text);
+}
+body::before {
+  position: fixed; z-index: 0; inset: 0; pointer-events: none; content: '';
+  background:
+    radial-gradient(60vw 60vw at 12% 8%, rgba(0, 217, 255, .10), transparent 60%),
+    radial-gradient(50vw 50vw at 88% 22%, rgba(168, 85, 247, .12), transparent 60%),
+    radial-gradient(60vw 60vw at 50% 100%, rgba(236, 72, 153, .08), transparent 60%);
+}
+#stage { position: fixed; z-index: 1; inset: 0; display: block; width: 100%; height: 100%; }
+
+.brand {
+  position: fixed; z-index: 3; top: 22px; left: 26px;
+  font: 900 14px 'Orbitron', sans-serif; letter-spacing: 2px; opacity: .6;
+}
+.brand span { color: var(--cyan); }
+
+.scene-info { position: fixed; z-index: 3; left: 6vw; bottom: 124px; max-width: 66vw; transition: opacity .5s; }
+.scene-num { color: var(--cyan); font: 13px 'JetBrains Mono', monospace; letter-spacing: 4px; opacity: .85; }
+.scene-title {
+  margin: 6px 0 10px; font: 900 clamp(30px, 5.2vw, 68px)/1 'Orbitron', sans-serif; letter-spacing: -1px;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.scene-sub { color: var(--muted); font: 500 clamp(14px, 1.5vw, 19px) 'Rajdhani', 'Noto Sans SC', sans-serif; letter-spacing: 1px; }
+
+.caption {
+  position: fixed; z-index: 3; left: 50%; bottom: 92px; transform: translateX(-50%);
+  max-width: 84vw; color: var(--text); font-size: clamp(13px, 1.4vw, 17px); font-style: italic;
+  text-align: center; text-shadow: 0 2px 24px rgba(0, 0, 0, .7);
+  opacity: 0; transition: opacity .6s; pointer-events: none;
+}
+.caption.show { opacity: .95; }
+
+.cta-wrap {
+  position: fixed; z-index: 4; left: 50%; top: 56%; text-align: center;
+  opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(.92);
+  transition: opacity .8s, transform .8s;
+}
+.cta-wrap.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+.cta {
+  display: inline-block; padding: 17px 48px; border-radius: 60px; text-decoration: none;
+  background: var(--grad); color: #03122b;
+  font: 700 clamp(16px, 1.9vw, 23px) 'Orbitron', sans-serif; letter-spacing: 3px;
+  box-shadow: 0 0 40px rgba(0, 217, 255, .55), 0 0 90px rgba(168, 85, 247, .3);
+  animation: ctaPulse 2.6s ease-in-out infinite; transition: transform .25s, box-shadow .25s;
+}
+.cta:hover { transform: translateY(-3px) scale(1.04); }
+.cta .arrow { display: inline-block; transition: transform .25s; }
+.cta:hover .arrow { transform: translateX(7px); }
+.cta-sub { margin-top: 16px; color: var(--muted); font: 12px 'JetBrains Mono', monospace; letter-spacing: 3px; }
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(0, 217, 255, .55), 0 0 90px rgba(168, 85, 247, .3); }
+  50% { box-shadow: 0 0 64px rgba(0, 217, 255, .8), 0 0 130px rgba(236, 72, 153, .5); }
+}
+
+.bottom-bar { position: fixed; z-index: 3; right: 0; bottom: 0; left: 0; padding: 0 6vw 20px; transition: opacity .4s; }
+body.ui-hidden .bottom-bar, body.ui-hidden .brand, body.ui-hidden .scene-info { opacity: 0; pointer-events: none; }
+.progress-track {
+  position: relative; height: 3px; margin-bottom: 13px; border-radius: 2px;
+  background: rgba(255, 255, 255, .09); cursor: pointer;
+}
+.progress-fill {
+  position: absolute; top: 0; left: 0; height: 100%; width: 0;
+  border-radius: 2px; background: var(--grad); box-shadow: 0 0 10px rgba(0, 217, 255, .6);
+}
+.chapter-marks { position: absolute; inset: 0; }
+.chapter-marks .mk {
+  position: absolute; top: -3px; width: 9px; height: 9px; padding: 0;
+  border: 0; border-radius: 50%; background: rgba(255, 255, 255, .22);
+  transform: translate(-50%, 0); cursor: pointer; transition: .2s;
+}
+.chapter-marks .mk:hover { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.chapter-marks .mk.passed { background: rgba(0, 217, 255, .55); }
+.chapter-marks .mk.cur { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+
+.bar-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.time-label { color: var(--muted); font: 12px 'JetBrains Mono', monospace; letter-spacing: 1px; }
+.controls { display: flex; gap: 9px; }
+.ctrl-btn {
+  min-width: 40px; height: 34px; padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, .16); border-radius: 8px;
+  background: rgba(0, 0, 0, .34); color: var(--text);
+  font: 500 12px 'Rajdhani', sans-serif; letter-spacing: 1px; cursor: pointer;
+  backdrop-filter: blur(6px); transition: .2s;
+}
+.ctrl-btn:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 16px rgba(0, 217, 255, .28); }

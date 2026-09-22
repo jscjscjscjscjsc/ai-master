@@ -7,19 +7,47 @@
 {% endblock %}
 
 {% block content %}
+{# ── 章节开场 ──────────────────────────────────────────────
+   有 CG 的章节，把 CG 当成这一章的门：进去之前先看 30 秒电影，
+   而不是直接甩一屏正文。这是原版 AI Master 最值钱的东西，
+   所以它必须在首屏、必须显眼、必须能一键全屏播放。 #}
 <section class="ch-head fade-up" style="--accent:{{ accent }}">
+  {% if cg_assets %}
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="{{ cg_assets[0].url }}">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>{{ cg_assets[0].title }}</h2>
+      <p>{{ cg_assets[0].blurb }}</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    {% if cg_assets|length > 1 %}
+    <div class="ch-cg-rest">
+      {% for item in cg_assets[1:] %}
+      <a class="ch-cg-chip {{ item.kind }}" href="{{ item.url }}" target="_blank" rel="noreferrer">
+        <b>{{ item.title }}</b><em>{{ item.blurb }}</em>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
   <div class="ch-head-copy">
     <p class="kicker">SECTOR {{ '%02d' % chapter.id }} / {{ chapter.stage }}</p>
     <h1>{{ chapter.icon }} {{ chapter.title }}</h1>
     <p class="lead">{{ chapter.description }}</p>
     <div class="row">
-      <span class="chip">{{ chapter.level }}</span>
-      <span class="chip">≈{{ chapter.hours }} 小时</span>
-      <span class="chip">{{ kps|length }} 个知识点</span>
-      <span class="chip">{{ total_questions }} 道练习</span>
+      {% for fact in facts %}
+      <span class="chip"><b style="color:var(--ink)">{{ fact.value }}</b> {{ fact.label }}</span>
+      {% endfor %}
       {% if chapter.highlight %}<span class="chip violet">平台主线</span>{% endif %}
+      {% for tag in chapter.tags or [] %}<span class="chip">{{ tag }}</span>{% endfor %}
     </div>
   </div>
+
   <div class="ch-head-side">
     <div class="card">
       <div class="progress-row">
@@ -31,22 +59,35 @@
         <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
       </div>
       {% if prev_chapter %}<a class="ch-nav" href="/chapter/{{ prev_chapter }}">← 上一章</a>{% endif %}
-      {% if next_chapter %}<a class="ch-nav" href="/chapter/{{ next_chapter }}">下一章 →</a>{% endif %}
+      {% if next_chapter %}
+      <a class="ch-nav ch-nav-warp" href="/transition?to=/chapter/{{ next_chapter }}&kicker=SECTOR {{ '%02d' % next_chapter }}&next=正在跃迁到 {{ next_title }}">
+        下一章 →<em>走星际跃迁</em>
+      </a>
+      {% endif %}
     </div>
   </div>
 </section>
 
+{% if chapter.overview %}
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson">{{ chapter.overview | safe }}</div>
+  </div>
+</section>
+{% endif %}
+
 <section class="section">
   <header>
-    <h2>知识航线</h2>
-    <small>每节下面的题做完就会亮起来</small>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
   </header>
   <div class="route" id="route">
     {% for kp in kps %}
     <article class="kp" id="kp-{{ kp.index + 1 }}" data-kp-index="{{ kp.index }}"
              data-kp-key="{{ chapter.id }}_{{ kp.index }}" {% if kp.done %}data-done="1"{% endif %}>
       <div class="kp-head">
-        <span class="kp-no">{{ '%02d' % (kp.index + 1) }}</span>
+        <span class="kp-no">{% if kp.day %}D{{ '%02d' % kp.day }}{% else %}{{ '%02d' % (kp.index + 1) }}{% endif %}</span>
         <div class="kp-head-main">
           <h3>{{ kp.title }}</h3>
           <div class="kp-meta">
@@ -58,9 +99,7 @@
         <button class="btn sm" data-act="toggle">{% if loop.first %}收起{% else %}展开{% endif %}</button>
       </div>
 
-      {# 默认展开第一节，其余收起。
-         全部收起会让页面看起来"这一章没有内容"；全部展开又有 3 万像素高，
-         学生根本划不到底。展开第一节等于先给一个可读的起点。 #}
+      {# 默认展开第一节，其余收起：全收起像这一章没内容，全展开学生划不到底。 #}
       <div class="kp-body" {% if not loop.first %}hidden{% endif %}>
         <div class="lesson">{{ kp.content | safe }}</div>
 
@@ -93,11 +132,37 @@
   </div>
 </section>
 
+{% if chapter.summary %}
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson">{{ chapter.summary | safe }}</div>
+  </div>
+</section>
+{% endif %}
+
 {% if chapter_questions %}
 <section class="section">
-  <header><h2>本章综合自测</h2><small>覆盖全章的选择题</small></header>
+  <header><h2>章节综合自测</h2><small>覆盖全章的选择题</small></header>
   <div class="practice">
     <div class="q-slots" data-questions='{{ chapter_questions | tojson }}'></div>
+  </div>
+</section>
+{% endif %}
+
+{% if neighbors %}
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    {% for row in neighbors %}
+    <a class="ch-neighbor {{ 'hot' if row.highlight else '' }}" href="/chapter/{{ row.id }}">
+      <span class="cn-rel">{{ '上一章' if row.relation == 'prev' and row.gap == 1
+                             else ('下一章' if row.relation == 'next' and row.gap == 1
+                                   else ('前 %d 章' % row.gap if row.relation == 'prev' else '后 %d 章' % row.gap)) }}</span>
+      <b>{{ row.icon }} {{ row.title }}</b>
+      <em>{{ row.stage }}</em>
+    </a>
+    {% endfor %}
   </div>
 </section>
 {% endif %}
@@ -111,9 +176,26 @@
     <div class="row">
       <a class="btn primary" href="/training?chapters={{ chapter.id }}">做本章专项练习</a>
       <a class="btn agent" href="/coach?chapter={{ chapter.id }}">让教练追问我</a>
+      {% if next_chapter %}
+      <a class="btn ghost" href="/transition?to=/chapter/{{ next_chapter }}&kicker=章节完成&next=正在跃迁到 {{ next_title }}">⚡ 跃迁到下一章</a>
+      {% endif %}
     </div>
   </div>
 </section>
+
+{# 页内预览 CG：不开新标签，直接在章节页里铺满播放。
+   原版是独立页面，学生在章节里读不到「开场讲什么」；嵌进来之后
+   先看再读，节奏是对的。 #}
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
 {% endblock %}
 
 {% block scripts %}

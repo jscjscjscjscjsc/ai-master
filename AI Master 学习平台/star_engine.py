@@ -782,14 +782,21 @@ def snapshot(username, state):
     }
 
 
-def claim_trials(username):
-    """唯一写回点：把已达成的试炼奖励发出去。靠 rewards 账本天然幂等。"""
+def claim_trials(username, load=None, store=None):
+    """唯一写回点：把已达成的试炼奖励发出去。靠 rewards 账本天然幂等。
+
+    load / store 由调用方注入，默认走 lab 的磁盘实现。
+    注入是必需的：演示账号的档案只在内存里，如果这里硬编码走磁盘，
+    演示账号点一下修为页就会在 data/training/ 下生成一个空档。
+    """
     if not username or username == 'guest':
         return [], None
+    load = load or lab.load_state
+    store = store or lab.mutate_state
     granted = []
     profile = None
     for _round in range(3):
-        state = lab.load_state(username)
+        state = load(username)
         claimed = {key.split(':', 1)[1] for key in (state.get('rewards') or {}) if key.startswith('trial:')}
         pending = [t for t in evaluate_trials(derive_stats(state), claimed) if t['done'] and not t['claimed']]
         if not pending:
@@ -799,7 +806,7 @@ def claim_trials(username):
             def mutate(current, trial=trial):
                 lab.award(current, 'trial', trial['realm'], trial['reward'],
                           note='%s · 星辰试炼全达成' % trial['realm'])
-            state = lab.mutate_state(username, mutate)
+            state = store(username, mutate)
             granted.append({'realm': trial['realm'], 'reward': trial['reward']})
         profile = level_from_points(state.get('points'))
     return granted, profile

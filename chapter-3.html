@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAG 检索增强生成 · AI Master 星辰学习系统</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/chapter.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="chapter-page"
+      data-page="RAG 检索增强生成" data-chapter-id="3">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+
+<section class="ch-head fade-up" style="--accent:#ffd28a">
+  
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="static/cg/rag_cg/index.html">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>开场 · RAG 技术叙事</h2>
+      <p>6 幕 CG：为什么「外挂知识库」能治幻觉</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    
+    <div class="ch-cg-rest">
+      
+      <a class="ch-cg-chip lab" href="static/cg/rag_starlab/index.html" target="_blank" rel="noreferrer">
+        <b>实验室 · 私有 RAG 全链路</b><em>混合检索 + 重排 + 引用，六步走完一条 RAG 管线</em>
+      </a>
+      
+      <a class="ch-cg-chip cine" href="static/cg/prompt_cg.html" target="_blank" rel="noreferrer">
+        <b>开场 · 提示词简史</b><em>另一版叙事：提示词工程是怎么变成一门工程的</em>
+      </a>
+      
+      <a class="ch-cg-chip cine" href="static/cg/revelation_cg.html" target="_blank" rel="noreferrer">
+        <b>收束 · 星辰启示</b><em>翻过这一章时，看一眼星图留言</em>
+      </a>
+      
+    </div>
+    
+  </div>
+  
+
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR 03 / 阶段二 · 知识增强</p>
+    <h1>📚 RAG 检索增强生成</h1>
+    <p class="lead">Day 11–16：RAG 原理与文档加载；Chunking：把长文档切成可检索单元；Embedding 与向量数据库 等 6 天内容</p>
+    <div class="row">
+      
+      <span class="chip"><b style="color:var(--ink)">11–16</b> Day</span>
+      
+      <span class="chip"><b style="color:var(--ink)">6 节</b> 知识点</span>
+      
+      <span class="chip"><b style="color:var(--ink)">约 36 小时</b> 学时</span>
+      
+      <span class="chip"><b style="color:var(--ink)">42 道</b> 练习题</span>
+      
+      
+      <span class="chip">文档加载</span><span class="chip">Chunking</span><span class="chip">向量检索</span><span class="chip">BM25</span><span class="chip">RRF 重排</span><span class="chip">RAG 评测</span>
+    </div>
+  </div>
+
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / 6</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="training.html?chapters=3">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      <a class="ch-nav" href="chapter-2.html">← 上一章</a>
+      
+      <a class="ch-nav ch-nav-warp" href="warp.html?to=/chapter/4&kicker=SECTOR 04&next=正在跃迁到 Agent 核心机制（从零自研）">
+        下一章 →<em>走星际跃迁</em>
+      </a>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson"><blockquote>建议学时：6 天，每天 6 学时 学习方式：原理讲授、教师手写、分组实验、项目迭代 章节交付：可评测、可拒答、带来源引用的企业知识库问答系统</blockquote>
+<h3>3.0 本章学习目标</h3>
+<p>完成本章后，学生能够：</p>
+<ol><li>解释 RAG 的数据流，以及它缓解知识过期和无依据回答的原因。</li><li>将 PDF、Word、HTML 转成统一的 <code>Document</code> 数据。</li><li>独立实现固定窗口、递归和基于段落的切块，并通过实验选择参数。</li><li>使用 Embedding 和向量库完成增、删、查与元数据过滤。</li><li>实现 BM25 与向量检索的融合，理解 rerank 的位置和价值。</li><li>为回答添加证据引用、低置信拒答与可复现评测。</li><li>将完整链路封装成 FastAPI 服务，并能解释每一层的输入和输出。</li></ol>
+<h3>3.1 先理解 RAG 的责任边界</h3>
+<p>RAG 是 Retrieval-Augmented Generation，即“检索增强生成”。系统先从受控知识库中检索证据，再把证据与问题一起交给模型生成答案。</p>
+<pre class="code lang-mermaid"><code>flowchart TD
+    subgraph Offline[离线索引阶段]
+        A[企业文档] --&gt; B[解析清洗]
+        B --&gt; C[切块]
+        C --&gt; D[Embedding]
+        D --&gt; E[(向量库)]
+    end
+    subgraph Online[在线问答阶段]
+        Q[用户问题] --&gt; QE[问题向量]
+        QE --&gt; R[多路召回]
+        E --&gt; R
+        R --&gt; RR[重排]
+        RR --&gt; P[组装证据与提示词]
+        P --&gt; L[LLM 生成]
+        L --&gt; O[答案、引用、置信信息]
+    end</code></pre>
+<p>RAG 可以缓解：</p>
+<ul><li>模型训练数据中没有企业私有知识。</li><li>模型知识存在时间截止点。</li><li>回答缺少可核查证据。</li><li>频繁微调带来的成本和更新困难。</li></ul>
+<p>RAG 不能自动解决：</p>
+<ul><li>源文档本身错误或互相矛盾。</li><li>解析漏字、切块破坏语义、检索召回错误。</li><li>提示词注入和越权读取。</li><li>模型忽略证据或错误归纳。</li></ul>
+<p>课堂判断句：<strong>RAG 的答案上限由知识库质量决定，答案下限由检索和生成护栏决定。</strong></p>
+<h4>3.1.1 课堂环境建议</h4>
+<pre class="code lang-text"><code>Python &gt;= 3.11
+httpx
+python-dotenv
+pymupdf
+python-docx
+beautifulsoup4
+chromadb
+fastapi
+uvicorn
+pydantic &gt;= 2
+pytest</code></pre>
+<p>上表是依赖名称，不是可复现的版本锁。教师应在开课前的全新虚拟环境验证代码，把实际通过测试的精确版本写入 <code>requirements.txt</code>；不要让学生在同一次实验中使用不同主版本。</p>
+<hr></div>
+  </div>
+</section>
+
+
+<section class="section">
+  <header>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
+  </header>
+  <div class="route" id="route">
+    
+    <article class="kp" id="kp-1" data-kp-index="0"
+             data-kp-key="3_0" >
+      <div class="kp-head">
+        <span class="kp-no">D11</span>
+        <div class="kp-head-main">
+          <h3>Day 11｜RAG 原理与文档加载</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">收起</button>
+      </div>
+
+      
+      <div class="kp-body" >
+        <div class="lesson"><h4>3.2.1 当日问题与验收</h4>
+<p>当日问题：不同格式的文件怎样变成统一、可追踪的文本数据？</p>
+<p>验收要求：</p>
+<ul><li>成功解析 PDF、Word、HTML 各一份。</li><li>每条输出包含 <code>source</code>、<code>page</code> 或 <code>section</code>、<code>loader</code>。</li><li>输出文档数、总字符数、空文档数和异常列表。</li><li>扫描版 PDF 能被识别为空文本或低文本量，不能悄悄入库。</li></ul>
+<h4>3.2.2 统一文档对象</h4>
+<pre class="code lang-python"><code>from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(frozen=True)
+class Document:
+    text: str
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+def normalize_text(text: str) -&gt; str:
+    lines = [line.strip() for line in text.replace("\u3000", " ").splitlines()]
+    return "\n".join(line for line in lines if line)</code></pre>
+<p>逐行讲解：</p>
+<ul><li><code>dataclass</code> 让对象结构明确，打印和测试更方便。</li><li><code>metadata</code> 保存溯源信息，不要把文件名拼进正文干扰检索。</li><li><code>replace("\u3000", " ")</code> 统一中文全角空格。</li><li>清理空行时要谨慎。表格和代码的换行可能承载结构，生产项目应按文档类型使用不同清洗器。</li></ul>
+<h4>3.2.3 三种格式加载器</h4>
+<pre class="code lang-python"><code>from pathlib import Path
+from bs4 import BeautifulSoup
+import pymupdf
+from docx import Document as WordDocument
+
+
+def load_pdf(path: Path) -&gt; list[Document]:
+    items: list[Document] = []
+    with pymupdf.open(path) as pdf:
+        for page_index, page in enumerate(pdf):
+            text = normalize_text(page.get_text("text"))
+            if text:
+                items.append(Document(
+                    text=text,
+                    metadata={
+                        "source": path.name,
+                        "page": page_index + 1,
+                        "loader": "pymupdf",
+                    },
+                ))
+    return items
+
+
+def load_docx(path: Path) -&gt; list[Document]:
+    doc = WordDocument(path)
+    paragraphs = [normalize_text(p.text) for p in doc.paragraphs]
+    text = "\n".join(p for p in paragraphs if p)
+    return [Document(text, {"source": path.name, "loader": "python-docx"})] if text else []
+
+
+def load_html(path: Path) -&gt; list[Document]:
+    html = path.read_text(encoding="utf-8")
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup(["script", "style", "nav", "footer"]):
+        tag.decompose()
+    text = normalize_text(soup.get_text("\n"))
+    title = normalize_text(soup.title.get_text()) if soup.title else ""
+    return [Document(text, {
+        "source": path.name,
+        "title": title,
+        "loader": "beautifulsoup",
+    })] if text else []
+
+
+LOADERS = {".pdf": load_pdf, ".docx": load_docx, ".html": load_html, ".htm": load_html}
+
+
+def load_file(path: Path) -&gt; list[Document]:
+    loader = LOADERS.get(path.suffix.lower())
+    if loader is None:
+        raise ValueError(f"不支持的格式: {path.suffix}")
+    return loader(path)</code></pre>
+<p>关键讲解：</p>
+<ul><li>每页 PDF 单独形成 <code>Document</code>，可保留页码引用。</li><li>Word 示例先处理段落。真实项目还要单独处理表格、页眉页脚和图片文字。</li><li>HTML 主动去除脚本、样式和导航，减少页面模板噪声。</li><li><code>LOADERS</code> 是一个分发表。新增 Markdown 加载器时不需要改 <code>load_file</code> 的控制流。</li></ul>
+<h4>3.2.4 数据质量报告</h4>
+<pre class="code lang-python"><code>def quality_report(documents: list[Document]) -&gt; dict[str, object]:
+    lengths = [len(doc.text) for doc in documents]
+    return {
+        "documents": len(documents),
+        "characters": sum(lengths),
+        "empty": sum(length == 0 for length in lengths),
+        "short_under_30": sum(length &lt; 30 for length in lengths),
+        "max_length": max(lengths, default=0),
+    }</code></pre>
+<p>故障注入：教师提供一份扫描版 PDF。若解析字符数接近 0，学生应标记为“需要 OCR”，而不是把空内容写入向量库。</p>
+<p><strong>运行验证</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch03/10_load_documents.py</code></pre>
+<p><img src="static/course-assets/ch03/01_load_documents.webp" alt="三种格式文档加载与质量报告的真实输出：员工手册.pdf（13 页 / 4348 字符）、报销制度.docx（1598 字符）、公司福利.html（1287 字符）逐一列出加载器与元数据，扫描件示例.pdf 解析出 0 字符被单独标记为「需要 OCR」，末尾是溯源元数据抽查表" loading="lazy"></p>
+<p><strong>这张图要看三处</strong>：</p>
+<ol><li><strong>逐文件质量体检表</strong>——每个文件的加载器（<code>pymupdf</code> / <code>python-docx</code> / <code>beautifulsoup</code>）、文档数、字符数、空文档数一次列全。这就是 3.2.4 要求的「输出文档数、总字符数、空文档数和异常列表」落到终端上的样子。</li><li><strong>汇总指标</strong>——解析文档数（Document 条数）15、总字符数 7233、空文档 0、最长文档 1598、最短 234、平均长度 482.2。</li><li><strong>故障注入那一段</strong>——<code>扫描件示例.pdf</code> 有 1 页却只解析出 0 个字符，报告直接判定「疑似扫描件/图片型 PDF，需要 OCR 后才能入库」，并写明<strong>风险</strong>：直接入库会导致检索不到内容，用户看到「知识库中没有依据」。</li></ol>
+<p>最后一张<strong>溯源元数据抽查表</strong>（source / page / loader / 字符数 / 文本预览）是验收里「每条输出包含 <code>source</code>、<code>page</code>、<code>loader</code>」的直接证据：逐页给出 <code>员工手册.pdf</code> 第 1 至 13 页，每页正文预览可见「第一章 / 第二章 试用期与劳动合同」等章节标题，说明 <code>page</code> 元数据没有错位。</p>
+<p>真实数据：</p>
+<table><thead><tr><th style="text-align:left">文件名</th><th style="text-align:left">格式</th><th style="text-align:left">加载器</th><th style="text-align:right">文档数</th><th style="text-align:right">字符数</th><th style="text-align:right">空文档</th><th style="text-align:left">页码范围</th><th style="text-align:left">需要 OCR</th></tr></thead><tbody><tr><td style="text-align:left">员工手册.pdf</td><td style="text-align:left">.pdf</td><td style="text-align:left">pymupdf</td><td style="text-align:right">13</td><td style="text-align:right">4348</td><td style="text-align:right">0</td><td style="text-align:left">1-13</td><td style="text-align:left">否</td></tr><tr><td style="text-align:left">报销制度.docx</td><td style="text-align:left">.docx</td><td style="text-align:left">python-docx</td><td style="text-align:right">1</td><td style="text-align:right">1598</td><td style="text-align:right">0</td><td style="text-align:left">-</td><td style="text-align:left">否</td></tr><tr><td style="text-align:left">公司福利.html</td><td style="text-align:left">.html</td><td style="text-align:left">beautifulsoup</td><td style="text-align:right">1</td><td style="text-align:right">1287</td><td style="text-align:right">0</td><td style="text-align:left">-</td><td style="text-align:left">否</td></tr><tr><td style="text-align:left">扫描件示例.pdf</td><td style="text-align:left">.pdf</td><td style="text-align:left">-</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:left">-</td><td style="text-align:left"><strong>是</strong></td></tr></tbody></table>
+<h4>3.2.5 当日教学流程</h4>
+<table><thead><tr><th style="text-align:right">时间</th><th style="text-align:left">教学活动</th><th style="text-align:left">学生产出</th></tr></thead><tbody><tr><td style="text-align:right">20 min</td><td style="text-align:left">比较模型裸答与查制度后的回答</td><td style="text-align:left">RAG 必要性说明</td></tr><tr><td style="text-align:right">50 min</td><td style="text-align:left">讲离线、在线两条链路</td><td style="text-align:left">手绘数据流</td></tr><tr><td style="text-align:right">90 min</td><td style="text-align:left">教师手写统一加载器</td><td style="text-align:left">可运行代码</td></tr><tr><td style="text-align:right">80 min</td><td style="text-align:left">学生解析三种格式</td><td style="text-align:left">JSONL 结果</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">质量统计与扫描件故障注入</td><td style="text-align:left">数据质量报告</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">抽查、复盘、提交</td><td style="text-align:left">Git commit</td></tr></tbody></table>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 1, "id": "q03-01-01", "last_answer": "", "last_feedback": "", "options": ["\u6807\u8bb0\u4e3a\u300c\u9700\u8981 OCR\u300d\uff0c\u4e0d\u80fd\u628a\u7a7a\u5185\u5bb9\u5199\u5165\u5411\u91cf\u5e93", "\u7167\u5e38\u5165\u5e93\uff0c\u68c0\u7d22\u4e0d\u5230\u662f\u7528\u6237\u63d0\u95ee\u65b9\u5f0f\u7684\u95ee\u9898", "\u628a\u6587\u4ef6\u540d\u5f53\u4f5c\u6b63\u6587\u5199\u5165\uff0c\u4fdd\u8bc1\u81f3\u5c11\u6709\u4e00\u6761\u8bb0\u5f55", "\u76f4\u63a5\u8df3\u8fc7\u8be5\u6587\u4ef6\uff0c\u4e0d\u8bb0\u5f55\u4efb\u4f55\u5f02\u5e38\u4fe1\u606f"], "points": 27, "solved": false, "statement": "\u4e00\u4efd\u626b\u63cf\u7248 PDF \u6709 1 \u9875\uff0c\u7528 pymupdf \u89e3\u6790\u540e\u5f97\u5230 0 \u4e2a\u5b57\u7b26\u3002\n\u6309\u7167\u5f53\u65e5\u9a8c\u6536\u8981\u6c42\uff0c\u6b63\u786e\u7684\u5904\u7406\u65b9\u5f0f\u662f\u4ec0\u4e48\uff1f", "tags": ["\u6587\u6863\u52a0\u8f7d", "\u6545\u969c\u6ce8\u5165", "OCR"], "title": "\u626b\u63cf\u7248 PDF \u7684\u5904\u7406\u65b9\u5f0f", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-01-02", "last_answer": "", "last_feedback": "", "options": ["\u4fdd\u7559\u9875\u7801\u5f15\u7528\uff0c\u68c0\u7d22\u547d\u4e2d\u540e\u80fd\u5b9a\u4f4d\u5230\u539f\u6587\u7b2c\u51e0\u9875", "\u51cf\u5c11 Document \u6570\u91cf\uff0c\u964d\u4f4e\u5411\u91cf\u5e93\u5b58\u50a8\u5f00\u9500", "\u8ba9 normalize_text \u53ea\u9700\u5904\u7406\u5355\u9875\uff0c\u901f\u5ea6\u66f4\u5feb", "\u907f\u514d pymupdf \u5728\u8de8\u9875\u8bfb\u53d6\u65f6\u629b\u51fa\u5f02\u5e38"], "points": 76, "solved": false, "statement": "load_pdf \u5bf9\u6bcf\u4e00\u9875\u5355\u72ec\u751f\u6210\u4e00\u4e2a Document\uff0cmetadata \u91cc\u5199\u5165 page \u4e3a page_index + 1\u3002\n\u8fd9\u6837\u8bbe\u8ba1\u7684\u4e3b\u8981\u6536\u76ca\u662f\u4ec0\u4e48\uff1f", "tags": ["PDF\u52a0\u8f7d", "\u5143\u6570\u636e", "\u6eaf\u6e90"], "title": "PDF \u9010\u9875\u751f\u6210 Document \u7684\u7406\u7531", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-01-03", "last_answer": "", "last_feedback": "", "options": ["\u53ea\u9700\u5f80\u5b57\u5178\u91cc\u52a0\u4e00\u6761\u6620\u5c04\uff0c\u4e0d\u5fc5\u4fee\u6539 load_file \u7684\u63a7\u5236\u6d41", "\u53ef\u4ee5\u81ea\u52a8\u8bc6\u522b\u6587\u4ef6\u771f\u5b9e\u7c7b\u578b\uff0c\u4e0d\u518d\u4f9d\u8d56\u540e\u7f00\u540d", "\u80fd\u4fdd\u8bc1\u6240\u6709\u52a0\u8f7d\u5668\u8fd4\u56de\u7684 Document \u6570\u91cf\u4e00\u81f4", "\u53ef\u4ee5\u8ba9\u4e0d\u652f\u6301\u7684\u683c\u5f0f\u81ea\u52a8\u964d\u7ea7\u4e3a\u7eaf\u6587\u672c\u8bfb\u53d6"], "points": 76, "solved": false, "statement": "\u4ee3\u7801\u7528 LOADERS = {\".pdf\": load_pdf, \".docx\": load_docx, \".html\": load_html, \".htm\": load_html} \u505a\u540e\u7f00\u5230\u52a0\u8f7d\u5668\u7684\u6620\u5c04\uff0cload_file \u53ea\u505a\u4e00\u6b21\u67e5\u8868\u3002\n\u65b0\u589e Markdown \u52a0\u8f7d\u5668\u65f6\uff0c\u8fd9\u4e2a\u7ed3\u6784\u5e26\u6765\u7684\u597d\u5904\u662f\u4ec0\u4e48\uff1f", "tags": ["\u52a0\u8f7d\u5668", "\u53ef\u6269\u5c55\u6027", "\u5de5\u7a0b\u5224\u65ad"], "title": "LOADERS \u5206\u53d1\u8868\u7684\u5de5\u7a0b\u4ef7\u503c", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u60f3\u5411\u91cf\u68c0\u7d22\u7b97\u7684\u662f\u54ea\u6bb5\u6587\u672c\u7684\u76f8\u4f3c\u5ea6", "\u5143\u6570\u636e\u80fd\u505a\u8fc7\u6ee4\uff0c\u6b63\u6587\u80fd\u5417"], "id": "q03-01-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u7edf\u4e00\u6587\u6863\u5bf9\u8c61\u628a source\u3001page\u3001loader \u653e\u5728 metadata \u91cc\uff0c\u800c\u4e0d\u662f\u62fc\u8fdb text\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u6837\u505a\u7684\u539f\u56e0\uff0c\u5e76\u5bf9\u6bd4\u300c\u628a\u6587\u4ef6\u540d\u62fc\u8fdb\u6b63\u6587\u300d\u4f1a\u5e26\u6765\u54ea\u4e9b\u5177\u4f53\u95ee\u9898\u3002", "tags": ["\u5143\u6570\u636e", "\u68c0\u7d22\u8d28\u91cf", "\u8bbe\u8ba1\u53d6\u820d"], "title": "\u4e3a\u4ec0\u4e48\u5143\u6570\u636e\u4e0d\u80fd\u62fc\u8fdb\u6b63\u6587", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u6bcf\u4e2a\u6307\u6807\u5bf9\u5e94\u4e00\u7c7b\u5931\u8d25\u6a21\u5f0f", "\u60f3\u60f3\u7a7a\u6587\u6863\u548c\u8d85\u957f\u6587\u6863\u5206\u522b\u4f1a\u5bfc\u81f4\u4ec0\u4e48"], "id": "q03-01-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "quality_report \u8fd4\u56de documents\u3001characters\u3001empty\u3001short_under_30\u3001max_length \u4e94\u4e2a\u6307\u6807\u3002\n\u8bf7\u8bf4\u660e\u6bcf\u4e2a\u6307\u6807\u5404\u81ea\u80fd\u66b4\u9732\u4ec0\u4e48\u6570\u636e\u95ee\u9898\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u5728\u5165\u5e93\u524d\u5fc5\u987b\u5148\u770b\u8fd9\u4efd\u62a5\u544a\u3002", "tags": ["\u6570\u636e\u8d28\u91cf", "\u9a8c\u6536", "\u6545\u969c\u6392\u67e5"], "title": "\u6570\u636e\u8d28\u91cf\u62a5\u544a\u8981\u56de\u7b54\u4ec0\u4e48", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u5148\u5220\u6807\u7b7e\u518d\u53d6\u6587\u672c", "soup.title \u53ef\u80fd\u4e3a None\uff0c\u8981\u5224\u7a7a"], "id": "q03-01-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "from pathlib import Path\nfrom bs4 import BeautifulSoup\n\ndef normalize_text(text: str) -\u003e str:\n    lines = [line.strip() for line in text.replace(\"\\u3000\", \" \").splitlines()]\n    return \"\\n\".join(line for line in lines if line)\n\ndef load_html(path: Path) -\u003e list:\n    # \u5728\u6b64\u5b9e\u73b0\n    ...", "statement": "\u7528 BeautifulSoup \u5b9e\u73b0 load_html(path: Path) -\u003e list[Document]\u3002\n\u8981\u6c42\uff1a\u8bfb\u53d6 UTF-8 \u6587\u4ef6\uff1b\u53bb\u9664 script\u3001style\u3001nav\u3001footer \u6807\u7b7e\uff1b\u6b63\u6587\u7ecf normalize_text \u6e05\u6d17\uff1b\nmetadata \u5305\u542b source\u3001title\u3001loader \u4e09\u4e2a\u5b57\u6bb5\uff0cloader \u503c\u4e3a \"beautifulsoup\"\uff1b\u6b63\u6587\u4e3a\u7a7a\u65f6\u8fd4\u56de\u7a7a\u5217\u8868\u3002\nDocument \u4e3a frozen dataclass\uff0c\u5b57\u6bb5\u4e3a text \u4e0e metadata\u3002", "tags": ["HTML\u89e3\u6790", "BeautifulSoup", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0 HTML \u52a0\u8f7d\u5668", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "hints": ["\u4e00\u4e2a\u6587\u4ef6\u5931\u8d25\u4e0d\u5e94\u4e2d\u65ad\u6574\u6279", "max() \u5bf9\u7a7a\u5217\u8868\u4f1a\u62a5\u9519\uff0c\u8bb0\u5f97\u7ed9\u9ed8\u8ba4\u503c"], "id": "q03-01-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "from pathlib import Path\n\ndef load_dir(directory: Path):\n    # \u8fd4\u56de (documents, errors)\n    ...\n\ndef quality_report(documents):\n    # \u8fd4\u56de\u4e94\u4e2a\u6307\u6807\n    ...", "statement": "\u5b9e\u73b0 load_dir(directory: Path) -\u003e tuple[list, list]\uff0c\u904d\u5386\u76ee\u5f55\u4e0b\u6240\u6709\u6587\u4ef6\uff1a\n\u652f\u6301\u7684\u683c\u5f0f\u4ea4\u7ed9 load_file \u5904\u7406\uff0c\u4e0d\u652f\u6301\u7684\u683c\u5f0f\u4e0d\u629b\u5f02\u5e38\uff0c\u800c\u662f\u628a (\u6587\u4ef6\u540d, \u9519\u8bef\u4fe1\u606f) \u8bb0\u5165\u5f02\u5e38\u5217\u8868\u3002\n\u518d\u5b9e\u73b0 quality_report(documents) \u8fd4\u56de documents\u3001characters\u3001empty\u3001short_under_30\u3001max_length \u4e94\u4e2a\u6307\u6807\u3002\n\u6700\u540e\u6253\u5370\u6bcf\u4e2a\u6587\u4ef6\u7684\u52a0\u8f7d\u5668\u3001\u6587\u6863\u6570\u3001\u5b57\u7b26\u6570\uff0c\u4ee5\u53ca\u5f02\u5e38\u5217\u8868\u3002", "tags": ["\u6279\u91cf\u52a0\u8f7d", "\u5bb9\u9519", "\u8d28\u91cf\u62a5\u544a"], "title": "\u6279\u91cf\u52a0\u8f7d\u4e0e\u8d28\u91cf\u62a5\u544a", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="3" data-kp="0"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 11｜RAG 原理与文档加载">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 11｜RAG 原理与文档加载">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-2" data-kp-index="1"
+             data-kp-key="3_1" >
+      <div class="kp-head">
+        <span class="kp-no">D12</span>
+        <div class="kp-head-main">
+          <h3>Day 12｜Chunking：把长文档切成可检索单元</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>3.3.1 为什么不能整篇入库</h4>
+<p>整篇文档向量只表达“总体主题”，难以定位局部事实；块过小又会丢失上下文。切块需要在“定位精度、语义完整、上下文成本”之间取舍。</p>
+<h4>3.3.2 固定窗口切块</h4>
+<pre class="code lang-python"><code>def fixed_chunks(text: str, size: int = 500, overlap: int = 80) -&gt; list[str]:
+    if size &lt;= 0:
+        raise ValueError("size 必须大于 0")
+    if not 0 &lt;= overlap &lt; size:
+        raise ValueError("overlap 必须满足 0 &lt;= overlap &lt; size")
+
+    chunks: list[str] = []
+    step = size - overlap
+    for start in range(0, len(text), step):
+        chunk = text[start:start + size].strip()
+        if chunk:
+            chunks.append(chunk)
+        if start + size &gt;= len(text):
+            break
+    return chunks</code></pre>
+<p>逐行讲解：</p>
+<ul><li><code>step = size - overlap</code> 决定窗口每次前进多少。</li><li>overlap 保留边界两侧的上下文，但会增加索引量和重复召回。</li><li>最后的 <code>break</code> 防止文本末尾产生多个高度重复的短块。</li><li>字符数不等于 token 数。入门课先用字符建立直觉，生产项目应使用目标模型的 tokenizer。</li></ul>
+<h4>3.3.3 基于段落的递归切块</h4>
+<pre class="code lang-python"><code>def recursive_chunks(
+    text: str,
+    max_size: int = 500,
+    separators: tuple[str, ...] = ("\n\n", "\n", "。", "；", "，"),
+) -&gt; list[str]:
+    text = text.strip()
+    if not text:
+        return []
+    if len(text) &lt;= max_size:
+        return [text]
+    if not separators:
+        return fixed_chunks(text, max_size, 0)
+
+    separator, *rest = separators
+    parts = text.split(separator)
+    if len(parts) == 1:
+        return recursive_chunks(text, max_size, tuple(rest))
+
+    output: list[str] = []
+    buffer = ""
+    for part in parts:
+        candidate = f"{buffer}{separator}{part}".strip(separator) if buffer else part
+        if len(candidate) &lt;= max_size:
+            buffer = candidate
+        else:
+            if buffer:
+                output.extend(recursive_chunks(buffer, max_size, tuple(rest)))
+            buffer = part
+    if buffer:
+        output.extend(recursive_chunks(buffer, max_size, tuple(rest)))
+    return output</code></pre>
+<p>递归策略先尝试大边界，再退化到小边界。它比硬切字符更容易保留段落和句子，但仍不等于真正的语义切块。</p>
+<h4>3.3.4 给块增加稳定 ID</h4>
+<pre class="code lang-python"><code>from hashlib import sha256
+
+
+def make_chunk(doc: Document, text: str, index: int) -&gt; Document:
+    raw_id = f"{doc.metadata.get('source')}|{doc.metadata.get('page')}|{index}|{text}"
+    chunk_id = sha256(raw_id.encode("utf-8")).hexdigest()[:16]
+    return Document(text=text, metadata={**doc.metadata, "chunk_id": chunk_id, "chunk_index": index})</code></pre>
+<p>稳定 ID 的价值：重复入库时可以更新而非无限新增；评测报告也能精确指出命中的证据块。</p>
+<h4>3.3.5 切块实验设计</h4>
+<p>固定 20 个问题，对以下组合分别建库：</p>
+<table><thead><tr><th style="text-align:left">实验</th><th style="text-align:left">策略</th><th style="text-align:right">size</th><th style="text-align:right">overlap</th></tr></thead><tbody><tr><td style="text-align:left">A</td><td style="text-align:left">fixed</td><td style="text-align:right">300</td><td style="text-align:right">50</td></tr><tr><td style="text-align:left">B</td><td style="text-align:left">fixed</td><td style="text-align:right">600</td><td style="text-align:right">100</td></tr><tr><td style="text-align:left">C</td><td style="text-align:left">recursive</td><td style="text-align:right">500</td><td style="text-align:right">0</td></tr><tr><td style="text-align:left">D</td><td style="text-align:left">recursive</td><td style="text-align:right">800</td><td style="text-align:right">0</td></tr></tbody></table>
+<p>记录：块数量、平均长度、P95 长度、索引时间、Recall@5、典型失败样本。一次只改变一个主要变量，不能同时更换文档、Embedding 和 top-k。</p>
+<p><strong>运行验证</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch03/11_chunking_compare.py</code></pre>
+<p><img src="static/course-assets/ch03/02_chunking_compare.webp" alt="四种切块策略的真实运行结果：A fixed 300/50 得 32 块、B fixed 600/100 得 19 块、C recursive 500 得 20 块、D recursive 800 得 17 块，含块数、平均长度、P50/P95、膨胀率与边界行为对照" loading="lazy"></p>
+<p><strong>这张图要看两件事</strong>：</p>
+<p>其一，<strong>四组实验是同一份语料、一次只改一个变量</strong>——语料固定为 15 条 Document / 7233 字符（已排除无文本层的扫描件）。真实数据：</p>
+<table><thead><tr><th style="text-align:left">实验</th><th style="text-align:left">策略</th><th style="text-align:left">参数</th><th style="text-align:right">块数</th><th style="text-align:right">平均长度</th><th style="text-align:right">P50</th><th style="text-align:right">P95</th><th style="text-align:right">最短</th><th style="text-align:right">最长</th><th style="text-align:right">总字符</th><th style="text-align:right">膨胀率</th></tr></thead><tbody><tr><td style="text-align:left">A</td><td style="text-align:left">fixed</td><td style="text-align:left">size=300, overlap=50</td><td style="text-align:right">32</td><td style="text-align:right">252.3</td><td style="text-align:right">299.0</td><td style="text-align:right">300.0</td><td style="text-align:right">68</td><td style="text-align:right">300</td><td style="text-align:right">8075</td><td style="text-align:right">1.12</td></tr><tr><td style="text-align:left">B</td><td style="text-align:left">fixed</td><td style="text-align:left">size=600, overlap=100</td><td style="text-align:right">19</td><td style="text-align:right">401.6</td><td style="text-align:right">374.0</td><td style="text-align:right">600.0</td><td style="text-align:right">234</td><td style="text-align:right">600</td><td style="text-align:right">7631</td><td style="text-align:right">1.06</td></tr><tr><td style="text-align:left">C</td><td style="text-align:left">recursive</td><td style="text-align:left">max_size=500</td><td style="text-align:right">20</td><td style="text-align:right">361.2</td><td style="text-align:right">364.5</td><td style="text-align:right">477.8</td><td style="text-align:right">234</td><td style="text-align:right">492</td><td style="text-align:right">7225</td><td style="text-align:right">1.00</td></tr><tr><td style="text-align:left">D</td><td style="text-align:left">recursive</td><td style="text-align:left">max_size=800</td><td style="text-align:right">17</td><td style="text-align:right">425.3</td><td style="text-align:right">374.0</td><td style="text-align:right">798.0</td><td style="text-align:right">234</td><td style="text-align:right">798</td><td style="text-align:right">7230</td><td style="text-align:right">1.00</td></tr></tbody></table>
+<p>注意<strong>膨胀率</strong>这一列：A 组 1.12、B 组 1.06，多出来的部分全是 overlap 造成的重复索引量；recursive 两组的膨胀率正好是 1.00，因为递归切块按边界切分、天然不重复。块数直接决定 embedding 调用量与存储量——A 组 32 块比 D 组 17 块贵了近一倍，而召回效果未必更好。</p>
+<p>其二，<strong>边界行为对照表</strong>是「固定窗口在句子中间硬切」与「递归切块保住句子」的直接证据：脚本把同一句话分别交给两种策略，逐块打印长度、是否以标点结束、开头与结尾，让学生亲眼看到差异。</p>
+<p>下图是同一份实验数据画出来的分布图，四个子图分别对应 A/B/C/D 四组：</p>
+<p><img src="static/course-assets/figures/ch03_chunking.webp" alt="四种切块策略的长度分布与汇总对比图：A 组块长方差极小（几乎全堆在 300），B 组集中在 375~600，C 组分散但不超过 500，D 组出现 700+ 长块；下方两图对比块数与长度统计" loading="lazy"></p>
+<p><strong>读图要点</strong>：A 组的直方图是一根「尖峰」，因为定长切块长度几乎全等于 size；C、D 两组是「散开的多峰」，P95 明显高于平均值——这正是「块长不齐」的代价。P95 不是缺陷，而是<strong>你必须提前知道并写进报告的代价</strong>：块长不齐意味着某些块会占用更多上下文预算。</p>
+<h4>3.3.6 当日教学流程</h4>
+<p>教师先演示一个答案跨越切块边界的失败案例，再让学生预测 overlap 增大后的变化。课堂后半段完成四组实验，不以“看起来更好”为结论，必须保存数据表。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 1, "id": "q03-02-01", "last_answer": "", "last_feedback": "", "options": ["500", "580", "420", "80"], "points": 27, "solved": false, "statement": "\u56fa\u5b9a\u7a97\u53e3\u5207\u5757\u51fd\u6570\u4e2d\uff0csize=500\u3001overlap=80 \u65f6\uff0c\u7a97\u53e3\u6bcf\u6b21\u524d\u8fdb\u7684\u5b57\u7b26\u6570\u662f\u591a\u5c11\uff1f", "tags": ["Chunking", "\u56fa\u5b9a\u7a97\u53e3", "\u53c2\u6570\u8ba1\u7b97"], "title": "\u56fa\u5b9a\u7a97\u53e3\u5207\u5757\u7684\u6b65\u957f\u8ba1\u7b97", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-02-02", "last_answer": "", "last_feedback": "", "options": ["recursive \u5207\u5757\u7528\u7684 max_size \u66f4\u5927\uff0c\u6240\u4ee5\u603b\u5b57\u7b26\u66f4\u5c11", "fixed \u5207\u5757\u7684 overlap \u9020\u6210\u8fb9\u754c\u5185\u5bb9\u88ab\u91cd\u590d\u7d22\u5f15\uff0crecursive \u6309\u8fb9\u754c\u5207\u5206\u5929\u7136\u4e0d\u91cd\u590d", "recursive \u4e22\u5f03\u4e86\u8fc7\u77ed\u7684\u5757\uff0c\u6240\u4ee5\u603b\u5b57\u7b26\u6ca1\u6709\u81a8\u80c0", "fixed \u5207\u5757\u628a\u626b\u63cf\u4ef6\u4e5f\u7b97\u4e86\u8fdb\u53bb\uff0c\u5bfc\u81f4\u5b57\u7b26\u53d8\u591a"], "points": 76, "solved": false, "statement": "\u56db\u7ec4\u5b9e\u9a8c\u4e2d A \u7ec4\u81a8\u80c0\u7387 1.12\u3001B \u7ec4 1.06\uff0c\u800c recursive \u4e24\u7ec4\u6b63\u597d\u662f 1.00\u3002\u9020\u6210\u8fd9\u4e00\u5dee\u5f02\u7684\u6839\u672c\u539f\u56e0\u662f\u4ec0\u4e48\uff1f", "tags": ["Chunking", "\u81a8\u80c0\u7387", "\u5b9e\u9a8c\u6570\u636e"], "title": "\u81a8\u80c0\u7387\u7684\u6765\u6e90\u5224\u65ad", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-02-03", "last_answer": "", "last_feedback": "", "options": ["P95 \u504f\u9ad8\u8bf4\u660e recursive \u5207\u5757\u5b9e\u73b0\u6709 bug\uff0c\u5e94\u6539\u56de\u56fa\u5b9a\u7a97\u53e3", "\u5757\u957f\u4e0d\u9f50\u662f\u7f3a\u9677\uff0c\u5fc5\u987b\u901a\u8fc7\u8c03\u5927 max_size \u6d88\u9664", "\u5757\u957f\u4e0d\u9f50\u610f\u5473\u7740\u67d0\u4e9b\u5757\u4f1a\u5360\u7528\u66f4\u591a\u4e0a\u4e0b\u6587\u9884\u7b97\uff0c\u662f\u5fc5\u987b\u63d0\u524d\u77e5\u9053\u5e76\u5199\u8fdb\u62a5\u544a\u7684\u4ee3\u4ef7", "\u5c16\u5cf0\u8bf4\u660e\u56fa\u5b9a\u7a97\u53e3\u7684\u53ec\u56de\u6548\u679c\u4e00\u5b9a\u4f18\u4e8e\u9012\u5f52\u5207\u5757"], "points": 76, "solved": false, "statement": "\u8bfb\u5206\u5e03\u56fe\u65f6\uff0cA \u7ec4\u76f4\u65b9\u56fe\u662f\u4e00\u6839\u5c16\u5cf0\uff0cC\u3001D \u4e24\u7ec4\u662f\u6563\u5f00\u7684\u591a\u5cf0\u4e14 P95 \u660e\u663e\u9ad8\u4e8e\u5e73\u5747\u503c\u3002\u5173\u4e8e\u8fd9\u4e00\u73b0\u8c61\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["Chunking", "P95", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u5757\u957f\u4e0d\u9f50\u7684\u4ee3\u4ef7", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u60f3\u91cd\u590d\u5165\u5e93\u65f6\u4f1a\u53d1\u751f\u4ec0\u4e48", "\u8bc4\u6d4b\u62a5\u544a\u9700\u8981\u5b9a\u4f4d\u5230\u54ea\u4e00\u5757"], "id": "q03-02-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e\u7ed9\u5207\u5757\u589e\u52a0\u7a33\u5b9a ID \u7684\u505a\u6cd5\uff1a\u5b83\u7531\u54ea\u4e9b\u5b57\u6bb5\u62fc\u6210\u3001\u5982\u4f55\u751f\u6210\uff0c\u4ee5\u53ca\u7a33\u5b9a ID \u5e26\u6765\u54ea\u4e9b\u5177\u4f53\u4ef7\u503c\u3002", "tags": ["Chunking", "\u7a33\u5b9aID", "metadata"], "title": "\u7a33\u5b9a chunk_id \u7684\u4ef7\u503c\u4e0e\u6784\u9020", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "hints": ["\u5982\u679c\u540c\u65f6\u6362\u8bed\u6599\u548c\u7b56\u7565\uff0c\u7ed3\u8bba\u80fd\u5f52\u56e0\u7ed9\u8c01", "\u8981\u4fdd\u5b58\u54ea\u4e9b\u6307\u6807\u624d\u80fd\u5199\u62a5\u544a"], "id": "q03-02-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u8bbe\u8ba1\u5207\u5757\u5bf9\u6bd4\u5b9e\u9a8c\u65f6\uff0c\u4e3a\u4ec0\u4e48\u8981\u6c42\u300c\u4e00\u6b21\u53ea\u6539\u53d8\u4e00\u4e2a\u4e3b\u8981\u53d8\u91cf\u300d\uff0c\u5e76\u4e14\u4e0d\u80fd\u540c\u65f6\u66f4\u6362\u6587\u6863\u3001Embedding \u548c top-k\uff1f\u8bf7\u7ed3\u5408\u56db\u7ec4\u5b9e\u9a8c\u7684\u56fa\u5b9a\u6761\u4ef6\u4e0e\u8bb0\u5f55\u6307\u6807\u8bf4\u660e\u3002", "tags": ["Chunking", "\u5b9e\u9a8c\u8bbe\u8ba1", "\u53d8\u91cf\u63a7\u5236"], "title": "\u5207\u5757\u5b9e\u9a8c\u7684\u53d8\u91cf\u63a7\u5236", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u7a97\u53e3\u524d\u8fdb\u91cf\u662f size \u51cf overlap", "\u4ec0\u4e48\u65f6\u5019\u8be5\u505c\u6b62\u5faa\u73af"], "id": "q03-02-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def fixed_chunks(text: str, size: int = 500, overlap: int = 80) -\u003e list[str]:\n    # \u5728\u6b64\u5b9e\u73b0\n    pass", "statement": "\u5b9e\u73b0 fixed_chunks(text, size=500, overlap=80)\uff0c\u6309\u56fa\u5b9a\u7a97\u53e3\u628a\u6587\u672c\u5207\u6210\u5757\u3002\u8981\u6c42\uff1asize\u003c=0 \u629b ValueError\uff1boverlap \u4e0d\u6ee1\u8db3 0\u003c=overlap\u003csize \u629b ValueError\uff1b\u6bcf\u5757 strip \u540e\u975e\u7a7a\u624d\u52a0\u5165\uff1b\u672b\u5c3e\u4e0d\u4ea7\u751f\u591a\u4e2a\u9ad8\u5ea6\u91cd\u590d\u7684\u77ed\u5757\u3002", "tags": ["Chunking", "\u56fa\u5b9a\u7a97\u53e3", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u56fa\u5b9a\u7a97\u53e3\u5207\u5757", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "hints": ["\u5148\u5c1d\u8bd5\u5927\u8fb9\u754c\uff0c\u518d\u9000\u5316\u5230\u5c0f\u8fb9\u754c", "buffer \u62fc\u63a5\u65f6\u6ce8\u610f\u5206\u9694\u7b26"], "id": "q03-02-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "def recursive_chunks(\n    text: str,\n    max_size: int = 500,\n    separators: tuple[str, ...] = (\"\\n\\n\", \"\\n\", \"\u3002\", \"\uff1b\", \"\uff0c\"),\n) -\u003e list[str]:\n    # \u5728\u6b64\u5b9e\u73b0\n    pass", "statement": "\u5b9e\u73b0 recursive_chunks(text, max_size=500, separators=(\"\\n\\n\",\"\\n\",\"\u3002\",\"\uff1b\",\"\uff0c\"))\uff1a\u5148 strip\uff0c\u7a7a\u6587\u672c\u8fd4\u56de []\uff0c\u957f\u5ea6\u4e0d\u8d85\u8fc7 max_size \u76f4\u63a5\u8fd4\u56de\uff1bseparators \u4e3a\u7a7a\u65f6\u9000\u5316\u4e3a fixed_chunks(text, max_size, 0)\uff1b\u6309\u5f53\u524d\u5206\u9694\u7b26\u5207\u5206\uff0c\u82e5\u53ea\u6709\u4e00\u6bb5\u5219\u7528\u5269\u4f59\u5206\u9694\u7b26\u9012\u5f52\uff1b\u5426\u5219\u7528 buffer \u7d2f\u79ef\uff0c\u8d85\u957f\u65f6\u5bf9 buffer \u9012\u5f52\u5e76\u91cd\u65b0\u5f00\u59cb\u3002", "tags": ["Chunking", "\u9012\u5f52\u5207\u5757", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u9012\u5f52\u5207\u5757", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="3" data-kp="1"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 12｜Chunking：把长文档切成可检索单元">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 12｜Chunking：把长文档切成可检索单元">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-3" data-kp-index="2"
+             data-kp-key="3_2" >
+      <div class="kp-head">
+        <span class="kp-no">D13</span>
+        <div class="kp-head-main">
+          <h3>Day 13｜Embedding 与向量数据库</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>3.4.1 从关键词到语义向量</h4>
+<p>Embedding 将文本映射为定长向量。语义相近的文本在向量空间中通常更接近。课程使用余弦相似度：</p>
+<p>$$ \cos(\theta)=\frac{\mathbf{a}\cdot\mathbf{b}}{\|\mathbf{a}\|_2\|\mathbf{b}\|_2} $$</p>
+<h4>3.4.2 手写余弦相似度</h4>
+<pre class="code lang-python"><code>from math import sqrt
+
+
+def cosine_similarity(a: list[float], b: list[float]) -&gt; float:
+    if len(a) != len(b) or not a:
+        raise ValueError("向量必须非空且维度一致")
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = sqrt(sum(x * x for x in a))
+    norm_b = sqrt(sum(y * y for y in b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)</code></pre>
+<p>课堂要求学生手算二维向量，再运行函数验证。重点说明：相似度只是排序信号，不是事实正确概率。</p>
+<h4>3.4.3 Embedding 客户端的抽象</h4>
+<pre class="code lang-python"><code>from typing import Protocol
+
+
+class Embedder(Protocol):
+    def embed(self, texts: list[str]) -&gt; list[list[float]]: ...
+
+
+class CachedEmbedder:
+    def __init__(self, inner: Embedder):
+        self.inner = inner
+        self.cache: dict[str, list[float]] = {}
+
+    def embed(self, texts: list[str]) -&gt; list[list[float]]:
+        missing = [text for text in dict.fromkeys(texts) if text not in self.cache]
+        if missing:
+            vectors = self.inner.embed(missing)
+            if len(vectors) != len(missing):
+                raise RuntimeError("Embedding 返回数量与输入不一致")
+            self.cache.update(zip(missing, vectors))
+        return [self.cache[text] for text in texts]</code></pre>
+<p>这个接口隔离模型供应商。缓存减少课堂重复调用费用；生产环境需要磁盘缓存、版本键和过期策略。</p>
+<p>若平台提供 OpenAI 兼容的 <code>/embeddings</code> 接口，可沿用前置章节的 <code>httpx</code> 封装：</p>
+<pre class="code lang-python"><code>import httpx
+
+
+class CompatibleEmbedder:
+    def __init__(self, base_url: str, api_key: str, model: str):
+        self.url = f"{base_url.rstrip('/')}/embeddings"
+        self.model = model
+        self.client = httpx.Client(
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=httpx.Timeout(30.0, connect=10.0),
+        )
+
+    def embed(self, texts: list[str]) -&gt; list[list[float]]:
+        if not texts:
+            return []
+        response = self.client.post(self.url, json={"model": self.model, "input": texts})
+        response.raise_for_status()
+        rows = sorted(response.json()["data"], key=lambda item: item["index"])
+        return [row["embedding"] for row in rows]</code></pre>
+<p>为什么按 <code>index</code> 排序：批量接口的返回结构带输入序号，客户端不应把“当前恰好有序”当作永久假设。模型名、基础 URL 与密钥从环境变量读取；切换 Embedding 模型后必须重建文档索引。</p>
+<h4>3.4.4 Chroma 建库与检索</h4>
+<pre class="code lang-python"><code>import chromadb
+
+
+class ChromaStore:
+    def __init__(self, path: str = "storage/chroma"):
+        client = chromadb.PersistentClient(path=path)
+        self.collection = client.get_or_create_collection(
+            name="enterprise_docs",
+            metadata={"hnsw:space": "cosine"},
+        )
+
+    def upsert(self, chunks: list[Document], vectors: list[list[float]]) -&gt; None:
+        self.collection.upsert(
+            ids=[str(c.metadata["chunk_id"]) for c in chunks],
+            documents=[c.text for c in chunks],
+            metadatas=[c.metadata for c in chunks],
+            embeddings=vectors,
+        )
+
+    def search(self, query_vector: list[float], top_k: int = 5) -&gt; list[dict]:
+        raw = self.collection.query(query_embeddings=[query_vector], n_results=top_k)
+        rows = []
+        for chunk_id, text, distance, metadata in zip(
+            raw["ids"][0], raw["documents"][0], raw["distances"][0], raw["metadatas"][0]
+        ):
+            rows.append({
+                "chunk_id": chunk_id,
+                "text": text,
+                "score": 1.0 - float(distance),
+                "metadata": metadata,
+            })
+        return rows</code></pre>
+<p>注意：不同向量库的 <code>distance</code> 定义不同，不能机械地都写成 <code>1 - distance</code>。课堂使用 cosine 配置时才这样转换，实际项目必须查当前版本文档并用已知向量做一次校验。</p>
+<h4>3.4.5 当日验收</h4>
+<ul><li>重复执行入库，记录数不应翻倍。</li><li>修改一个源文件后能按稳定 ID 更新。</li><li>10 个问题保存 top-5、分数和来源。</li><li>展示一个语义命中案例与一个关键词更占优势的失败案例。</li></ul>
+<p><strong>运行验证：入库是幂等的</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch03/20_build_index.py</code></pre>
+<p><img src="static/course-assets/ch03/03_build_index.webp" alt="向量化入库的真实输出：20 个切块写入 512 维向量库，连续两次入库后库内条数保持 20 不变（幂等），另含元数据清洗、相似度语义自检与按来源删除后重写的增量更新演示" loading="lazy"></p>
+<p><strong>这张图要看四处</strong>：</p>
+<ol><li><strong>重复入库不膨胀</strong>——第一次写入 20 条 → 库内 20 条；第二次写入 20 条 → 库内仍是 20 条。原因是 <code>chunk_id</code> 是 <code>sha256(来源|页码|序号|正文)</code> 的稳定哈希，<code>upsert</code> 遇到已存在的 id 走更新路径，不会新增行。这就是验收第 1 条要求的直接证据。</li><li><strong>向量维度 512</strong>，与靶场 <code>EMBED_DIM=512</code> 一致；向量化耗时 0.02s（20 块，平均 1 ms/块）。</li><li><strong>相似度语义自检</strong>——库返回的 <code>score</code> 与手算余弦逐条对比，差值 0.000000，证明 <code>space=cosine</code> 生效、且 <code>score = 1 - cosine_distance</code> 成立。这正是 3.4.4 那段注意事项要求的「用已知向量做一次校验」。</li><li><strong>改版文档的增量更新</strong>——按来源删除 <code>公司福利.html</code> 的 3 块后剩 17 条，写入改版后的新块变 18 条。脚本特别指出：<strong>要按来源删除，不能只 upsert</strong>。因为改版后旧块正文变了、<code>chunk_id</code> 也跟着变，旧 id 不会被覆盖，会作为「幽灵条目」一直留在库里被检索到。</li></ol>
+<p>还有一段容易被跳过但很典型的工程细节——<strong>元数据清洗</strong>：Chroma 只接受标量，嵌套 <code>dict</code> 会直接 <code>ValueError</code>，<code>page=None</code> 这类值会一路带到建库才炸。这就是「延迟错误」，越早清洗越省事。</p>
+<p><strong>运行验证：纯向量检索基线</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch03/21_retrieval_baseline.py</code></pre>
+<p><img src="static/course-assets/ch03/04_retrieval_baseline.webp" alt="纯向量检索基线的真实输出：q002 语义命中案例（正确证据排在第 1 位、分数 0.2284）、q012 失败案例剖析，以及全量 30 题基线指标 Recall@5=0.8800、MRR=0.6513、HitRate@5=0.9200 与分层结果" loading="lazy"></p>
+<p><strong>这张图是本课程「只看成功的案例是自欺欺人」这条原则的样板</strong>——脚本同时打印一个命中案例和一个失败案例：</p>
+<ul><li><strong>语义命中案例 q002</strong>「入职满 1 年不满 3 年的员工每年有多少天年假？」→ 正确证据（<code>员工手册.pdf</code> 第 4 页，第四章 年假与各类假期）以 0.2284 排在第 1 位。</li><li><strong>失败案例 q012</strong>「婚假有多少天？」→ 应当命中却<strong>没有进入 top-5</strong>。脚本给出归因：证据句确实在索引里（已用 gold 匹配确认），但伪向量只看字符二元组，问题与原文词重叠少时相似度被大量无关文本超过。</li></ul>
+<p>全量 30 题基线指标（这是 Day14 消融的对照基准）：</p>
+<table><thead><tr><th style="text-align:left">指标</th><th style="text-align:right">数值</th></tr></thead><tbody><tr><td style="text-align:left">Recall@5</td><td style="text-align:right">0.8800</td></tr><tr><td style="text-align:left">MRR</td><td style="text-align:right">0.6513</td></tr><tr><td style="text-align:left">HitRate@5</td><td style="text-align:right">0.9200</td></tr><tr><td style="text-align:left">P50 延迟</td><td style="text-align:right">2.68 ms</td></tr><tr><td style="text-align:left">P95 延迟</td><td style="text-align:right">3.26 ms</td></tr></tbody></table>
+<p>分层看差距很明显：<strong>单段落 20 题 Recall@5 = 0.9500，跨段落 5 题只有 0.6000</strong>。知识库外 5 题不参与 Recall 统计（gold 为空，<code>recall_at_k</code> 返回 <code>None</code> 而不是抛异常）——把「不需要召回」当成「召回失败」是评测里最常见的读错表。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-03-01", "last_answer": "", "last_feedback": "", "options": ["\u6279\u91cf\u63a5\u53e3\u8fd4\u56de\u7ed3\u6784\u5e26\u8f93\u5165\u5e8f\u53f7\uff0c\u4e0d\u80fd\u628a\u300c\u5f53\u524d\u6070\u597d\u6709\u5e8f\u300d\u5f53\u4f5c\u6c38\u4e45\u5047\u8bbe", "\u6392\u5e8f\u540e\u53ef\u4ee5\u53bb\u6389\u91cd\u590d\u5411\u91cf\uff0c\u51cf\u5c11\u5b58\u50a8\u5360\u7528", "index \u5b57\u6bb5\u662f\u6a21\u578b\u5bf9\u5411\u91cf\u8d28\u91cf\u7684\u7f6e\u4fe1\u5ea6\uff0c\u9700\u8981\u6309\u5b83\u8fc7\u6ee4", "\u6392\u5e8f\u80fd\u8ba9\u4f59\u5f26\u76f8\u4f3c\u5ea6\u8ba1\u7b97\u66f4\u5feb"], "points": 76, "solved": false, "statement": "CompatibleEmbedder \u5728\u89e3\u6790 /embeddings \u54cd\u5e94\u65f6\uff0c\u5148\u5bf9 data \u6309 item[\"index\"] \u6392\u5e8f\uff0c\u518d\u53d6\u51fa embedding\u3002\n\u8fd9\u6837\u505a\u7684\u6838\u5fc3\u7406\u7531\u662f\u4ec0\u4e48\uff1f", "tags": ["Embedding", "\u63a5\u53e3\u5c01\u88c5", "\u5de5\u7a0b\u7ec6\u8282"], "title": "\u4e3a\u4ec0\u4e48\u6309 index \u6392\u5e8f\u8fd4\u56de\u7ed3\u679c", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "id": "q03-03-02", "last_answer": "", "last_feedback": "", "options": ["upsert \u53ea\u66f4\u65b0\u5411\u91cf\uff0c\u4e0d\u66f4\u65b0 documents \u5b57\u6bb5", "\u6b63\u6587\u53d8\u4e86\u5bfc\u81f4 chunk_id \u53d8\u5316\uff0c\u65e7 id \u4e0d\u4f1a\u88ab\u8986\u76d6\uff0c\u6210\u4e3a\u5e7d\u7075\u6761\u76ee", "Chroma \u7684 upsert \u5bf9\u540c\u4e00\u6765\u6e90\u53ea\u4fdd\u7559\u6700\u540e\u4e00\u6761", "\u6539\u7248\u540e\u5411\u91cf\u7ef4\u5ea6\u4f1a\u53d8\u5316\uff0c\u65e7\u5411\u91cf\u65e0\u6cd5\u88ab\u8986\u76d6"], "points": 189, "solved": false, "statement": "\u67d0\u6765\u6e90\u6587\u6863\u6539\u7248\u540e\u91cd\u65b0\u5165\u5e93\uff0c\u53ea\u505a upsert \u4f1a\u5bfc\u81f4\u65e7\u5185\u5bb9\u4ecd\u88ab\u68c0\u7d22\u5230\u3002\n\u6700\u51c6\u786e\u7684\u539f\u56e0\u662f\u4ec0\u4e48\uff1f", "tags": ["Chroma", "\u5e42\u7b49\u5165\u5e93", "\u589e\u91cf\u66f4\u65b0"], "title": "\u6539\u7248\u6587\u6863\u4e3a\u4f55\u8981\u6309\u6765\u6e90\u5220\u9664", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-03-03", "last_answer": "", "last_feedback": "", "options": ["\u4efb\u4f55\u5411\u91cf\u5e93\u90fd\u53ef\u4ee5\u8fd9\u6837\u6362\u7b97\uff0cdistance \u90fd\u7b49\u4e8e 1 \u51cf\u4f59\u5f26", "\u53ea\u6709\u5728 space=cosine \u914d\u7f6e\u4e0b\u624d\u6210\u7acb\uff0c\u6362\u5e93\u6216\u6362\u914d\u7f6e\u5fc5\u987b\u67e5\u6587\u6863\u5e76\u7528\u5df2\u77e5\u5411\u91cf\u6821\u9a8c", "distance \u662f\u6b27\u6c0f\u8ddd\u79bb\uff0c1 \u51cf\u5b83\u5f97\u5230\u7684\u662f\u5f52\u4e00\u5316\u5206\u6570", "\u53ea\u8981\u5411\u91cf\u5df2\u5f52\u4e00\u5316\uff0cdistance \u5c31\u6052\u7b49\u4e8e\u4f59\u5f26\u76f8\u4f3c\u5ea6"], "points": 76, "solved": false, "statement": "ChromaStore.search \u91cc\u5199\u4e86 score = 1.0 - float(distance)\u3002\n\u5173\u4e8e\u8fd9\u884c\u4ee3\u7801\uff0c\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["Chroma", "\u4f59\u5f26\u76f8\u4f3c\u5ea6", "\u5de5\u7a0b\u5224\u65ad"], "title": "score \u4e0e distance \u7684\u6362\u7b97\u524d\u63d0", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u60f3\u4f2a\u5411\u91cf\u7684\u6784\u9020\u65b9\u5f0f", "\u5931\u8d25\u4e0d\u7b49\u4e8e\u8bc1\u636e\u7f3a\u5931"], "id": "q03-03-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u7eaf\u5411\u91cf\u68c0\u7d22\u57fa\u7ebf\u540c\u65f6\u6253\u5370\u4e86\u4e00\u4e2a\u547d\u4e2d\u6848\u4f8b\u548c\u4e00\u4e2a\u5931\u8d25\u6848\u4f8b\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u4e24\u4e2a\u6848\u4f8b\u5206\u522b\u662f\u4ec0\u4e48\uff0c\u5931\u8d25\u6848\u4f8b\u7684\u5f52\u56e0\u662f\u4ec0\u4e48\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u5fc5\u987b\u628a\u5931\u8d25\u6848\u4f8b\u4e00\u8d77\u5c55\u793a\u3002", "tags": ["\u68c0\u7d22\u57fa\u7ebf", "\u5931\u8d25\u5206\u6790", "\u8bc4\u6d4b"], "title": "\u8bed\u4e49\u547d\u4e2d\u4e0e\u5173\u952e\u8bcd\u5931\u8d25\u6848\u4f8b", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u60f3\u62a5\u9519\u6808\u6307\u5411\u54ea\u91cc", "\u6e05\u6d17\u5c5e\u4e8e\u54ea\u4e00\u5c42\u7684\u804c\u8d23"], "id": "q03-03-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u5165\u5e93\u65f6 Chroma \u53ea\u63a5\u53d7\u6807\u91cf\u5143\u6570\u636e\uff0c\u5d4c\u5957 dict \u4f1a\u76f4\u63a5 ValueError\uff0cpage=None \u8fd9\u7c7b\u503c\u4f1a\u4e00\u8def\u5e26\u5230\u5efa\u5e93\u624d\u70b8\u3002\n\u8bf7\u8bf4\u660e\u4ec0\u4e48\u662f\u5ef6\u8fdf\u9519\u8bef\u3001\u5b83\u4e3a\u4ec0\u4e48\u66f4\u9ebb\u70e6\uff0c\u4ee5\u53ca\u5728\u5165\u5e93\u6d41\u7a0b\u4e2d\u5e94\u8be5\u628a\u6e05\u6d17\u653e\u5728\u54ea\u4e00\u6b65\u3002", "tags": ["\u5143\u6570\u636e", "\u9519\u8bef\u6392\u67e5", "\u5de5\u7a0b\u5b9e\u8df5"], "title": "\u5143\u6570\u636e\u6e05\u6d17\u4e0e\u5ef6\u8fdf\u9519\u8bef", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["dict.fromkeys \u53ef\u4ee5\u4fdd\u5e8f\u53bb\u91cd", "\u7f13\u5b58\u56de\u586b\u540e\u7edf\u4e00\u6309\u539f\u8f93\u5165\u53d6\u503c"], "id": "q03-03-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "from typing import Protocol\n\nclass Embedder(Protocol):\n    def embed(self, texts: list[str]) -\u003e list[list[float]]: ...\n\nclass CachedEmbedder:\n    def __init__(self, inner: Embedder):\n        self.inner = inner\n        self.cache: dict[str, list[float]] = {}\n\n    def embed(self, texts: list[str]) -\u003e list[list[float]]:\n        # TODO: \u53bb\u91cd\u67e5\u7f13\u5b58\u3001\u53ea\u8bf7\u6c42\u7f3a\u5931\u9879\u3001\u6821\u9a8c\u6570\u91cf\u3001\u6309\u539f\u987a\u5e8f\u8fd4\u56de\n        ...", "statement": "\u5b9e\u73b0 CachedEmbedder\uff0c\u5305\u88c5\u4efb\u610f Embedder\uff1a\n1. \u5bf9\u8f93\u5165\u6587\u672c\u53bb\u91cd\u540e\u518d\u67e5\u8be2\u7f13\u5b58\uff0c\u53ea\u5bf9\u672a\u547d\u4e2d\u7684\u6587\u672c\u8c03\u7528 inner.embed\uff1b\n2. \u82e5\u8fd4\u56de\u5411\u91cf\u6570\u91cf\u4e0e\u8bf7\u6c42\u6570\u91cf\u4e0d\u4e00\u81f4\uff0c\u629b RuntimeError\uff1b\n3. \u8fd4\u56de\u7ed3\u679c\u987a\u5e8f\u5fc5\u987b\u4e0e\u8f93\u5165 texts \u4e00\u4e00\u5bf9\u5e94\uff0c\u5141\u8bb8\u8f93\u5165\u542b\u91cd\u590d\u6587\u672c\u3002\n\u8bf7\u8865\u5168 embed \u65b9\u6cd5\u3002", "tags": ["Embedding", "\u7f13\u5b58", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u5e26\u7f13\u5b58\u7684 Embedder", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 1, "hints": ["\u5148\u505a\u53c2\u6570\u6821\u9a8c\u518d\u8ba1\u7b97", "\u96f6\u5411\u91cf\u8981\u5355\u72ec\u5904\u7406"], "id": "q03-03-07", "last_answer": "", "last_feedback": "", "points": 27, "solved": false, "starter_code": "from math import sqrt\n\ndef cosine_similarity(a: list[float], b: list[float]) -\u003e float:\n    # TODO\n    ...\n\nif __name__ == \"__main__\":\n    # TODO: \u6253\u5370\u4e24\u7ec4\u9a8c\u8bc1\u7ed3\u679c\n    ...", "statement": "\u5b9e\u73b0 cosine_similarity(a, b)\uff1a\n1. \u7ef4\u5ea6\u4e0d\u4e00\u81f4\u6216\u5411\u91cf\u4e3a\u7a7a\u65f6\u629b ValueError\uff1b\n2. \u4efb\u4e00\u5411\u91cf\u6a21\u957f\u4e3a 0 \u65f6\u8fd4\u56de 0.0\uff1b\n3. \u5426\u5219\u8fd4\u56de\u4f59\u5f26\u76f8\u4f3c\u5ea6\u3002\n\u7136\u540e\u7528 a=[1,0]\u3001b=[0,1] \u4e0e a=[1,2]\u3001b=[2,4] \u5404\u9a8c\u8bc1\u4e00\u6b21\u3002", "tags": ["\u4f59\u5f26\u76f8\u4f3c\u5ea6", "\u8fb9\u754c\u5904\u7406", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u624b\u5199\u4f59\u5f26\u76f8\u4f3c\u5ea6\u5e76\u81ea\u68c0", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="3" data-kp="2"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 13｜Embedding 与向量数据库">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 13｜Embedding 与向量数据库">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-4" data-kp-index="3"
+             data-kp-key="3_3" >
+      <div class="kp-head">
+        <span class="kp-no">D14</span>
+        <div class="kp-head-main">
+          <h3>Day 14｜混合检索、融合与重排</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>3.5.1 为什么需要多路召回</h4>
+<p>向量检索擅长语义近似，BM25 擅长型号、编号、专有名词等精确词。工程上常先用两路检索扩大候选集，再融合并重排。</p>
+<h4>3.5.2 教学版 BM25</h4>
+<p>BM25 根据词频、逆文档频率和文档长度计算相关度。中文生产系统应使用经过验证的分词器；课堂先用字符二元组，让算法过程不被额外依赖遮住。</p>
+<pre class="code lang-python"><code>from collections import Counter
+from math import log
+
+
+def bigrams(text: str) -&gt; list[str]:
+    compact = "".join(text.lower().split())
+    return [compact[i:i + 2] for i in range(max(0, len(compact) - 1))]
+
+
+class BM25Retriever:
+    def __init__(self, chunks: list[Document], k1: float = 1.5, b: float = 0.75):
+        self.chunks = chunks
+        self.k1 = k1
+        self.b = b
+        self.tokens = [bigrams(chunk.text) for chunk in chunks]
+        self.avg_len = sum(map(len, self.tokens)) / max(1, len(self.tokens))
+        self.df = Counter(term for terms in self.tokens for term in set(terms))
+
+    def search(self, query: str, top_k: int = 10) -&gt; list[dict]:
+        query_terms = bigrams(query)
+        scored: list[dict] = []
+        total = len(self.chunks)
+        for chunk, terms in zip(self.chunks, self.tokens):
+            frequencies = Counter(terms)
+            score = 0.0
+            for term in query_terms:
+                freq = frequencies[term]
+                if freq == 0:
+                    continue
+                idf = log(1 + (total - self.df[term] + 0.5) / (self.df[term] + 0.5))
+                length_norm = self.k1 * (1 - self.b + self.b * len(terms) / max(1, self.avg_len))
+                score += idf * (freq * (self.k1 + 1)) / (freq + length_norm)
+            if score &gt; 0:
+                scored.append({
+                    "chunk_id": chunk.metadata["chunk_id"],
+                    "text": chunk.text,
+                    "metadata": chunk.metadata,
+                    "score": score,
+                })
+        return sorted(scored, key=lambda item: item["score"], reverse=True)[:top_k]</code></pre>
+<p>逐行讲解：</p>
+<ul><li><code>df</code> 统计“包含某词的文档数”，不是词在全库出现的总次数。</li><li><code>idf</code> 让少见词获得更高区分度，因此制度编号和专有名词往往表现较好。</li><li><code>length_norm</code> 抑制长文档仅凭出现次数多而占优。</li><li>同一查询词若重复出现，教学版会重复累加；生产实现可对查询词去重或使用成熟库，并用评测确认行为。</li></ul>
+<h4>3.5.3 用 RRF 融合两路排名</h4>
+<p>Reciprocal Rank Fusion 不要求两路分数处于同一量纲，只使用排名：</p>
+<p>$$ RRF(d)=\sum_{r\in R}\frac{1}{k+rank_r(d)} $$</p>
+<pre class="code lang-python"><code>from collections import defaultdict
+
+
+def rrf_fusion(
+    ranked_lists: list[list[dict]],
+    limit: int = 10,
+    k: int = 60,
+) -&gt; list[dict]:
+    scores: dict[str, float] = defaultdict(float)
+    by_id: dict[str, dict] = {}
+    for results in ranked_lists:
+        for rank, item in enumerate(results, start=1):
+            chunk_id = item["chunk_id"]
+            scores[chunk_id] += 1.0 / (k + rank)
+            by_id[chunk_id] = item
+
+    ordered_ids = sorted(scores, key=scores.get, reverse=True)[:limit]
+    return [{**by_id[cid], "fusion_score": scores[cid]} for cid in ordered_ids]</code></pre>
+<p>逐行讲解：</p>
+<ul><li><code>scores</code> 累加同一文档在不同列表中的排名贡献。</li><li><code>by_id</code> 保留原始文本和元数据。</li><li>同时被两路排在前面的块自然获得较高融合分。</li><li><code>k</code> 越大，头部与尾部名次差异越平滑。它需要用固定评测集调参。</li></ul>
+<h4>3.5.4 轻量重排器接口</h4>
+<pre class="code lang-python"><code>from typing import Callable
+
+
+RerankFn = Callable[[str, list[str]], list[float]]
+
+
+def rerank(query: str, candidates: list[dict], score_fn: RerankFn, top_n: int = 5) -&gt; list[dict]:
+    texts = [item["text"] for item in candidates]
+    scores = score_fn(query, texts)
+    if len(scores) != len(candidates):
+        raise RuntimeError("重排分数数量不匹配")
+    enriched = [{**item, "rerank_score": float(score)} for item, score in zip(candidates, scores)]
+    return sorted(enriched, key=lambda item: item["rerank_score"], reverse=True)[:top_n]</code></pre>
+<p>重排模型只处理较小候选集，通常比全库逐条精排便宜。课堂先召回 20 条，再重排到 5 条，并比较延迟与 Recall@5 / MRR。</p>
+<h4>3.5.5 评测检索而不是先看最终答案</h4>
+<pre class="code lang-python"><code>def recall_at_k(retrieved_ids: list[str], relevant_ids: set[str], k: int) -&gt; float:
+    if not relevant_ids:
+        raise ValueError("relevant_ids 不能为空")
+    hits = len(set(retrieved_ids[:k]) &amp; relevant_ids)
+    return hits / len(relevant_ids)
+
+
+def reciprocal_rank(retrieved_ids: list[str], relevant_ids: set[str]) -&gt; float:
+    for rank, chunk_id in enumerate(retrieved_ids, start=1):
+        if chunk_id in relevant_ids:
+            return 1.0 / rank
+    return 0.0</code></pre>
+<p>教学重点：若检索证据都错了，单独调整生成提示词通常治标不治本。先分层评测检索，再评测生成。</p>
+<h4>3.5.6 当日消融实验</h4>
+<p>对同一批问题运行四组：向量检索、BM25、RRF 混合、RRF + rerank。记录 Recall@5、MRR、P50 延迟、P95 延迟。结论必须包含收益和代价。</p>
+<pre class="code lang-powershell"><code>python code/ch03/30_hybrid_ablation.py</code></pre>
+<h5>真实实验数据</h5>
+<p><img src="static/course-assets/ch03/05_hybrid_ablation.webp" alt="四组消融实验的真实输出：向量检索 / BM25 / RRF 混合 / RRF+重排 的 Recall@5、MRR、HitRate@5 与 P50/P95 延迟对比，含收益代价表、逐题差异表和 q025 失败案例分析" loading="lazy"></p>
+<p>四组方案在 25 道可回答题上的实测结果：</p>
+<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:right">Recall@5</th><th style="text-align:right">MRR</th><th style="text-align:right">HitRate@5</th><th style="text-align:right">P50(ms)</th><th style="text-align:right">P95(ms)</th></tr></thead><tbody><tr><td style="text-align:left">A 向量检索</td><td style="text-align:right">0.8800</td><td style="text-align:right">0.6513</td><td style="text-align:right">0.9200</td><td style="text-align:right">2.5100</td><td style="text-align:right">2.9100</td></tr><tr><td style="text-align:left">B BM25</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.8533</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.0500</td><td style="text-align:right">0.1400</td></tr><tr><td style="text-align:left">C RRF 混合</td><td style="text-align:right">0.9800</td><td style="text-align:right">0.7680</td><td style="text-align:right">1.0000</td><td style="text-align:right">3.1400</td><td style="text-align:right">3.7400</td></tr><tr><td style="text-align:left">D RRF+重排</td><td style="text-align:right">0.8800</td><td style="text-align:right">0.6633</td><td style="text-align:right">0.9200</td><td style="text-align:right">12.0300</td><td style="text-align:right">13.4600</td></tr></tbody></table>
+<p><strong>收益与代价必须一起报</strong>——只看左边三列会得出「越靠后越好」的错误结论：</p>
+<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:right">ΔRecall@5</th><th style="text-align:right">ΔMRR</th><th style="text-align:right">P95 倍数（vs 向量）</th><th style="text-align:right">P95(ms)</th></tr></thead><tbody><tr><td style="text-align:left">A 向量检索</td><td style="text-align:right">0.0000</td><td style="text-align:right">0.0000</td><td style="text-align:right">1.00</td><td style="text-align:right">2.9100</td></tr><tr><td style="text-align:left">B BM25</td><td style="text-align:right">+0.1200</td><td style="text-align:right">+0.2020</td><td style="text-align:right">0.05</td><td style="text-align:right">0.1400</td></tr><tr><td style="text-align:left">C RRF 混合</td><td style="text-align:right">+0.1000</td><td style="text-align:right">+0.1167</td><td style="text-align:right">1.29</td><td style="text-align:right">3.7400</td></tr><tr><td style="text-align:left">D RRF+重排</td><td style="text-align:right">0.0000</td><td style="text-align:right">+0.0120</td><td style="text-align:right"><strong>4.63</strong></td><td style="text-align:right">13.4600</td></tr></tbody></table>
+<p><strong>读法</strong>：ΔRecall / ΔMRR 是收益，P95 倍数是代价。D 组 Recall 一点没涨、MRR 只涨 0.0120，P95 却翻了 4.63 倍——<strong>某一组如果 Recall 没涨、P95 却翻了几倍，那它在生产里就不该上线</strong>。这不是说重排没用，而是说：重排的价值取决于 reranker 的质量，用一个没有语义能力的假 reranker，你花 4.63 倍延迟买到的只有噪声。</p>
+<h5>一个把结论推翻的失败案例</h5>
+<p>脚本做了「逐题差异表」——找出谁被救回来了、谁被搞坏了。最有价值的一行是 <strong>q025</strong>：</p>
+<table><thead><tr><th style="text-align:left">题目</th><th style="text-align:left">类型</th><th style="text-align:right">向量</th><th style="text-align:right">BM25</th><th style="text-align:right">混合</th><th style="text-align:left">变化</th><th style="text-align:left">问题</th></tr></thead><tbody><tr><td style="text-align:left">q012</td><td style="text-align:left">single</td><td style="text-align:right">0.0000</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.0000</td><td style="text-align:left">持平</td><td style="text-align:left">婚假有多少天？</td></tr><tr><td style="text-align:left">q021</td><td style="text-align:left">cross</td><td style="text-align:right">0.0000</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.0000</td><td style="text-align:left">持平</td><td style="text-align:left">一位入职满 4 年的员工，年假有多少天…</td></tr><tr><td style="text-align:left">q023</td><td style="text-align:left">cross</td><td style="text-align:right">0.5000</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.0000</td><td style="text-align:left">持平</td><td style="text-align:left">试用期员工能休年假吗？弹性上班…</td></tr><tr><td style="text-align:left"><strong>q025</strong></td><td style="text-align:left">cross</td><td style="text-align:right"><strong>0.5000</strong></td><td style="text-align:right"><strong>1.0000</strong></td><td style="text-align:right"><strong>0.5000</strong></td><td style="text-align:left"><strong>混合更差 ↓</strong></td><td style="text-align:left">离职后还要保密多久？离职前要提前多久通知？</td></tr></tbody></table>
+<p>q025 的两路检索完全冲突：向量只拿到 0.5，BM25 拿到 1.0，<strong>融合之后反而掉回 0.5</strong>。</p>
+<p>原因：<strong>RRF 只看排名，不看分数，也不看谁更可信</strong>。当两路意见冲突时，它们会互相牵扯——BM25 排第 1 的证据被向量路的低排名拉了下来。</p>
+<p>这条结论比「融合总是更好」有价值得多，它直接推翻了一个常见默认值：</p>
+<blockquote><strong>RRF 的参数 &lt;code&gt;k&lt;/code&gt; 不能默认 60 就不管。</strong> 它必须用固定评测集调参，并且要在逐题差异表里检查有没有「融合反而变差」的样本。平均值会掩盖它：C 组整体 Recall 是 0.98，看上去很好，但代价是把 q025 从 1.0 拉到了 0.5。</blockquote>
+<h5>这张实验报告的局限（必须如实说明）</h5>
+<p>这个实验跑在<strong>离线靶场的伪 embedding</strong> 上（字符二元组哈希向量，见 3.4 与本章评测报告的已知局限）。因此：</p>
+<ol><li><strong>BM25 表现优于向量检索是正常的，不能外推</strong>。伪向量不具备同义词泛化能力，而 BM25 与它高度同源、甚至更直接——所以 B 组「全指标第一」是本靶场的产物，不是普遍规律。<strong>换真实 embedding 后，向量检索会明显改善，两路的强弱关系会重新洗牌。</strong></li><li><strong>真正可以外推的是实验方法和结论形式</strong>：控制变量、四组对照、收益与代价并列、逐题差异归因。这些在真实模型上同样成立。</li><li>报告 JSON（<code>reports/ch03_ablation.json</code>）里也写了同一句话作为提示：<code>note</code> 字段明确标注「本表不能外推到生产，可用的是实验方法与收益/代价并列的结论形式」。<strong>不要让学生把这张表记成「BM25 总是比向量好」。</strong></li></ol>
+<p><img src="static/course-assets/figures/ch03_ablation.webp" alt="四组消融实验的指标可视化：Recall@5 / MRR / HitRate@5 三项质量指标、延迟对比（收益的代价），以及「分层 Recall：跨段落题天生更差」；最右结论框指出最优项为 B BM25、最慢为 D RRF+重排（相对向量基线慢 4.8 倍）" loading="lazy"></p>
+<p><strong>读图要点</strong>：最值得看的是左下「延迟对比」和右下「分层 Recall」两张图放在一起——延迟那张告诉你 D 组的代价有多贵，分层那张告诉你<strong>跨段落题的 Recall 普遍低于单段落题</strong>（A、C、D 三组分别是 0.60 / 0.90 / 0.60，而单段落都在 0.95 以上；只有 B 组两组都是 1.00，这同样要归因到伪向量的靶场局限）。而且这个问题<strong>靠调融合参数解决不了</strong>——答案分散在多个块里时，必须全部召回才能拿满分，这是切块粒度的结构性代价。右下角结论框也点明了：<strong>阈值 / 融合参数都要在评测集上校准，不能凭感觉设</strong>。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 1, "id": "q03-04-01", "last_answer": "", "last_feedback": "", "options": ["k \u8d8a\u5927\uff0c\u5934\u90e8\u540d\u6b21\u4e0e\u5c3e\u90e8\u540d\u6b21\u7684\u8d21\u732e\u5dee\u5f02\u8d8a\u5e73\u6ed1", "k \u662f\u6587\u6863\u957f\u5ea6\u5f52\u4e00\u5316\u7cfb\u6570\uff0c\u9700\u6309\u5e73\u5747\u957f\u5ea6\u8bbe\u5b9a", "\u516c\u5f0f\u4e2d\u7684 rank_r(d) \u53d6\u7684\u662f\u8be5\u6587\u6863\u7684\u68c0\u7d22\u76f8\u4f3c\u5ea6\u5206\u6570", "\u4e24\u8def\u68c0\u7d22\u5fc5\u987b\u5148\u628a\u5206\u6570\u5f52\u4e00\u5316\u5230\u540c\u4e00\u91cf\u7eb2\u624d\u80fd\u76f8\u52a0"], "points": 27, "solved": false, "statement": "RRF \u7528\u6392\u540d\u800c\u975e\u5206\u6570\u505a\u878d\u5408\uff0c\u5176\u5b9a\u4e49\u5f0f\u4e3a RRF(d)=\u03a3 1/(k+rank_r(d))\u3002\n\u5173\u4e8e\u8fd9\u4e2a\u516c\u5f0f\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["RRF", "\u6df7\u5408\u68c0\u7d22", "\u878d\u5408"], "title": "RRF \u878d\u5408\u516c\u5f0f\u7684\u6784\u6210", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-04-02", "last_answer": "", "last_feedback": "", "options": ["df \u7edf\u8ba1\u5305\u542b\u8be5\u8bcd\u7684\u6587\u6863\u6570\uff0c\u800c\u975e\u8be5\u8bcd\u5728\u5168\u5e93\u51fa\u73b0\u7684\u603b\u6b21\u6570", "df \u7edf\u8ba1\u8be5\u8bcd\u5728\u5168\u5e93\u51fa\u73b0\u7684\u603b\u6b21\u6570\uff0c\u51fa\u73b0\u8d8a\u591a idf \u8d8a\u9ad8", "idf \u8ba9\u9ad8\u9891\u5e38\u89c1\u8bcd\u83b7\u5f97\u66f4\u9ad8\u533a\u5206\u5ea6\uff0c\u4ece\u800c\u63d0\u5347\u53ec\u56de", "length_norm \u7684\u4f5c\u7528\u662f\u8ba9\u957f\u6587\u6863\u56e0\u8bcd\u9891\u9ad8\u800c\u83b7\u5f97\u66f4\u9ad8\u5206"], "points": 76, "solved": false, "statement": "\u6559\u5b66\u7248 BM25 \u4e2d\uff0cdf \u7528 Counter \u7edf\u8ba1\uff0cidf \u7531 log(1+(N-df+0.5)/(df+0.5)) \u8ba1\u7b97\u3002\n\u4e0b\u5217\u5173\u4e8e df \u4e0e idf \u7684\u8bf4\u6cd5\uff0c\u6b63\u786e\u7684\u662f\uff1f", "tags": ["BM25", "idf", "\u68c0\u7d22"], "title": "BM25 \u4e2d df \u4e0e idf \u7684\u542b\u4e49", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "id": "q03-04-03", "last_answer": "", "last_feedback": "", "options": ["D \u7ec4 Recall \u6ca1\u6da8\u3001MRR \u53ea\u6da8 0.0120\uff0cP95 \u5374\u7ffb 4.63 \u500d\uff0c\u4e0d\u8be5\u76f4\u63a5\u4e0a\u7ebf", "D \u7ec4 MRR \u9ad8\u4e8e A \u7ec4\uff0c\u8bf4\u660e\u91cd\u6392\u4e00\u5b9a\u503c\u5f97\uff0c\u5ef6\u8fdf\u53ef\u63a5\u53d7", "C \u7ec4 Recall 0.98 \u63a5\u8fd1\u6ee1\u5206\uff0c\u53ef\u76f4\u63a5\u66ff\u6362 B \u7ec4\u4f5c\u4e3a\u751f\u4ea7\u65b9\u6848", "B \u7ec4\u5168\u6307\u6807\u7b2c\u4e00\uff0c\u8bf4\u660e BM25 \u666e\u904d\u4f18\u4e8e\u5411\u91cf\u68c0\u7d22"], "points": 189, "solved": false, "statement": "\u56db\u7ec4\u65b9\u6848\u5b9e\u6d4b\uff1aA \u5411\u91cf Recall@5=0.88\u3001P95=2.91ms\uff1bB BM25 1.00\u30010.14ms\uff1bC RRF 0.98\u30013.74ms\uff1bD RRF+\u91cd\u6392 0.88\u300113.46ms\u3002\n\u6309\u300c\u6536\u76ca\u4e0e\u4ee3\u4ef7\u4e00\u8d77\u62a5\u300d\u7684\u8bfb\u6cd5\uff0c\u6700\u5e94\u5f97\u51fa\u7684\u7ed3\u8bba\u662f\uff1f", "tags": ["\u6d88\u878d\u5b9e\u9a8c", "\u91cd\u6392", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u6d88\u878d\u5b9e\u9a8c\u7684\u6536\u76ca\u4e0e\u4ee3\u4ef7", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u60f3 RRF \u516c\u5f0f\u91cc\u5230\u5e95\u7528\u4e86\u4ec0\u4e48\u4fe1\u606f", "\u5e73\u5747\u503c 0.98 \u4f1a\u63a9\u76d6\u5355\u9898\u9000\u5316"], "id": "q03-04-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u5728\u9010\u9898\u5dee\u5f02\u8868\u4e2d\uff0cq025\uff08\u79bb\u804c\u540e\u8fd8\u8981\u4fdd\u5bc6\u591a\u4e45\uff1f\u79bb\u804c\u524d\u8981\u63d0\u524d\u591a\u4e45\u901a\u77e5\uff1f\uff09\u5411\u91cf\u68c0\u7d22\u5f97 0.5\u3001BM25 \u5f97 1.0\uff0cRRF \u878d\u5408\u540e\u5374\u6389\u56de 0.5\u3002\n\u8bf7\u89e3\u91ca\u8fd9\u4e2a\u73b0\u8c61\u7684\u539f\u56e0\uff0c\u5e76\u8bf4\u660e\u5b83\u63a8\u7ffb\u4e86\u54ea\u4e2a\u5e38\u89c1\u9ed8\u8ba4\u505a\u6cd5\uff0c\u4ee5\u53ca\u5e94\u5f53\u5982\u4f55\u6392\u67e5\u8fd9\u7c7b\u6837\u672c\u3002", "tags": ["RRF", "\u5931\u8d25\u6848\u4f8b", "\u8c03\u53c2"], "title": "q025 \u4e3a\u4f55\u878d\u5408\u53cd\u800c\u53d8\u5dee", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u4e0a\u4e0b\u6e38\u4f9d\u8d56\u5173\u7cfb", "Recall \u770b\u8986\u76d6\u3001MRR \u770b\u6392\u5e8f\u4f4d\u7f6e"], "id": "q03-04-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u6559\u6750\u5f3a\u8c03\u300c\u82e5\u68c0\u7d22\u8bc1\u636e\u90fd\u9519\u4e86\uff0c\u5355\u72ec\u8c03\u6574\u751f\u6210\u63d0\u793a\u8bcd\u901a\u5e38\u6cbb\u6807\u4e0d\u6cbb\u672c\u300d\uff0c\u5e76\u63d0\u51fa\u5148\u5206\u5c42\u8bc4\u6d4b\u68c0\u7d22\u3001\u518d\u8bc4\u6d4b\u751f\u6210\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u4e00\u987a\u5e8f\u7684\u7406\u7531\uff0c\u5e76\u7ed9\u51fa Recall@k \u4e0e MRR \u5404\u81ea\u8861\u91cf\u4ec0\u4e48\u3001\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u4e24\u8005\u8981\u4e00\u8d77\u770b\u3002", "tags": ["\u8bc4\u6d4b", "Recall@k", "MRR"], "title": "\u4e3a\u4ec0\u4e48\u5148\u8bc4\u6d4b\u68c0\u7d22", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["enumerate \u7684 start \u5e94\u4e3a 1", "\u7528\u5b57\u5178\u4fdd\u5b58 chunk_id \u5230\u539f\u59cb\u6761\u76ee\u7684\u6620\u5c04"], "id": "q03-04-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "from collections import defaultdict\n\ndef rrf_fusion(ranked_lists, limit=10, k=60):\n    # \u8fd4\u56de\u878d\u5408\u540e\u7684\u7ed3\u679c\u5217\u8868\n    pass", "statement": "\u5b9e\u73b0 rrf_fusion(ranked_lists, limit=10, k=60)\uff1a\n\u8f93\u5165\u662f\u591a\u8def\u5df2\u6392\u5e8f\u7684\u68c0\u7d22\u7ed3\u679c\u5217\u8868\uff0c\u6bcf\u4e2a\u5143\u7d20\u662f\u542b chunk_id\u3001text\u3001metadata \u7684 dict\uff1b\n\u8f93\u51fa\u6309\u878d\u5408\u5206\u964d\u5e8f\u7684\u524d limit \u6761\uff0c\u6bcf\u6761\u5728\u539f\u6709\u5b57\u6bb5\u4e0a\u8ffd\u52a0 fusion_score\u3002\n\u8981\u6c42\u540c\u4e00\u6587\u6863\u5728\u591a\u8def\u4e2d\u7684\u6392\u540d\u8d21\u732e\u7d2f\u52a0\uff0c\u5e76\u4fdd\u7559\u539f\u59cb\u6587\u672c\u4e0e\u5143\u6570\u636e\u3002", "tags": ["RRF", "\u878d\u5408", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0 RRF \u878d\u5408\u51fd\u6570", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u4ea4\u96c6\u7528 set \u0026 set", "\u6392\u540d\u4ece 1 \u5f00\u59cb"], "id": "q03-04-07", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def recall_at_k(retrieved_ids, relevant_ids, k):\n    pass\n\ndef reciprocal_rank(retrieved_ids, relevant_ids):\n    pass", "statement": "\u5b9e\u73b0\u4e24\u4e2a\u8bc4\u6d4b\u51fd\u6570\uff1a\nrecall_at_k(retrieved_ids, relevant_ids, k)\uff0c\u8fd4\u56de\u524d k \u6761\u4e2d\u547d\u4e2d\u76f8\u5173\u9879\u7684\u6bd4\u4f8b\uff0crelevant_ids \u4e3a\u7a7a\u65f6\u629b ValueError\uff1b\nreciprocal_rank(retrieved_ids, relevant_ids)\uff0c\u8fd4\u56de\u7b2c\u4e00\u4e2a\u547d\u4e2d\u9879\u7684\u6392\u540d\u5012\u6570\uff0c\u65e0\u547d\u4e2d\u8fd4\u56de 0.0\u3002\n\u6392\u540d\u4ece 1 \u5f00\u59cb\u8ba1\u6570\u3002", "tags": ["\u8bc4\u6d4b", "Recall@k", "MRR"], "title": "\u5b9e\u73b0 Recall@k \u4e0e MRR", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="3" data-kp="3"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 14｜混合检索、融合与重排">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 14｜混合检索、融合与重排">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-5" data-kp-index="4"
+             data-kp-key="3_4" >
+      <div class="kp-head">
+        <span class="kp-no">D15</span>
+        <div class="kp-head-main">
+          <h3>Day 15｜带引用生成、拒答与 RAG 评测</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>3.6.1 证据上下文组装</h4>
+<pre class="code lang-python"><code>def build_context(results: list[dict], max_chars: int = 6000) -&gt; tuple[str, list[dict]]:
+    blocks: list[str] = []
+    citations: list[dict] = []
+    used = 0
+    for index, item in enumerate(results, start=1):
+        meta = item["metadata"]
+        label = f"S{index}"
+        block = f"[{label}] 来源={meta.get('source')} 页码={meta.get('page', '无')}\n{item['text']}"
+        if used + len(block) &gt; max_chars:
+            break
+        blocks.append(block)
+        citations.append({"label": label, "chunk_id": item["chunk_id"], **meta})
+        used += len(block)
+    return "\n\n".join(blocks), citations</code></pre>
+<h4>3.6.2 受约束的生成提示词</h4>
+<pre class="code lang-python"><code>SYSTEM_PROMPT = """你是企业制度问答助手。
+只能依据给定证据回答，不得把常识当作企业制度。
+每个关键结论后标注证据编号，例如 [S1]。
+证据不足时明确回答“当前知识库中没有足够依据”，并说明缺少什么。
+若证据互相冲突，列出冲突来源，不自行选择其中一个。
+"""
+
+
+def build_messages(question: str, context: str) -&gt; list[dict[str, str]]:
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": f"证据：\n{context}\n\n问题：{question}"},
+    ]</code></pre>
+<h4>3.6.3 检索前置拒答</h4>
+<pre class="code lang-python"><code>def should_abstain(results: list[dict], min_score: float) -&gt; tuple[bool, str]:
+    if not results:
+        return True, "没有检索到任何证据"
+    best = max(float(item.get("rerank_score", item.get("score", 0.0))) for item in results)
+    if best &lt; min_score:
+        return True, f"最高相关分 {best:.3f} 低于阈值 {min_score:.3f}"
+    return False, "证据达到生成条件"</code></pre>
+<p>阈值不能凭感觉确定。使用一组“可回答”和“不可回答”问题扫描多个阈值，观察错误回答率与错误拒答率，再选择业务可接受点。</p>
+<p><strong>运行验证：阈值校准 + 拒答</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch03/40_rag_pipeline.py</code></pre>
+<p><img src="static/course-assets/ch03/06_rag_pipeline.webp" alt="完整 RAG 管线的真实输出：先做阈值校准（coverage 信号最优阈值 0.235、平衡准确率 0.940），再演示带引用的正常问答与知识库外问题的正确拒答，最后做引用编号有效性与内容支撑度两级校验" loading="lazy"></p>
+<p><strong>这张图是本链路所有护栏的现场证据</strong>：</p>
+<p><strong>（1）阈值是扫出来的，不是拍出来的。</strong> 脚本先看两种信号的可分性：<code>score</code> 信号最优阈值 0.5721、平衡准确率只有 0.7800；<code>coverage</code> 信号最优阈值 0.2345、平衡准确率 0.9400。按「风险优先」选了 <code>coverage</code>，校准结果写入 <code>storage/abstain_threshold.json</code>。终端还打印了完整的<strong>阈值-错误率曲线</strong>，可以看到 0.235 这个点上错误回答率降到 0.0000、错误拒答率 0.1200——<strong>这是一条权衡曲线，不是一个魔法数字</strong>。</p>
+<p><strong>（2）正常问答带引用、可定位。</strong> 三个制度内问题全部给出带 <code>[S#]</code> 标注的回答，每条引用都落到具体文件、页码和 <code>chunk_id</code>（例如 <code>[S1] 员工手册.pdf 第4页 chunk=4ecafb4472af6ec6 score=0.566</code>）。</p>
+<p><strong>（3）知识库外问题全部正确拒答。</strong> 「公司班车有几条线路」「员工持股计划的行权价格」「公司今年的股票回购价格目标」三个问题都被拦下，原因写明「证据不足（最高分 0.473 / 覆盖率 0.062，阈值 0.235）」。小结里的数字是验收标准：<strong>正常问题 3/3 带引用回答，知识库外问题 3/3 正确拒答，引用编号有效性 6/6 无无效编号</strong>。</p>
+<p><strong>（4）引用校验分两级，并且诚实标注了能力边界。</strong> 编号有效性（<code>validate_citations</code>）查的是「引用了不存在的编号」；内容支撑度查的是「引用是否名副其实」。脚本特意构造了一个<strong>编号合法但内容不符</strong>的回答，两级检查给出了不同结论——这正好证明 3.6.6 的提醒：<strong>这个检查只能发现引用编号不存在，不能证明引用内容支持结论</strong>。</p>
+<p>同时脚本如实写出支撑度检查的能力边界：<strong>同义改写会被误判为不支撑（偏严），套话重合会被误判为支撑（偏松）</strong>。它只能作为自动预警，不能替代人工抽检。</p>
+<h4>3.6.4 评测集格式</h4>
+<pre class="code lang-json"><code>{"id":"q001","question":"试用期员工有几天年假？","reference_answer":"……","relevant_chunk_ids":["ab12cd34"],"answerable":true}
+{"id":"q002","question":"公司今年股票价格目标是多少？","reference_answer":"","relevant_chunk_ids":[],"answerable":false}</code></pre>
+<h4>3.6.5 指标分层</h4>
+<table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">指标</th><th style="text-align:left">回答的问题</th></tr></thead><tbody><tr><td style="text-align:left">解析</td><td style="text-align:left">空页率、乱码率、表格保留率</td><td style="text-align:left">文档是否正确进入系统</td></tr><tr><td style="text-align:left">切块</td><td style="text-align:left">长度分布、边界完整率</td><td style="text-align:left">检索单元是否合理</td></tr><tr><td style="text-align:left">检索</td><td style="text-align:left">Recall@k、MRR</td><td style="text-align:left">正确证据是否被找到并排在前面</td></tr><tr><td style="text-align:left">生成</td><td style="text-align:left">忠实度、答案相关度、引用正确率</td><td style="text-align:left">答案是否依据证据</td></tr><tr><td style="text-align:left">系统</td><td style="text-align:left">拒答准确率、P95 延迟、单次成本</td><td style="text-align:left">产品是否安全可用</td></tr></tbody></table>
+<p>Ragas 可作为自动评测工具，但教师必须强调：模型裁判也会波动。课堂报告应同时保留 10 条人工抽检，给出“正确、部分正确、错误、正确拒答、错误拒答”的理由。</p>
+<h4>3.6.6 引用完整性检查</h4>
+<pre class="code lang-python"><code>import re
+
+
+def validate_citations(answer: str, allowed_labels: set[str]) -&gt; list[str]:
+    used = set(re.findall(r"\[(S\d+)\]", answer))
+    return sorted(used - allowed_labels)</code></pre>
+<p>这个检查只能发现“引用了不存在的编号”，不能证明引用内容支持结论。后者需要人工审核或额外的蕴含判定。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-05-01", "last_answer": "", "last_feedback": "", "options": ["\u51ed\u7ecf\u9a8c\u62cd\u4e00\u4e2a 0.5\uff0c\u7b80\u5355\u76f4\u63a5", "\u7528\u4e00\u7ec4\u53ef\u56de\u7b54\u4e0e\u4e0d\u53ef\u56de\u7b54\u95ee\u9898\u626b\u63cf\u591a\u4e2a\u9608\u503c\uff0c\u770b\u9519\u8bef\u56de\u7b54\u7387\u4e0e\u9519\u8bef\u62d2\u7b54\u7387\uff0c\u9009\u4e1a\u52a1\u53ef\u63a5\u53d7\u70b9", "\u628a\u9608\u503c\u8bbe\u4e3a 0\uff0c\u4fdd\u8bc1\u4efb\u4f55\u95ee\u9898\u90fd\u56de\u7b54", "\u53d6\u6240\u6709\u68c0\u7d22\u7ed3\u679c\u7684\u6700\u9ad8\u5206\u4f5c\u4e3a\u9608\u503c"], "points": 76, "solved": false, "statement": "\u7cfb\u7edf\u9700\u8981\u8bbe\u7f6e\u68c0\u7d22\u524d\u7f6e\u62d2\u7b54\u7684 min_score \u9608\u503c\u3002\n\u4ee5\u4e0b\u54ea\u79cd\u505a\u6cd5\u6700\u7b26\u5408\u5de5\u7a0b\u8981\u6c42\uff1f", "tags": ["\u62d2\u7b54", "\u9608\u503c\u6821\u51c6", "\u8bc4\u6d4b"], "title": "\u62d2\u7b54\u9608\u503c\u8be5\u600e\u4e48\u5b9a", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-05-02", "last_answer": "", "last_feedback": "", "options": ["\u9009 score\uff0c\u56e0\u4e3a\u5b83\u7684\u9608\u503c\u66f4\u5927\u66f4\u5b89\u5168", "\u9009 coverage\uff0c\u56e0\u4e3a\u5e73\u8861\u51c6\u786e\u7387\u66f4\u9ad8\uff0c\u8bef\u5224\u66f4\u5c11", "\u4e24\u4e2a\u90fd\u4e0d\u7528\uff0c\u76f4\u63a5\u5168\u90e8\u56de\u7b54", "\u9009 score\uff0c\u56e0\u4e3a\u5206\u6570\u6bd4\u8986\u76d6\u7387\u66f4\u76f4\u89c2"], "points": 76, "solved": false, "statement": "\u9608\u503c\u6821\u51c6\u663e\u793a\uff1ascore \u4fe1\u53f7\u6700\u4f18\u9608\u503c 0.5721\u3001\u5e73\u8861\u51c6\u786e\u7387 0.7800\uff1bcoverage \u4fe1\u53f7\u6700\u4f18\u9608\u503c 0.2345\u3001\u5e73\u8861\u51c6\u786e\u7387 0.9400\u3002\n\u6309\u300c\u98ce\u9669\u4f18\u5148\u300d\u5e94\u9009\u54ea\u4e2a\uff0c\u4e3a\u4ec0\u4e48\uff1f", "tags": ["\u62d2\u7b54", "\u4fe1\u53f7\u9009\u62e9", "\u9608\u503c\u6821\u51c6"], "title": "\u4e24\u79cd\u62d2\u7b54\u4fe1\u53f7\u600e\u4e48\u9009", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "id": "q03-05-03", "last_answer": "", "last_feedback": "", "options": ["\u5b83\u80fd\u8bc1\u660e\u5f15\u7528\u5185\u5bb9\u652f\u6301\u7ed3\u8bba", "\u5b83\u53ea\u80fd\u53d1\u73b0\u5f15\u7528\u4e86\u4e0d\u5b58\u5728\u7684\u7f16\u53f7\uff0c\u4e0d\u80fd\u8bc1\u660e\u5185\u5bb9\u652f\u6491", "\u5b83\u80fd\u68c0\u6d4b\u540c\u4e49\u6539\u5199\u5bfc\u81f4\u7684\u5f15\u7528\u504f\u5dee", "\u5b83\u80fd\u66ff\u4ee3\u4eba\u5de5\u62bd\u68c0\uff0c\u65e0\u9700\u518d\u770b\u652f\u6491\u5ea6"], "points": 189, "solved": false, "statement": "validate_citations \u7528\u6b63\u5219\u627e\u51fa\u56de\u7b54\u91cc\u7684 [S#] \u7f16\u53f7\uff0c\u8fd4\u56de used - allowed_labels\u3002\n\u5173\u4e8e\u5b83\u7684\u80fd\u529b\u8fb9\u754c\uff0c\u54ea\u9879\u8bf4\u6cd5\u6b63\u786e\uff1f", "tags": ["\u5f15\u7528\u6821\u9a8c", "\u80fd\u529b\u8fb9\u754c", "\u62a4\u680f"], "title": "\u5f15\u7528\u6821\u9a8c\u80fd\u67e5\u51fa\u4ec0\u4e48", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u6e05\u695a\u6bcf\u9053\u62a4\u680f\u5728\u94fe\u8def\u7684\u54ea\u4e2a\u4f4d\u7f6e", "\u62d2\u7b54\u7ba1\u5165\u53e3\uff0c\u6821\u9a8c\u7ba1\u51fa\u53e3"], "id": "q03-05-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e\u68c0\u7d22\u524d\u7f6e\u62d2\u7b54\uff08should_abstain\uff09\u4e0e\u5e26\u5f15\u7528\u751f\u6210\u3001\u5f15\u7528\u6821\u9a8c\u4e09\u8005\u5728\u6574\u6761 RAG \u94fe\u8def\u4e2d\u7684\u5206\u5de5\u3002\n\u8981\u6c42\u8bb2\u6e05\u5404\u81ea\u62e6\u4f4f\u4e86\u4ec0\u4e48\u98ce\u9669\u3001\u5728\u4ec0\u4e48\u65f6\u673a\u4ecb\u5165\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u4e09\u8005\u4e0d\u80fd\u4e92\u76f8\u66ff\u4ee3\u3002", "tags": ["\u62d2\u7b54", "\u5f15\u7528\u751f\u6210", "\u62a4\u680f\u5206\u5de5"], "title": "\u62d2\u7b54\u4e0e\u5f15\u7528\u62a4\u680f\u5982\u4f55\u914d\u5408", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u5148\u60f3\u7aef\u5230\u7aef\u5206\u6570\u4f4e\u65f6\u600e\u4e48\u5b9a\u4f4d", "\u6bcf\u5c42\u56de\u7b54\u4e00\u4e2a\u4e0d\u540c\u7684\u95ee\u9898"], "id": "q03-05-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bc4\u6d4b\u6307\u6807\u88ab\u5206\u4e3a\u89e3\u6790\u3001\u5207\u5757\u3001\u68c0\u7d22\u3001\u751f\u6210\u3001\u7cfb\u7edf\u4e94\u5c42\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u6837\u5206\u5c42\u7684\u597d\u5904\uff0c\u5e76\u5404\u4e3e\u4e00\u4e2a\u8be5\u5c42\u6307\u6807\uff0c\u89e3\u91ca\u5b83\u56de\u7b54\u7684\u662f\u4ec0\u4e48\u95ee\u9898\u3002", "tags": ["\u8bc4\u6d4b\u5206\u5c42", "\u6307\u6807", "\u6545\u969c\u5b9a\u4f4d"], "title": "RAG \u8bc4\u6d4b\u4e3a\u4ec0\u4e48\u8981\u5206\u5c42", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u7f16\u53f7\u8981\u548c citations \u91cc\u7684 label \u4e00\u81f4", "\u5148\u5224\u65ad\u957f\u5ea6\u518d\u51b3\u5b9a\u662f\u5426\u52a0\u5165"], "id": "q03-05-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def build_context(results: list[dict], max_chars: int = 6000):\n    blocks = []\n    citations = []\n    used = 0\n    # TODO: \u904d\u5386 results\uff0c\u6784\u9020\u5e26 [S#] \u7684\u5757\n    return \"\\n\\n\".join(blocks), citations", "statement": "\u5b9e\u73b0 build_context(results, max_chars=6000)\u3002\nresults \u6bcf\u9879\u542b text\u3001chunk_id\u3001metadata\uff08\u542b source\u3001page\uff09\u3002\n\u8981\u6c42\uff1a\u6309\u987a\u5e8f\u7ed9\u6bcf\u5757\u7f16\u53f7 S1\u3001S2\u2026\uff1b\u5757\u683c\u5f0f\u4e3a [S#] \u6765\u6e90=\u2026 \u9875\u7801=\u2026\\n\u6b63\u6587\uff1b\u7d2f\u8ba1\u957f\u5ea6\u8d85\u8fc7 max_chars \u65f6\u505c\u6b62\uff1b\u8fd4\u56de\u62fc\u63a5\u540e\u7684 context \u5b57\u7b26\u4e32\u4e0e citations \u5217\u8868\uff08\u542b label\u3001chunk_id \u53ca metadata \u5b57\u6bb5\uff09\u3002", "tags": ["\u4e0a\u4e0b\u6587\u6784\u5efa", "\u5f15\u7528", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u5e26\u5f15\u7528\u7684\u4e0a\u4e0b\u6587\u6784\u5efa", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u6ce8\u610f rerank_score \u53ef\u80fd\u4e0d\u5b58\u5728", "\u62d2\u7b54\u539f\u56e0\u8981\u80fd\u89e3\u91ca\u7ed9\u7528\u6237\u770b"], "id": "q03-05-07", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def should_abstain(results: list[dict], min_score: float):\n    # TODO: \u7a7a\u7ed3\u679c\u4e0e\u4f4e\u4e8e\u9608\u503c\u4e24\u79cd\u60c5\u51b5\u90fd\u8981\u62d2\u7b54\n    return False, \"\"", "statement": "\u5b9e\u73b0 should_abstain(results, min_score)\uff0c\u8fd4\u56de (bool, str)\u3002\n\u89c4\u5219\uff1aresults \u4e3a\u7a7a\u65f6\u62d2\u7b54\uff0c\u539f\u56e0\u300c\u6ca1\u6709\u68c0\u7d22\u5230\u4efb\u4f55\u8bc1\u636e\u300d\uff1b\u5426\u5219\u53d6\u6bcf\u9879 rerank_score\uff0c\u7f3a\u5931\u65f6\u56de\u9000 score\uff0c\u53d6\u6700\u5927\u503c\uff0c\u82e5\u4f4e\u4e8e min_score \u5219\u62d2\u7b54\u5e76\u7ed9\u51fa\u539f\u56e0\uff08\u542b\u6700\u9ad8\u5206\u4e0e\u9608\u503c\uff09\u3002", "tags": ["\u62d2\u7b54", "\u9608\u503c", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u68c0\u7d22\u524d\u7f6e\u62d2\u7b54", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="3" data-kp="4"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 15｜带引用生成、拒答与 RAG 评测">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 15｜带引用生成、拒答与 RAG 评测">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-6" data-kp-index="5"
+             data-kp-key="3_5" >
+      <div class="kp-head">
+        <span class="kp-no">D16</span>
+        <div class="kp-head-main">
+          <h3>Day 16｜章节实战：企业知识库问答系统</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>3.7.1 完整管线</h4>
+<pre class="code lang-python"><code>from dataclasses import dataclass
+
+
+@dataclass
+class RagAnswer:
+    answer: str
+    citations: list[dict]
+    retrieved: list[dict]
+    abstained: bool
+    reason: str
+
+
+class RagPipeline:
+    def __init__(self, retriever, llm, min_score: float = 0.35):
+        self.retriever = retriever
+        self.llm = llm
+        self.min_score = min_score
+
+    def answer(self, question: str) -&gt; RagAnswer:
+        question = question.strip()
+        if not question:
+            raise ValueError("问题不能为空")
+
+        results = self.retriever.search(question, top_k=5)
+        abstain, reason = should_abstain(results, self.min_score)
+        if abstain:
+            return RagAnswer(
+                answer="当前知识库中没有足够依据。",
+                citations=[], retrieved=results, abstained=True, reason=reason,
+            )
+
+        context, citations = build_context(results)
+        answer = self.llm.chat(build_messages(question, context))
+        invalid = validate_citations(answer, {c["label"] for c in citations})
+        if invalid:
+            raise RuntimeError(f"模型生成了无效引用: {invalid}")
+        return RagAnswer(answer, citations, results, False, reason)</code></pre>
+<p>代码走读顺序：</p>
+<ol><li>在系统边界校验空问题。</li><li>检索器内部执行混合召回与重排。</li><li>低置信结果在调用 LLM 前拒答，节省成本并减少幻觉。</li><li>上下文和引用使用同一次遍历生成，避免编号错位。</li><li>返回检索结果用于调试，生产接口可按权限决定是否暴露全文。</li></ol>
+<h4>3.7.2 FastAPI 接口骨架</h4>
+<pre class="code lang-python"><code>from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+
+app = FastAPI(title="Enterprise Knowledge API")
+
+
+class AskRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=1000)
+
+
+@app.post("/ask")
+def ask(payload: AskRequest):
+    try:
+        result = pipeline.answer(payload.question)
+        return {
+            "answer": result.answer,
+            "citations": result.citations,
+            "abstained": result.abstained,
+            "reason": result.reason,
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="知识库服务暂时不可用") from exc</code></pre>
+<p>生产环境不应把内部异常原文返回给客户端；完整堆栈写入带请求 ID 的服务端日志。</p>
+<p><strong>运行验证：分层评测报告</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch03/41_eval_report.py</code></pre>
+<p><img src="static/course-assets/ch03/07_eval_report.webp" alt="30 题分层评测报告的真实输出：检索层 Recall@5/MRR/HitRate@5 与延迟、按题型的分层指标、生成层引用编号有效性与支撑度、系统层拒答准确率与错误回答率，以及失败样本归因清单" loading="lazy"></p>
+<p>报告按 3.6.5 的分层结构出数，把它和前面的单点实验串成一张可复核的表：</p>
+<table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">指标</th><th style="text-align:right">实测值</th></tr></thead><tbody><tr><td style="text-align:left">检索</td><td style="text-align:left">Recall@5</td><td style="text-align:right">0.8800</td></tr><tr><td style="text-align:left">检索</td><td style="text-align:left">MRR</td><td style="text-align:right">0.6513</td></tr><tr><td style="text-align:left">检索</td><td style="text-align:left">HitRate@5</td><td style="text-align:right">0.9200</td></tr><tr><td style="text-align:left">生成</td><td style="text-align:left">引用编号有效性</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">生成</td><td style="text-align:left">引用内容支撑度</td><td style="text-align:right">0.4318</td></tr><tr><td style="text-align:left">系统</td><td style="text-align:left">拒答准确率</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">系统</td><td style="text-align:left">错误回答率</td><td style="text-align:right">0.0000</td></tr></tbody></table>
+<p><strong>分层结果暴露了平均值掩盖的问题</strong>：</p>
+<table><thead><tr><th style="text-align:left">题型</th><th style="text-align:right">题数</th><th style="text-align:right">参与 Recall 统计</th><th style="text-align:right">Recall@5</th></tr></thead><tbody><tr><td style="text-align:left">单段落</td><td style="text-align:right">20</td><td style="text-align:right">20</td><td style="text-align:right">0.9500</td></tr><tr><td style="text-align:left">跨段落</td><td style="text-align:right">5</td><td style="text-align:right">5</td><td style="text-align:right">0.6000</td></tr><tr><td style="text-align:left">知识库外</td><td style="text-align:right">5</td><td style="text-align:right">0</td><td style="text-align:right">—</td></tr></tbody></table>
+<p>跨段落题只有 0.6000，和 3.5.6 消融实验里的结论完全一致——<strong>这是结构性问题，调阈值解决不了</strong>。</p>
+<p><strong>拒答混淆矩阵（用绝对数字，比百分比更能说明问题）</strong>：正确拒答 5、错误拒答 3、错误回答 0、正常回答 22。报告特别强调：<strong>只报「拒答准确率」是不够的</strong>——把所有问题都拒答，这个指标看起来也不难看。必须同时看「错误回答率」（安全代价）与「错误拒答率」（体验代价）两个方向。</p>
+<p>报告还附了<strong>失败样本归因清单</strong>：检索未命中 2 条（q012、q021）、错误拒答 3 条（q012、q021、q025）、引用不支撑 15 条。每一条都给出题号、题型、问题和观察数据，可以直接拿去做人工抽检。</p>
+<blockquote><strong>这张报告最有教学价值的部分是它的「已知局限」章节（见 &lt;code&gt;reports/chapter3_eval.md&lt;/code&gt;）</strong>：引用支撑度 0.4318 偏低，脚本如实说明了原因——离线靶场的对话接口从它自己内置的语料里作答，并不真正读取传入的证据，所以会出现「编号合法但内容不符」的张冠李戴。<strong>换真实模型后该指标会显著改善，但这一类失败在生产环境依然存在，评测必须保留这一项。</strong></blockquote>
+<h4>3.7.3 最终演示脚本</h4>
+<p>学生现场依次演示：</p>
+<ol><li>上传一份新制度并增量入库。</li><li>提问一个文档内问题，回答含正确来源与页码。</li><li>提问一个同义改写问题，展示语义检索效果。</li><li>提问一个带制度编号的问题，展示混合检索效果。</li><li>提问一个知识库外问题，系统明确拒答。</li><li>修改一个 chunk 参数，运行固定评测集并解释指标变化。</li></ol>
+<h4>3.7.4 评分量表</h4>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:right">分值</th><th style="text-align:left">满分标准</th></tr></thead><tbody><tr><td style="text-align:left">文档解析与溯源</td><td style="text-align:right">15</td><td style="text-align:left">三种格式正确，来源元数据完整，有异常报告</td></tr><tr><td style="text-align:left">切块与索引</td><td style="text-align:right">15</td><td style="text-align:left">策略可配置，稳定 ID，重复入库不膨胀</td></tr><tr><td style="text-align:left">检索与重排</td><td style="text-align:right">20</td><td style="text-align:left">混合检索可运行，有消融实验</td></tr><tr><td style="text-align:left">生成与引用</td><td style="text-align:right">15</td><td style="text-align:left">回答受证据约束，引用可定位</td></tr><tr><td style="text-align:left">拒答与异常处理</td><td style="text-align:right">10</td><td style="text-align:left">空检索、低置信、内部异常均有明确路径</td></tr><tr><td style="text-align:left">评测</td><td style="text-align:right">15</td><td style="text-align:left">固定数据集、自动指标、人工抽检、失败归因</td></tr><tr><td style="text-align:left">答辩与工程规范</td><td style="text-align:right">10</td><td style="text-align:left">能讲清全链路，密钥安全，启动步骤完整</td></tr></tbody></table></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 1, "id": "q03-06-01", "last_answer": "", "last_feedback": "", "options": ["\u4f4e\u7f6e\u4fe1\u7ed3\u679c\u76f4\u63a5\u62d2\u7b54\uff0c\u7701\u4e0b LLM \u8c03\u7528\u6210\u672c\u5e76\u51cf\u5c11\u5e7b\u89c9", "\u907f\u514d\u68c0\u7d22\u5668\u8fd4\u56de\u8d85\u8fc7 top_k \u6761\u7ed3\u679c", "\u8ba9 citations \u7684\u7f16\u53f7\u987a\u5e8f\u4e0e\u68c0\u7d22\u7ed3\u679c\u4e00\u81f4", "\u4fdd\u8bc1 validate_citations \u4e00\u5b9a\u4e0d\u4f1a\u629b\u5f02\u5e38"], "points": 27, "solved": false, "statement": "RagPipeline.answer \u4e2d\uff0cshould_abstain \u5728\u8c03\u7528 self.llm.chat \u4e4b\u524d\u6267\u884c\u3002\n\u8fd9\u6837\u5b89\u6392\u6700\u76f4\u63a5\u7684\u597d\u5904\u662f\u4ec0\u4e48\uff1f", "tags": ["\u62d2\u7b54", "RagPipeline", "\u6210\u672c"], "title": "\u62d2\u7b54\u5224\u65ad\u7684\u65f6\u673a\u4e0e\u6536\u76ca", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-06-02", "last_answer": "", "last_feedback": "", "options": ["\u8c03\u4f4e min_score \u9608\u503c\u5373\u53ef\u628a\u8de8\u6bb5\u843d Recall \u63d0\u5230 0.95", "\u8fd9\u662f\u7ed3\u6784\u6027\u95ee\u9898\uff0c\u4e0e\u6d88\u878d\u5b9e\u9a8c\u7ed3\u8bba\u4e00\u81f4\uff0c\u8c03\u9608\u503c\u89e3\u51b3\u4e0d\u4e86", "\u8de8\u6bb5\u843d\u9898\u4e0d\u53c2\u4e0e Recall \u7edf\u8ba1\uff0c\u6240\u4ee5\u6570\u5b57\u6ca1\u6709\u610f\u4e49", "\u8bf4\u660e\u5f15\u7528\u7f16\u53f7\u6709\u6548\u6027\u51fa\u4e86\u95ee\u9898\uff0c\u9700\u8981\u91cd\u5199\u6821\u9a8c\u903b\u8f91"], "points": 76, "solved": false, "statement": "\u5206\u5c42\u8bc4\u6d4b\u4e2d\u5355\u6bb5\u843d\u9898 Recall@5 \u4e3a 0.9500\uff0c\u8de8\u6bb5\u843d\u9898\u53ea\u6709 0.6000\u3002\n\u5173\u4e8e\u8fd9\u4e2a\u5dee\u8ddd\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["\u5206\u5c42\u8bc4\u6d4b", "Recall@5", "\u8de8\u6bb5\u843d"], "title": "\u8de8\u6bb5\u843d\u9898 Recall \u504f\u4f4e\u7684\u5f52\u56e0", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "id": "q03-06-03", "last_answer": "", "last_feedback": "", "options": ["\u62d2\u7b54\u51c6\u786e\u7387\u7684\u5206\u6bcd\u4f1a\u968f\u9898\u578b\u5206\u5e03\u53d8\u5316\u800c\u4e0d\u7a33\u5b9a", "\u628a\u6240\u6709\u95ee\u9898\u90fd\u62d2\u7b54\u4e5f\u80fd\u8ba9\u62d2\u7b54\u51c6\u786e\u7387\u770b\u8d77\u6765\u4e0d\u96be\u770b", "\u9519\u8bef\u62d2\u7b54\u5c5e\u4e8e\u5b89\u5168\u95ee\u9898\uff0c\u5fc5\u987b\u4f18\u5148\u4e8e\u9519\u8bef\u56de\u7b54", "\u6df7\u6dc6\u77e9\u9635\u7684\u56db\u4e2a\u683c\u5b50\u4e0d\u80fd\u6362\u7b97\u6210\u767e\u5206\u6bd4"], "points": 76, "solved": false, "statement": "\u62d2\u7b54\u6df7\u6dc6\u77e9\u9635\u4e3a\uff1a\u6b63\u786e\u62d2\u7b54 5\u3001\u9519\u8bef\u62d2\u7b54 3\u3001\u9519\u8bef\u56de\u7b54 0\u3001\u6b63\u5e38\u56de\u7b54 22\u3002\n\u62a5\u544a\u5f3a\u8c03\u53ea\u62a5\u300c\u62d2\u7b54\u51c6\u786e\u7387\u300d\u4e0d\u591f\uff0c\u539f\u56e0\u662f\uff1f", "tags": ["\u62d2\u7b54", "\u6df7\u6dc6\u77e9\u9635", "\u8bc4\u6d4b"], "title": "\u62d2\u7b54\u6307\u6807\u4e3a\u4f55\u4e0d\u80fd\u53ea\u770b\u4e00\u4e2a", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u60f3\u60f3\u9776\u573a LLM \u7684\u8bc1\u636e\u6765\u6e90", "\u7f16\u53f7\u6821\u9a8c\u53ea\u67e5 label \u662f\u5426\u5b58\u5728"], "id": "q03-06-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bc4\u6d4b\u62a5\u544a\u663e\u793a\u5f15\u7528\u7f16\u53f7\u6709\u6548\u6027\u4e3a 1.0000\uff0c\u4f46\u5f15\u7528\u5185\u5bb9\u652f\u6491\u5ea6\u53ea\u6709 0.4318\u3002\n\u8bf7\u89e3\u91ca\u4e3a\u4ec0\u4e48\u4f1a\u51fa\u73b0\u300c\u7f16\u53f7\u5408\u6cd5\u4f46\u5185\u5bb9\u4e0d\u7b26\u300d\uff0c\u5e76\u8bf4\u660e\u6362\u771f\u5b9e\u6a21\u578b\u540e\u8be5\u6307\u6807\u4f1a\u600e\u6837\u53d8\u5316\u3001\u8bc4\u6d4b\u662f\u5426\u8fd8\u5e94\u4fdd\u7559\u8fd9\u4e00\u9879\u3002", "tags": ["\u5f15\u7528\u652f\u6491\u5ea6", "\u8bc4\u6d4b", "\u5e7b\u89c9"], "title": "\u5f15\u7528\u652f\u6491\u5ea6\u4f4e\u7684\u539f\u56e0\u4e0e\u5bf9\u7b56", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "hints": ["\u533a\u5206\u5ba2\u6237\u7aef\u9519\u8bef\u4e0e\u670d\u52a1\u7aef\u9519\u8bef", "\u60f3\u60f3 retrieved \u91cc\u53ef\u80fd\u6709\u4ec0\u4e48"], "id": "q03-06-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "FastAPI \u9aa8\u67b6\u4e2d\uff0cValueError \u8fd4\u56de 400 \u5e76\u5e26\u4e0a\u539f\u59cb detail\uff0c\u5176\u4ed6\u5f02\u5e38\u7edf\u4e00\u8fd4\u56de 500 \u4e14 detail \u4e3a\u300c\u77e5\u8bc6\u5e93\u670d\u52a1\u6682\u65f6\u4e0d\u53ef\u7528\u300d\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u6837\u5206\u5c42\u7684\u7406\u7531\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u4e0d\u80fd\u628a\u5185\u90e8\u5f02\u5e38\u539f\u6587\u8fd4\u56de\u5ba2\u6237\u7aef\uff1bRagAnswer \u91cc\u7684 retrieved \u5b57\u6bb5\u5728\u751f\u4ea7\u63a5\u53e3\u4e2d\u5e94\u5982\u4f55\u5904\u7406\uff1f", "tags": ["FastAPI", "\u5f02\u5e38\u5904\u7406", "\u6743\u9650"], "title": "\u751f\u4ea7\u63a5\u53e3\u7684\u5f02\u5e38\u4e0e\u4fe1\u606f\u66b4\u9732", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 2, "hints": ["\u7a7a\u5217\u8868\u4e0d\u80fd\u76f4\u63a5 max", "\u6bd4\u8f83\u5bf9\u8c61\u662f\u6700\u9ad8\u5206"], "id": "q03-06-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def should_abstain(results: list[dict], min_score: float) -\u003e tuple[bool, str]:\n    \"\"\"\u8fd4\u56de (\u662f\u5426\u62d2\u7b54, \u539f\u56e0)\"\"\"\n    # \u5728\u8fd9\u91cc\u5b9e\u73b0\n    pass", "statement": "\u5b9e\u73b0 should_abstain(results, min_score)\uff0cresults \u662f\u68c0\u7d22\u7ed3\u679c\u5217\u8868\uff0c\u6bcf\u9879\u4e3a\u542b score \u952e\u7684 dict\u3002\n\u8981\u6c42\uff1a\u7ed3\u679c\u4e3a\u7a7a\u65f6\u8fd4\u56de (True, \u539f\u56e0\u5b57\u7b26\u4e32)\uff1b\u6700\u9ad8\u5206\u4f4e\u4e8e min_score \u65f6\u8fd4\u56de (True, \u539f\u56e0\u5b57\u7b26\u4e32)\uff1b\u5426\u5219\u8fd4\u56de (False, \u7a7a\u5b57\u7b26\u4e32)\u3002\n\u539f\u56e0\u5b57\u7b26\u4e32\u9700\u80fd\u533a\u5206\u300c\u65e0\u68c0\u7d22\u7ed3\u679c\u300d\u4e0e\u300c\u7f6e\u4fe1\u5ea6\u4e0d\u8db3\u300d\u4e24\u79cd\u60c5\u51b5\u3002", "tags": ["\u62d2\u7b54", "\u51fd\u6570\u5b9e\u73b0", "\u8fb9\u754c"], "title": "\u5b9e\u73b0\u62d2\u7b54\u5224\u65ad\u51fd\u6570", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 3, "chapter_title": "RAG \u68c0\u7d22\u589e\u5f3a\u751f\u6210", "difficulty": 3, "hints": ["\u7f16\u53f7\u4ece 1 \u5f00\u59cb", "label \u53ea\u751f\u6210\u4e00\u6b21"], "id": "q03-06-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "def build_context(results: list[dict]) -\u003e tuple[str, list[dict]]:\n    \"\"\"\u8fd4\u56de (context, citations)\"\"\"\n    # \u5728\u8fd9\u91cc\u5b9e\u73b0\n    pass", "statement": "\u5b9e\u73b0 build_context(results)\uff0c\u4e00\u6b21\u904d\u5386\u540c\u65f6\u4ea7\u51fa context \u5b57\u7b26\u4e32\u4e0e citations \u5217\u8868\u3002\n\u8981\u6c42\uff1a\u6bcf\u6761\u7ed3\u679c\u6309\u987a\u5e8f\u7f16\u53f7\uff0clabel \u5f62\u5982 [1]\u3001[2]\uff1bcontext \u4e2d\u6bcf\u6bb5\u4ee5\u8be5 label \u5f00\u5934\u5e76\u5305\u542b\u6587\u672c\uff1bcitations \u6bcf\u9879\u542b label\u3001source\u3001page \u4e09\u4e2a\u952e\uff0clabel \u4e0e context \u4e2d\u7684\u7f16\u53f7\u4e25\u683c\u4e00\u81f4\u3002\nresults \u6bcf\u9879\u4e3a\u542b text\u3001source\u3001page \u7684 dict\u3002", "tags": ["\u4e0a\u4e0b\u6587\u6784\u5efa", "\u5f15\u7528", "\u7f16\u53f7\u4e00\u81f4\u6027"], "title": "\u4e00\u6b21\u904d\u5386\u751f\u6210\u4e0a\u4e0b\u6587\u4e0e\u5f15\u7528", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="3" data-kp="5"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 16｜章节实战：企业知识库问答系统">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 16｜章节实战：企业知识库问答系统">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson"><h3>3.8 常见错误与排查顺序</h3>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">优先检查</th><th style="text-align:left">不建议先做</th></tr></thead><tbody><tr><td style="text-align:left">回答缺关键事实</td><td style="text-align:left">原文是否解析；正确 chunk 是否存在；Recall@k</td><td style="text-align:left">立刻改生成 Prompt</td></tr><tr><td style="text-align:left">top-k 全是相似废话</td><td style="text-align:left">模板噪声；切块过大；Embedding 是否一致</td><td style="text-align:left">盲目增大 top-k</td></tr><tr><td style="text-align:left">引用页码错误</td><td style="text-align:left">PDF 页索引是否加 1；切块元数据是否继承</td><td style="text-align:left">让模型猜页码</td></tr><tr><td style="text-align:left">重复内容很多</td><td style="text-align:left">overlap、页眉页脚、重复入库</td><td style="text-align:left">只在回答阶段去重</td></tr><tr><td style="text-align:left">换模型后检索崩溃</td><td style="text-align:left">文档向量与查询向量是否来自同一模型和维度</td><td style="text-align:left">强行复用旧索引</td></tr><tr><td style="text-align:left">指标提升但体验下降</td><td style="text-align:left">评测集覆盖、延迟、拒答率、典型问题</td><td style="text-align:left">只报单一平均分</td></tr></tbody></table>
+<h3>3.9 过程性作业</h3>
+<ol><li>把 20 个评测问题扩展到 30 个，新增 5 个跨段问题和 5 个不可回答问题。</li><li>选择一次失败检索，沿“解析、切块、索引、召回、重排”逐层定位原因。</li><li>提交一页消融报告，至少比较两种 chunk 参数和两种检索方案。</li><li>录制 5 分钟讲解，不能照读代码；必须解释一个设计选择和一个失败案例。</li></ol>
+<h3>3.10 本章小结与下章衔接</h3>
+<p>第三章把模型从“凭参数记忆回答”升级成“先查受控证据再回答”。系统仍由程序固定决定何时检索、怎样检索。第四章将控制权部分交给模型：模型依据任务选择工具，程序负责校验、执行、回传与终止。</p>
+<p>进入第四章前，学生必须能不看图说出：</p>
+<pre class="code lang-text"><code>原始文档 -&gt; 解析 -&gt; 切块 -&gt; 向量化 -&gt; 入库
+问题 -&gt; 多路召回 -&gt; 融合 -&gt; 重排 -&gt; 证据组装 -&gt; 生成 -&gt; 引用校验/拒答</code></pre>
+<h3>3.11 教师参考资料</h3>
+<ul><li><a href="https://pymupdf.readthedocs.io/en/latest/the-basics.html" target="_blank" rel="noreferrer">PyMuPDF 文本提取教程</a>：核对 <code>pymupdf.open</code>、<code>Page.get_text()</code> 与扫描件 OCR 路径。</li><li><a href="https://docs.trychroma.com/reference/python" target="_blank" rel="noreferrer">Chroma Python Client</a>：核对 <code>PersistentClient</code> 与 collection 生命周期。</li><li><a href="https://docs.trychroma.com/reference/chroma-api/record/upsert-records" target="_blank" rel="noreferrer">Chroma Upsert Records</a>：核对 <code>ids</code>、<code>embeddings</code>、<code>documents</code>、<code>metadatas</code> 的并行数组约束。</li><li><a href="https://pydantic.dev/docs/validation/2.11/api/pydantic/base_model/" target="_blank" rel="noreferrer">Pydantic BaseModel</a>：核对 Pydantic 2 的模型验证接口。</li></ul>
+<blockquote>链接与示例于 2026-09-15 核对。技术接口可能继续变化，授课前以锁定版本的官方文档为准。</blockquote></div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    
+    <a class="ch-neighbor " href="chapter-1.html">
+      <span class="cn-rel">前 2 章</span>
+      <b>🧠 大模型认知与 Prompt 工程</b>
+      <em>阶段一 · 认知与工程地基</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-2.html">
+      <span class="cn-rel">上一章</span>
+      <b>🔌 LLM API 工程化与 AI 后端</b>
+      <em>阶段一 · 认知与工程地基</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-4.html">
+      <span class="cn-rel">下一章</span>
+      <b>🛰️ Agent 核心机制（从零自研）</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-5.html">
+      <span class="cn-rel">后 2 章</span>
+      <b>🔧 Agent 框架实战</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-6.html">
+      <span class="cn-rel">后 3 章</span>
+      <b>🕸️ 多智能体系统与 MCP</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-7.html">
+      <span class="cn-rel">后 4 章</span>
+      <b>🔍 开源 Agent 项目源码拆解</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="training.html?chapters=3">做本章专项练习</a>
+      <a class="btn agent" href="coach.html?chapter=3">让教练追问我</a>
+      
+      <a class="btn ghost" href="warp.html?to=/chapter/4&kicker=章节完成&next=正在跃迁到 Agent 核心机制（从零自研）">⚡ 跃迁到下一章</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/chapter.js"></script>
+
+</body>
+</html>

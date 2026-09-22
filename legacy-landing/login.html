@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AIMaster 登录</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --cyan: #12e7ff;
+        --green: #60ffb0;
+        --ink: #f4fbff;
+        --muted: #9fb2c7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        margin: 0;
+        place-items: center;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 50% 30%, rgba(18, 231, 255, 0.18), transparent 30%),
+          linear-gradient(135deg, #02030a, #06111a 45%, #110818);
+        font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      }
+
+      .login-panel {
+        width: min(430px, calc(100vw - 32px));
+        padding: 28px;
+        border: 1px solid rgba(175, 220, 255, 0.22);
+        border-radius: 8px;
+        background: rgba(5, 12, 24, 0.78);
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
+        backdrop-filter: blur(18px);
+      }
+
+      h1,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 34px;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      form {
+        display: grid;
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      input {
+        min-height: 46px;
+        border: 1px solid rgba(175, 220, 255, 0.2);
+        border-radius: 8px;
+        padding: 0 13px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.06);
+        font: inherit;
+      }
+
+      button,
+      a {
+        min-height: 46px;
+        border-radius: 8px;
+        font: inherit;
+        font-weight: 900;
+      }
+
+      button {
+        margin-top: 6px;
+        border: 0;
+        color: #021017;
+        background: linear-gradient(135deg, var(--cyan), var(--green));
+        cursor: pointer;
+      }
+
+      a {
+        display: grid;
+        margin-top: 12px;
+        place-items: center;
+        color: var(--cyan);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="login-panel">
+      <h1>AIMaster</h1>
+      <p>欢迎回来，探索者。登录后继续你的 AI 闯关学习旅程。</p>
+      <form>
+        <label>
+          账号
+          <input type="text" autocomplete="username" placeholder="请输入账号" />
+        </label>
+        <label>
+          密码
+          <input type="password" autocomplete="current-password" placeholder="请输入密码" />
+        </label>
+        <button type="button" id="enterBtn">进入软件</button>
+      </form>
+      <a href="./aimaster-promo.html" id="backLink">直接进入 AIMaster 功能主页</a>
+    </main>
+    <script>
+      // 登录按钮跳转到功能主页（aimaster-promo.html 是当前最完整的功能展示页）
+      var enterBtn = document.getElementById("enterBtn");
+      if (enterBtn) {
+        enterBtn.addEventListener("click", function () {
+          // 标记已登录，避免回退时重新播放开场动画
+          try { sessionStorage.setItem("aimaster_logged_in", "1"); } catch (e) {}
+          window.location.href = "./aimaster-promo.html";
+        });
+      }
+      // 回车键也触发登录
+      document.querySelector("form").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { enterBtn.click(); }
+      });
+    </script>
+  </body>
+</html>

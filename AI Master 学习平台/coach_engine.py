@@ -22,7 +22,9 @@ import starlab_engine as lab
 
 MAX_SESSIONS = 10
 MAX_MESSAGES = 400
-TITLE_LIMIT = 24
+# 会话标题上限 16 字：左栏只有 260px 宽，能完整显示的汉字大约就是这么多。
+# 24 字会溢出成半截字（比截断的短标题更难读），加省略号也不好使。
+TITLE_LIMIT = 16
 SESSION_DIR = os.path.join(lab.DATA_DIR, 'coach')
 _LOCK = threading.RLock()
 

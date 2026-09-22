@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>刷题中心 · AI Master</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/training.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="workbench-page"
+      data-page="刷题中心">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+<section class="wb">
+  <aside class="wb-side">
+    <div class="wb-block">
+      <h3>章节</h3>
+      <div class="wb-quick">
+        <button class="btn sm ghost" data-quick="agent">只看智能体</button>
+        <button class="btn sm ghost" data-quick="all">全部章节</button>
+        <button class="btn sm ghost" data-quick="wrong">我的错题</button>
+      </div>
+      <div id="wb-chapters" class="wb-chapters"></div>
+    </div>
+    <div class="wb-block">
+      <h3>难度</h3>
+      <div class="wb-seg" id="wb-difficulty">
+        <button class="on" data-value="">不限</button>
+        <button data-value="1">基础</button>
+        <button data-value="2">进阶</button>
+        <button data-value="3">挑战</button>
+      </div>
+    </div>
+    <div class="wb-block">
+      <h3>题型</h3>
+      <div class="wb-seg" id="wb-type">
+        <button class="on" data-value="">全部</button>
+        <button data-value="choice">选择题</button>
+        <button data-value="short">简答题</button>
+        <button data-value="code">代码题</button>
+      </div>
+    </div>
+    <div class="wb-block">
+      <h3>组卷</h3>
+      <p class="wb-note">限时完成，交卷后 AI 逐题讲评。</p>
+      <div class="row">
+        <select id="wb-exam-count">
+          <option value="5">5 题</option>
+          <option value="8">8 题</option>
+          <option value="10">10 题</option>
+        </select>
+        <button class="btn sm primary" id="wb-exam-start">开始组卷</button>
+      </div>
+    </div>
+  </aside>
+
+  <section class="wb-main">
+    <header class="wb-top">
+      <div>
+        <h1>刷题中心</h1>
+        <p id="wb-count">正在载入题库…</p>
+      </div>
+      <div class="row">
+        <span class="chip" id="wb-solved">0 题通关</span>
+        <span class="chip gold" id="wb-points">0 修为</span>
+      </div>
+    </header>
+    <div id="wb-exam-strip" hidden></div>
+    <div class="wb-list" id="wb-list"></div>
+  </section>
+</section>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/training.js"></script>
+
+</body>
+</html>

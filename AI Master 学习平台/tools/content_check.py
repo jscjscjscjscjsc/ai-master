@@ -31,6 +31,9 @@ EXPR = """(() => {
       title: (kp.querySelector('h3') || {}).textContent || '',
       chars: text.length,
       h3: lesson ? lesson.querySelectorAll('h3').length : 0,
+      h4: lesson ? lesson.querySelectorAll('h4').length : 0,
+      h5: lesson ? lesson.querySelectorAll('h5').length : 0,
+      imgs: lesson ? lesson.querySelectorAll('img').length : 0,
       pre: lesson ? lesson.querySelectorAll('pre').length : 0,
       table: lesson ? lesson.querySelectorAll('table').length : 0,
       li: lesson ? lesson.querySelectorAll('li').length : 0,
@@ -51,7 +54,15 @@ def main():
     if not EDGE:
         print('找不到 Edge')
         return 1
-    chapters = sys.argv[1:] or [str(i) for i in range(1, 14)]
+    # 章节列表从课程数据读，不写死范围 ——
+    # 之前写死 1..13，课程从 13 章换成 9 章后会去扫不存在的 ch10-13，
+    # 报一堆「展开状态异常」的假问题。
+    if sys.argv[1:]:
+        chapters = sys.argv[1:]
+    else:
+        import json
+        with open(os.path.join(ROOT, 'data', 'courses.json'), encoding='utf-8') as handle:
+            chapters = [str(c['id']) for c in json.load(handle)]
     profile = os.path.join(os.environ.get('TEMP', '/tmp'), 'starlab_content')
     proc = subprocess.Popen([EDGE[0], '--headless=new', '--disable-gpu', '--no-sandbox',
                              '--remote-debugging-port=%d' % PORT,
@@ -177,6 +188,11 @@ def _drive(ws_url, chapters):
             problems.append('ch%s 无数据' % chapter)
             continue
         print('\n第 %s 章：%d 个知识点，%d 道题' % (chapter, value['kpCount'], value['totalQ']))
+        expanded = [kp['expanded'] for kp in value['kps']]
+        # 章节页的预期是「只展开第一节」：全收起像这一章没内容，
+        # 全展开又有 3 万像素高，学生划不到底。
+        if expanded != [True] + [False] * (len(expanded) - 1):
+            problems.append('ch%s 展开状态异常: %s' % (chapter, expanded))
         for kp in value['kps']:
             flag = ''
             if kp['chars'] < 400:
@@ -187,15 +203,16 @@ def _drive(ws_url, chapters):
                 flag += ' 有题目缺题干'
             if kp['hasAnswerBox'] + kp['hasOptions'] < kp['questions']:
                 flag += ' 有题目缺作答区'
-            if not kp['expanded']:
-                flag += ' 默认未展开'
-            if kp['h3'] < 2:
-                flag += ' 小节偏少'
+            # 小节数把 h3/h4/h5 都算上 —— 教材的章节层级不统一，
+            # 只看 h3 会把结构正常的章节误判成偏少。
+            sections = kp['h3'] + kp.get('h4', 0) + kp.get('h5', 0)
+            if sections < 3:
+                flag += ' 小节偏少(%d)' % sections
             if flag:
                 problems.append('ch%s「%s」:%s' % (chapter, kp['title'][:14], flag))
             print('   %-30s %5d字 h3=%-2d pre=%-2d 表=%-2d 题=%-2d %s'
                   % (kp['title'][:28], kp['chars'], kp['h3'], kp['pre'], kp['table'],
-                     kp['questions'], '⚠' + flag if flag else '✓'))
+                     kp['questions'], '⚠' + flag if flag else '√'))
     print('\n' + ('全部检查通过' if not problems else '发现 %d 处问题：' % len(problems)))
     for line in problems:
         print('  - ' + line)

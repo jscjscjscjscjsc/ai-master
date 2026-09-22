@@ -208,7 +208,7 @@ def main():
 
     PY_PATH_FILE.parent.mkdir(exist_ok=True)
     PY_PATH_FILE.write_text(str(python), encoding='utf-8')
-    say('  ✓ 环境就绪')
+    say('  √ 环境就绪')
     return 0
 
 

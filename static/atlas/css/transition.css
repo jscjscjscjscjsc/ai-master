@@ -1,0 +1,126 @@
+/* ============================================================
+   AI Master — Transition Page Styles
+   ============================================================ */
+
+.transition-page {
+  overflow: hidden;
+  background: var(--bg-deep);
+}
+
+.transition-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.04) 0%, transparent 70%);
+}
+
+.transition-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  animation: fadeInUp 1s ease-out forwards;
+}
+
+.yi-canvas-wrap {
+  width: 300px;
+  height: 400px;
+  position: relative;
+}
+
+.yi-canvas-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--purple), transparent);
+  opacity: 0.4;
+}
+
+#yi-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Quote / Typewriter ── */
+.quote-wrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  min-height: 56px;
+}
+
+.quote-text {
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 6px;
+  color: #e6edf3;
+  text-shadow:
+    0 0 10px rgba(0, 212, 255, 0.3),
+    0 0 30px rgba(163, 113, 247, 0.15),
+    0 0 60px rgba(0, 212, 255, 0.08);
+  font-family: 'Noto Serif SC', 'STSong', serif;
+}
+
+.quote-text .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: charAppear 0.4s ease-out forwards;
+}
+
+.quote-cursor {
+  font-size: 32px;
+  font-weight: 100;
+  color: var(--cyan);
+  margin-left: 4px;
+  opacity: 1;
+  animation: cursorBlink 0.7s ease-in-out infinite;
+}
+
+/* ── Animations ── */
+@keyframes charAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.3), 0 0 30px rgba(163, 113, 247, 0.15);
+  }
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.fade-out {
+  animation: fadeOut 0.5s ease-in forwards !important;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .yi-canvas-wrap { width: 200px; height: 280px; }
+  .quote-text { font-size: 20px; letter-spacing: 4px; }
+  .quote-cursor { font-size: 24px; }
+  .transition-inner { gap: 20px; }
+}

@@ -36,3 +36,18 @@ frontend/data/.auth_server_url
 frontend/data/*token*
 frontend/data/*secret*
 frontend/data/*.log
+
+# ── 视频与演示的构建产物：体积巨大（合计约 1.1GB），不进仓库 ──
+.video-10min/
+ai-master-video/
+.build-video/
+.build-ppt/
+deliverables/
+
+# ai-master-main 是整份项目的副本，用于对照，不需要入库
+ai-master-main/
+
+# 静态站导出的暂存目录（导出脚本的中间产物；发布时内容会复制到仓库根）
+pages-test/
+dist-pages/
+.pages-build/

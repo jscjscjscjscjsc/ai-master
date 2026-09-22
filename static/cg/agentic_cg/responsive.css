@@ -1,0 +1,9 @@
+@media (max-width: 600px) {
+  .scene-copy { min-width: 0; }
+  h1, h2 {
+    max-width: 100%;
+    font-size: clamp(38px, 11.5vw, 56px);
+    letter-spacing: -0.075em;
+    overflow-wrap: anywhere;
+  }
+}

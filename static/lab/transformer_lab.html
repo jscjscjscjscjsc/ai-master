@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformer 算法详解 · Attention Is All You Need</title>
+
+<!-- 字体 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- KaTeX 数学公式 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInDocument()"></script>
+
+<style>
+:root{
+  --bg:#060818;
+  --bg-2:#0a0e27;
+  --panel:rgba(255,255,255,.035);
+  --panel-2:rgba(255,255,255,.06);
+  --border:rgba(0,217,255,.18);
+  --cyan:#00d9ff;
+  --purple:#a855f7;
+  --pink:#ec4899;
+  --green:#34d399;
+  --amber:#fbbf24;
+  --text:#e6edf6;
+  --muted:#8aa0bd;
+  --grad:linear-gradient(120deg,#00d9ff 0%,#a855f7 60%,#ec4899 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC','Rajdhani',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.7;
+  overflow-x:hidden;
+}
+/* 背景粒子画布 */
+#bg-canvas{position:fixed;inset:0;z-index:0;opacity:.55}
+/* 全局光晕背景 */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(60vw 60vw at 12% 8%, rgba(0,217,255,.10), transparent 60%),
+    radial-gradient(50vw 50vw at 88% 22%, rgba(168,85,247,.12), transparent 60%),
+    radial-gradient(60vw 60vw at 50% 100%, rgba(236,72,153,.08), transparent 60%);
+}
+.wrap{position:relative;z-index:2}
+
+/* 导航 */
+header.nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 5vw;
+  backdrop-filter:blur(14px);
+  background:rgba(6,8,24,.55);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:18px;letter-spacing:2px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.logo span{color:var(--cyan);-webkit-text-fill-color:var(--cyan)}
+nav.links{display:flex;gap:26px;flex-wrap:wrap}
+nav.links a{
+  color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;
+  position:relative;transition:.25s;letter-spacing:.5px;
+}
+nav.links a:hover{color:var(--cyan)}
+nav.links a::after{
+  content:'';position:absolute;left:0;bottom:-6px;height:2px;width:0;
+  background:var(--grad);transition:.3s;
+}
+nav.links a:hover::after{width:100%}
+@media(max-width:760px){nav.links{display:none}}
+
+/* Hero */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 6vw 60px;position:relative;
+}
+.hero .tag{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border:1px solid var(--border);border-radius:999px;
+  font-size:13px;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;
+  background:rgba(0,217,255,.05);margin-bottom:28px;
+  font-family:'JetBrains Mono',monospace;
+}
+.hero .tag .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(48px,9vw,128px);line-height:.95;letter-spacing:-2px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 80px rgba(0,217,255,.15);
+}
+.hero h1 .light{font-weight:500;-webkit-text-fill-color:var(--text);opacity:.85}
+.hero .sub{
+  font-family:'Rajdhani',sans-serif;font-weight:500;
+  font-size:clamp(18px,2.2vw,26px);color:var(--muted);margin-top:18px;letter-spacing:1px;
+}
+.hero .quote{
+  margin-top:36px;max-width:680px;font-size:15px;color:var(--muted);
+  border-left:3px solid var(--cyan);padding:6px 0 6px 20px;text-align:left;
+  font-style:italic;
+}
+.scroll-hint{
+  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+  color:var(--muted);font-size:12px;letter-spacing:3px;font-family:'JetBrains Mono',monospace;
+}
+.scroll-hint .mouse{
+  width:24px;height:40px;border:2px solid var(--muted);border-radius:14px;margin:0 auto 10px;position:relative;
+}
+.scroll-hint .mouse::after{
+  content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  width:4px;height:8px;border-radius:2px;background:var(--cyan);animation:scrolldot 1.6s infinite;
+}
+@keyframes scrolldot{0%{opacity:1;top:7px}80%{opacity:0;top:20px}100%{opacity:0}}
+
+/* 通用 section */
+section.block{padding:90px 6vw;position:relative}
+.section-head{text-align:center;margin-bottom:54px}
+.section-num{
+  font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--cyan);letter-spacing:4px;
+}
+.section-title{
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(28px,4.4vw,46px);
+  margin:10px 0 14px;letter-spacing:1px;
+}
+.section-title em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.section-desc{max-width:760px;margin:0 auto;color:var(--muted);font-size:16px}
+
+/* 卡片 */
+.card{
+  background:var(--panel);border:1px solid var(--border);border-radius:18px;
+  padding:30px;backdrop-filter:blur(8px);position:relative;overflow:hidden;
+  transition:.35s;
+}
+.card:hover{border-color:rgba(0,217,255,.45);transform:translateY(-4px);box-shadow:0 20px 60px -20px rgba(0,217,255,.25)}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);
+  transform:scaleX(0);transform-origin:left;transition:.4s;
+}
+.card:hover::before{transform:scaleX(1)}
+.card h3{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.card h3 .ico{font-size:24px}
+.card p{color:var(--muted);font-size:15px}
+.grid{display:grid;gap:22px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* 对比表 */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:20px}
+@media(max-width:760px){.compare{grid-template-columns:1fr}}
+.compare .col{padding:26px;border-radius:16px;border:1px solid}
+.compare .old{border-color:rgba(236,72,153,.3);background:rgba(236,72,153,.05)}
+.compare .new{border-color:rgba(0,217,255,.3);background:rgba(0,217,255,.05)}
+.compare h4{font-family:'Rajdhani',sans-serif;font-size:20px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.compare .old h4{color:var(--pink)}
+.compare .new h4{color:var(--cyan)}
+.compare ul{list-style:none}
+.compare li{padding:7px 0 7px 26px;position:relative;color:var(--muted);font-size:14.5px}
+.compare li::before{position:absolute;left:0}
+.compare .old li::before{content:'✕';color:var(--pink)}
+.compare .new li::before{content:'✓';color:var(--green)}
+
+/* 架构图区域 */
+.arch-box{
+  background:var(--panel);border:1px solid var(--border);border-radius:20px;
+  padding:34px;margin-top:10px;overflow-x:auto;
+}
+
+/* 可视化组件 */
+.viz{
+  background:linear-gradient(180deg,rgba(10,14,39,.7),rgba(6,8,24,.7));
+  border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:18px;
+}
+.viz-title{font-family:'Rajdhani',sans-serif;font-weight:600;color:var(--cyan);font-size:16px;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
+.viz-desc{color:var(--muted);font-size:13.5px;margin-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.controls label{font-size:13px;color:var(--muted)}
+.btn{
+  font-family:'Rajdhani',sans-serif;font-weight:600;cursor:pointer;
+  background:rgba(0,217,255,.08);border:1px solid var(--border);color:var(--cyan);
+  padding:7px 16px;border-radius:8px;font-size:14px;letter-spacing:.5px;transition:.25s;
+}
+.btn:hover{background:rgba(0,217,255,.18);box-shadow:0 0 16px rgba(0,217,255,.3)}
+.btn.active{background:var(--cyan);color:var(--bg)}
+input[type=range]{accent-color:var(--cyan)}
+
+/* 公式块 */
+.formula{
+  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;
+  padding:20px 24px;margin:16px 0;overflow-x:auto;text-align:center;
+}
+.formula .katex{font-size:1.15em}
+.formula-src{display:none;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:14px}
+
+/* 注意力热力图 */
+#attn-heatmap-wrap{display:flex;flex-direction:column;align-items:center}
+#heatmap-canvas{cursor:crosshair;border-radius:8px;background:#06081a}
+.legend{display:flex;gap:18px;margin-top:12px;font-size:12px;color:var(--muted);flex-wrap:wrap;justify-content:center}
+.leg-item{display:flex;align-items:center;gap:6px}
+.leg-bar{width:80px;height:10px;border-radius:4px;background:linear-gradient(90deg,#0a0e27,#1e3a8a,#00d9ff,#a855f7,#ec4899)}
+.attn-info{margin-top:10px;font-size:13px;color:var(--cyan);font-family:'JetBrains Mono',monospace;min-height:20px}
+
+/* 时间线 */
+.timeline{position:relative;padding-left:34px}
+.timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--cyan),var(--purple),var(--pink))}
+.tl-item{position:relative;padding:0 0 30px 6px}
+.tl-item::before{content:'';position:absolute;left:-32px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.tl-item .year{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:13px;letter-spacing:1px}
+.tl-item h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;margin:2px 0 4px}
+.tl-item p{color:var(--muted);font-size:14px}
+
+/* 统计数字 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin:30px 0}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{text-align:center;padding:24px 12px;border:1px solid var(--border);border-radius:14px;background:var(--panel)}
+.stat .num{font-family:'Orbitron',sans-serif;font-weight:900;font-size:38px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .lbl{color:var(--muted);font-size:13px;margin-top:4px;letter-spacing:1px}
+
+/* footer */
+footer{padding:60px 6vw 40px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:14px;margin-top:40px}
+footer .ref{max-width:760px;margin:0 auto 20px;font-size:13px;line-height:1.9;text-align:left}
+footer .ref a{color:var(--cyan);text-decoration:none}
+
+/* 滚动渐入 */
+.reveal{opacity:0;transform:translateY(36px);transition:.8s cubic-bezier(.2,.7,.2,1)}
+.reveal.show{opacity:1;transform:none}
+
+/* 高亮关键术语 */
+.k{color:var(--cyan);font-weight:600}
+.kp{color:var(--purple);font-weight:600}
+.kg{color:var(--green);font-weight:600}
+.ka{color:var(--amber);font-weight:600}
+
+/* Q/K/V 标签 */
+.qkv{display:inline-block;padding:2px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px}
+.q-tag{background:rgba(236,72,153,.18);color:var(--pink);border:1px solid rgba(236,72,153,.4)}
+.k-tag{background:rgba(251,191,36,.18);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
+.v-tag{background:rgba(52,211,153,.18);color:var(--green);border:1px solid rgba(52,211,153,.4)}
+
+/* 流程箭头 */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;margin:18px 0}
+.flow .step{padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--panel);font-size:14px;font-weight:600}
+.flow .arr{color:var(--cyan);font-size:20px}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="wrap">
+
+<!-- 导航 -->
+<header class="nav">
+  <div class="logo">TRANSFORMER<span>//</span>LAB</div>
+  <nav class="links">
+    <a href="#why">背景动机</a>
+    <a href="#arch">整体架构</a>
+    <a href="#attention">自注意力</a>
+    <a href="#multihead">多头注意力</a>
+    <a href="#positional">位置编码</a>
+    <a href="#components">核心组件</a>
+    <a href="#applications">应用</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="tag"><span class="dot"></span> Attention Is All You Need · 2017</div>
+  <h1>TRANSFORMER<br><span class="light">架构详解</span></h1>
+  <div class="sub">The Architecture Behind ChatGPT · BERT · GPT-4</div>
+  <div class="quote">"我们提出了一种全新的网络结构 Transformer，它完全基于注意力机制，彻底摒弃了循环和卷积。它在机器翻译任务上取得了更好的表现，同时训练效率大幅提升。" — Vaswani et al., 2017</div>
+  <canvas id="hero-attn" style="margin-top:34px;max-width:100%"></canvas>
+  <div class="scroll-hint">
+    <div class="mouse"></div>
+    SCROLL
+  </div>
+</section>
+
+<!-- 01 背景 -->
+<section class="block" id="why">
+  <div class="section-head reveal">
+    <div class="section-num">// 01</div>
+    <div class="section-title">为什么需要 <em>Transformer</em></div>
+    <div class="section-desc">在 Transformer 出现之前，序列建模主要依赖 RNN/LSTM/GRU。它们存在根本性的瓶颈，而 Transformer 用注意力机制彻底改变了这一切。</div>
+  </div>
+
+  <div class="grid g4 reveal">
+    <div class="card"><h3><span class="ico">⛓️</span>串行计算</h3><p>RNN 必须按时间步依次处理，无法并行，训练速度极慢，难以利用 GPU 的并行能力。</p></div>
+    <div class="card"><h3><span class="ico">📏</span>长程依赖</h3><p>序列越长，早期信息越难保留。即便有 LSTM 的门控机制，长距离依赖仍然是个难题。</p></div>
+    <div class="card"><h3><span class="ico">🐌</span>梯度问题</h3><p>反向传播经过大量时间步会梯度消失或爆炸，限制了模型可处理的序列长度。</p></div>
+    <div class="card"><h3><span class="ico">🔗</span>单向信息</h3><p>单向 RNN 只能看过去，无法利用未来上下文，限制了表征能力。</p></div>
+  </div>
+
+  <div class="compare reveal">
+    <div class="col old">
+      <h4>⏳ 传统 RNN / LSTM</h4>
+      <ul>
+        <li>必须按时间步串行处理</li>
+        <li>无法高效并行训练</li>
+        <li>长距离信息会逐步丢失</li>
+        <li>计算复杂度随长度 O(n) 增长</li>
+        <li>难以扩展到超大规模</li>
+      </ul>
+    </div>
+    <div class="col new">
+      <h4>⚡ Transformer</h4>
+      <ul>
+        <li>所有位置同时计算，高度并行</li>
+        <li>充分利用 GPU 矩阵运算</li>
+        <li>任意两位置直接相连，无距离衰减</li>
+        <li>自注意力让全局建模成为可能</li>
+        <li>可扩展到千亿参数（GPT-4）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 02 整体架构 -->
+<section class="block" id="arch">
+  <div class="section-head reveal">
+    <div class="section-num">// 02</div>
+    <div class="section-title">整体<em>架构</em></div>
+    <div class="section-desc">Transformer 是一个 Encoder-Decoder 结构。原始论文中编码器与解码器各堆叠 6 层（N=6），每一层都由注意力子层和前馈子层组成。</div>
+  </div>
+
+  <div class="arch-box reveal">
+    <svg viewBox="0 0 900 540" style="width:100%;min-width:680px" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="encG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#00d9ff" stop-opacity=".25"/>
+          <stop offset="1" stop-color="#00d9ff" stop-opacity=".05"/>
+        </linearGradient>
+        <linearGradient id="decG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a855f7" stop-opacity=".25"/>
+          <stop offset="1" stop-color="#a855f7" stop-opacity=".05"/>
+        </linearGradient>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#8aa0bd"/>
+        </marker>
+      </defs>
+
+      <!-- 标题 -->
+      <text x="230" y="30" text-anchor="middle" fill="#00d9ff" font-family="Orbitron" font-size="16" font-weight="700">ENCODER ×N</text>
+      <text x="670" y="30" text-anchor="middle" fill="#a855f7" font-family="Orbitron" font-size="16" font-weight="700">DECODER ×N</text>
+
+      <!-- 编码器 -->
+      <rect x="120" y="50" width="220" height="460" rx="14" fill="url(#encG)" stroke="#00d9ff" stroke-opacity=".4"/>
+      <text x="230" y="80" text-anchor="middle" fill="#8aa0bd" font-size="12">Input Embedding</text>
+      <text x="230" y="105" text-anchor="middle" fill="#8aa0bd" font-size="12">+ Positional Encoding</text>
+      <line x1="230" y1="115" x2="230" y2="140" stroke="#8aa0bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <rect x="140" y="140" width="180" height="150" rx="10" fill="rgba(0,217,255,.08)" stroke="#00d9ff" stroke-opacity=".5"/>
+      <text x="230" y="175" text-anchor="middle" fill="#e6edf6" font-size="14" font-weight="700" font-family="Rajdhani">Multi-Head</text>
+      <text x="230" y="195" text-anchor="middle" fill="#e6edf6" font-size="14" font-weight="700" font-family="Rajdhani">Self-Attention</text>
+      <text x="230" y="230" text-anchor="middle" fill="#8aa0bd" font-size="11" font-family="monospace">Add &amp; LayerNorm</text>
+      <rect x="170" y="245" width="120" height="22" rx="5" fill="rgba(236,72,153,.15)" stroke="#ec4899" stroke-opacity=".4"/>
+      <text x="230" y="261" text-anchor="middle" fill="#ec4899" font-size="10" font-family="monospace">Residual</text>
+      <line x1="230" y1="290" x2="230" y2="315" stroke="#8aa0bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <rect x="140" y="315" width="180" height="150" rx="10" fill="rgba(0,217,255,.08)" stroke="#00d9ff" stroke-opacity=".5"/>
+      <text x="230" y="350" text-anchor="middle" fill="#e6edf6" font-size="14" font-weight="700" font-family="Rajdhani">Feed-Forward</text>
+      <text x="230" y="370" text-anchor="middle" fill="#e6edf6" font-size="14" font-weight="700" font-family="Rajdhani">Network</text>
+      <text x="230" y="405" text-anchor="middle" fill="#8aa0bd" font-size="11" font-family="monospace">Add &amp; LayerNorm</text>
+      <rect x="170" y="420" width="120" height="22" rx="5" fill="rgba(236,72,153,.15)" stroke="#ec4899" stroke-opacity=".4"/>
+      <text x="230" y="436" text-anchor="middle" fill="#ec4899" font-size="10" font-family="monospace">Residual</text>
+      <text x="230" y="490" text-anchor="middle" fill="#00d9ff" font-size="11" font-family="monospace">↑ 重复 N 层</text>
+
+      <!-- 解码器 -->
+      <rect x="560" y="50" width="220" height="460" rx="14" fill="url(#decG)" stroke="#a855f7" stroke-opacity=".4"/>
+      <text x="670" y="80" text-anchor="middle" fill="#8aa0bd" font-size="12">Output Embedding</text>
+      <text x="670" y="105" text-anchor="middle" fill="#8aa0bd" font-size="12">+ Positional Encoding</text>
+      <line x1="670" y1="115" x2="670" y2="138" stroke="#8aa0bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <rect x="580" y="138" width="180" height="100" rx="10" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-opacity=".5"/>
+      <text x="670" y="168" text-anchor="middle" fill="#e6edf6" font-size="13" font-weight="700" font-family="Rajdhani">Masked</text>
+      <text x="670" y="186" text-anchor="middle" fill="#e6edf6" font-size="13" font-weight="700" font-family="Rajdhani">Self-Attention</text>
+      <text x="670" y="215" text-anchor="middle" fill="#8aa0bd" font-size="10" font-family="monospace">Add &amp; LayerNorm</text>
+      <line x1="670" y1="238" x2="670" y2="258" stroke="#8aa0bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <rect x="580" y="258" width="180" height="100" rx="10" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-opacity=".5"/>
+      <text x="670" y="288" text-anchor="middle" fill="#e6edf6" font-size="13" font-weight="700" font-family="Rajdhani">Cross-Attention</text>
+      <text x="670" y="306" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="monospace">(K,V from Encoder)</text>
+      <text x="670" y="335" text-anchor="middle" fill="#8aa0bd" font-size="10" font-family="monospace">Add &amp; LayerNorm</text>
+      <line x1="670" y1="358" x2="670" y2="378" stroke="#8aa0bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <rect x="580" y="378" width="180" height="100" rx="10" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-opacity=".5"/>
+      <text x="670" y="413" text-anchor="middle" fill="#e6edf6" font-size="13" font-weight="700" font-family="Rajdhani">Feed-Forward</text>
+      <text x="670" y="455" text-anchor="middle" fill="#8aa0bd" font-size="10" font-family="monospace">Add &amp; LayerNorm</text>
+      <text x="670" y="495" text-anchor="middle" fill="#a855f7" font-size="11" font-family="monospace">↑ 重复 N 层</text>
+
+      <!-- 编码器到解码器的连接（cross attention） -->
+      <path d="M340 308 C 430 308, 470 308, 580 308" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arrow)" opacity=".8"/>
+      <text x="460" y="300" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="monospace">K, V</text>
+
+      <!-- 输出 -->
+      <rect x="800" y="510" width="80" height="0" fill="none"/>
+      <line x1="780" y1="490" x2="820" y2="490" stroke="#8aa0bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="850" y="495" fill="#8aa0bd" font-size="11">Linear → Softmax</text>
+    </svg>
+  </div>
+
+  <div class="grid g3 reveal" style="margin-top:22px">
+    <div class="card"><h3><span class="ico">📥</span>输入嵌入</h3><p>将 token 转换为 <span class="k">d<sub>model</sub>=512</span> 维向量，叠加位置编码后送入网络。</p></div>
+    <div class="card"><h3><span class="ico">🔁</span>N 层堆叠</h3><p>编码器和解码器各堆叠 <span class="k">N=6</span> 层，每层结构相同但参数独立，逐层提取更高层语义。</p></div>
+    <div class="card"><h3><span class="ico">🎯</span>输出概率</h3><p>最终经线性层 + Softmax，输出每个词的概率分布，用于预测下一个 token。</p></div>
+  </div>
+</section>
+
+<!-- 03 自注意力 -->
+<section class="block" id="attention">
+  <div class="section-head reveal">
+    <div class="section-num">// 03</div>
+    <div class="section-title">自注意力机制 <em>Self-Attention</em></div>
+    <div class="section-desc">这是 Transformer 的灵魂。它让序列中的每个位置都能"看到"所有其他位置，从而捕捉任意距离的依赖关系。</div>
+  </div>
+
+  <div class="card reveal" style="margin-bottom:22px">
+    <h3><span class="ico">🔑</span>三个核心角色：Q / K / V</h3>
+    <p>每个输入向量被映射为三种向量：查询、键、值。可以用一个生动的类比来理解它们：</p>
+    <div class="flow">
+      <div class="step"><span class="qkv q-tag">Query 查询</span> 我在找什么</div>
+      <div class="arr">→</div>
+      <div class="step">与每个 <span class="qkv k-tag">Key 键</span> 匹配</div>
+      <div class="arr">→</div>
+      <div class="step">加权求和 <span class="qkv v-tag">Value 值</span></div>
+    </div>
+    <div class="formula">
+      <span class="formula-src">Attention(Q,K,V) = softmax(Q K^T / sqrt(d_k)) V</span>
+      \[ \text{Attention}(Q,K,V)=\text{softmax}\!\left(\frac{QK^{T}}{\sqrt{d_k}}\right)V \]
+    </div>
+    <div class="grid g3" style="margin-top:18px">
+      <div><span class="qkv q-tag">Q</span><br><span style="color:var(--muted);font-size:14px">当前词的"提问"：作为查询，去和其他词的相关性打分。</span></div>
+      <div><span class="qkv k-tag">K</span><br><span style="color:var(--muted);font-size:14px">每个词的"标签"：被查询时，用它来计算与查询的匹配程度。</span></div>
+      <div><span class="qkv v-tag">V</span><br><span style="color:var(--muted);font-size:14px">每个词的"内容"：根据匹配权重，对所有词的内容加权求和。</span></div>
+    </div>
+  </div>
+
+  <div class="viz reveal">
+    <div class="viz-title">⚡ 交互式注意力热力图</div>
+    <div class="viz-desc">点击任意格子查看注意力权重。颜色越亮（粉/紫），表示该词对其他词的关注度越高。这里展示句子 "The cat sat on the mat" 的注意力分布。</div>
+    <div id="attn-heatmap-wrap">
+      <canvas id="heatmap-canvas" width="440" height="440"></canvas>
+      <div class="legend">
+        <div class="leg-item"><span class="leg-bar"></span>权重：低 → 高</div>
+      </div>
+      <div class="attn-info" id="attn-info">点击矩阵中的格子查看注意力分数</div>
+    </div>
+  </div>
+
+  <div class="card reveal">
+    <h3><span class="ico">📐</span>缩放因子 √d<sub>k</sub> 的作用</h3>
+    <p>当 d<sub>k</sub> 较大时，QK<sup>T</sup> 的点积结果方差会变大，把 Softmax 推到梯度极小的饱和区。除以 <span class="k">√d<sub>k</sub></span> 是为了稳定梯度，让训练更平稳。</p>
+    <div class="formula">
+      <span class="formula-src">score(q_i, k_j) = (q_i · k_j) / sqrt(d_k)</span>
+      \[ \text{score}(q_i,k_j)=\frac{q_i\cdot k_j}{\sqrt{d_k}} \]
+    </div>
+  </div>
+</section>
+
+<!-- 04 多头注意力 -->
+<section class="block" id="multihead">
+  <div class="section-head reveal">
+    <div class="section-num">// 04</div>
+    <div class="section-title">多头注意力 <em>Multi-Head</em></div>
+    <div class="section-desc">与其做单次注意力，不如把 Q/K/V 拆成多组（论文中 h=8 头），让模型从不同子空间、不同角度同时建模。</div>
+  </div>
+
+  <div class="grid g2 reveal">
+    <div class="card">
+      <h3><span class="ico">🔀</span>为什么要"多头"？</h3>
+      <p>单个注意力头只能学到一种关系模式。多头机制让不同的头分别关注：</p>
+      <ul style="list-style:none;margin-top:12px">
+        <li style="padding:6px 0 6px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--cyan)">▸</span>语法结构（主谓宾关系）</li>
+        <li style="padding:6px 0 6px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--purple)">▸</span>指代消解（"it" 指代什么）</li>
+        <li style="padding:6px 0 6px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--pink)">▸</span>语义相关（近义、反义）</li>
+        <li style="padding:6px 0 6px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--green)">▸</span>长距离依赖</li>
+      </ul>
+      <div class="formula" style="margin-top:16px">
+        <span class="formula-src">MultiHead(Q,K,V) = Concat(head_1,...,head_h) W^O</span>
+        \[ \text{MultiHead}(Q,K,V)=\text{Concat}(\text{head}_1,\dots,\text{head}_h)W^O \]
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="ico">🧩</span>维度切分</h3>
+      <p>原始论文中 <span class="k">d<sub>model</sub>=512</span>，使用 <span class="k">h=8</span> 个头，每个头维度 <span class="k">d<sub>k</sub>=d<sub>v</sub>=64</span>。8 个头并行计算，最后拼接后再做一次线性映射 <span class="k">W<sup>O</sup></span>。</p>
+      <div class="formula">
+        <span class="formula-src">head_i = Attention(Q W_i^Q, K W_i^K, V W_i^V)</span>
+        \[ \text{head}_i=\text{Attention}(QW_i^Q,\,KW_i^K,\,VW_i^V) \]
+      </div>
+      <p style="margin-top:14px">总计算量与单头注意力几乎相当，但表征能力大幅提升。这就是"并行关注不同模式"的精髓。</p>
+    </div>
+  </div>
+
+  <div class="viz reveal">
+    <div class="viz-title">🌐 多头注意力可视化</div>
+    <div class="viz-desc">观察不同"头"如何关注不同的关系模式。每个头用不同颜色，线条越亮表示注意力越强。</div>
+    <div class="controls">
+      <button class="btn" id="head-btn-0">头 1 · 语法</button>
+      <button class="btn" id="head-btn-1">头 2 · 指代</button>
+      <button class="btn" id="head-btn-2">头 3 · 语义</button>
+      <button class="btn" id="head-btn-3">头 4 · 全局</button>
+      <button class="btn" id="head-replay">▶ 重新播放</button>
+    </div>
+    <canvas id="heads-canvas" width="820" height="320" style="max-width:100%;border-radius:10px;background:#06081a"></canvas>
+  </div>
+</section>
+
+<!-- 05 位置编码 -->
+<section class="block" id="positional">
+  <div class="section-head reveal">
+    <div class="section-num">// 05</div>
+    <div class="section-title">位置编码 <em>Positional Encoding</em></div>
+    <div class="section-desc">自注意力本身没有顺序概念——打乱输入顺序结果不变。为了让模型感知位置，需要显式注入位置信息。</div>
+  </div>
+
+  <div class="grid g2 reveal">
+    <div class="card">
+      <h3><span class="ico">🧮</span>正弦/余弦编码</h3>
+      <p>论文使用不同频率的 sin/cos 函数生成位置编码，再与词嵌入相加：</p>
+      <div class="formula">
+        <span class="formula-src">PE(pos,2i) = sin(pos / 10000^(2i/d_model))</span>
+        \[ PE_{(pos,2i)}=\sin\!\left(\frac{pos}{10000^{2i/d_{model}}}\right) \]
+      </div>
+      <div class="formula">
+        <span class="formula-src">PE(pos,2i+1) = cos(pos / 10000^(2i/d_model))</span>
+        \[ PE_{(pos,2i+1)}=\cos\!\left(\frac{pos}{10000^{2i/d_{model}}}\right) \]
+      </div>
+      <p style="margin-top:14px">不同维度对应不同频率的波，从高频到低频，编码出"位置指纹"。</p>
+    </div>
+    <div class="card">
+      <h3><span class="ico">✨</span>设计的精妙之处</h3>
+      <ul style="list-style:none">
+        <li style="padding:8px 0 8px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--cyan)">◆</span><b style="color:var(--text)">有界性：</b>sin/cos 值在 [-1,1]，与嵌入相加后数值稳定。</li>
+        <li style="padding:8px 0 8px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--purple)">◆</span><b style="color:var(--text)">相对位置可学：</b>任意固定偏移 k，PE<sub>pos+k</sub> 可表示为 PE<sub>pos</sub> 的线性函数。</li>
+        <li style="padding:8px 0 8px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--pink)">◆</span><b style="color:var(--text)">泛化性：</b>可外推到训练时未见的更长序列。</li>
+        <li style="padding:8px 0 8px 22px;position:relative;color:var(--muted)"><span style="position:absolute;left:0;color:var(--green)">◆</span><b style="color:var(--text)">无需学习：</b>固定公式生成，不增加参数。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="viz reveal">
+    <div class="viz-title">〰️ 位置编码波形可视化</div>
+    <div class="viz-desc">下方每一行是一个维度，展示不同位置的 sin/cos 值。拖动滑块改变序列长度，观察波形变化。</div>
+    <div class="controls">
+      <label>序列长度: <span id="pe-len-val" style="color:var(--cyan)">50</span></label>
+      <input type="range" id="pe-len" min="10" max="100" value="50" style="width:200px">
+    </div>
+    <canvas id="pe-canvas" width="820" height="340" style="max-width:100%;border-radius:10px;background:#06081a"></canvas>
+  </div>
+
+  <div class="card reveal" style="margin-top:22px">
+    <h3><span class="ico">📌</span>其他位置编码方案</h3>
+    <div class="grid g3" style="margin-top:12px">
+      <div><span class="k">Learned PE</span><br><span style="color:var(--muted);font-size:14px">每个位置学一个向量（BERT 使用），效果与正弦编码相近，但无法外推。</span></div>
+      <div><span class="kp">Relative PE</span><br><span style="color:var(--muted);font-size:14px">编码相对位置（T5、Transformer-XL），更适合长序列。</span></div>
+      <div><span class="kg">RoPE 旋转位置编码</span><br><span style="color:var(--muted);font-size:14px">通过旋转矩阵注入位置（LLaMA 系列），兼顾绝对与相对位置。</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 核心组件 -->
+<section class="block" id="components">
+  <div class="section-head reveal">
+    <div class="section-num">// 06</div>
+    <div class="section-title">其他<em>核心组件</em></div>
+    <div class="section-desc">除了注意力，Transformer 还依赖前馈网络、残差连接和层归一化，它们共同保证训练的稳定性与表达能力。</div>
+  </div>
+
+  <div class="grid g3 reveal">
+    <div class="card">
+      <h3><span class="ico">⚙️</span>前馈网络 FFN</h3>
+      <p>对每个位置独立做两层全连接，中间用 ReLU/GELU 激活。维度先扩展到 4 倍（2048）再映射回 d<sub>model</sub>。</p>
+      <div class="formula" style="margin-top:12px">
+        <span class="formula-src">FFN(x) = max(0, x W1 + b1) W2 + b2</span>
+        \[ \text{FFN}(x)=\max(0,\,xW_1+b_1)W_2+b_2 \]
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="ico">🔗</span>残差连接</h3>
+      <p>每个子层都包裹 <span class="k">Add</span> 操作：将输入直接加到输出上。这缓解了深层网络的梯度消失，让信息顺畅流动。</p>
+      <div class="formula" style="margin-top:12px">
+        <span class="formula-src">output = LayerNorm(x + Sublayer(x))</span>
+        \[ \text{output}=\text{LayerNorm}(x+\text{Sublayer}(x)) \]
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="ico">📊</span>层归一化</h3>
+      <p>对每个样本的特征维度做归一化，稳定训练、加速收敛。现代变体常用 <span class="kp">RMSNorm</span> 或 <span class="kp">Pre-Norm</span> 结构。</p>
+      <div class="formula" style="margin-top:12px">
+        <span class="formula-src">LayerNorm(x) = gamma * (x - mean) / sqrt(var + eps) + beta</span>
+        \[ \text{LN}(x)=\gamma\cdot\frac{x-\mu}{\sqrt{\sigma^2+\epsilon}}+\beta \]
+      </div>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:22px">
+    <h3><span class="ico">🔧</span>训练细节补充</h3>
+    <div class="grid g4" style="margin-top:12px">
+      <div><span class="k">Adam 优化器</span><br><span style="color:var(--muted);font-size:13.5px">β₁=0.9, β₂=0.98</span></div>
+      <div><span class="k">学习率预热</span><br><span style="color:var(--muted);font-size:13.5px">前 4000 步线性增长，后按 √d 反比衰减</span></div>
+      <div><span class="k">Dropout</span><br><span style="color:var(--muted);font-size:13.5px">P=0.1，应用于子层输出与位置编码</span></div>
+      <div><span class="k">Label Smoothing</span><br><span style="color:var(--muted);font-size:13.5px">ε=0.1，提升泛化与模型置信度校准</span></div>
+    </div>
+  </div>
+
+  <div class="stats reveal">
+    <div class="stat"><div class="num">512</div><div class="lbl">d_model 模型维度</div></div>
+    <div class="stat"><div class="num">8</div><div class="lbl">注意力头数 h</div></div>
+    <div class="stat"><div class="num">6</div><div class="lbl">编码器/解码器层数 N</div></div>
+    <div class="stat"><div class="num">2048</div><div class="lbl">FFN 隐藏维度</div></div>
+  </div>
+</section>
+
+<!-- 07 应用 -->
+<section class="block" id="applications">
+  <div class="section-head reveal">
+    <div class="section-num">// 07</div>
+    <div class="section-title">应用与<em>深远影响</em></div>
+    <div class="section-desc">Transformer 不仅革新了 NLP，更成为现代 AI 的基石。几乎所有最先进的模型都建立在它之上。</div>
+  </div>
+
+  <div class="grid g4 reveal">
+    <div class="card"><h3><span class="ico">📝</span>NLU 理解</h3><p><b>BERT</b>（仅编码器）：文本分类、命名实体识别、问答系统。双向注意力捕捉完整上下文。</p></div>
+    <div class="card"><h3><span class="ico">💬</span>生成式 AI</h3><p><b>GPT 系列</b>（仅解码器）：对话、写作、代码生成。ChatGPT、GPT-4 掀起 AI 革命。</p></div>
+    <div class="card"><h3><span class="ico">🌍</span>翻译</h3><p><b>原始 Transformer</b>（编码器-解码器）：Google 翻译、DeepL，机器翻译质量飞跃。</p></div>
+    <div class="card"><h3><span class="ico">🎨</span>多模态</h3><p><b>ViT</b> 图像分类、<b>DALL·E</b> 文生图、<b>Whisper</b> 语音识别、<b>Sora</b> 视频生成。</p></div>
+  </div>
+
+  <div class="reveal" style="margin-top:40px">
+    <div class="section-title" style="font-size:clamp(22px,3vw,32px);text-align:center;margin-bottom:30px">发展<em>时间线</em></div>
+    <div class="timeline">
+      <div class="tl-item"><div class="year">2017 · 06</div><h4>Transformer 诞生</h4><p>Google 团队发表《Attention Is All You Need》，提出完全基于注意力的架构。</p></div>
+      <div class="tl-item"><div class="year">2018 · 06</div><h4>GPT-1 / BERT</h4><p>OpenAI 与 Google 分别发布 GPT 与 BERT，预训练 + 微调范式确立，NLP 进入新纪元。</p></div>
+      <div class="tl-item"><div class="year">2020 · 05</div><h4>GPT-3 (1750 亿参数)</h4><p>展示惊人的少样本学习能力，证明模型规模的力量。</p></div>
+      <div class="tl-item"><div class="year">2020 · 10</div><h4>ViT · 跨越模态</h4><p>Vision Transformer 证明 Transformer 在视觉领域同样强大，统一了多模态架构。</p></div>
+      <div class="tl-item"><div class="year">2022 · 11</div><h4>ChatGPT 引爆</h4><p>基于 GPT-3.5 的对话产品风靡全球，AI 真正走入大众视野。</p></div>
+      <div class="tl-item"><div class="year">2023+ · 多模态大模型</div><h4>GPT-4 / Gemini / Claude</h4><p>支持图文多模态、长上下文、Agent 智能体，持续推动 AGI 边界。</p></div>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:30px;background:linear-gradient(120deg,rgba(0,217,255,.06),rgba(168,85,247,.06))">
+    <h3><span class="ico">💡</span>核心洞察</h3>
+    <p style="font-size:16px">Transformer 的成功源于一个深刻的设计哲学：<span class="k">用全局注意力替代局部递归</span>。这一改变带来了三重红利——<span class="kg">高度并行</span>（训练效率）、<span class="kp">长程建模</span>（效果）、<span class="ka">可扩展性</span>（scaling law）。当一个架构既能高效训练、又能随规模持续变强时，它注定会定义一个时代。</p>
+  </div>
+</section>
+
+<!-- footer -->
+<footer>
+  <div class="ref">
+    <b style="color:var(--text)">参考文献 / References</b><br>
+    [1] Vaswani, A. et al. (2017). <i>Attention Is All You Need.</i> NeurIPS.
+    <a href="https://arxiv.org/abs/1706.03762" target="_blank">arxiv.org/abs/1706.03762</a><br>
+    [2] Devlin, J. et al. (2018). <i>BERT: Pre-training of Deep Bidirectional Transformers.</i><br>
+    [3] Radford, A. et al. (2018-2020). <i>Improving Language Understanding by Generative Pre-training (GPT).</i><br>
+    [4] Dosovitskiy, A. et al. (2020). <i>An Image is Worth 16x16 Words: Transformers for Image Recognition (ViT).</i>
+  </div>
+  <p>TRANSFORMER LAB · 用于教学演示的可视化网页 · 基于 HTML5 Canvas + KaTeX 构建</p>
+  <p style="margin-top:8px;opacity:.6">© 2026 · Educational Use · 交互式可视化由原生 JavaScript 实现，无需任何框架</p>
+</footer>
+
+</div>
+
+<script>
+/* ========== 1. 全局数学公式渲染 ========== */
+function renderMathInDocument(){
+  if(window.renderMathInElement){
+    renderMathInElement(document.body,{
+      delimiters:[
+        {left:'$$',right:'$$',display:true},
+        {left:'\\[',right:'\\]',display:true},
+        {left:'\\(',right:'\\)',display:false}
+      ],
+      throwOnError:false,
+      errorCallback:function(){
+        // 渲染失败时显示 LaTeX 源码作为降级
+        document.querySelectorAll('.formula-src').forEach(function(e){e.style.display='block'});
+      }
+    });
+  }
+}
+// KaTeX 加载完后自动调用 onload=renderMathInDocument
+
+/* ========== 2. 背景粒子网络 ========== */
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  const COLORS=['#00d9ff','#a855f7','#ec4899'];
+  function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+  }
+  resize();window.addEventListener('resize',resize);
+
+  function initParticles(){
+    const count=Math.min(90,Math.floor(W*H/16000));
+    particles=[];
+    for(let i=0;i<count;i++){
+      particles.push({
+        x:Math.random()*W,y:Math.random()*H,
+        vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,
+        r:Math.random()*1.6+.6,
+        c:COLORS[Math.floor(Math.random()*COLORS.length)]
+      });
+    }
+  }
+  initParticles();window.addEventListener('resize',initParticles);
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // 粒子
+    for(const p of particles){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.c;
+      ctx.globalAlpha=.7;
+      ctx.fill();
+    }
+    // 连线
+    ctx.globalAlpha=1;
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const a=particles[i],b=particles[j];
+        const dx=a.x-b.x,dy=a.y-b.y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<130){
+          ctx.strokeStyle='rgba(0,217,255,'+(1-d/130)*.18+')';
+          ctx.lineWidth=.6;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ========== 3. Hero 注意力连线动画 ========== */
+(function(){
+  const canvas=document.getElementById('hero-attn');
+  const ctx=canvas.getContext('2d');
+  const words=['The','cat','sat','on','the','mat','yesterday'];
+  let W,H;
+  function resize(){
+    W=canvas.width=Math.min(700,window.innerWidth*.9);
+    H=canvas.height=180;
+  }
+  resize();window.addEventListener('resize',resize);
+
+  const nodes=words.map((w,i)=>({word:w,phase:Math.random()*Math.PI*2}));
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // 节点位置
+    const margin=60,gap=(W-margin*2)/(nodes.length-1);
+    nodes.forEach((n,i)=>{n.x=margin+i*gap;n.y=H/2});
+
+    // 连线（动画扫过的注意力）
+    t+=0.012;
+    nodes.forEach((n,i)=>{
+      const focus=(Math.sin(t+i*.7)+1)/2; // 0~1
+      nodes.forEach((m,j)=>{
+        if(i===j)return;
+        const alpha=focus*(1-Math.abs(i-j)/nodes.length)*.5;
+        if(alpha<.05)return;
+        const grad=ctx.createLinearGradient(n.x,n.y,m.x,m.y);
+        grad.addColorStop(0,'rgba(0,217,255,'+alpha+')');
+        grad.addColorStop(1,'rgba(236,72,153,'+alpha*.7+')');
+        ctx.strokeStyle=grad;
+        ctx.lineWidth=1+focus*1.5;
+        ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(m.x,m.y);ctx.stroke();
+      });
+    });
+
+    // 节点
+    nodes.forEach((n,i)=>{
+      const pulse=(Math.sin(t*2+i)+1)/2;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,6+pulse*3,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,217,255,'+(.3+pulse*.5)+')';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,3,0,Math.PI*2);
+      ctx.fillStyle='#e6edf6';ctx.fill();
+      // 文字
+      ctx.fillStyle='#8aa0bd';
+      ctx.font='13px JetBrains Mono, monospace';
+      ctx.textAlign='center';
+      ctx.fillText(n.word,n.x,n.y+28);
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ========== 4. 注意力热力图 ========== */
+(function(){
+  const canvas=document.getElementById('heatmap-canvas');
+  const ctx=canvas.getContext('2d');
+  const words=['The','cat','sat','on','the','mat'];
+  const info=document.getElementById('attn-info');
+  const N=words.length;
+  const cell=64, pad=30;
+  canvas.width=pad+N*cell;
+  canvas.height=pad+N*cell;
+
+  // 模拟注意力权重矩阵（行=查询词，列=被关注词）
+  const attn=[
+    [0.05,0.55,0.10,0.05,0.05,0.20], // The -> cat, mat
+    [0.30,0.15,0.35,0.05,0.05,0.10], // cat -> The, sat
+    [0.05,0.50,0.15,0.10,0.05,0.15], // sat -> cat
+    [0.05,0.10,0.30,0.10,0.10,0.35], // on -> sat, mat
+    [0.10,0.20,0.10,0.05,0.15,0.40], // the -> cat, mat
+    [0.20,0.35,0.10,0.10,0.10,0.15], // mat -> cat, The
+  ];
+
+  function colorFor(v){
+    // 渐变：深蓝->青->紫->粉
+    const stops=[
+      [0.0,[10,14,39]],
+      [0.25,[30,58,138]],
+      [0.5,[0,217,255]],
+      [0.75,[168,85,247]],
+      [1.0,[236,72,153]]
+    ];
+    for(let i=0;i<stops.length-1;i++){
+      if(v<=stops[i+1][0]){
+        const t=(v-stops[i][0])/(stops[i+1][0]-stops[i][0]);
+        const c0=stops[i][1],c1=stops[i+1][1];
+        const r=Math.round(c0[0]+(c1[0]-c0[0])*t);
+        const g=Math.round(c0[1]+(c1[1]-c0[1])*t);
+        const b=Math.round(c0[2]+(c1[2]-c0[2])*t);
+        return 'rgb('+r+','+g+','+b+')';
+      }
+    }
+    return 'rgb(236,72,153)';
+  }
+
+  function draw(hi){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // 单元格
+    for(let i=0;i<N;i++){
+      for(let j=0;j<N;j++){
+        const v=attn[i][j];
+        ctx.fillStyle=colorFor(v);
+        ctx.globalAlpha=0.85;
+        ctx.fillRect(pad+j*cell,pad+i*cell,cell-2,cell-2);
+        // 高亮
+        if(hi&&hi[0]===i&&hi[1]===j){
+          ctx.globalAlpha=1;
+          ctx.strokeStyle='#fff';
+          ctx.lineWidth=3;
+          ctx.strokeRect(pad+j*cell+1,pad+i*cell+1,cell-4,cell-4);
+        }
+      }
+    }
+    ctx.globalAlpha=1;
+    // 文字标签
+    ctx.fillStyle='#8aa0bd';
+    ctx.font='12px JetBrains Mono, monospace';
+    ctx.textAlign='center';
+    for(let j=0;j<N;j++) ctx.fillText(words[j],pad+j*cell+cell/2,pad-10);
+    for(let i=0;i<N;i++){
+      ctx.textAlign='right';
+      ctx.fillText(words[i],pad-8,pad+i*cell+cell/2+4);
+    }
+    ctx.textAlign='center';
+    ctx.fillStyle='#00d9ff';
+    ctx.font='11px JetBrains Mono';
+    ctx.fillText('被关注词 →',canvas.width/2,pad+N*cell+18);
+    ctx.save();
+    ctx.translate(12,canvas.height/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText('← 查询词',0,0);
+    ctx.restore();
+  }
+  draw(null);
+
+  canvas.addEventListener('mousemove',function(e){
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;
+    const x=(e.clientX-rect.left)*scaleX,y=(e.clientY-rect.top)*scaleY;
+    const j=Math.floor((x-pad)/cell),i=Math.floor((y-pad)/cell);
+    if(i>=0&&i<N&&j>=0&&j<N){
+      draw([i,j]);
+      info.textContent='“'+words[i]+'” 关注 “'+words[j]+'” 的权重 = '+attn[i][j].toFixed(2);
+    }
+  });
+  canvas.addEventListener('mouseleave',function(){draw(null);info.textContent='点击或悬停矩阵中的格子查看注意力分数';});
+})();
+
+/* ========== 5. 多头注意力可视化 ========== */
+(function(){
+  const canvas=document.getElementById('heads-canvas');
+  const ctx=canvas.getContext('2d');
+  const words=['The','animal','didn\'t','cross','the','street','because','it','was','tired'];
+  const colors=['#00d9ff','#a855f7','#ec4899','#34d399'];
+  // 每个头的关注模式（it 指代什么）
+  const patterns=[
+    {focus:'it',strong:['animal','tired'],name:'语法/指代'},
+    {focus:'it',strong:['street','animal'],name:'语义'},
+    {focus:'it',strong:['cross','tired'],name:'动作'},
+    {focus:'it',strong:['animal','street','tired'],name:'全局'},
+  ];
+  let current=0,progress=0,playing=true;
+  const btns=[0,1,2,3].map(i=>document.getElementById('head-btn-'+i));
+
+  function setActive(i){
+    current=i;progress=0;playing=true;
+    btns.forEach((b,k)=>b.classList.toggle('active',k===i));
+  }
+  btns.forEach((b,i)=>b.addEventListener('click',()=>setActive(i)));
+  document.getElementById('head-replay').addEventListener('click',()=>{progress=0;playing=true;});
+  setActive(0);
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const W=canvas.width,H=canvas.height;
+    const margin=50,gap=(W-margin*2)/(words.length-1);
+    const ys=words.map((w,i)=>({x:margin+i*gap,y:H/2,word:w}));
+    const p=patterns[current];
+    progress=Math.min(1,progress+0.015);
+    if(progress>=1)playing=false;
+
+    const focusIdx=words.indexOf(p.focus);
+    const focus=ys[focusIdx];
+
+    // 连线
+    p.strong.forEach((w,si)=>{
+      const target=ys[words.indexOf(w)];
+      if(!target)return;
+      const delay=si*0.2;
+      const local=Math.max(0,Math.min(1,(progress-delay)/0.5));
+      if(local<=0)return;
+      const grad=ctx.createLinearGradient(focus.x,focus.y,target.x,target.y);
+      grad.addColorStop(0,colors[current]);
+      grad.addColorStop(1,colors[(current+1)%colors.length]);
+      ctx.strokeStyle=grad;
+      ctx.globalAlpha=0.7*local;
+      ctx.lineWidth=2.5;
+      // 曲线
+      const mx=(focus.x+target.x)/2,my=H/2-40*(1-Math.abs(focusIdx-words.indexOf(w))/words.length);
+      ctx.beginPath();ctx.moveTo(focus.x,focus.y);
+      ctx.quadraticCurveTo(mx,my,target.x,target.y);
+      ctx.stroke();
+      // 流动光点
+      ctx.globalAlpha=local;
+      ctx.beginPath();
+      ctx.arc(
+        focus.x+(target.x-focus.x)*local,
+        focus.y+(my-focus.y)*Math.sin(local*Math.PI),
+        3,0,Math.PI*2
+      );
+      ctx.fillStyle=colors[current];
+      ctx.fill();
+    });
+    ctx.globalAlpha=1;
+
+    // 节点
+    ys.forEach((n,i)=>{
+      const isFocus=i===focusIdx;
+      const isStrong=p.strong.includes(n.word);
+      // 光晕
+      if(isFocus){
+        ctx.beginPath();ctx.arc(n.x,n.y,14,0,Math.PI*2);
+        ctx.fillStyle=colors[current]+'33';ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,isFocus?7:5,0,Math.PI*2);
+      ctx.fillStyle=isFocus?colors[current]:(isStrong?colors[current]+'aa':'#3a4670');
+      ctx.fill();
+      // 文字
+      ctx.fillStyle=isFocus?colors[current]:'#8aa0bd';
+      ctx.font=(isFocus?'bold ':'')+'12px JetBrains Mono, monospace';
+      ctx.textAlign='center';
+      ctx.fillText(n.word,n.x,n.y+24);
+    });
+
+    // 标签
+    ctx.fillStyle=colors[current];
+    ctx.font='600 14px Rajdhani, sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText('Head '+(current+1)+' · '+p.name,20,26);
+    ctx.fillStyle='#8aa0bd';
+    ctx.font='11px JetBrains Mono';
+    ctx.fillText('关注焦点: "'+p.focus+'" → ['+p.strong.join(', ')+']',20,46);
+
+    if(playing)requestAnimationFrame(draw);
+  }
+  // 持续渲染（即使暂停也保留画面，但只在 playing 时推进）
+  function loop(){draw();requestAnimationFrame(loop);}
+  // 简化：始终推进动画循环
+  function anim(){
+    progress=Math.min(1,progress+0.012);
+    draw();
+    if(progress<1)requestAnimationFrame(anim);
+  }
+  // 用持续循环确保画面更新
+  setInterval(function(){
+    if(progress<1)draw();
+  },60);
+  // 改用持续 RAF
+  function always(){progress=Math.min(1,progress);draw();requestAnimationFrame(always);}
+  // 清理：用单一带推进的循环
+  cancelAnimationFrame;
+  // 最终采用：每帧推进并在按钮点击时重置
+  function masterLoop(){
+    if(progress<1)progress+=0.012;
+    if(progress>1)progress=1;
+    draw();
+    requestAnimationFrame(masterLoop);
+  }
+  masterLoop();
+})();
+
+/* ========== 6. 位置编码波形 ========== */
+(function(){
+  const canvas=document.getElementById('pe-canvas');
+  const ctx=canvas.getContext('2d');
+  const dModel=64; // 可视化维度
+  let seqLen=50;
+
+  function draw(){
+    const W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);
+    const colors=['#00d9ff','#a855f7','#ec4899','#34d399','#fbbf24'];
+    // 把 dModel 个维度分成几组显示（避免太密）
+    const showDims=[0,4,10,20,30,40,52,60];
+    const top=30,bottom=H-40;
+    // 轴
+    ctx.strokeStyle='rgba(138,160,189,.2)';
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(40,top);ctx.lineTo(W-10,top);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(40,bottom);ctx.lineTo(W-10,bottom);ctx.stroke();
+    ctx.fillStyle='#8aa0bd';
+    ctx.font='10px JetBrains Mono';
+    ctx.fillText('值 +1',8,top+4);
+    ctx.fillText('值 -1',8,bottom+4);
+
+    showDims.forEach((dim,gi)=>{
+      const color=colors[gi%colors.length];
+      ctx.strokeStyle=color;
+      ctx.lineWidth=1.4;
+      ctx.globalAlpha=0.85;
+      ctx.beginPath();
+      for(let pos=0;pos<seqLen;pos++){
+        const angle=pos/Math.pow(10000,2*Math.floor(dim/2)/dModel);
+        const val=(dim%2===0)?Math.sin(angle):Math.cos(angle);
+        const x=40+pos/(seqLen-1)*(W-50);
+        const y=top+(bottom-top)*(1-(val+1)/2);
+        if(pos===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    });
+    ctx.globalAlpha=1;
+    // 维度图例
+    ctx.fillStyle='#8aa0bd';
+    ctx.font='11px JetBrains Mono';
+    ctx.textAlign='left';
+    ctx.fillText('维度 (sin/cos, 频率从高→低):',40,H-15);
+    showDims.forEach((dim,gi)=>{
+      ctx.fillStyle=colors[gi%colors.length];
+      ctx.fillRect(220+gi*32,H-20,10,10);
+    });
+    // 标题
+    ctx.fillStyle='#00d9ff';
+    ctx.font='600 13px Rajdhani';
+    ctx.textAlign='left';
+    ctx.fillText('位置编码 PE(pos, dim)  ·  序列长度='+seqLen,40,20);
+  }
+
+  const slider=document.getElementById('pe-len');
+  const valLabel=document.getElementById('pe-len-val');
+  slider.addEventListener('input',function(){
+    seqLen=parseInt(slider.value);
+    valLabel.textContent=seqLen;
+    draw();
+  });
+  draw();
+})();
+
+/* ========== 7. 滚动渐入 ========== */
+(function(){
+  const els=document.querySelectorAll('.reveal');
+  const io=new IntersectionObserver(function(entries){
+    entries.forEach(e=>{
+      if(e.isIntersecting){e.target.classList.add('show');io.unobserve(e.target);}
+    });
+  },{threshold:0.12});
+  els.forEach(el=>io.observe(el));
+})();
+</script>
+
+</body>
+</html>

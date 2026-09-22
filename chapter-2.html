@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LLM API 工程化与 AI 后端 · AI Master 星辰学习系统</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/chapter.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="chapter-page"
+      data-page="LLM API 工程化与 AI 后端" data-chapter-id="2">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+
+<section class="ch-head fade-up" style="--accent:#8ff0c8">
+  
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="static/cg/api_engineering_cg.html">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>开场 · 从函数到服务</h2>
+      <p>5 幕：并发、SSE 流式、重试限流、六层后端</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    
+    <div class="ch-cg-rest">
+      
+      <a class="ch-cg-chip cine" href="static/cg/revelation_cg.html" target="_blank" rel="noreferrer">
+        <b>收束 · 星辰启示</b><em>翻过这一章时，看一眼星图留言</em>
+      </a>
+      
+    </div>
+    
+  </div>
+  
+
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR 02 / 阶段一 · 认知与工程地基</p>
+    <h1>🔌 LLM API 工程化与 AI 后端</h1>
+    <p class="lead">Day 6–10：异步编程与多供应商协议；FastAPI：把模型能力变成服务；SSE 流式输出与多轮会话 等 5 天内容</p>
+    <div class="row">
+      
+      <span class="chip"><b style="color:var(--ink)">6–10</b> Day</span>
+      
+      <span class="chip"><b style="color:var(--ink)">5 节</b> 知识点</span>
+      
+      <span class="chip"><b style="color:var(--ink)">约 30 小时</b> 学时</span>
+      
+      <span class="chip"><b style="color:var(--ink)">35 道</b> 练习题</span>
+      
+      
+      <span class="chip">异步</span><span class="chip">FastAPI</span><span class="chip">SSE 流式</span><span class="chip">限流重试</span><span class="chip">日志</span>
+    </div>
+  </div>
+
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / 5</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="training.html?chapters=2">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      <a class="ch-nav" href="chapter-1.html">← 上一章</a>
+      
+      <a class="ch-nav ch-nav-warp" href="warp.html?to=/chapter/3&kicker=SECTOR 03&next=正在跃迁到 RAG 检索增强生成">
+        下一章 →<em>走星际跃迁</em>
+      </a>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson"><blockquote>建议学时：5 天，每天 6 学时 先修要求：完成第 1 章，已有可运行的 <code>llm_client</code>、Prompt 资产库和 <code>.env</code> 章节交付：支持异步、流式、多轮、上传、限流、重试和日志的企业级聊天后端</blockquote>
+<h3>2.0 本章学习路线</h3>
+<p>本章把“命令行里调用一次模型”逐层升级为“可供前端和其他系统调用的后端服务”。每天只增加一个主要复杂度。</p>
+<blockquote><strong>本章代码与真实运行截图</strong>：全部代码在 <code>code/ch02/</code>，每节配真实执行截图（由 <code>tools/shot.py</code> 捕获真实输出生成）。 运行前提：先启动离线靶场 <code>python tools/mock_llm_server.py --port 8100</code>。 <strong>本章修复了 v1.0 的 9 处代码缺陷</strong>（详见每节的「v1.0 缺陷修复」说明）。</blockquote>
+<pre class="code lang-mermaid"><code>flowchart LR
+    A[Day05 同步单次调用] --&gt; B[Day06 异步与多供应商]
+    B --&gt; C[Day07 FastAPI 接口]
+    C --&gt; D[Day08 SSE 与多轮会话]
+    D --&gt; E[Day09 上传/重试/限流/日志]
+    E --&gt; F[Day10 联调/压测/答辩]</code></pre>
+<h4>最终能力分层</h4>
+<table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">职责</th><th style="text-align:left">典型文件</th></tr></thead><tbody><tr><td style="text-align:left">配置层</td><td style="text-align:left">读取环境变量并校验</td><td style="text-align:left"><code>config.py</code></td></tr><tr><td style="text-align:left">模型接入层</td><td style="text-align:left">统一请求、响应、流式片段</td><td style="text-align:left"><code>llm_client.py</code></td></tr><tr><td style="text-align:left">会话层</td><td style="text-align:left">保存与裁剪 messages</td><td style="text-align:left"><code>sessions.py</code></td></tr><tr><td style="text-align:left">服务层</td><td style="text-align:left">路由、校验、异常映射</td><td style="text-align:left"><code>api.py</code></td></tr><tr><td style="text-align:left">稳定性层</td><td style="text-align:left">超时、重试、限流、日志</td><td style="text-align:left"><code>resilience.py</code></td></tr><tr><td style="text-align:left">验证层</td><td style="text-align:left">单元测试、接口测试、压测</td><td style="text-align:left"><code>tests/</code>、<code>load_test.py</code></td></tr></tbody></table>
+<h4>课堂依赖</h4>
+<pre class="code lang-text"><code>Python &gt;= 3.11
+httpx
+python-dotenv
+fastapi
+uvicorn
+pydantic &gt;= 2
+python-multipart
+pytest
+pytest-asyncio</code></pre>
+<p>教师应在开课前将验证通过的精确版本锁定到 <code>requirements.txt</code>。模型 ID、URL、密钥和超时从环境变量读取，禁止写死在课件代码中。</p>
+<hr></div>
+  </div>
+</section>
+
+
+<section class="section">
+  <header>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
+  </header>
+  <div class="route" id="route">
+    
+    <article class="kp" id="kp-1" data-kp-index="0"
+             data-kp-key="2_0" >
+      <div class="kp-head">
+        <span class="kp-no">D06</span>
+        <div class="kp-head-main">
+          <h3>Day 06｜异步编程与多供应商协议</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">收起</button>
+      </div>
+
+      
+      <div class="kp-body" >
+        <div class="lesson"><h4>2.1.1 当日目标</h4>
+<p>学生先理解“等待网络时让出执行权”，再写并发。验收不是只看速度，而是能解释事件循环、协程、任务、并发限制和异常隔离。</p>
+<h4>2.1.2 用等待任务体感并发</h4>
+<pre class="code lang-python"><code>import asyncio
+from time import perf_counter
+
+
+async def simulated_request(name: str, seconds: float) -&gt; str:
+    await asyncio.sleep(seconds)
+    return f"{name} 完成"
+
+
+async def main() -&gt; None:
+    started = perf_counter()
+    results = await asyncio.gather(
+        simulated_request("A", 1.0),
+        simulated_request("B", 1.5),
+        simulated_request("C", 0.5),
+    )
+    print(results)
+    print(f"总耗时: {perf_counter() - started:.2f}s")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())</code></pre>
+<p>逐层解释：</p>
+<ol><li>调用 <code>async def</code> 得到协程对象，<code>await</code> 才真正等待其完成。</li><li><code>asyncio.sleep</code> 模拟网络等待，它不会占住事件循环。</li><li><code>gather</code> 并发调度三个协程，总耗时接近最慢任务，而不是三者之和。</li><li>异步适合大量 I/O 等待，不会自动加速 CPU 密集计算。</li></ol>
+<h4>2.1.3 统一配置与响应对象</h4>
+<pre class="code lang-python"><code>from dataclasses import dataclass
+import os
+
+
+@dataclass(frozen=True)
+class ProviderConfig:
+    name: str
+    base_url: str
+    api_key: str
+    model: str
+
+
+@dataclass(frozen=True)
+class ChatResult:
+    text: str
+    model: str
+    provider: str
+    prompt_tokens: int
+    completion_tokens: int
+
+
+def load_provider(prefix: str) -&gt; ProviderConfig:
+    values = {
+        "base_url": os.getenv(f"{prefix}_BASE_URL", ""),
+        "api_key": os.getenv(f"{prefix}_API_KEY", ""),
+        "model": os.getenv(f"{prefix}_CHAT_MODEL", ""),
+    }
+    missing = [key for key, value in values.items() if not value]
+    if missing:
+        raise RuntimeError(f"{prefix} 缺少配置: {', '.join(missing)}")
+    return ProviderConfig(prefix.lower(), **values)</code></pre>
+<p>统一对象让上层不依赖某家供应商的环境变量名和原始 JSON 结构。</p>
+<h4>2.1.4 异步 LLM 客户端</h4>
+<pre class="code lang-python"><code>import httpx
+
+
+class AsyncLLMClient:
+    def __init__(self, config: ProviderConfig):
+        self.config = config
+        self.client = httpx.AsyncClient(
+            base_url=config.base_url.rstrip("/"),
+            headers={"Authorization": f"Bearer {config.api_key}"},
+            timeout=httpx.Timeout(60.0, connect=10.0),
+            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+        )
+
+    async def chat(self, messages: list[dict[str, str]]) -&gt; ChatResult:
+        response = await self.client.post(
+            "/chat/completions",
+            json={"model": self.config.model, "messages": messages, "temperature": 0.2},
+        )
+        response.raise_for_status()
+        data = response.json()
+        usage = data.get("usage") or {}
+        return ChatResult(
+            text=data["choices"][0]["message"]["content"],
+            model=data.get("model", self.config.model),
+            provider=self.config.name,
+            prompt_tokens=int(usage.get("prompt_tokens", 0)),
+            completion_tokens=int(usage.get("completion_tokens", 0)),
+        )
+
+    async def close(self) -&gt; None:
+        await self.client.aclose()</code></pre>
+<p>关键解释：</p>
+<ul><li>客户端在应用生命周期内复用，才能利用连接池；不要在热点循环里反复创建。</li><li><code>raise_for_status()</code> 将非成功 HTTP 状态变成明确异常。</li><li>响应归一化后，上层只读取 <code>ChatResult</code>。</li><li>日志不得输出 <code>Authorization</code>。</li></ul>
+<h4>2.1.5 有上限的多供应商并发</h4>
+<pre class="code lang-python"><code>async def compare_providers(clients: list[AsyncLLMClient], question: str, limit: int = 3) -&gt; list[dict]:
+    semaphore = asyncio.Semaphore(limit)
+
+    async def ask_one(client: AsyncLLMClient) -&gt; dict:
+        async with semaphore:
+            started = perf_counter()
+            try:
+                result = await client.chat([{"role": "user", "content": question}])
+                return {"ok": True, "provider": result.provider, "text": result.text, "latency": perf_counter() - started}
+            except Exception as exc:
+                return {"ok": False, "provider": client.config.name, "error": type(exc).__name__, "latency": perf_counter() - started}
+
+    return await asyncio.gather(*(ask_one(client) for client in clients))</code></pre>
+<p><code>Semaphore</code> 保护本机连接池和上游额度。每个任务捕获自己的异常，避免一家失败导致整批结果丢失。</p>
+<h4>2.1.6 当日课堂与验收</h4>
+<p><strong>运行验证</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch02/10_async_basics.py      # 三组对照实验
+python code/ch02/11_async_client.py      # 异步客户端 + 异常隔离</code></pre>
+<p><img src="static/course-assets/ch02/01_async_basics.webp" alt="串行 vs 并发 vs 限流" loading="lazy"></p>
+<p><strong>实测数据（本机运行结果，可直接写进实验报告）</strong>：</p>
+<table><thead><tr><th style="text-align:left">模式</th><th style="text-align:right">总耗时</th><th style="text-align:right">加速比</th><th style="text-align:right">峰值并发</th><th style="text-align:right">理论下界</th></tr></thead><tbody><tr><td style="text-align:left">① 串行</td><td style="text-align:right">3.64s</td><td style="text-align:right">1.00x</td><td style="text-align:right">1</td><td style="text-align:right">3.60s</td></tr><tr><td style="text-align:left">② 无序并发</td><td style="text-align:right"><strong>1.02s</strong></td><td style="text-align:right"><strong>3.57x</strong></td><td style="text-align:right">6</td><td style="text-align:right">1.00s</td></tr><tr><td style="text-align:left">③ 限流并发（Semaphore=2）</td><td style="text-align:right">1.81s</td><td style="text-align:right">2.01x</td><td style="text-align:right">2</td><td style="text-align:right">1.80s</td></tr></tbody></table>
+<p><strong>四条结论（必须理解，不只是看到数字）</strong>：</p>
+<ol><li>串行 3.64s → 并发 1.02s，<strong>加速 3.57 倍</strong>：等待时间可以被重叠，这是异步全部价值的来源；</li><li>并发的下界是「最慢的单任务」（1.00s），不是 0 —— <strong>提高并发数不会让最慢的请求变快</strong>，</li></ol>
+<p>只会让它显得更慢（排队）；</p>
+<ol><li>无限并发峰值 6 个连接，限流版峰值 2 个：<strong>生产必须设上限，否则先被限流的是你自己</strong>；</li><li><strong>异步只对 I/O 等待有效</strong>。CPU 密集任务（本地推理、pandas 计算）要么丢进线程池/进程池，</li></ol>
+<p>要么接受它阻塞事件循环。</p>
+<p><strong>一个必须做的实验（&lt;code&gt;10_async_basics.py&lt;/code&gt; 末尾）</strong>：</p>
+<pre class="code lang-text"><code>asyncio.sleep(0.5) × 2 并发 ：0.51s   ← 让出执行权，等待可以被重叠
+time.sleep(0.5)    × 2 并发 ：1.00s   ← 独占事件循环，退化成串行</code></pre>
+<p>在协程里用 <code>time.sleep()</code> 会<strong>阻塞整个事件循环</strong>，所有并发全部失效。 这是新手最容易犯的性能错误——代码"看起来是异步的"，但性能等于同步。</p>
+<p><img src="static/course-assets/ch02/02_async_client.webp" alt="异步客户端与异常隔离" loading="lazy"></p>
+<p>异常隔离的要点：<strong>每个并发任务必须捕获自己的异常</strong>。 如果让异常逃逸到 <code>gather</code>，一家供应商失败会导致整批结果全部丢失。 图中演示了一个故意配错的供应商，验证其他供应商的结果不受影响。</p>
+<h4>2.1.7 v1.0 缺陷修复说明</h4>
+<table><thead><tr><th style="text-align:left">原问题</th><th style="text-align:left">后果</th><th style="text-align:left">本版修复</th></tr></thead><tbody><tr><td style="text-align:left"><code>compare_providers</code> 用 <code>asyncio.Semaphore</code> / <code>perf_counter</code> 但片段内<strong>未 import</strong></td><td style="text-align:left">复制报 <code>NameError</code></td><td style="text-align:left">补齐 import，并提供完整可运行文件</td></tr><tr><td style="text-align:left">只讲概念，<strong>没有真实耗时数据</strong></td><td style="text-align:left">学生无法判断"异步到底快多少"</td><td style="text-align:left">补三组对照实验与实测数据表</td></tr></tbody></table>
+<table><thead><tr><th style="text-align:left">环节</th><th style="text-align:right">时间</th><th style="text-align:left">产物</th></tr></thead><tbody><tr><td style="text-align:left">同步/异步耗时实验</td><td style="text-align:right">50 min</td><td style="text-align:left">实测表</td></tr><tr><td style="text-align:left">协程与事件循环讲授</td><td style="text-align:right">50 min</td><td style="text-align:left">时序图</td></tr><tr><td style="text-align:left">手写 AsyncLLMClient</td><td style="text-align:right">90 min</td><td style="text-align:left">统一客户端</td></tr><tr><td style="text-align:left">三家配置切换</td><td style="text-align:right">70 min</td><td style="text-align:left">对比结果 JSON</td></tr><tr><td style="text-align:left">并发限制与故障注入</td><td style="text-align:right">60 min</td><td style="text-align:left">超时/401/限流日志</td></tr><tr><td style="text-align:left">抽讲与提交</td><td style="text-align:right">40 min</td><td style="text-align:left">验收记录</td></tr></tbody></table>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 1, "id": "q02-01-01", "last_answer": "", "last_feedback": "", "options": ["\u63a5\u8fd1 1.5 \u79d2\uff0c\u5373\u6700\u6162\u7684\u90a3\u4e2a\u4efb\u52a1", "\u63a5\u8fd1 3.0 \u79d2\uff0c\u5373\u4e09\u8005\u4e4b\u548c", "\u63a5\u8fd1 0.5 \u79d2\uff0c\u5373\u6700\u5feb\u7684\u90a3\u4e2a\u4efb\u52a1", "\u63a5\u8fd1 0 \u79d2\uff0c\u56e0\u4e3a\u5e76\u53d1\u4e0d\u6d88\u8017\u65f6\u95f4"], "points": 27, "solved": false, "statement": "\u7528 asyncio.gather \u5e76\u53d1\u8c03\u5ea6\u4e09\u4e2a\u534f\u7a0b\uff0c\u5206\u522b await asyncio.sleep(1.0)\u30011.5\u30010.5 \u79d2\u3002\n\u603b\u8017\u65f6\u6700\u63a5\u8fd1\u4e0b\u5217\u54ea\u4e2a\u503c\uff1f", "tags": ["asyncio", "gather", "\u5e76\u53d1"], "title": "gather \u5e76\u53d1\u603b\u8017\u65f6\u5224\u65ad", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-01-02", "last_answer": "", "last_feedback": "", "options": ["time.sleep \u72ec\u5360\u4e8b\u4ef6\u5faa\u73af\uff0c\u4e0d\u8ba9\u51fa\u6267\u884c\u6743\uff0c\u5e76\u53d1\u9000\u5316\u6210\u4e32\u884c", "time.sleep \u7cbe\u5ea6\u6bd4 asyncio.sleep \u4f4e\uff0c\u4ea7\u751f\u4e86\u989d\u5916\u5f00\u9500", "time.sleep \u4f1a\u521b\u5efa\u65b0\u7ebf\u7a0b\uff0c\u7ebf\u7a0b\u5207\u6362\u62d6\u6162\u4e86\u6574\u4f53\u901f\u5ea6", "time.sleep \u89e6\u53d1\u4e86\u8fde\u63a5\u6c60\u4e0a\u9650\uff0c\u8bf7\u6c42\u88ab\u6392\u961f\u7b49\u5f85"], "points": 76, "solved": false, "statement": "\u5728\u534f\u7a0b\u4e2d\u628a asyncio.sleep(0.5) \u6362\u6210 time.sleep(0.5)\uff0c\u4e24\u4e2a\u4efb\u52a1\u5e76\u53d1\u6267\u884c\u3002\n\u5b9e\u6d4b\u603b\u8017\u65f6\u4ece 0.51s \u53d8\u6210 1.00s\uff0c\u539f\u56e0\u662f\u4ec0\u4e48\uff1f", "tags": ["asyncio", "\u4e8b\u4ef6\u5faa\u73af", "\u5e38\u89c1\u9519\u8bef"], "title": "\u534f\u7a0b\u91cc\u8bef\u7528 time.sleep", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-01-03", "last_answer": "", "last_feedback": "", "options": ["\u4e00\u5bb6\u4f9b\u5e94\u5546\u5931\u8d25\u4f1a\u5bfc\u81f4\u6574\u6279\u7ed3\u679c\u5168\u90e8\u4e22\u5931", "\u53ea\u6709\u5931\u8d25\u7684\u90a3\u5bb6\u8fd4\u56de\u9519\u8bef\uff0c\u5176\u4f59\u7ed3\u679c\u6b63\u5e38\u4fdd\u7559", "gather \u4f1a\u81ea\u52a8\u91cd\u8bd5\u5931\u8d25\u7684\u4efb\u52a1\u76f4\u5230\u6210\u529f", "\u5f02\u5e38\u88ab\u9759\u9ed8\u5ffd\u7565\uff0c\u5931\u8d25\u4efb\u52a1\u8fd4\u56de\u7a7a\u5b57\u7b26\u4e32"], "points": 76, "solved": false, "statement": "compare_providers \u7528 gather \u5e76\u53d1\u8bf7\u6c42\u591a\u5bb6\u4f9b\u5e94\u5546\u3002\n\u5982\u679c\u67d0\u4e2a\u4efb\u52a1\u4e0d\u6355\u83b7\u81ea\u8eab\u5f02\u5e38\uff0c\u8ba9\u5f02\u5e38\u9003\u9038\u5230 gather\uff0c\u4f1a\u53d1\u751f\u4ec0\u4e48\uff1f", "tags": ["\u5f02\u5e38\u9694\u79bb", "gather", "\u591a\u4f9b\u5e94\u5546"], "title": "\u5e76\u53d1\u4efb\u52a1\u5f02\u5e38\u9694\u79bb", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u60f3\u60f3\u6700\u6162\u90a3\u4e2a\u8bf7\u6c42\u672c\u8eab\u8981\u591a\u4e45", "\u8fde\u63a5\u6c60\u548c\u4e0a\u6e38\u989d\u5ea6\u90fd\u662f\u6709\u9650\u8d44\u6e90"], "id": "q02-01-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u5b9e\u6d4b\u6570\u636e\uff1a\u4e32\u884c 3.64s\uff081.00x\uff0c\u5cf0\u503c\u5e76\u53d1 1\uff09\uff1b\u65e0\u5e8f\u5e76\u53d1 1.02s\uff083.57x\uff0c\u5cf0\u503c\u5e76\u53d1 6\uff09\uff1b\u9650\u6d41\u5e76\u53d1 Semaphore=2 \u65f6 1.81s\uff082.01x\uff0c\u5cf0\u503c\u5e76\u53d1 2\uff09\u3002\n\u8bf7\u89e3\u91ca\uff1a\u4e3a\u4ec0\u4e48\u63d0\u9ad8\u5e76\u53d1\u6570\u4e0d\u80fd\u8ba9\u603b\u8017\u65f6\u4f4e\u4e8e\u6700\u6162\u7684\u5355\u4efb\u52a1\uff1f\u4e3a\u4ec0\u4e48\u751f\u4ea7\u73af\u5883\u4ecd\u5fc5\u987b\u8bbe\u5e76\u53d1\u4e0a\u9650\uff1f", "tags": ["Semaphore", "\u5e76\u53d1\u4e0a\u9650", "\u7406\u8bba\u4e0b\u754c"], "title": "\u5e76\u53d1\u4e0a\u9650\u4e0e\u7406\u8bba\u4e0b\u754c", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u4e0a\u5c42\u4ee3\u7801\u662f\u5426\u5e94\u8be5\u77e5\u9053\u67d0\u5bb6\u7684\u5b57\u6bb5\u540d", "\u53cd\u590d\u521b\u5efa\u5ba2\u6237\u7aef\u4f1a\u4e22\u6389\u4ec0\u4e48"], "id": "q02-01-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "ProviderConfig \u7528 load_provider \u4ece\u73af\u5883\u53d8\u91cf\u8bfb\u53d6 base_url\u3001api_key\u3001model\uff0c\u7f3a\u5931\u65f6\u629b RuntimeError\uff1bChatResult \u5f52\u4e00\u5316 text\u3001model\u3001provider\u3001token \u7528\u91cf\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u4e24\u4e2a\u7edf\u4e00\u5bf9\u8c61\u5206\u522b\u89e3\u51b3\u4e86\u4ec0\u4e48\u95ee\u9898\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u5ba2\u6237\u7aef\u8981\u5728\u5e94\u7528\u751f\u547d\u5468\u671f\u5185\u590d\u7528\u3002", "tags": ["ProviderConfig", "ChatResult", "\u8fde\u63a5\u6c60"], "title": "\u7edf\u4e00\u914d\u7f6e\u4e0e\u54cd\u5e94\u5bf9\u8c61\u4ef7\u503c", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": ["\u4fe1\u53f7\u91cf\u8981\u653e\u5728\u6240\u6709\u4efb\u52a1\u90fd\u80fd\u770b\u5230\u7684\u4f5c\u7528\u57df", "\u8ba1\u65f6\u8d77\u70b9\u5e94\u5728\u8fdb\u5165\u4fe1\u53f7\u91cf\u4e4b\u540e"], "id": "q02-01-06", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import asyncio\nfrom time import perf_counter\n\nasync def compare_providers(clients, question, limit=3):\n    # \u5728\u6b64\u5b9e\u73b0\n    ...", "statement": "\u5b9e\u73b0 async def compare_providers(clients, question, limit=3)\uff0c\u5e76\u53d1\u5411\u591a\u4e2a\u5ba2\u6237\u7aef\u63d0\u95ee\u3002\n\u8981\u6c42\uff1a\u7528 asyncio.Semaphore \u9650\u5236\u5e76\u53d1\u6570\uff1b\u6bcf\u4e2a\u4efb\u52a1\u8bb0\u5f55\u8017\u65f6\uff1b\u5355\u4e2a\u4efb\u52a1\u5931\u8d25\u65f6\u8fd4\u56de {\"ok\": False, \"provider\": ..., \"error\": \u5f02\u5e38\u7c7b\u540d, \"latency\": ...}\uff0c\u6210\u529f\u65f6\u8fd4\u56de {\"ok\": True, \"provider\": ..., \"text\": ..., \"latency\": ...}\uff1b\u4e00\u5bb6\u5931\u8d25\u4e0d\u5f71\u54cd\u5176\u4ed6\u7ed3\u679c\u3002", "tags": ["Semaphore", "\u5f02\u5e38\u9694\u79bb", "gather"], "title": "\u5b9e\u73b0\u6709\u4e0a\u9650\u7684\u5e76\u53d1\u5bf9\u6bd4", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["usage \u5b57\u6bb5\u53ef\u80fd\u4e0d\u5b58\u5728\uff0c\u8981\u5bb9\u9519", "\u5173\u95ed\u5f02\u6b65\u5ba2\u6237\u7aef\u8981\u7528 aclose \u800c\u4e0d\u662f close"], "id": "q02-01-07", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import httpx\nfrom dataclasses import dataclass\n\n@dataclass(frozen=True)\nclass ChatResult:\n    text: str\n    model: str\n    provider: str\n    prompt_tokens: int\n    completion_tokens: int\n\nclass AsyncLLMClient:\n    def __init__(self, config):\n        ...\n\n    async def chat(self, messages):\n        ...\n\n    async def close(self):\n        ...", "statement": "\u8865\u5168 AsyncLLMClient\uff1a\u6784\u9020\u51fd\u6570\u63a5\u6536 ProviderConfig\uff0c\u521b\u5efa httpx.AsyncClient\uff0cbase_url \u53bb\u6389\u5c3e\u90e8\u659c\u6760\uff0c\u5e26 Bearer \u8ba4\u8bc1\u5934\uff0c\u8d85\u65f6 60 \u79d2\u3001\u8fde\u63a5\u8d85\u65f6 10 \u79d2\uff0c\u8fde\u63a5\u6c60\u4e0a\u9650 20\u3001keepalive 10\u3002\nchat \u65b9\u6cd5 POST /chat/completions\uff0c\u8c03\u7528 raise_for_status()\uff0c\u628a\u54cd\u5e94\u5f52\u4e00\u5316\u6210 ChatResult\uff0c\u5e76\u5b9e\u73b0 close() \u91ca\u653e\u8fde\u63a5\u3002", "tags": ["httpx", "AsyncClient", "\u54cd\u5e94\u5f52\u4e00\u5316"], "title": "\u5f02\u6b65\u5ba2\u6237\u7aef\u4e0e\u8d44\u6e90\u91ca\u653e", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="2" data-kp="0"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 06｜异步编程与多供应商协议">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 06｜异步编程与多供应商协议">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-2" data-kp-index="1"
+             data-kp-key="2_1" >
+      <div class="kp-head">
+        <span class="kp-no">D07</span>
+        <div class="kp-head-main">
+          <h3>Day 07｜FastAPI：把模型能力变成服务</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>2.2.1 从函数到 HTTP 接口</h4>
+<pre class="code lang-mermaid"><code>sequenceDiagram
+    participant C as Client
+    participant A as FastAPI
+    participant L as AsyncLLMClient
+    participant P as Provider
+    C-&gt;&gt;A: POST /chat JSON
+    A-&gt;&gt;A: Pydantic 校验
+    A-&gt;&gt;L: messages
+    L-&gt;&gt;P: HTTPS JSON
+    P--&gt;&gt;L: model response
+    L--&gt;&gt;A: ChatResult
+    A--&gt;&gt;C: 200 JSON</code></pre>
+<h4>2.2.2 应用生命周期与依赖</h4>
+<pre class="code lang-python"><code>from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.llm = AsyncLLMClient(load_provider("LLM"))
+    yield
+    await app.state.llm.close()
+
+
+app = FastAPI(title="AI Chat Backend", lifespan=lifespan)
+
+
+def get_llm(request: Request) -&gt; AsyncLLMClient:
+    return request.app.state.llm</code></pre>
+<p>应用启动时创建一次客户端，关闭时释放连接。这个模式比模块导入时直接创建网络客户端更容易测试。</p>
+<h4>2.2.3 <code>/health</code> 和 <code>/chat</code></h4>
+<pre class="code lang-python"><code>from fastapi import Depends, HTTPException
+from pydantic import BaseModel, Field
+
+
+class Message(BaseModel):
+    role: str
+    content: str = Field(min_length=1, max_length=8000)
+
+
+class ChatRequest(BaseModel):
+    messages: list[Message] = Field(min_length=1, max_length=30)
+
+
+@app.get("/health")
+async def health() -&gt; dict:
+    return {"status": "ok"}
+
+
+@app.post("/chat")
+async def chat(payload: ChatRequest, llm: AsyncLLMClient = Depends(get_llm)) -&gt; dict:
+    try:
+        result = await llm.chat([message.model_dump() for message in payload.messages])
+        return {
+            "answer": result.text,
+            "model": result.model,
+            "usage": {"prompt_tokens": result.prompt_tokens, "completion_tokens": result.completion_tokens},
+        }
+    except httpx.TimeoutException as exc:
+        raise HTTPException(504, "上游模型响应超时") from exc
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(502, "上游模型请求失败") from exc</code></pre>
+<p>Pydantic 校验失败由 FastAPI 自动返回 422。上游 HTTP 错误映射为 502，超时映射为 504，不把密钥、URL 和响应原文泄露给客户端。</p>
+<h4>2.2.4 接口测试</h4>
+<p><strong>运行验证</strong>：</p>
+<pre class="code lang-powershell"><code>python -m pytest code/ch02/21_api_test.py -v</code></pre>
+<p><img src="static/course-assets/ch02/04_api_test.webp" alt="接口测试：pytest 全部通过，覆盖 lifespan 生命周期、422 校验、502/504 错误映射" loading="lazy"></p>
+<blockquote><strong>⚠️ v1.0 的严重缺陷（测试必然失败）</strong>： 原课件的测试用 <code>httpx.ASGITransport(app=app)</code> 直接调用接口，但 <strong>&lt;code&gt;ASGITransport&lt;/code&gt; 只走 ASGI 协议，不会执行 FastAPI 的 lifespan</strong> —— 也就是说 <code>app.state.llm</code> 根本不会被创建。  后果：<code>test_health</code> 碰巧能过（它不依赖 llm），但只要测试打到 <code>/chat</code>， 就会 <code>AttributeError: 'State' object has no attribute 'llm'</code>。 学生按课件写测试，会发现"简单的能过、真的测不了"。  <strong>两种正确修法</strong>（课程代码用了第二种，更常用）：  ``<code>python # 方法一：用 asgi-lifespan 手动触发 startup / shutdown from asgi_lifespan import LifespanManager  async with LifespanManager(app): async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client: ...  # 方法二（推荐）：用依赖覆盖注入测试替身 # 好处：测试不依赖真实模型，快且确定 class FakeLLM: async def chat(self, messages): return ChatResult(text="测试回答", ...) async def close(self): pass  @pytest.fixture def client(): app.dependency_overrides[get_llm] = lambda: FakeLLM() ... </code>``  <strong>方法论</strong>：写异步 Web 框架的测试时，<strong>永远先确认「应用生命周期有没有被执行」</strong>。 这个问题会以"看起来很奇怪的 AttributeError"的形式出现， 而根因是测试框架的调用路径和你以为的不一样。</blockquote>
+<pre class="code lang-python"><code>import httpx
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_health():
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+@pytest.mark.asyncio
+async def test_chat_rejects_empty_messages():
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/chat", json={"messages": []})
+    assert response.status_code == 422</code></pre>
+<p>验收要求学生用 <code>curl</code> 演示正常请求、空 messages、超长 content 和错误 JSON 四条路径。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 1, "id": "q02-02-01", "last_answer": "", "last_feedback": "", "options": ["\u5e94\u7528\u542f\u52a8\u65f6\u53ea\u521b\u5efa\u4e00\u6b21\u5ba2\u6237\u7aef\uff0c\u5173\u95ed\u65f6\u91ca\u653e\u8fde\u63a5\uff0c\u4e14\u66f4\u5bb9\u6613\u6d4b\u8bd5", "\u53ef\u4ee5\u8ba9\u6bcf\u4e2a\u8bf7\u6c42\u90fd\u65b0\u5efa\u4e00\u4e2a\u5ba2\u6237\u7aef\uff0c\u907f\u514d\u8fde\u63a5\u590d\u7528", "\u53ef\u4ee5\u7ed5\u8fc7 Pydantic \u6821\u9a8c\uff0c\u52a0\u5feb\u8bf7\u6c42\u5904\u7406", "\u53ef\u4ee5\u8ba9 /health \u63a5\u53e3\u81ea\u52a8\u8fd4\u56de\u6a21\u578b\u72b6\u6001"], "points": 27, "solved": false, "statement": "\u5728 FastAPI \u7684 lifespan \u4e0a\u4e0b\u6587\u7ba1\u7406\u5668\u4e2d\u521b\u5efa AsyncLLMClient\uff0c\u5e76\u5728 yield \u4e4b\u540e\u8c03\u7528 close()\u3002\n\u76f8\u6bd4\u5728\u6a21\u5757\u5bfc\u5165\u65f6\u76f4\u63a5\u521b\u5efa\u7f51\u7edc\u5ba2\u6237\u7aef\uff0c\u8fd9\u6837\u505a\u7684\u76f4\u63a5\u597d\u5904\u662f\u4ec0\u4e48\uff1f", "tags": ["FastAPI", "lifespan", "\u4f9d\u8d56\u6ce8\u5165"], "title": "lifespan \u4e2d\u521b\u5efa\u5ba2\u6237\u7aef\u7684\u597d\u5904", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-02-02", "last_answer": "", "last_feedback": "", "options": ["\u8d85\u65f6 504\uff0c\u4e0a\u6e38 HTTP \u9519\u8bef 502", "\u8d85\u65f6 502\uff0c\u4e0a\u6e38 HTTP \u9519\u8bef 504", "\u8d85\u65f6 500\uff0c\u4e0a\u6e38 HTTP \u9519\u8bef 503", "\u8d85\u65f6 408\uff0c\u4e0a\u6e38 HTTP \u9519\u8bef 500"], "points": 76, "solved": false, "statement": "/chat \u63a5\u53e3\u6355\u83b7\u4e0a\u6e38\u5f02\u5e38\u5e76\u8f6c\u6362\u4e3a HTTPException\u3002\n\u5f53\u4e0a\u6e38\u6a21\u578b\u54cd\u5e94\u8d85\u65f6\u3001\u4e0a\u6e38\u8fd4\u56de HTTP \u9519\u8bef\u72b6\u6001\u65f6\uff0c\u5206\u522b\u5e94\u6620\u5c04\u4e3a\u54ea\u4e2a\u72b6\u6001\u7801\uff1f", "tags": ["\u9519\u8bef\u5904\u7406", "HTTPException", "\u72b6\u6001\u7801"], "title": "\u4e0a\u6e38\u9519\u8bef\u5230 HTTP \u72b6\u6001\u7801\u7684\u6620\u5c04", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "id": "q02-02-03", "last_answer": "", "last_feedback": "", "options": ["ASGITransport \u53ea\u8d70 ASGI \u534f\u8bae\uff0c\u4e0d\u6267\u884c FastAPI \u7684 lifespan\uff0capp.state.llm \u4ece\u672a\u88ab\u521b\u5efa", "Pydantic \u6821\u9a8c\u5728\u6d4b\u8bd5\u73af\u5883\u4e0b\u88ab\u8df3\u8fc7\uff0c\u5bfc\u81f4\u4f9d\u8d56\u6ce8\u5165\u5931\u8d25", "AsyncLLMClient \u7684 close() \u88ab\u63d0\u524d\u8c03\u7528\uff0c\u628a state \u6e05\u7a7a\u4e86", "httpx \u4e0d\u652f\u6301 async \u6d4b\u8bd5\uff0c\u5fc5\u987b\u6362\u6210 requests \u540c\u6b65\u5ba2\u6237\u7aef"], "points": 189, "solved": false, "statement": "\u7528 httpx.ASGITransport(app=app) \u76f4\u63a5\u6784\u9020 AsyncClient \u6d4b\u8bd5 /chat\uff0ctest_health \u80fd\u901a\u8fc7\uff0c\u4f46 /chat \u62a5 AttributeError: \u0027State\u0027 object has no attribute \u0027llm\u0027\u3002\n\u5bf9\u8fd9\u4e2a\u73b0\u8c61\u6700\u51c6\u786e\u7684\u89e3\u91ca\u662f\uff1f", "tags": ["\u6d4b\u8bd5", "ASGITransport", "lifespan"], "title": "ASGITransport \u6d4b\u8bd5\u7684\u771f\u5b9e\u9677\u9631", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u5148\u60f3\u6e05\u695a lifespan \u4ec0\u4e48\u65f6\u5019\u6267\u884c", "FakeLLM \u9700\u8981\u5b9e\u73b0\u54ea\u4e9b\u65b9\u6cd5"], "id": "q02-02-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bfe\u4ef6\u63d0\u51fa\u65b9\u6cd5\u8bba\uff1a\u5199\u5f02\u6b65 Web \u6846\u67b6\u7684\u6d4b\u8bd5\u65f6\uff0c\u6c38\u8fdc\u5148\u786e\u8ba4\u300c\u5e94\u7528\u751f\u547d\u5468\u671f\u6709\u6ca1\u6709\u88ab\u6267\u884c\u300d\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u4e2a\u95ee\u9898\u7684\u5178\u578b\u8868\u73b0\u3001\u6839\u56e0\uff0c\u4ee5\u53ca\u4e24\u79cd\u6b63\u786e\u4fee\u6cd5\u5404\u81ea\u7684\u53d6\u820d\u3002", "tags": ["\u6d4b\u8bd5", "lifespan", "\u4f9d\u8d56\u8986\u76d6"], "title": "\u4e3a\u4ec0\u4e48\u6d4b\u8bd5\u8981\u5148\u786e\u8ba4\u751f\u547d\u5468\u671f\u6267\u884c", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u6821\u9a8c\u53d1\u751f\u5728\u8c03\u7528 llm.chat \u4e4b\u524d\u8fd8\u662f\u4e4b\u540e", "422 \u662f\u8c01\u8fd4\u56de\u7684"], "id": "q02-02-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "ChatRequest \u5bf9 messages \u505a\u4e86\u957f\u5ea6\u7ea6\u675f\uff0cMessage \u5bf9 content \u505a\u4e86\u957f\u5ea6\u7ea6\u675f\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u4e9b\u7ea6\u675f\u5728\u8bf7\u6c42\u94fe\u8def\u7684\u54ea\u4e00\u73af\u751f\u6548\u3001\u5931\u8d25\u65f6\u8fd4\u56de\u4ec0\u4e48\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u9519\u8bef\u54cd\u5e94\u91cc\u4e0d\u80fd\u5e26\u4e0a\u6e38\u7684\u5bc6\u94a5\u3001URL \u548c\u54cd\u5e94\u539f\u6587\u3002", "tags": ["Pydantic", "\u6821\u9a8c", "\u5b89\u5168"], "title": "\u8bf7\u6c42\u6821\u9a8c\u4e0e\u9519\u8bef\u4fe1\u606f\u8fb9\u754c", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u4f9d\u8d56\u8986\u76d6\u7684 key \u662f get_llm \u51fd\u6570\u672c\u8eab", "FakeLLM \u7684 chat \u8981\u8fd4\u56de ChatResult \u800c\u4e0d\u662f\u5b57\u7b26\u4e32"], "id": "q02-02-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import httpx\nimport pytest\n\n# app, get_llm, ChatResult \u5df2\u5bfc\u5165\n\nclass FakeLLM:\n    async def chat(self, messages):\n        ...\n\n    async def close(self):\n        ...\n\n@pytest.mark.asyncio\nasync def test_chat_with_fake_llm():\n    ...", "statement": "\u7ed9\u5b9a app\u3001get_llm \u4f9d\u8d56\u548c ChatResult\uff0c\u8bf7\u5199\u4e00\u4e2a pytest \u6d4b\u8bd5\uff1a\u7528 dependency_overrides \u6ce8\u5165 FakeLLM\uff0c\u9a8c\u8bc1 POST /chat \u8fd4\u56de 200 \u4e14 answer \u5b57\u6bb5\u7b49\u4e8e FakeLLM \u8fd4\u56de\u7684\u6587\u672c\u3002\n\u8981\u6c42\u4f7f\u7528 httpx.ASGITransport\uff0c\u6d4b\u8bd5\u7ed3\u675f\u540e\u6e05\u7406\u4f9d\u8d56\u8986\u76d6\u3002", "tags": ["\u6d4b\u8bd5", "\u4f9d\u8d56\u8986\u76d6", "pytest"], "title": "\u7528\u4f9d\u8d56\u8986\u76d6\u5199 /chat \u6d4b\u8bd5", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": ["\u4e24\u4e2a except \u7684\u987a\u5e8f\u4e0e\u72b6\u6001\u7801\u8981\u5bf9\u5e94\u6b63\u786e", "detail \u91cc\u4e0d\u8981\u653e exc \u7684\u539f\u6587"], "id": "q02-02-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "from fastapi import Depends, HTTPException\nimport httpx\n\n@app.post(\"/chat\")\nasync def chat(payload: ChatRequest, llm = Depends(get_llm)) -\u003e dict:\n    ...", "statement": "\u8bf7\u5b9e\u73b0 /chat \u63a5\u53e3\uff1a\u63a5\u6536 ChatRequest\uff0c\u901a\u8fc7 Depends \u83b7\u53d6 llm\uff0c\u8c03\u7528 llm.chat \u5e76\u628a messages \u8f6c\u6210 dict \u5217\u8868\u3002\n\u6210\u529f\u65f6\u8fd4\u56de answer\u3001model \u548c usage\uff08prompt_tokens\u3001completion_tokens\uff09\uff1b\u4e0a\u6e38\u8d85\u65f6\u8fd4\u56de 504\uff0c\u4e0a\u6e38 HTTP \u9519\u8bef\u8fd4\u56de 502\uff0c\u4e14\u4e0d\u6cc4\u9732\u5bc6\u94a5\u3001URL \u548c\u54cd\u5e94\u539f\u6587\u3002", "tags": ["FastAPI", "\u9519\u8bef\u6620\u5c04", "httpx"], "title": "\u5b9e\u73b0 /chat \u7684\u9519\u8bef\u6620\u5c04", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="2" data-kp="1"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 07｜FastAPI：把模型能力变成服务">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 07｜FastAPI：把模型能力变成服务">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-3" data-kp-index="2"
+             data-kp-key="2_2" >
+      <div class="kp-head">
+        <span class="kp-no">D08</span>
+        <div class="kp-head-main">
+          <h3>Day 08｜SSE 流式输出与多轮会话</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>2.3.1 SSE 最小协议</h4>
+<p>SSE 由服务端通过一个长连接持续发送事件。每个事件以空行结束：</p>
+<pre class="code lang-text"><code>event: token
+data: {"text":"你"}
+
+event: done
+data: {}
+</code></pre>
+<p>JSON 编码可避免换行和中文造成协议边界混乱。</p>
+<h4>2.3.2 解析上游流</h4>
+<pre class="code lang-python"><code>import json
+from collections.abc import AsyncIterator
+
+
+async def stream_chat(client: AsyncLLMClient, messages: list[dict[str, str]]) -&gt; AsyncIterator[str]:
+    payload = {"model": client.config.model, "messages": messages, "stream": True}
+    async with client.client.stream("POST", "/chat/completions", json=payload) as response:
+        response.raise_for_status()
+        async for line in response.aiter_lines():
+            if not line.startswith("data:"):
+                continue
+            data = line.removeprefix("data:").strip()
+            if data == "[DONE]":
+                break
+            chunk = json.loads(data)
+            text = chunk["choices"][0].get("delta", {}).get("content")
+            if text:
+                yield text</code></pre>
+<p>离开 <code>async with</code> 后 HTTPX 自动关闭上游响应，避免连接泄漏。</p>
+<h4>2.3.3 向浏览器转发 SSE</h4>
+<pre class="code lang-python"><code>from fastapi.responses import StreamingResponse
+
+
+def sse(event: str, data: dict) -&gt; str:
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+@app.post("/chat/stream")
+async def chat_stream(payload: ChatRequest, llm: AsyncLLMClient = Depends(get_llm)):
+    messages = [message.model_dump() for message in payload.messages]
+
+    async def events():
+        try:
+            async for token in stream_chat(llm, messages):
+                yield sse("token", {"text": token})
+            yield sse("done", {})
+        except Exception:
+            yield sse("error", {"message": "流式响应中断"})
+
+    return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})</code></pre>
+<p>浏览器原生 <code>EventSource</code> 只直接支持 GET。本课接口使用 POST 传递 JSON，因此前端应使用 <code>fetch</code> 读取响应流，或把接口重新设计为 GET + 短期任务 ID；不能因为响应类型叫 SSE 就默认 <code>EventSource</code> 能直接调用。</p>
+<pre class="code lang-javascript"><code>const response = await fetch("/chat/stream", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ messages: [{ role: "user", content: "你好" }] }),
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+while (true) {
+  const { value, done } = await reader.read();
+  if (done) break;
+  console.log(decoder.decode(value, { stream: true }));
+}</code></pre>
+<p>生产前端还需缓存未完成的一行，并按空行拆分完整 SSE 事件。此处只用于观察“字节块逐次到达”。</p>
+<h4>2.3.4 会话存储与上下文裁剪</h4>
+<pre class="code lang-python"><code>import asyncio
+from collections import defaultdict
+
+
+class SessionStore:
+    def __init__(self, max_messages: int = 20):
+        self.max_messages = max_messages
+        self.data: dict[str, list[dict[str, str]]] = defaultdict(list)
+        self.lock = asyncio.Lock()
+
+    async def append_turn(self, session_id: str, user_text: str, assistant_text: str) -&gt; None:
+        async with self.lock:
+            history = self.data[session_id]
+            history.extend([
+                {"role": "user", "content": user_text},
+                {"role": "assistant", "content": assistant_text},
+            ])
+            self.data[session_id] = history[-self.max_messages:]
+
+    async def get(self, session_id: str) -&gt; list[dict[str, str]]:
+        async with self.lock:
+            return list(self.data.get(session_id, []))</code></pre>
+<p>这是单进程教学版。多 worker 部署需要 Redis 或数据库；按消息条数裁剪也只是入门方案，后续应改用 token 预算和摘要。</p>
+<h4>2.3.5 当日验收</h4>
+<ul><li>客户端能逐片显示文本，而不是最后一次性出现。</li><li>上游错误时收到 <code>error</code> 事件，连接能结束。</li><li>两个 <code>session_id</code> 的历史互不混淆。</li><li>超出 20 条后保留最近历史，system 指令单独管理，不能被裁掉。</li><li>学生能解释 SSE 与 WebSocket 的方向性和适用差别。</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 1, "id": "q02-03-01", "last_answer": "", "last_feedback": "", "options": ["\u7528\u7a7a\u884c\u6807\u8bb0\u4e00\u4e2a\u4e8b\u4ef6\u7684\u7ed3\u675f\uff0c\u5ba2\u6237\u7aef\u636e\u6b64\u5207\u5206\u4e8b\u4ef6", "\u7528\u6362\u884c\u8ba9\u6d4f\u89c8\u5668\u81ea\u52a8\u5237\u65b0\u7f13\u51b2\u533a", "\u7528\u4e24\u4e2a\u6362\u884c\u89e6\u53d1 HTTP \u5206\u5757\u4f20\u8f93\u7684\u7ec8\u6b62", "\u7528\u7a7a\u884c\u628a event \u4e0e data \u4e24\u4e2a\u5b57\u6bb5\u5206\u9694\u5f00"], "points": 27, "solved": false, "statement": "\u5728\u5411\u6d4f\u89c8\u5668\u8f6c\u53d1 SSE \u65f6\uff0c\u6bcf\u4e2a\u4e8b\u4ef6\u5b57\u7b26\u4e32\u7684\u7ed3\u5c3e\u5fc5\u987b\u662f\uff1a\n\nreturn f\"event: {event}\\ndata: {json.dumps(data)}\\n\\n\"\n\n\u8fd9\u4e2a\u7ed3\u5c3e\u7684\u4f5c\u7528\u662f\u4ec0\u4e48\uff1f", "tags": ["SSE", "\u534f\u8bae", "\u6d41\u5f0f\u8f93\u51fa"], "title": "SSE \u4e8b\u4ef6\u8fb9\u754c\u5982\u4f55\u754c\u5b9a", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-03-02", "last_answer": "", "last_feedback": "", "options": ["\u6d4f\u89c8\u5668\u539f\u751f EventSource \u53ea\u652f\u6301 GET\uff0c\u5e94\u6539\u7528 fetch \u8bfb\u53d6\u54cd\u5e94\u6d41", "EventSource \u652f\u6301 POST\uff0c\u53ea\u8981 media_type \u662f text/event-stream", "EventSource \u652f\u6301 POST\uff0c\u4f46\u9700\u8981\u8bbe\u7f6e Content-Type \u4e3a application/json", "EventSource \u4e0d\u652f\u6301\u6d41\u5f0f\uff0c\u5fc5\u987b\u6362\u6210 WebSocket \u624d\u80fd\u63a5\u6536"], "points": 76, "solved": false, "statement": "\u672c\u8bfe\u63a5\u53e3\u8bbe\u8ba1\u4e3a POST /chat/stream\uff0c\u7528 JSON body \u4f20 messages\u3002\n\n\u5173\u4e8e\u524d\u7aef\u5982\u4f55\u6d88\u8d39\u8fd9\u4e2a\u6d41\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1a", "tags": ["SSE", "EventSource", "\u524d\u7aef"], "title": "EventSource \u80fd\u5426\u76f4\u63a5\u8c03\u7528\u8be5\u63a5\u53e3", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-03-03", "last_answer": "", "last_feedback": "", "options": ["system \u6307\u4ee4\u5355\u72ec\u7ba1\u7406\uff0c\u4e0d\u80fd\u88ab\u88c1\u6389", "user \u4e0e assistant \u6d88\u606f\u6309 1:1 \u914d\u5bf9\u4fdd\u7559", "\u88c1\u526a\u540e\u6761\u6570\u5fc5\u987b\u662f\u5076\u6570\uff0c\u907f\u514d\u89d2\u8272\u9519\u4f4d", "\u6700\u8fd1\u4e00\u6761\u5fc5\u987b\u662f user \u6d88\u606f\uff0c\u5426\u5219\u4e22\u5f03"], "points": 76, "solved": false, "statement": "SessionStore \u7528 history[-self.max_messages:] \u88c1\u526a\u5386\u53f2\uff0cmax_messages \u9ed8\u8ba4 20\u3002\n\n\u6309\u5f53\u65e5\u9a8c\u6536\u8981\u6c42\uff0c\u88c1\u526a\u65f6\u5fc5\u987b\u4fdd\u8bc1\u7684\u662f\uff1a", "tags": ["\u4f1a\u8bdd\u5b58\u50a8", "\u4e0a\u4e0b\u6587\u88c1\u526a", "\u9a8c\u6536"], "title": "\u4f1a\u8bdd\u88c1\u526a\u8be5\u4fdd\u7559\u4ec0\u4e48", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u5148\u8bb2\u65b9\u5411\u6027", "\u518d\u8bb2\u672c\u8bfe\u573a\u666f\u7684\u63a8\u9001\u9700\u6c42", "\u6700\u540e\u7ed9\u53cd\u4f8b\u573a\u666f"], "id": "q02-03-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u89e3\u91ca SSE \u4e0e WebSocket \u5728\u901a\u4fe1\u65b9\u5411\u6027\u4e0a\u7684\u5dee\u522b\uff0c\u5e76\u8bf4\u660e\u5728\u672c\u8bfe\u7684\u5bf9\u8bdd\u6d41\u5f0f\u573a\u666f\u4e2d\u4e3a\u4ec0\u4e48\u9009\u62e9 SSE\uff0c\u4ee5\u53ca\u4ec0\u4e48\u60c5\u51b5\u4e0b\u5e94\u8be5\u6539\u7528 WebSocket\u3002", "tags": ["SSE", "WebSocket", "\u5de5\u7a0b\u5224\u65ad"], "title": "SSE \u4e0e WebSocket \u7684\u65b9\u5411\u6027\u5dee\u522b", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": ["\u4ece\u8fdb\u7a0b\u8fb9\u754c\u60f3", "\u60f3\u8d1f\u8f7d\u5747\u8861\u628a\u8bf7\u6c42\u5206\u5230\u4e0d\u540c worker", "\u6539\u8fdb\u65b9\u5411\u662f\u5171\u4eab\u5b58\u50a8"], "id": "q02-03-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "SessionStore \u7528\u8fdb\u7a0b\u5185 dict \u52a0 asyncio.Lock \u4fdd\u5b58\u5386\u53f2\u3002\u8bf7\u5206\u6790\u8fd9\u79cd\u5b9e\u73b0\u7684\u4e24\u4e2a\u5177\u4f53\u5c40\u9650\uff0c\u8bf4\u660e\u591a worker \u90e8\u7f72\u4e0b\u4f1a\u51fa\u73b0\u4ec0\u4e48\u73b0\u8c61\uff0c\u5e76\u7ed9\u51fa\u6539\u8fdb\u65b9\u5411\u3002", "tags": ["\u4f1a\u8bdd\u5b58\u50a8", "\u591aworker", "Redis"], "title": "\u5355\u8fdb\u7a0b\u4f1a\u8bdd\u5b58\u50a8\u7684\u5c40\u9650", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u7528 aiter_lines \u9010\u884c\u8bfb", "removeprefix \u53bb\u6389 data: \u524d\u7f00", "delta \u53ef\u80fd\u6ca1\u6709 content \u5b57\u6bb5"], "id": "q02-03-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import json\nfrom collections.abc import AsyncIterator\n\nasync def stream_chat(client, messages: list[dict[str, str]]) -\u003e AsyncIterator[str]:\n    payload = {\"model\": client.config.model, \"messages\": messages, \"stream\": True}\n    # TODO: \u6253\u5f00\u6d41\u3001\u9010\u884c\u89e3\u6790\u3001yield \u6587\u672c\n    ...", "statement": "\u8865\u5168 stream_chat\uff0c\u4ece\u4e0a\u6e38 OpenAI \u517c\u5bb9\u63a5\u53e3\u9010\u5757\u53d6\u51fa\u6587\u672c\u3002\u8981\u6c42\uff1a\n\n1. \u53ea\u5904\u7406\u4ee5 data: \u5f00\u5934\u7684\u884c\uff0c\u8df3\u8fc7\u5176\u4ed6\u884c\uff1b\n2. \u9047\u5230 [DONE] \u7acb\u5373\u7ed3\u675f\uff1b\n3. \u89e3\u6790 JSON \u540e\u53d6 choices[0].delta.content\uff0c\u4e3a\u7a7a\u5219\u8df3\u8fc7\uff1b\n4. \u7528 async with \u7ba1\u7406\u6d41\uff0c\u786e\u4fdd\u54cd\u5e94\u88ab\u5173\u95ed\u3002", "tags": ["\u6d41\u5f0f\u89e3\u6790", "HTTPX", "\u5f02\u6b65"], "title": "\u5b9e\u73b0\u4e0a\u6e38\u6d41\u89e3\u6790\u51fd\u6570", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": [], "id": "q02-03-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "from fastapi import FastAPI, Depends\nfrom fastapi.responses import StreamingResponse\nimport json\n\napp = FastAPI()\n\ndef sse(event: str, data: dict) -\u003e str:\n    return f\"event: {event}\\ndata: {json.dumps(data, ensure_ascii=False)}\\n\\n\"\n\n@app.post(\"/chat/stream\")\nasync def chat_stream(payload, llm=Depends(get_llm)):\n    # TODO: \u6784\u9020 events \u751f\u6210\u5668\u5e76\u8fd4\u56de StreamingResponse\n    ...", "statement": "\u5b9e\u73b0 POST /chat/stream\uff1a\u63a5\u6536 ChatRequest\uff08\u542b messages \u4e0e session_id\uff09\uff0c\u628a\u4e0a\u6e38 token \u4ee5 token \u4e8b\u4ef6\u8f6c\u53d1\uff0c\u6b63\u5e38\u7ed3\u675f\u53d1 done \u4e8b\u4ef6\uff0c\u4e0a\u6e38\u629b\u5f02\u5e38\u65f6\u53d1 error \u4e8b\u4ef6\u5e76\u7ed3\u675f\u8fde\u63a5\u3002\u8981\u6c42\u54cd\u5e94 media_type \u4e3a text/event-stream\uff0c\u5e76\u8bbe\u7f6e Cache-Control: no-cache\u3002", "tags": ["SSE", "FastAPI", "\u9519\u8bef\u5904\u7406"], "title": "\u5e26\u9519\u8bef\u4e8b\u4ef6\u7684 SSE \u8f6c\u53d1", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="2" data-kp="2"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 08｜SSE 流式输出与多轮会话">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 08｜SSE 流式输出与多轮会话">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-4" data-kp-index="3"
+             data-kp-key="2_3" >
+      <div class="kp-head">
+        <span class="kp-no">D09</span>
+        <div class="kp-head-main">
+          <h3>Day 09｜工程稳定性与极简抽象</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><p><strong>运行验证</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch02/40_resilience.py      # 重试退避 + 滑动窗口限流
+python code/ch02/41_upload_logging.py  # 安全上传 + 结构化日志</code></pre>
+<p><img src="static/course-assets/ch02/03_resilience.webp" alt="重试退避与限流" loading="lazy"></p>
+<p><strong>重试的三条纪律</strong>（图中用真实失败注入验证）：</p>
+<table><thead><tr><th style="text-align:left">纪律</th><th style="text-align:left">原因</th></tr></thead><tbody><tr><td style="text-align:left"><strong>只重试瞬时错误</strong>（429 / 5xx / 连接超时）</td><td style="text-align:left">401（密钥错）、400（参数错）重试一百次也不会成功，只会浪费配额</td></tr><tr><td style="text-align:left"><strong>必须有次数上限</strong></td><td style="text-align:left">无上限的重试会把一次故障放大成雪崩</td></tr><tr><td style="text-align:left"><strong>必须加随机抖动</strong></td><td style="text-align:left">否则大量请求会在同一时刻重试，形成"重试风暴"再次打垮上游</td></tr></tbody></table>
+<p><strong>限流</strong>：图中演示连续调用触发滑动窗口限流。 注意原课件的 <code>SlidingWindowLimiter</code> <strong>缺 &lt;code&gt;asyncio.Lock&lt;/code&gt; 和 &lt;code&gt;deque&lt;/code&gt; 的 import</strong>， 复制会 <code>NameError</code> —— 本版已补齐。</p>
+<blockquote><strong>401/400 不重试</strong>这一点在面试里经常被问。 判断标准很简单：<strong>问"重试一次有可能成功吗？"</strong> 网络抖动、上游过载可能成功；密钥错、参数错不可能成功。</blockquote>
+<h4>2.4.1 带退避的有限重试</h4>
+<pre class="code lang-python"><code>import random
+
+
+RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
+
+async def call_with_retry(operation, attempts: int = 3):
+    for attempt in range(1, attempts + 1):
+        try:
+            return await operation()
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code not in RETRYABLE_STATUS or attempt == attempts:
+                raise
+        except (httpx.ConnectError, httpx.TimeoutException):
+            if attempt == attempts:
+                raise
+        delay = min(4.0, 0.5 * 2 ** (attempt - 1)) + random.uniform(0, 0.2)
+        await asyncio.sleep(delay)
+    raise RuntimeError("不可达分支")</code></pre>
+<p>401、403 和大部分 400 错误不应重试；重试次数必须有限，并加入随机抖动，避免大量请求同时再次冲击上游。</p>
+<h4>2.4.2 进程内限流器</h4>
+<pre class="code lang-python"><code>from collections import defaultdict, deque
+from time import monotonic
+
+
+class SlidingWindowLimiter:
+    def __init__(self, limit: int, window_seconds: float):
+        self.limit = limit
+        self.window = window_seconds
+        self.records: dict[str, deque[float]] = defaultdict(deque)
+        self.lock = asyncio.Lock()
+
+    async def allow(self, key: str) -&gt; bool:
+        now = monotonic()
+        async with self.lock:
+            queue = self.records[key]
+            while queue and queue[0] &lt;= now - self.window:
+                queue.popleft()
+            if len(queue) &gt;= self.limit:
+                return False
+            queue.append(now)
+            return True</code></pre>
+<p>多实例部署时进程内限流不共享状态，应迁移到网关或 Redis。<code>key</code> 可来自登录用户或可信网关传来的客户端标识，不能盲目信任任意请求头。</p>
+<h4>2.4.3 安全文件上传</h4>
+<pre class="code lang-python"><code>from pathlib import Path
+from uuid import uuid4
+from fastapi import File, UploadFile
+
+
+UPLOAD_DIR = Path("data/uploads").resolve()
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+ALLOWED_SUFFIXES = {".pdf", ".docx", ".txt", ".md"}
+MAX_BYTES = 10 * 1024 * 1024
+
+
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)) -&gt; dict:
+    suffix = Path(file.filename or "").suffix.lower()
+    if suffix not in ALLOWED_SUFFIXES:
+        raise HTTPException(415, "不支持的文件类型")
+    content = await file.read(MAX_BYTES + 1)
+    if len(content) &gt; MAX_BYTES:
+        raise HTTPException(413, "文件超过 10MB")
+    safe_name = f"{uuid4().hex}{suffix}"
+    target = UPLOAD_DIR / safe_name
+    target.write_bytes(content)
+    return {"file_id": safe_name, "size": len(content)}</code></pre>
+<p>不使用用户原始文件名作为保存路径。扩展名检查只是第一层，生产环境还要检查 MIME、文件签名、恶意内容并使用隔离存储。</p>
+<h4>2.4.4 结构化日志</h4>
+<pre class="code lang-python"><code>import logging
+from time import perf_counter
+from uuid import uuid4
+
+
+logger = logging.getLogger("ai_backend")
+
+
+async def observed_chat(llm: AsyncLLMClient, messages: list[dict[str, str]]) -&gt; ChatResult:
+    request_id = uuid4().hex
+    started = perf_counter()
+    try:
+        result = await call_with_retry(lambda: llm.chat(messages))
+        logger.info("chat_ok", extra={"request_id": request_id, "provider": result.provider, "latency_ms": round((perf_counter() - started) * 1000), "tokens": result.prompt_tokens + result.completion_tokens})
+        return result
+    except Exception as exc:
+        logger.exception("chat_failed", extra={"request_id": request_id, "error_type": type(exc).__name__})
+        raise</code></pre>
+<p>日志记录请求 ID、耗时、供应商、状态和 token 数；不记录密钥，也不默认保存完整用户正文。</p>
+<h4>2.4.5 极简框架抽象</h4>
+<pre class="code lang-python"><code>from typing import Protocol
+
+
+class ChatModel(Protocol):
+    async def chat(self, messages: list[dict[str, str]]) -&gt; ChatResult: ...
+
+
+class OutputParser(Protocol):
+    def parse(self, text: str): ...
+
+
+async def run_chain(model: ChatModel, parser: OutputParser, messages: list[dict[str, str]]):
+    result = await model.chat(messages)
+    return parser.parse(result.text)</code></pre>
+<p>学生手写后应理解：框架主要提供标准接口、组合、回调与集成，不会替代需求分析、错误处理和评测。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 1, "id": "q02-04-01", "last_answer": "", "last_feedback": "", "options": ["401 \u5bc6\u94a5\u9519\u8bef\u4e0e 400 \u53c2\u6570\u9519\u8bef", "429 \u9650\u6d41\u4e0e 503 \u4e0a\u6e38\u8fc7\u8f7d", "\u8fde\u63a5\u8d85\u65f6\u4e0e\u8bfb\u53d6\u8d85\u65f6", "502 \u4e0e 504 \u7f51\u5173\u9519\u8bef"], "points": 27, "solved": false, "statement": "\u8c03\u7528 LLM API \u65f6\u6536\u5230\u4ee5\u4e0b\u54cd\u5e94\uff0c\u54ea\u4e00\u7c7b\u91cd\u8bd5\u4e00\u6b21\u4e5f\u4e0d\u53ef\u80fd\u6210\u529f\uff1f\n\n\u8bf7\u9009\u51fa\u6700\u51c6\u786e\u7684\u5224\u65ad\u6807\u51c6\u3002", "tags": ["\u91cd\u8bd5", "\u9519\u8bef\u7801", "\u7a33\u5b9a\u6027"], "title": "\u54ea\u4e9b\u9519\u8bef\u4e0d\u8be5\u91cd\u8bd5", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-04-02", "last_answer": "", "last_feedback": "", "options": ["0.5 \u79d2\u5230 0.7 \u79d2\u4e4b\u95f4", "0.5 \u79d2\u5230 4.0 \u79d2\u4e4b\u95f4", "1.0 \u79d2\u5230 1.2 \u79d2\u4e4b\u95f4", "0 \u79d2\u5230 0.2 \u79d2\u4e4b\u95f4"], "points": 76, "solved": false, "statement": "\u91cd\u8bd5\u9000\u907f\u516c\u5f0f\u4e3a\uff1a\n\ndelay = min(4.0, 0.5 * 2 ** (attempt - 1)) + random.uniform(0, 0.2)\n\n\u5f53 attempt = 1 \u65f6\uff0cdelay \u7684\u53d6\u503c\u8303\u56f4\u662f\uff1f", "tags": ["\u9000\u907f", "\u6296\u52a8", "\u516c\u5f0f"], "title": "\u9000\u907f\u5ef6\u8fdf\u7684\u8ba1\u7b97", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-04-03", "last_answer": "", "last_feedback": "", "options": ["\u53d8\u6210\u7ea6 4 \u500d\uff0c\u5e94\u8fc1\u79fb\u5230\u7f51\u5173\u6216 Redis \u5171\u4eab\u72b6\u6001", "\u4fdd\u6301\u4e0d\u53d8\uff0c\u56e0\u4e3a\u9650\u6d41\u5668\u6309 key \u5206\u6876", "\u53d8\u6210\u7ea6 4 \u500d\uff0c\u5e94\u628a limit \u9664\u4ee5 4 \u5199\u6b7b", "\u4fdd\u6301\u4e0d\u53d8\uff0c\u56e0\u4e3a asyncio.Lock \u662f\u5168\u5c40\u7684"], "points": 76, "solved": false, "statement": "\u7528 SlidingWindowLimiter \u5728\u5355\u8fdb\u7a0b\u5185\u505a\u9650\u6d41\uff0c\u670d\u52a1\u6269\u5c55\u5230 4 \u4e2a\u5b9e\u4f8b\u540e\uff0c\u5b9e\u9645\u5141\u8bb8\u7684\u8bf7\u6c42\u901f\u7387\u4f1a\u600e\u6837\uff1f\n\n\u5e94\u8be5\u600e\u4e48\u5904\u7406\uff1f", "tags": ["\u9650\u6d41", "\u6ed1\u52a8\u7a97\u53e3", "\u591a\u5b9e\u4f8b"], "title": "\u8fdb\u7a0b\u5185\u9650\u6d41\u7684\u5c40\u9650", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u95ee\u300c\u91cd\u8bd5\u4e00\u6b21\u6709\u53ef\u80fd\u6210\u529f\u5417\u300d", "\u60f3\u60f3\u5927\u91cf\u8bf7\u6c42\u540c\u4e00\u65f6\u523b\u91cd\u8bd5\u4f1a\u600e\u6837"], "id": "q02-04-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e\u5e26\u9000\u907f\u7684\u6709\u9650\u91cd\u8bd5\u5fc5\u987b\u9075\u5b88\u7684\u4e09\u6761\u7eaa\u5f8b\uff0c\u5e76\u89e3\u91ca\u6bcf\u6761\u7eaa\u5f8b\u80cc\u540e\u7684\u5931\u8d25\u573a\u666f\u3002\n\n\u518d\u8865\u5145\uff1a\u4e3a\u4ec0\u4e48\u6296\u52a8\uff08jitter\uff09\u4e0d\u80fd\u7701\uff1f", "tags": ["\u91cd\u8bd5", "\u6296\u52a8", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u91cd\u8bd5\u4e09\u6761\u7eaa\u5f8b\u4e0e\u539f\u56e0", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": ["\u539f\u59cb\u6587\u4ef6\u540d\u53ef\u80fd\u542b ../", "\u6269\u5c55\u540d\u662f\u7528\u6237\u53ef\u63a7\u7684\u5b57\u7b26\u4e32"], "id": "q02-04-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u4e0a\u4f20\u63a5\u53e3\u505a\u4e86\u6269\u5c55\u540d\u767d\u540d\u5355\u3001\u5927\u5c0f\u9650\u5236\u3001UUID \u91cd\u547d\u540d\u4e09\u4ef6\u4e8b\u3002\n\n\u8bf7\u5206\u522b\u8bf4\u660e\u6bcf\u4ef6\u4e8b\u9632\u4f4f\u4e86\u4ec0\u4e48\u653b\u51fb\uff0c\u5e76\u6307\u51fa\u4ec5\u9760\u8fd9\u4e09\u5c42\u8fd8\u4e0d\u591f\u3001\u751f\u4ea7\u73af\u5883\u8fd8\u9700\u8981\u8865\u4ec0\u4e48\u3002", "tags": ["\u6587\u4ef6\u4e0a\u4f20", "\u5b89\u5168", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u4e0a\u4f20\u63a5\u53e3\u7684\u5b89\u5168\u5c42\u6b21", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u5224\u65ad\u987a\u5e8f\uff1a\u5148\u770b\u72b6\u6001\u7801\u662f\u5426\u53ef\u91cd\u8bd5", "attempt == attempts \u65f6\u4e0d\u8981\u518d sleep"], "id": "q02-04-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import asyncio\nimport random\nimport httpx\n\nRETRYABLE_STATUS = {429, 500, 502, 503, 504}\n\nasync def call_with_retry(operation, attempts: int = 3):\n    # TODO: \u5b9e\u73b0\u6709\u9650\u91cd\u8bd5\u4e0e\u9000\u907f\n    ...", "statement": "\u5b9e\u73b0 call_with_retry(operation, attempts=3)\uff1a\n\n- \u53ea\u5bf9 429/500/502/503/504 \u4ee5\u53ca\u8fde\u63a5\u9519\u8bef\u3001\u8d85\u65f6\u91cd\u8bd5\n- \u5176\u4ed6 HTTP \u72b6\u6001\u7801\u76f4\u63a5\u629b\u51fa\n- \u8fbe\u5230\u6b21\u6570\u4e0a\u9650\u65f6\u629b\u51fa\u6700\u540e\u4e00\u6b21\u5f02\u5e38\n- \u9000\u907f\u5ef6\u8fdf\u7528 min(4.0, 0.5 * 2 ** (attempt - 1)) \u52a0 0~0.2 \u79d2\u968f\u673a\u6296\u52a8\n\noperation \u662f\u65e0\u53c2\u53ef\u7b49\u5f85\u51fd\u6570\uff0c\u8fd4\u56de\u7ed3\u679c\u3002", "tags": ["\u91cd\u8bd5", "\u9000\u907f", "\u5f02\u6b65"], "title": "\u5b9e\u73b0\u5e26\u6296\u52a8\u7684\u6709\u9650\u91cd\u8bd5", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": ["deque \u5de6\u7aef\u662f\u6700\u8001\u7684\u8bb0\u5f55", "\u8fb9\u754c\u5224\u65ad\u662f \u003e= limit \u800c\u4e0d\u662f \u003e limit"], "id": "q02-04-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "from collections import defaultdict, deque\nfrom time import monotonic\nimport asyncio\n\nclass SlidingWindowLimiter:\n    def __init__(self, limit: int, window_seconds: float):\n        self.limit = limit\n        self.window = window_seconds\n        # TODO: \u521d\u59cb\u5316 records \u4e0e lock\n\n    async def allow(self, key: str) -\u003e bool:\n        # TODO: \u6e05\u7406\u8fc7\u671f\u8bb0\u5f55\u5e76\u5224\u65ad\u662f\u5426\u653e\u884c\n        ...", "statement": "\u8865\u5168 SlidingWindowLimiter\uff1a\n\n- \u6309 key \u8bb0\u5f55\u8bf7\u6c42\u65f6\u95f4\u6233\uff0c\u7a97\u53e3\u5185\u8d85\u8fc7 limit \u5219\u62d2\u7edd\n- \u7528\u5355\u8c03\u65f6\u949f\uff0c\u907f\u514d\u7cfb\u7edf\u65f6\u95f4\u56de\u62e8\n- \u7528 asyncio.Lock \u4fdd\u8bc1\u5e76\u53d1\u5b89\u5168\n\nallow(key) \u8fd4\u56de True \u8868\u793a\u653e\u884c\uff0cFalse \u8868\u793a\u88ab\u9650\u6d41\u3002", "tags": ["\u9650\u6d41", "\u6ed1\u52a8\u7a97\u53e3", "\u5e76\u53d1"], "title": "\u8865\u9f50\u6ed1\u52a8\u7a97\u53e3\u9650\u6d41\u5668", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="2" data-kp="3"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 09｜工程稳定性与极简抽象">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 09｜工程稳定性与极简抽象">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-5" data-kp-index="4"
+             data-kp-key="2_4" >
+      <div class="kp-head">
+        <span class="kp-no">D10</span>
+        <div class="kp-head-main">
+          <h3>Day 10｜章节实战：企业级聊天后端</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>2.5.1 最终目录</h4>
+<pre class="code lang-text"><code>ai_chat_backend/
+├─ .env.example
+├─ .gitignore
+├─ requirements.txt
+├─ src/
+│  ├─ config.py
+│  ├─ models.py
+│  ├─ llm_client.py
+│  ├─ sessions.py
+│  ├─ resilience.py
+│  └─ api.py
+├─ tests/
+│  ├─ test_api.py
+│  ├─ test_retry.py
+│  └─ test_sessions.py
+├─ data/uploads/
+└─ reports/load_test.md</code></pre>
+<h4>2.5.2 四个接口契约</h4>
+<table><thead><tr><th style="text-align:left">接口</th><th style="text-align:left">输入</th><th style="text-align:left">输出</th><th style="text-align:left">失败路径</th></tr></thead><tbody><tr><td style="text-align:left"><code>GET /health</code></td><td style="text-align:left">无</td><td style="text-align:left">服务状态</td><td style="text-align:left">依赖异常时标记 degraded</td></tr><tr><td style="text-align:left"><code>POST /chat</code></td><td style="text-align:left">messages/session</td><td style="text-align:left">answer、usage、request_id</td><td style="text-align:left">422/429/502/504</td></tr><tr><td style="text-align:left"><code>POST /chat/stream</code></td><td style="text-align:left">messages/session</td><td style="text-align:left">token、done、error 事件</td><td style="text-align:left">流内 error 事件</td></tr><tr><td style="text-align:left"><code>POST /upload</code></td><td style="text-align:left">multipart file</td><td style="text-align:left">file_id、size</td><td style="text-align:left">413/415</td></tr></tbody></table>
+<h4>2.5.3 20 并发压测脚本</h4>
+<pre class="code lang-python"><code>import asyncio
+from statistics import median
+from time import perf_counter
+import httpx
+
+
+async def one_request(client: httpx.AsyncClient, index: int) -&gt; dict:
+    started = perf_counter()
+    response = await client.post("/chat", json={"messages": [{"role": "user", "content": f"用一句话解释异步编程，编号 {index}"}]})
+    return {"status": response.status_code, "latency": perf_counter() - started}
+
+
+async def load_test(total: int = 20) -&gt; None:
+    async with httpx.AsyncClient(base_url="http://127.0.0.1:8000", timeout=90) as client:
+        rows = await asyncio.gather(*(one_request(client, i) for i in range(total)))
+    latencies = sorted(row["latency"] for row in rows)
+    p95 = latencies[max(0, int(len(latencies) * 0.95) - 1)]
+    print({
+        "total": total,
+        "success": sum(row["status"] == 200 for row in rows),
+        "median_seconds": round(median(latencies), 3),
+        "p95_seconds": round(p95, 3),
+        "statuses": {code: sum(row["status"] == code for row in rows) for code in sorted({row["status"] for row in rows})},
+    })
+
+
+if __name__ == "__main__":
+    asyncio.run(load_test())</code></pre>
+<p>压测报告必须说明环境、并发数、模型、限流配置、成功率、P50/P95 和失败原因。不能只写“压测通过”。</p>
+<p><strong>运行验证</strong>（需要先启动服务）：</p>
+<pre class="code lang-powershell"><code># 终端 1
+python code/ch02/20_api_basic.py
+# 终端 2
+python code/ch02/50_load_test.py</code></pre>
+<p><img src="static/course-assets/ch02/05_load_test.webp" alt="20 并发压测" loading="lazy"></p>
+<p><strong>压测报告的必备字段</strong>（缺一个都不算合格）：</p>
+<table><thead><tr><th style="text-align:left">字段</th><th style="text-align:left">为什么必须有</th></tr></thead><tbody><tr><td style="text-align:left">环境（CPU / 内存 / 模型 / 上游限额）</td><td style="text-align:left">没有环境的性能数字没有意义</td></tr><tr><td style="text-align:left">并发数与总请求数</td><td style="text-align:left">20 并发和 200 并发是完全不同的结论</td></tr><tr><td style="text-align:left">成功率 + 状态码分布</td><td style="text-align:left">只看成功率会漏掉"部分请求 429"这种情况</td></tr><tr><td style="text-align:left"><strong>P50 与 P95 延迟</strong></td><td style="text-align:left">平均值会掩盖长尾，而长尾决定用户体验</td></tr><tr><td style="text-align:left">失败原因分析</td><td style="text-align:left"><strong>至少分析一个失败请求</strong>，不能只报数字</td></tr></tbody></table>
+<blockquote><strong>v1.0 缺陷</strong>：原课件只有压测脚本的代码，<strong>没有任何真实运行输出</strong>。 学生无法判断"跑出来什么样才算正常"，也无法对照自己的结果。 本版补真实截图。</blockquote>
+<h4>2.5.4 最终验收流程</h4>
+<ol><li>从 <code>.env.example</code> 配置一个供应商，启动服务。</li><li>调用 <code>/health</code> 和 <code>/chat</code>，展示正常 JSON。</li><li>切换供应商配置，不改路由代码，重新运行同一测试。</li><li>调用 <code>/chat/stream</code>，展示逐片输出和结束事件。</li><li>用两个 session 验证会话隔离和上下文裁剪。</li><li>上传合法文件，再测试超大文件和非法扩展名。</li><li>注入 429 或超时，展示有限重试和对外错误映射。</li><li>运行 20 并发脚本，提交报告和日志样例。</li></ol>
+<h4>2.5.5 评分量表</h4>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:right">分值</th><th style="text-align:left">满分标准</th></tr></thead><tbody><tr><td style="text-align:left">异步与连接管理</td><td style="text-align:right">15</td><td style="text-align:left">单例 AsyncClient、正确关闭、有并发上限</td></tr><tr><td style="text-align:left">API 契约与校验</td><td style="text-align:right">15</td><td style="text-align:left">四接口完整，422/502/504 等语义正确</td></tr><tr><td style="text-align:left">流式与会话</td><td style="text-align:right">20</td><td style="text-align:left">SSE 边界正确、异常可结束、会话隔离</td></tr><tr><td style="text-align:left">稳定性</td><td style="text-align:right">20</td><td style="text-align:left">有限重试、限流、超时、日志均可演示</td></tr><tr><td style="text-align:left">上传安全</td><td style="text-align:right">10</td><td style="text-align:left">大小、类型、随机文件名、受控目录</td></tr><tr><td style="text-align:left">测试与压测</td><td style="text-align:right">10</td><td style="text-align:left">测试可重复，报告数据完整</td></tr><tr><td style="text-align:left">答辩</td><td style="text-align:right">10</td><td style="text-align:left">能解释异步价值、连接池、SSE 和错误分层</td></tr></tbody></table></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 1, "id": "q02-05-01", "last_answer": "", "last_feedback": "", "options": ["\u7f3a\u5c11 P50/P95 \u5ef6\u8fdf\u548c\u5931\u8d25\u539f\u56e0\u5206\u6790\uff0c\u957f\u5c3e\u4f53\u9a8c\u4e0e\u5931\u8d25\u6839\u56e0\u90fd\u65e0\u6cd5\u5224\u65ad", "\u7f3a\u5c11\u603b\u8bf7\u6c42\u6570\uff0c\u65e0\u6cd5\u5224\u65ad\u6837\u672c\u91cf\u662f\u5426\u8db3\u591f", "\u7f3a\u5c11\u6a21\u578b\u540d\u79f0\uff0c\u65e0\u6cd5\u5224\u65ad\u4e0a\u6e38\u662f\u54ea\u5bb6\u4f9b\u5e94\u5546", "\u7f3a\u5c11\u72b6\u6001\u7801\u5206\u5e03\uff0c\u65e0\u6cd5\u5224\u65ad\u662f\u5426\u51fa\u73b0 429"], "points": 27, "solved": false, "statement": "\u4e00\u4efd 20 \u5e76\u53d1\u538b\u6d4b\u62a5\u544a\u5199\u4e86\u73af\u5883\u3001\u5e76\u53d1\u6570\u3001\u6210\u529f\u7387\uff0c\u4f46\u6ca1\u6709\u5199 P95 \u5ef6\u8fdf\u548c\u5931\u8d25\u539f\u56e0\u5206\u6790\u3002\n\u6309\u5fc5\u5907\u5b57\u6bb5\u8981\u6c42\uff0c\u8fd9\u4efd\u62a5\u544a\u7684\u95ee\u9898\u662f\u4ec0\u4e48\uff1f", "tags": ["\u538b\u6d4b", "\u9a8c\u6536", "\u6027\u80fd\u6307\u6807"], "title": "\u538b\u6d4b\u62a5\u544a\u7f3a\u5931\u54ea\u4e2a\u5b57\u6bb5\u6700\u81f4\u547d", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "id": "q02-05-02", "last_answer": "", "last_feedback": "", "options": ["POST /chat \u7684\u5931\u8d25\u8def\u5f84\u5305\u542b 422/429/502/504", "GET /health \u4f9d\u8d56\u5f02\u5e38\u65f6\u8fd4\u56de 502", "POST /upload \u7684\u5931\u8d25\u8def\u5f84\u662f 429/504", "POST /chat/stream \u5931\u8d25\u65f6\u8fd4\u56de 413"], "points": 76, "solved": false, "statement": "\u5173\u4e8e\u56db\u4e2a\u63a5\u53e3\u5951\u7ea6\u7684\u5931\u8d25\u8def\u5f84\uff0c\u4e0b\u5217\u54ea\u9879\u63cf\u8ff0\u662f\u6b63\u786e\u7684\uff1f", "tags": ["API\u5951\u7ea6", "\u9519\u8bef\u7801", "\u63a5\u53e3\u8bbe\u8ba1"], "title": "\u56db\u63a5\u53e3\u5931\u8d25\u8def\u5f84\u8bed\u4e49\u5224\u65ad", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "id": "q02-05-03", "last_answer": "", "last_feedback": "", "options": ["\u7528 gather \u5e76\u53d1\u53d1\u8d77\u3001\u6309\u72b6\u6001\u7801\u5206\u7ec4\u7edf\u8ba1\uff0c\u80fd\u53cd\u6620\u90e8\u5206\u8bf7\u6c42 429 \u7684\u60c5\u51b5", "\u7528 perf_counter \u8ba1\u65f6\u5f97\u5230\u7684\u662f CPU \u65f6\u95f4\uff0c\u4e0d\u80fd\u53cd\u6620\u771f\u5b9e\u5ef6\u8fdf", "median \u6c42\u51fa\u7684\u5c31\u662f P95\uff0c\u65e0\u9700\u5355\u72ec\u8ba1\u7b97", "gather \u4f1a\u4e32\u884c\u6267\u884c\uff0c\u5b9e\u9645\u5e76\u53d1\u5ea6\u53ea\u6709 1"], "points": 189, "solved": false, "statement": "20 \u5e76\u53d1\u538b\u6d4b\u811a\u672c\u7528 asyncio.gather \u53d1\u8d77\u8bf7\u6c42\uff0c\u7528 perf_counter \u8ba1\u65f6\uff0c\u7528 statistics.median \u6c42\u4e2d\u4f4d\u6570\uff0c\u5e76\u5355\u72ec\u8ba1\u7b97 p95\u3002\n\u4e0b\u5217\u5173\u4e8e\u8be5\u811a\u672c\u7684\u8bf4\u6cd5\uff0c\u54ea\u9879\u6b63\u786e\uff1f", "tags": ["\u538b\u6d4b", "asyncio", "\u7edf\u8ba1"], "title": "\u538b\u6d4b\u811a\u672c\u5e76\u53d1\u4e0e\u7edf\u8ba1\u5b9e\u73b0", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u60f3\u60f3\u6362\u53f0\u673a\u5668\u6570\u5b57\u4f1a\u600e\u6837", "\u5e73\u5747\u503c\u548c\u957f\u5c3e\u7684\u5173\u7cfb"], "id": "q02-05-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e\u538b\u6d4b\u62a5\u544a\u4e3a\u4ec0\u4e48\u5fc5\u987b\u5199\u660e\u73af\u5883\uff08CPU/\u5185\u5b58/\u6a21\u578b/\u4e0a\u6e38\u9650\u989d\uff09\u548c P50/P95 \u5ef6\u8fdf\u3002\n\u5e76\u89e3\u91ca\u53ea\u770b\u6210\u529f\u7387\u548c\u5e73\u5747\u503c\u4f1a\u6f0f\u6389\u54ea\u4e9b\u95ee\u9898\u3002", "tags": ["\u538b\u6d4b", "\u6027\u80fd\u6307\u6807", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u4e3a\u4ec0\u4e48\u538b\u6d4b\u62a5\u544a\u5fc5\u987b\u5199\u73af\u5883\u4e0e P95", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": ["\u4ece\u914d\u7f6e\u5230\u538b\u6d4b\u7684\u5b8c\u6574\u94fe\u8def", "\u4f9b\u5e94\u5546\u5207\u6362\u9a8c\u8bc1\u7684\u662f\u89e3\u8026"], "id": "q02-05-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u8bf7\u6309\u987a\u5e8f\u63cf\u8ff0\u4f01\u4e1a\u7ea7\u804a\u5929\u540e\u7aef\u7684\u6700\u7ec8\u9a8c\u6536\u6d41\u7a0b\uff0c\u5e76\u8bf4\u660e\u6bcf\u4e00\u6b65\u5728\u9a8c\u8bc1\u4ec0\u4e48\u80fd\u529b\u3002\n\u91cd\u70b9\u89e3\u91ca\u5207\u6362\u4f9b\u5e94\u5546\u4e0d\u6539\u8def\u7531\u4ee3\u7801\u3001\u53cc session \u9a8c\u8bc1\u3001\u4ee5\u53ca\u6ce8\u5165 429 \u6216\u8d85\u65f6\u8fd9\u4e09\u6b65\u7684\u610f\u4e49\u3002", "tags": ["\u9a8c\u6536\u6d41\u7a0b", "\u4f1a\u8bdd\u9694\u79bb", "\u7a33\u5b9a\u6027"], "title": "\u6700\u7ec8\u9a8c\u6536\u6d41\u7a0b\u7684\u5b8c\u6574\u6b65\u9aa4", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 2, "hints": ["\u7528 async with \u7ba1\u7406 client", "P95 \u8981\u5355\u72ec\u53d6\u5206\u4f4d"], "id": "q02-05-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import asyncio\nfrom statistics import median\nfrom time import perf_counter\nimport httpx\n\nasync def one_request(client, index):\n    # TODO: \u8ba1\u65f6\u5e76\u53d1\u8d77\u4e00\u6b21 /chat \u8bf7\u6c42\uff0c\u8fd4\u56de status \u4e0e latency\n    ...\n\nasync def load_test(total: int = 20) -\u003e None:\n    # TODO: \u5e76\u53d1\u53d1\u8d77\u5e76\u7edf\u8ba1\u8f93\u51fa\n    ...\n\nif __name__ == \"__main__\":\n    asyncio.run(load_test())", "statement": "\u8bf7\u5b9e\u73b0\u4e00\u4e2a\u5f02\u6b65\u538b\u6d4b\u51fd\u6570\uff1a\u5411 http://127.0.0.1:8000 \u7684 /chat \u5e76\u53d1\u53d1\u8d77 20 \u4e2a POST \u8bf7\u6c42\uff0c\n\u6bcf\u4e2a\u8bf7\u6c42\u4f53\u4e3a messages \u542b\u4e00\u6761 user \u6d88\u606f\u3002\n\u7edf\u8ba1\u5e76\u6253\u5370\uff1a\u603b\u6570\u3001\u6210\u529f\u6570\u3001\u4e2d\u4f4d\u6570\u5ef6\u8fdf\u3001P95 \u5ef6\u8fdf\u3001\u72b6\u6001\u7801\u5206\u5e03\u3002\n\u8981\u6c42\u7528 httpx.AsyncClient\u3001asyncio.gather\u3001perf_counter \u548c statistics.median\u3002", "tags": ["\u538b\u6d4b", "asyncio", "httpx"], "title": "\u5b9e\u73b0 20 \u5e76\u53d1\u538b\u6d4b\u5e76\u8f93\u51fa\u7edf\u8ba1", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 2, "chapter_title": "LLM API \u5de5\u7a0b\u5316\u4e0e AI \u540e\u7aef", "difficulty": 3, "hints": ["\u6269\u5c55\u540d\u7528 splitext \u53d6\u540e\u7f00", "\u6587\u4ef6\u540d\u4e0d\u8981\u7528\u7528\u6237\u539f\u59cb\u540d"], "id": "q02-05-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "from fastapi import FastAPI, UploadFile, File, HTTPException\nimport uuid, os\n\napp = FastAPI()\nUPLOAD_DIR = \"data/uploads\"\nMAX_SIZE = 5 * 1024 * 1024\nALLOWED = {\".txt\", \".md\", \".pdf\"}\n\n@app.post(\"/upload\")\nasync def upload(file: UploadFile = File(...)):\n    # TODO: \u6821\u9a8c\u5927\u5c0f\u4e0e\u6269\u5c55\u540d\uff0c\u4fdd\u5b58\u5e76\u8fd4\u56de\n    ...", "statement": "\u5b9e\u73b0\u4e00\u4e2a FastAPI \u7684 POST /upload \u63a5\u53e3\uff1a\u63a5\u6536 multipart \u6587\u4ef6\uff0c\n\u8981\u6c42\u6821\u9a8c\u6587\u4ef6\u5927\u5c0f\u4e0d\u8d85\u8fc7 5MB\u3001\u6269\u5c55\u540d\u53ea\u5141\u8bb8 .txt/.md/.pdf\uff0c\n\u4e0d\u5408\u6cd5\u5206\u522b\u8fd4\u56de 413 \u548c 415\uff1b\u5408\u6cd5\u5219\u4fdd\u5b58\u5230 data/uploads/ \u4e0b\u5e76\u4f7f\u7528\u968f\u673a\u6587\u4ef6\u540d\uff0c\n\u8fd4\u56de file_id \u4e0e size\u3002", "tags": ["\u4e0a\u4f20\u5b89\u5168", "FastAPI", "\u9519\u8bef\u7801"], "title": "\u4e0a\u4f20\u63a5\u53e3\u7684\u5927\u5c0f\u4e0e\u7c7b\u578b\u6821\u9a8c", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="2" data-kp="4"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 10｜章节实战：企业级聊天后端">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 10｜章节实战：企业级聊天后端">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson"><h3>2.6 常见错误与排查顺序</h3>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">优先检查</th><th style="text-align:left">修复原则</th></tr></thead><tbody><tr><td style="text-align:left">并发反而更慢</td><td style="text-align:left">是否每次新建客户端；上游限流；连接池上限</td><td style="text-align:left">复用客户端并设置合理并发</td></tr><tr><td style="text-align:left">FastAPI 被阻塞</td><td style="text-align:left">async 路由中是否调用同步网络/CPU 重任务</td><td style="text-align:left">使用异步库或移出事件循环</td></tr><tr><td style="text-align:left">流式最后才显示</td><td style="text-align:left">上游是否真流式；代理是否缓冲；事件是否双换行</td><td style="text-align:left">分层检查每段字节到达时间</td></tr><tr><td style="text-align:left">会话串线</td><td style="text-align:left">session_id 是否进入所有读写条件</td><td style="text-align:left">建立用户与会话双重隔离</td></tr><tr><td style="text-align:left">重试放大故障</td><td style="text-align:left">是否重试 4xx；是否无上限；是否无抖动</td><td style="text-align:left">只重试瞬时错误并设预算</td></tr><tr><td style="text-align:left">上传出现路径穿越</td><td style="text-align:left">是否直接使用 <code>filename</code></td><td style="text-align:left">生成服务端文件 ID</td></tr><tr><td style="text-align:left">日志泄露密钥</td><td style="text-align:left">是否打印 headers、异常响应全文</td><td style="text-align:left">默认脱敏、最小化记录</td></tr></tbody></table>
+<h3>2.7 过程性作业与答辩题</h3>
+<h4>作业</h4>
+<ol><li>为同一问题运行同步串行、异步无限并发、异步限制并发三组实验。</li><li>为 429、超时、401 分别写测试，说明哪些应该重试。</li><li>画出一次 SSE 请求从浏览器到上游模型的连接关系。</li><li>提交一份压测报告，并分析至少一个失败请求。</li></ol>
+<h4>答辩题</h4>
+<ol><li><code>async</code> 为什么适合模型 API？它为什么不等于多线程？</li><li>为什么不能在每次请求中创建新的 <code>AsyncClient</code>？</li><li>422、429、502、504 分别表达什么？</li><li>SSE 为什么需要空行？断流时客户端怎样知道失败？</li><li>单进程内存会话在多 worker 下为什么失效？</li><li>哪些错误可以重试，怎样防止重试风暴？</li></ol>
+<h3>2.8 本章小结与第三章衔接</h3>
+<p>第二章完成了可靠的模型访问和服务外壳。第三章不重写后端，而是在这一服务中增加文档解析、索引、检索和引用，使 <code>/chat</code> 从通用对话升级为企业知识问答。</p>
+<h3>2.9 教师参考资料</h3>
+<ul><li><a href="https://www.python-httpx.org/async/" target="_blank" rel="noreferrer">HTTPX Async Support</a>：核对 <code>AsyncClient</code> 复用、流式读取和关闭要求。</li><li><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">FastAPI Tutorial</a>：核对路由、依赖注入、请求校验和文件上传。</li><li><a href="https://fastapi.tiangolo.com/advanced/custom-response/" target="_blank" rel="noreferrer">FastAPI Custom Response</a>：核对 <code>StreamingResponse</code>。</li></ul>
+<blockquote>链接于 2026-09-15 核对。授课时以锁定依赖版本对应的官方文档为准。</blockquote></div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    
+    <a class="ch-neighbor " href="chapter-1.html">
+      <span class="cn-rel">上一章</span>
+      <b>🧠 大模型认知与 Prompt 工程</b>
+      <em>阶段一 · 认知与工程地基</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-3.html">
+      <span class="cn-rel">下一章</span>
+      <b>📚 RAG 检索增强生成</b>
+      <em>阶段二 · 知识增强</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-4.html">
+      <span class="cn-rel">后 2 章</span>
+      <b>🛰️ Agent 核心机制（从零自研）</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-5.html">
+      <span class="cn-rel">后 3 章</span>
+      <b>🔧 Agent 框架实战</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-6.html">
+      <span class="cn-rel">后 4 章</span>
+      <b>🕸️ 多智能体系统与 MCP</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="training.html?chapters=2">做本章专项练习</a>
+      <a class="btn agent" href="coach.html?chapter=2">让教练追问我</a>
+      
+      <a class="btn ghost" href="warp.html?to=/chapter/3&kicker=章节完成&next=正在跃迁到 RAG 检索增强生成">⚡ 跃迁到下一章</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/chapter.js"></script>
+
+</body>
+</html>

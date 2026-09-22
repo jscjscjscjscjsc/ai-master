@@ -14,7 +14,7 @@
     <p class="kicker">AI MASTER / 星辰学习系统</p>
     <h1>欢迎归航，<span data-username>{{ username }}</span>。<br><em>下一片星域正在等你。</em></h1>
     <p class="lead">
-      这不是一份书单，而是一条能走完的路线：13 个星域、{{ chapters|sum(attribute='knowledge_count') }} 个知识点、
+      这不是一份书单，而是一条能走完的路线：{{ chapters|length }} 个星域、{{ chapters|sum(attribute='knowledge_count') }} 个知识点、
       每节都有练习题与 AI 批改。学完你会拿到的是能写进简历的项目能力，而不是"了解过"。
     </p>
     <div class="row">
@@ -47,61 +47,65 @@
 <section class="section">
   <header>
     <h2>四个阶段，一条主线</h2>
-    <small>智能体是平台主线，单独占一个阶段</small>
+    <small>智能体是平台主线，第 4–6 章连着讲</small>
   </header>
+  {# 图例同样由数据驱动：每个阶段用它自己的颜色，主线阶段额外标注 #}
   <div class="stage-legend">
-    <span class="chip" style="border-color:rgba(126,225,255,.5);color:#cdf3ff">阶段一 · 认知筑基</span>
-    <span class="chip violet">阶段二 · 智能体内核（主线）</span>
-    <span class="chip green">阶段三 · 知识增强与调优</span>
-    <span class="chip gold">阶段四 · 工程落地</span>
+    {% for name in chapters | map(attribute='stage') | unique | list %}
+    {% set rows = chapters | selectattr('stage', 'equalto', name) | list %}
+    <span class="chip" style="border-color:{{ rows[0].stage_color }}66;color:{{ rows[0].stage_color }}">
+      {{ name }}{% if rows | selectattr('highlight') | list and '主线' not in name %}（主线）{% endif %}
+    </span>
+    {% endfor %}
   </div>
 </section>
 
-{% set stages = [
-  ('阶段一 · 认知筑基', '看懂大模型是什么、怎么运转的'),
-  ('阶段二 · 智能体内核', '把模型变成会规划、会用工具的智能体'),
-  ('阶段三 · 知识增强与调优', '让模型接上私有知识、跑得更快更省'),
-  ('阶段四 · 工程落地', '把方案做成能上线的产品，并拿下认证')] %}
+{# 阶段分组由数据驱动。之前这里把四个阶段名写死在模板里，
+   课程数据一改阶段命名，selectattr 就把所有章节都滤掉了 ——
+   页面只剩标签行、章节卡片整块消失。现在改用 chapters 自带的 stage 分组。 #}
+{% set stage_names = chapters | map(attribute='stage') | unique | list %}
 
-{% for stage_name, stage_goal in stages %}
-{% set rows = chapters | selectattr('stage', 'equalto', stage_name) | list %}
-{% if rows %}
-<section class="section stage-block" id="stage-{{ loop.index }}">
-  <header>
+<section class="section stages">
+  {% for stage_name in stage_names %}
+  {% set rows = chapters | selectattr('stage', 'equalto', stage_name) | list %}
+  {% if rows %}
+  {# 阶段分隔条：全宽一行，写清这一阶段的目标与章节数。
+     章节卡统一由后面的网格渲染，所以不会出现「一行只有一张卡」的空洞。 #}
+  <header class="stage-divider" style="--stage-color:{{ rows[0].stage_color }}">
     <div>
       <h2>{{ stage_name }}</h2>
-      <small>{{ stage_goal }}</small>
+      <small>{{ rows[0].stage_goal if rows[0].stage_goal else '' }}</small>
     </div>
-    <span class="chip">{{ rows|length }} 个星域</span>
+    <span class="chip">{{ rows|length }} 章 · {{ rows|sum(attribute='knowledge_count') }} 节</span>
   </header>
   <div class="chapters">
     {% for ch in rows %}
     <a class="chapter-card {% if ch.highlight %}hot{% endif %}" href="/chapter/{{ ch.id }}">
       <div class="ch-top">
         <span class="ch-icon">{{ ch.icon }}</span>
-        <span class="ch-idx">SECTOR {{ '%02d' % ch.id }}</span>
+        <span class="ch-idx">CHAPTER {{ '%02d' % ch.id }} · DAY {{ ch.day_range }}</span>
       </div>
       <h3>{{ ch.title }}</h3>
       <p>{{ ch.description }}</p>
       <div class="ch-tags">
         <span class="chip">{{ ch.level }}</span>
-        <span class="chip">≈{{ ch.hours }} 小时</span>
+        <span class="chip">≈{{ ch.hours }} 学时</span>
         {% if ch.highlight %}<span class="chip violet">平台主线</span>{% endif %}
       </div>
       <div class="ch-foot">
         <div class="bar"><i style="width:{{ ch.progress }}%"></i></div>
-        <span>{{ ch.done_count }}/{{ ch.knowledge_count }} 知识点</span>
+        <span>{{ ch.done_count }}/{{ ch.knowledge_count }} 节</span>
       </div>
     </a>
     {% endfor %}
   </div>
+  {% endif %}
+  {% endfor %}
 </section>
-{% endif %}
-{% endfor %}
 
 <section class="section">
   <header><h2>平台功能</h2><small>五个核心系统，彼此数据打通</small></header>
-  <div class="grid c3">
+  <div class="feature-grid">
     <a class="tool card" href="/agent">
       <span class="chip violet">主线</span>
       <h3>星语 · 全局智能体</h3>

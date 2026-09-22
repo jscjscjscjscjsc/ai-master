@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模型微调与上下文工程 · AI Master 星辰学习系统</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/chapter.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="chapter-page"
+      data-page="模型微调与上下文工程" data-chapter-id="8">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+
+<section class="ch-head fade-up" style="--accent:#ffd28a">
+  
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="static/cg/transformer_cg.html">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>开场 · Attention 论文</h2>
+      <p>6 幕电影级 CG：一篇论文如何改写整个行业</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    
+    <div class="ch-cg-rest">
+      
+      <a class="ch-cg-chip lab" href="static/lab/transformer_lab.html" target="_blank" rel="noreferrer">
+        <b>实验室 · 注意力可视化</b><em>亲手调 Q/K/V，看注意力热力图实时变化</em>
+      </a>
+      
+      <a class="ch-cg-chip cine" href="static/cg/revelation_cg.html" target="_blank" rel="noreferrer">
+        <b>收束 · 星辰启示</b><em>翻过这一章时，看一眼星图留言</em>
+      </a>
+      
+    </div>
+    
+  </div>
+  
+
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR 08 / 阶段四 · 源码、调优与落地</p>
+    <h1>🎛️ 模型微调与上下文工程</h1>
+    <p class="lead">Day 35–37：Transformer 与 LoRA 原理；LoRA / QLoRA 微调实战；上下文工程与成本优化</p>
+    <div class="row">
+      
+      <span class="chip"><b style="color:var(--ink)">35–37</b> Day</span>
+      
+      <span class="chip"><b style="color:var(--ink)">3 节</b> 知识点</span>
+      
+      <span class="chip"><b style="color:var(--ink)">约 18 小时</b> 学时</span>
+      
+      <span class="chip"><b style="color:var(--ink)">21 道</b> 练习题</span>
+      
+      
+      <span class="chip">Transformer</span><span class="chip">LoRA</span><span class="chip">QLoRA</span><span class="chip">上下文工程</span><span class="chip">成本优化</span>
+    </div>
+  </div>
+
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / 3</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="training.html?chapters=8">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      <a class="ch-nav" href="chapter-7.html">← 上一章</a>
+      
+      <a class="ch-nav ch-nav-warp" href="warp.html?to=/chapter/9&kicker=SECTOR 09&next=正在跃迁到 全栈落地与毕业项目">
+        下一章 →<em>走星际跃迁</em>
+      </a>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson"><blockquote><strong>版本</strong>：v1.0（2026-09-21 编写） <strong>建议学时</strong>：3 天 × 6 学时 <strong>先修要求</strong>：完成第 1–7 章；了解 Python 与基础线性代数（矩阵乘法） <strong>章节交付物</strong>：LoRA 原理笔记 + 一个可复现的微调实验 + 上下文工程成本对比报告 <strong>环境说明</strong>：微调需要 GPU。本章提供<strong>本地可跑的纯 numpy 原理验证版</strong>， 以及<strong>在 Colab / GPU 机器上可跑的完整微调脚本</strong>。</blockquote>
+<hr>
+<h3>8.0 先回答一个关键问题：什么时候该微调？</h3>
+<p>这是本章最重要的一节，比任何代码都重要。</p>
+<p>很多人的第一反应是「模型效果不好就去微调」。但微调是<strong>最后</strong>该考虑的手段，不是第一选择。</p>
+<h4>三种「让模型学会新知识/新行为」的手段</h4>
+<table><thead><tr><th style="text-align:left">手段</th><th style="text-align:left">解决什么</th><th style="text-align:left">成本</th><th style="text-align:left">更新速度</th><th style="text-align:left">可解释性</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Prompt 工程</strong></td><td style="text-align:left">输出格式、语气、推理方式</td><td style="text-align:left">极低</td><td style="text-align:left">改一行即生效</td><td style="text-align:left">完全可见</td></tr><tr><td style="text-align:left"><strong>RAG（第 3 章）</strong></td><td style="text-align:left"><strong>知识</strong>：企业私有事实、时效性信息</td><td style="text-align:left">低</td><td style="text-align:left">重跑索引即可</td><td style="text-align:left">可溯源到证据</td></tr><tr><td style="text-align:left"><strong>微调（本章）</strong></td><td style="text-align:left"><strong>行为/风格/格式</strong>：稳定的输出习惯、领域语言、特定任务的模式</td><td style="text-align:left">中–高</td><td style="text-align:left">需要重新训练</td><td style="text-align:left">模型内部，不可见</td></tr></tbody></table>
+<h4>决策顺序（请按这个顺序排除）</h4>
+<pre class="code lang-text"><code>效果不好？
+  │
+  ├─ 是「不知道事实」吗？          → 用 RAG（第 3 章），不要微调
+  │   （问了企业规章，模型答不出）      微调也能"塞"知识，但更新成本高、易幻觉、不可溯源
+  │
+  ├─ 是「格式不稳定」吗？          → 先加 Few-shot + Schema 校验（第 1 章）
+  │   （要 JSON，偶尔多废话）          Prompt 能解决 80% 的格式问题
+  │
+  ├─ 是「推理能力不够」吗？        → 换更强的模型 / 用推理模型（第 1 章 Day04）
+  │   （多步推理总错）                微调不会让模型变聪明
+  │
+  └─ 是「输出风格/模式需要高度一致」吗？
+      （例如：必须用公司特有的判例书写风格输出、
+        或需要极高的格式遵循率、或需要降低推理成本用更小的模型）
+      → 这时候才考虑微调</code></pre>
+<blockquote><strong>一句话记住</strong>： <strong>RAG 管「知道什么」，微调管「怎么表达」，Prompt 管「这次怎么做」。</strong> 三者是互补的，不是替代关系。生产系统里三者通常同时存在。</blockquote>
+<h4>微调的真实收益与代价</h4>
+<table><thead><tr><th style="text-align:left">收益</th><th style="text-align:left">代价</th></tr></thead><tbody><tr><td style="text-align:left">格式遵循率显著提升（可到 95%+）</td><td style="text-align:left">需要标注数据（几百到几千条）</td></tr><tr><td style="text-align:left">可以用<strong>更小的模型</strong>达到大模型的格式能力 → 降低推理成本</td><td style="text-align:left">需要 GPU 与训练知识</td></tr><tr><td style="text-align:left">固定风格的输出更稳定</td><td style="text-align:left"><strong>知识会过时</strong>，且更新要重新训练</td></tr><tr><td style="text-align:left">减少 Prompt 长度（行为内化到权重里）→ 省 token</td><td style="text-align:left">可能<strong>损害通用能力</strong>（灾难性遗忘）</td></tr><tr><td style="text-align:left"></td><td style="text-align:left">有质量风险：训练数据里的问题会被固化</td></tr></tbody></table>
+<blockquote><strong>最后一条最值得警惕</strong>：微调会把训练数据里的<strong>偏见、错误、格式缺陷</strong>都学进去， 而且很难事后修正。所以数据质量比数量重要得多。</blockquote>
+<hr></div>
+  </div>
+</section>
+
+
+<section class="section">
+  <header>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
+  </header>
+  <div class="route" id="route">
+    
+    <article class="kp" id="kp-1" data-kp-index="0"
+             data-kp-key="8_0" >
+      <div class="kp-head">
+        <span class="kp-no">D35</span>
+        <div class="kp-head-main">
+          <h3>Day 35｜Transformer 与 LoRA 原理</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">收起</button>
+      </div>
+
+      
+      <div class="kp-body" >
+        <div class="lesson"><h4>一、教学目标</h4>
+<ol><li>说清注意力机制在做什么（不需要会推导，但要能用话讲清）；</li><li>理解 LoRA 为什么能大幅降低训练参数量；</li><li>能手算 LoRA 的参数量（这是面试常考题）。</li></ol>
+<h4>二、Transformer：用一句话讲清注意力</h4>
+<p>$$\text{Attention}(Q,K,V)=\text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$</p>
+<p><strong>用一句话解释</strong>：每个词都生成三个向量——Query（我在找什么）、Key（我能提供什么）、 Value（我的实际内容）。用 Q 和所有 K 做匹配打分，按分数加权汇总所有 V。</p>
+<p><strong>面试版回答</strong>（背这一段就够）：</p>
+<blockquote>自注意力让每个位置都能直接"看到"序列中所有其他位置， 因此能并行计算并捕捉长距离依赖，不像 RNN 必须顺序处理。 Q·K 决定"关注谁"，加权 V 决定"取回什么信息"。</blockquote>
+<p><strong>为什么这决定了 LoRA 的可行性</strong>：Transformer 的参数量大头在<strong>线性层</strong>（尤其是注意力的 Q/K/V/O 投影和前馈层）。这些层就是大矩阵乘法。<strong>LoRA 正是作用在这些矩阵上。</strong></p>
+<h4>三、LoRA：低秩假设</h4>
+<h5>核心观察</h5>
+<p>微调时，权重的<strong>更新量</strong>具有<strong>低秩</strong>特性——不需要用满秩矩阵来表示这个变化。</p>
+<h5>做法</h5>
+<p>原始权重 $W_0 \in \mathbb{R}^{d \times k}$ 冻结不变，额外训练两个小矩阵：</p>
+<p>$$W = W_0 + \Delta W = W_0 + BA$$</p>
+<p>其中 $B \in \mathbb{R}^{d \times r}$，$A \in \mathbb{R}^{r \times k}$，且 $r \ll \min(d,k)$。</p>
+<ul><li>初始化：$A$ 用随机高斯，$B$ 用零 → 训练开始时 $\Delta W = 0$，不破坏原模型；</li><li>前向传播：$h = W_0 x + BAx$；</li><li><strong>梯度只更新 A 和 B</strong>，$W_0$ 冻结。</li></ul>
+<h5>参数量对比（必须会算）</h5>
+<p>假设 $W_0$ 是 $4096 \times 4096$：</p>
+<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:right">参数量</th><th style="text-align:right">相对比例</th></tr></thead><tbody><tr><td style="text-align:left">全量微调</td><td style="text-align:right">$4096 \times 4096 = 16{,}777{,}216$</td><td style="text-align:right">100%</td></tr><tr><td style="text-align:left">LoRA，$r=8$</td><td style="text-align:right">$4096 \times 8 + 8 \times 4096 = 65{,}536$</td><td style="text-align:right"><strong>0.39%</strong></td></tr><tr><td style="text-align:left">LoRA，$r=16$</td><td style="text-align:right">$4096 \times 16 \times 2 = 131{,}072$</td><td style="text-align:right">0.78%</td></tr><tr><td style="text-align:left">LoRA，$r=4$</td><td style="text-align:right">$4096 \times 4 \times 2 = 32{,}768$</td><td style="text-align:right">0.195%</td></tr></tbody></table>
+<p><strong>降到 1/256</strong>（$r=16$ 时）。这就是 LoRA 的核心价值。</p>
+<h5>为什么省显存（三层原因，别只答一层）</h5>
+<table><thead><tr><th style="text-align:left">层次</th><th style="text-align:left">原因</th></tr></thead><tbody><tr><td style="text-align:left">1. <strong>优化器状态消失</strong></td><td style="text-align:left">全量微调要为每个参数存 Adam 的一阶/二阶动量（2 倍参数量）；LoRA 只为 A、B 存 → 主省这里</td></tr><tr><td style="text-align:left">2. <strong>梯度消失</strong></td><td style="text-align:left">只算 A、B 的梯度，不需要为 $W_0$ 存梯度</td></tr><tr><td style="text-align:left">3. <strong>检查点变小</strong></td><td style="text-align:left">保存的是 adapter（几 MB），不是整个模型（几十 GB）→ 便于分发与切换</td></tr></tbody></table>
+<blockquote><strong>常见的错误回答</strong>：「LoRA 省显存是因为参数少」。这只说对了一半—— 真正的显存大头是<strong>优化器状态和梯度</strong>（通常是参数量的 4–12 倍）。 参数量的减少通过这两个乘数被放大。<strong>面试时能说出这一层，就是分水岭。</strong></blockquote>
+<h4>四、LoRA 的关键超参数</h4>
+<table><thead><tr><th style="text-align:left">参数</th><th style="text-align:left">作用</th><th style="text-align:left">常见取值</th><th style="text-align:left">调参提示</th></tr></thead><tbody><tr><td style="text-align:left"><code>r</code>（秩）</td><td style="text-align:left">表达能力</td><td style="text-align:left">4 / 8 / 16 / 32</td><td style="text-align:left">任务越复杂越大；先从 8 试。<strong>PEFT 默认 &lt;code&gt;r=8&lt;/code&gt;</strong></td></tr><tr><td style="text-align:left"><code>lora_alpha</code></td><td style="text-align:left">缩放因子，实际更新量是 $\frac{\alpha}{r} BA$</td><td style="text-align:left">通常取 <code>2r</code>（如 r=8 → 16）</td><td style="text-align:left"><strong>PEFT 默认 &lt;code&gt;lora_alpha=8&lt;/code&gt;</strong>（不是 16）——所以想用 <code>2r</code> 的惯例时必须显式写</td></tr><tr><td style="text-align:left"><code>lora_dropout</code></td><td style="text-align:left">防过拟合</td><td style="text-align:left">0.05–0.1（<strong>PEFT 默认 &lt;code&gt;0.0&lt;/code&gt;</strong>）</td><td style="text-align:left">数据少时调大</td></tr><tr><td style="text-align:left"><code>target_modules</code></td><td style="text-align:left">作用在哪些层</td><td style="text-align:left">通常 Q/K/V/O 投影 + 前馈层</td><td style="text-align:left"><strong>只加在注意力层效果通常够；数据少时加太多层易过拟合</strong></td></tr><tr><td style="text-align:left"><code>bias</code></td><td style="text-align:left">是否训练偏置项</td><td style="text-align:left"><code>"none"</code>（默认）</td><td style="text-align:left">一般不动</td></tr><tr><td style="text-align:left"><code>task_type</code></td><td style="text-align:left">任务类型</td><td style="text-align:left"><code>"CAUSAL_LM"</code></td><td style="text-align:left"><strong>它继承自 &lt;code&gt;PeftConfig&lt;/code&gt;，不是 &lt;code&gt;LoraConfig&lt;/code&gt; 特有字段</strong></td></tr></tbody></table>
+<blockquote><strong>&lt;code&gt;alpha/r&lt;/code&gt; 这个比值才是真正的缩放系数</strong>。所以只改 <code>r</code> 不改 <code>alpha</code> 会同时改变表达能力 和有效学习率——这是新手常见的混淆点。  <strong>特别注意默认值的坑</strong>：因为 PEFT 的 <code>lora_alpha</code> 默认是 <strong>8</strong>（等于 <code>r</code> 的默认值）， 所以「默认配置」的有效缩放是 <code>8/8 = 1</code>。而网上教程常推荐 <code>alpha = 2r</code>， 那是 <code>r=8</code> 时 <code>alpha=16</code>——<strong>两者差一倍</strong>。 如果你照抄代码但只改 <code>r</code>，就会在不知情的情况下改变有效学习率。 <strong>显式写出 &lt;code&gt;r&lt;/code&gt; 和 &lt;code&gt;lora_alpha&lt;/code&gt;，永远是个好习惯。</strong></blockquote>
+<h5>LoRA 的三个重要增强开关（2026 年仍在 PEFT 内，不是替代品）</h5>
+<p>有一个常见误解：「LoRA 已经被 DoRA / rsLoRA / LoRA+ 取代了」。 <strong>实际上它们都是 LoRA 的增强选项，不是替代方案</strong>：</p>
+<table><thead><tr><th style="text-align:left">方法</th><th style="text-align:left">PEFT 中的用法</th><th style="text-align:left">关键作用</th></tr></thead><tbody><tr><td style="text-align:left"><strong>rsLoRA</strong></td><td style="text-align:left"><code>LoraConfig(use_rslora=True)</code></td><td style="text-align:left">缩放因子从 <code>alpha/r</code> 改为 <strong>&lt;code&gt;alpha/√r&lt;/code&gt;</strong>，让<strong>增大 &lt;code&gt;r&lt;/code&gt; 时收益更稳定</strong>（否则大 r 反而可能变差）</td></tr><tr><td style="text-align:left"><strong>DoRA</strong></td><td style="text-align:left"><code>LoraConfig(use_dora=True)</code></td><td style="text-align:left">把权重分解为「幅度 + 方向」分别更新，低秩场景效果更好。<strong>限制</strong>：与 <code>adapter_names</code> 推理不兼容；不支持 megatron_core</td></tr><tr><td style="text-align:left"><strong>LoRA+</strong></td><td style="text-align:left"><strong>不在 &lt;code&gt;LoraConfig&lt;/code&gt; 里</strong>！用 <code>from peft.optimizers import create_loraplus_optimizer(..., loraplus_lr_ratio=16)</code></td><td style="text-align:left">给 A、B 用不同学习率，官方称可提速约 2 倍、性能提升 1–2%</td></tr></tbody></table>
+<blockquote><strong>⚠️ 最常见的代码错误</strong>：把 <code>loraplus_lr_ratio</code> 当成 <code>LoraConfig</code> 的参数传进去。 它属于<strong>优化器</strong>，不是配置对象 —— 传错会报 <code>TypeError</code>。</blockquote>
+<h5>还有一个趋势值得知道：初始化方法在分化</h5>
+<p>PEFT 的 <code>init_lora_weights</code> 现在支持远超早期的选项： <code>"olora"</code>、<code>"pissa"</code>、<code>"pissa_niter_[N]"</code>、<code>"corda"</code>、<code>"loftq"</code>、<code>"eva"</code>、<code>"orthogonal"</code>、 <code>"mica"</code>、<code>"lora_ga"</code> 等。同时 <code>peft/tuners/</code> 下新增了大量 LoRA 家族适配器 （<code>delora</code>、<code>gralora</code>、<code>hira</code>、<code>c3a</code>、<code>glora</code>、<code>lily</code>、<code>miss</code>、<code>osf</code>、<code>loha</code>、<code>lokr</code>、<code>ia3</code>、<code>adalora</code> 等）。</p>
+<p><strong>这说明生态在「分化」，而不是「收敛到某个 LoRA 取代者」。</strong> 对你的实际意义：<strong>默认用标准 LoRA 起步，遇到具体瓶颈（大 r 不稳、效果不够）再针对性换开关</strong>， 不要一上来就纠结选哪个变体。</p>
+<h4>五、动手：用 numpy 亲手实现 LoRA</h4>
+<pre class="code lang-powershell"><code>python code/ch08/10_lora_from_scratch.py</code></pre>
+<p>这个脚本不依赖 GPU，用纯 numpy 实现并验证：</p>
+<ol><li>构造两个矩阵 $W_0$（冻结）和 $A, B$（可训练）；</li><li>实现前向传播 $h = W_0x + BAx$；</li><li>实现反向传播，<strong>验证 $W_0$ 的梯度确实为零</strong>（这是"冻结"的含义）；</li><li>在一个合成任务上真的训练，打印 loss 下降曲线；</li><li>计算并打印参数量对比表。</li></ol>
+<p><img src="static/course-assets/ch08/01_lora_from_scratch.webp" alt="LoRA 原理验证：loss 下降曲线 + 参数量对比" loading="lazy"></p>
+<p><img src="static/course-assets/figures/ch08_lora_training.webp" alt="LoRA 训练曲线" loading="lazy"></p>
+<p><strong>这个实验的教学价值</strong>：你会亲眼看到「只训练 0.4% 的参数，也能让 loss 降下来」。 比看一百遍公式都有用。</p>
+<blockquote><strong>为什么第 3 步很重要</strong>：很多人能背出"LoRA 冻结原权重"， 但如果你没有亲手验证过 <code>W_0</code> 的梯度是零，你就不知道"冻结"在代码里到底是什么样的。 <strong>验证方式</strong>：反向传播后打印 <code>W_0.grad</code>，它应该是全零矩阵或 <code>None</code>。 这一个检查就能防止你把 <code>requires_grad</code> 设错却毫无察觉。</blockquote>
+<h4>六、当日验收</h4>
+<ul><li>[ ] 能用一句话讲清自注意力在做什么</li><li>[ ] 能手算 LoRA 的参数量（给定矩阵维度和 r）</li><li>[ ] 能说出 LoRA 省显存的<strong>三层</strong>原因，特别是优化器状态那一层</li><li>[ ] 跑通 <code>10_lora_from_scratch.py</code>，能解释 loss 曲线为什么下降</li><li>[ ] 能解释 <code>alpha/r</code> 这个比值的作用</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 1, "id": "q08-01-01", "last_answer": "", "last_feedback": "", "options": ["131072", "65536", "32768", "16777216"], "points": 27, "solved": false, "statement": "\u539f\u59cb\u6743\u91cd W0 \u5f62\u72b6\u4e3a 4096\u00d74096\uff0c\u4f7f\u7528 LoRA \u4e14 r=16\u3002\nLoRA \u65b0\u589e\u7684\u53ef\u8bad\u7ec3\u53c2\u6570\u91cf\u662f\u591a\u5c11\uff1f", "tags": ["LoRA", "\u53c2\u6570\u91cf", "\u9762\u8bd5\u9898"], "title": "LoRA \u53c2\u6570\u91cf\u624b\u7b97", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "id": "q08-01-02", "last_answer": "", "last_feedback": "", "options": ["\u4e3b\u8981\u662f\u4f18\u5316\u5668\u72b6\u6001\u548c\u68af\u5ea6\u4e0d\u518d\u4e3a W0 \u4fdd\u5b58\uff0c\u53c2\u6570\u91cf\u51cf\u5c11\u88ab\u8fd9\u4e24\u4e2a\u4e58\u6570\u653e\u5927", "\u4e3b\u8981\u662f\u56e0\u4e3a LoRA \u7684\u53c2\u6570\u5c11\uff0c\u6240\u4ee5\u663e\u5b58\u5360\u7528\u76f4\u63a5\u6309\u6bd4\u4f8b\u4e0b\u964d", "\u4e3b\u8981\u662f\u56e0\u4e3a LoRA \u628a W0 \u6362\u6210\u4e86\u4f4e\u79e9\u77e9\u9635\uff0c\u524d\u5411\u8ba1\u7b97\u91cf\u5927\u5e45\u4e0b\u964d", "\u4e3b\u8981\u662f\u56e0\u4e3a LoRA \u4fdd\u5b58\u7684\u68c0\u67e5\u70b9\u66f4\u5c0f\uff0c\u6240\u4ee5\u8bad\u7ec3\u663e\u5b58\u4e5f\u53d8\u5c0f"], "points": 76, "solved": false, "statement": "\u5173\u4e8e LoRA \u4e3a\u4ec0\u4e48\u7701\u663e\u5b58\uff0c\u4e0b\u9762\u54ea\u79cd\u8bf4\u6cd5\u6700\u51c6\u786e\uff1f", "tags": ["LoRA", "\u663e\u5b58", "\u4f18\u5316\u5668\u72b6\u6001"], "title": "LoRA \u7701\u663e\u5b58\u7684\u4e3b\u56e0", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 3, "id": "q08-01-03", "last_answer": "", "last_feedback": "", "options": ["\u6709\u6548\u7f29\u653e\u53d8\u6210 8/16=0.5\uff0c\u6bd4\u9ed8\u8ba4\u7684 1 \u5c0f\u4e00\u534a\uff0c\u7b49\u4e8e\u540c\u65f6\u6539\u4e86\u8868\u8fbe\u80fd\u529b\u4e0e\u6709\u6548\u5b66\u4e60\u7387", "\u6709\u6548\u7f29\u653e\u4ecd\u662f 1\uff0c\u56e0\u4e3a alpha \u4f1a\u81ea\u52a8\u8ddf\u968f r \u53d8\u6210 2r", "\u6709\u6548\u7f29\u653e\u53d8\u6210 16/8=2\uff0c\u6b63\u597d\u7b26\u5408 2r \u60ef\u4f8b", "\u4f1a\u76f4\u63a5\u62a5\u9519\uff0c\u56e0\u4e3a r \u4e0e alpha \u5fc5\u987b\u6210\u5bf9\u8bbe\u7f6e"], "points": 189, "solved": false, "statement": "PEFT \u4e2d lora_alpha \u9ed8\u8ba4\u662f 8\uff0cr \u9ed8\u8ba4\u4e5f\u662f 8\u3002\n\u82e5\u7167\u6284\u6559\u7a0b\u60f3\u7528 alpha=2r \u7684\u60ef\u4f8b\uff0c\u4f46\u53ea\u663e\u5f0f\u5199\u4e86 r=16 \u800c\u6ca1\u5199 alpha\uff0c\u4f1a\u53d1\u751f\u4ec0\u4e48\uff1f", "tags": ["LoRA", "\u8d85\u53c2\u6570", "lora_alpha"], "title": "alpha/r \u4e0e\u9ed8\u8ba4\u503c\u9677\u9631", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 1, "hints": ["\u5148\u7ed9 Q/K/V \u7684\u76f4\u89c9\u5b9a\u4e49", "\u518d\u8bb2\u6253\u5206\u4e0e\u52a0\u6743\u6c47\u603b", "\u6700\u540e\u5bf9\u6bd4 RNN \u7684\u987a\u5e8f\u5904\u7406"], "id": "q08-01-04", "last_answer": "", "last_feedback": "", "points": 27, "solved": false, "starter_code": "", "statement": "\u8bf7\u7528\u4e00\u6bb5\u8bdd\u5411\u9762\u8bd5\u5b98\u89e3\u91ca\u81ea\u6ce8\u610f\u529b\u5728\u505a\u4ec0\u4e48\uff0c\u5e76\u8bf4\u660e\u5b83\u4e3a\u4ec0\u4e48\u8ba9 Transformer \u80fd\u5e76\u884c\u8ba1\u7b97\u3001\u6355\u6349\u957f\u8ddd\u79bb\u4f9d\u8d56\u3002\n\u8981\u6c42\u8986\u76d6 Q/K/V \u5404\u81ea\u7684\u542b\u4e49\u3002", "tags": ["Transformer", "\u81ea\u6ce8\u610f\u529b", "\u9762\u8bd5"], "title": "\u4e00\u53e5\u8bdd\u8bb2\u6e05\u81ea\u6ce8\u610f\u529b", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "hints": ["\u60f3 \u0394W \u5728\u521d\u59cb\u65f6\u523b\u7684\u503c", "\u51bb\u7ed3\u5728\u4ee3\u7801\u91cc\u4f53\u73b0\u4e3a\u4ec0\u4e48", "\u9a8c\u8bc1\u624b\u6bb5\u662f\u770b\u68af\u5ea6"], "id": "q08-01-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "LoRA \u4e2d A \u7528\u968f\u673a\u9ad8\u65af\u521d\u59cb\u5316\u3001B \u7528\u96f6\u521d\u59cb\u5316\uff0c\u524d\u5411\u4e3a h = W0x + BAx\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u6837\u521d\u59cb\u5316\u6709\u4ec0\u4e48\u597d\u5904\uff0c\u5e76\u89e3\u91ca\u4e3a\u4ec0\u4e48\u5728\u4ee3\u7801\u91cc\u9a8c\u8bc1 W0 \u7684\u68af\u5ea6\u4e3a\u96f6\u5f88\u91cd\u8981\u3001\u600e\u4e48\u9a8c\u8bc1\u3002", "tags": ["LoRA", "\u521d\u59cb\u5316", "\u51bb\u7ed3"], "title": "LoRA \u521d\u59cb\u5316\u4e0e\u51bb\u7ed3\u9a8c\u8bc1", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "hints": ["\u5148\u7b97\u4e2d\u95f4\u91cf z = A @ x", "\u5916\u79ef np.outer \u53ef\u7b97\u6743\u91cd\u68af\u5ea6", "\u51bb\u7ed3\u7684\u5c42\u4e0d\u53c2\u4e0e\u53c2\u6570\u66f4\u65b0"], "id": "q08-01-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import numpy as np\n\nd, k, r = 8, 6, 2\nW0 = np.random.randn(d, k)\nA = np.random.randn(r, k)\nB = np.zeros((d, r))\nx = np.random.randn(k)\n\n# TODO: \u5b9e\u73b0\u524d\u5411 h = W0x + BAx\n# TODO: \u5b9e\u73b0\u53cd\u5411\u4f20\u64ad\uff0c\u5f97\u5230 W0/A/B \u7684\u68af\u5ea6\n# TODO: \u6253\u5370\u5e76\u9a8c\u8bc1 W0 \u7684\u68af\u5ea6", "statement": "\u7528\u7eaf numpy \u5b9e\u73b0 LoRA \u7684\u524d\u5411\u4f20\u64ad\u4e0e\u53cd\u5411\u4f20\u64ad\u3002\n\u8981\u6c42\uff1a\n1. W0 \u5f62\u72b6 (d,k) \u51bb\u7ed3\uff0cA \u5f62\u72b6 (r,k)\u3001B \u5f62\u72b6 (d,r) \u53ef\u8bad\u7ec3\uff1b\n2. \u524d\u5411 h = W0x + BAx\uff1b\n3. \u53cd\u5411\u4f20\u64ad\u540e\u6253\u5370 W0 \u7684\u68af\u5ea6\uff0c\u9a8c\u8bc1\u5176\u4e3a\u5168\u96f6\u6216 None\u3002\n\u8f93\u5165 x \u5f62\u72b6 (k,)\uff0c\u8f93\u51fa h \u5f62\u72b6 (d,)\u3002", "tags": ["LoRA", "numpy", "\u53cd\u5411\u4f20\u64ad"], "title": "numpy \u5b9e\u73b0 LoRA \u524d\u5411\u4e0e\u51bb\u7ed3\u9a8c\u8bc1", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 1, "hints": ["A \u662f r\u00d7k\uff0cB \u662f d\u00d7r", "\u6bd4\u4f8b\u7528\u9664\u6cd5\u518d\u4e58 100", "\u6ce8\u610f\u683c\u5f0f\u5316\u4fdd\u7559\u4e24\u4f4d\u5c0f\u6570"], "id": "q08-01-07", "last_answer": "", "last_feedback": "", "points": 27, "solved": false, "starter_code": "def lora_param_table(d, k, rs):\n    # TODO: \u8ba1\u7b97\u5168\u91cf\u53c2\u6570\u91cf\u4e0e\u5404 r \u7684 LoRA \u53c2\u6570\u91cf\n    # TODO: \u6253\u5370\u53c2\u6570\u91cf\u4e0e\u76f8\u5bf9\u6bd4\u4f8b\n    pass\n\nlora_param_table(4096, 4096, [4, 8, 16])", "statement": "\u5199\u4e00\u4e2a\u51fd\u6570\uff0c\u7ed9\u5b9a d\u3001k \u548c\u4e00\u7ec4 r \u503c\uff0c\u8f93\u51fa\u5168\u91cf\u5fae\u8c03\u4e0e\u5404 r \u4e0b LoRA \u7684\u53c2\u6570\u91cf\u53ca\u76f8\u5bf9\u6bd4\u4f8b\u3002\n\u8981\u6c42\uff1a\n1. \u5168\u91cf\u53c2\u6570\u91cf\u4e3a d\u00d7k\uff1b\n2. LoRA \u53c2\u6570\u91cf\u4e3a r\u00d7k + d\u00d7r\uff1b\n3. \u6253\u5370\u76f8\u5bf9\u5168\u91cf\u7684\u767e\u5206\u6bd4\uff0c\u4fdd\u7559\u4e24\u4f4d\u5c0f\u6570\u3002\n\u4ee5 d=k=4096\u3001r \u53d6 [4,8,16] \u4e3a\u4f8b\u8fd0\u884c\u3002", "tags": ["LoRA", "\u53c2\u6570\u91cf", "\u8ba1\u7b97"], "title": "LoRA \u53c2\u6570\u91cf\u5bf9\u6bd4\u8868", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="8" data-kp="0"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 35｜Transformer 与 LoRA 原理">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 35｜Transformer 与 LoRA 原理">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-2" data-kp-index="1"
+             data-kp-key="8_1" >
+      <div class="kp-head">
+        <span class="kp-no">D36</span>
+        <div class="kp-head-main">
+          <h3>Day 36｜LoRA / QLoRA 微调实战</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><blockquote><strong>环境提示</strong>：本节需要 GPU。请使用 Colab（免费 T4 即可）或本地有 GPU 的机器。 课程提供的脚本 <code>code/ch08/20_qlora_colab.py</code> 是完整可运行版本。</blockquote>
+<h4>一、教学目标</h4>
+<ol><li>走通微调的完整链路：数据构造 → 配置 → 训练 → 评估 → 合并/部署；</li><li>理解 SFT 数据格式与数据质量要求；</li><li>能读懂 loss 曲线，判断训练是否正常。</li></ol>
+<h4>二、微调链路全景</h4>
+<pre class="code lang-mermaid"><code>flowchart LR
+    A[明确目标] --&gt; B[构造数据集]
+    B --&gt; C[选基座模型]
+    C --&gt; D[配置 LoRA/QLoRA]
+    D --&gt; E[训练]
+    E --&gt; F[评估]
+    F --&gt;|不达标| B
+    F --&gt;|达标| G[保存 adapter]
+    G --&gt; H{部署方式}
+    H --&gt;|独立推理| I[加载 adapter 推理]
+    H --&gt;|生产部署| J[合并权重后量化部署]</code></pre>
+<h4>三、数据构造：SFT 格式与质量</h4>
+<h5>格式</h5>
+<pre class="code lang-json"><code>{"instruction": "把下面这段客服对话抽取成 JSON", "input": "客户说：我买的耳机左耳没声音，要退货", "output": "{\"intent\": \"退货\", \"product\": \"耳机\", \"issue\": \"左耳无声\"}"}</code></pre>
+<p>三种组织方式：</p>
+<table><thead><tr><th style="text-align:left">方式</th><th style="text-align:left">适用</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left"><code>instruction / input / output</code></td><td style="text-align:left">通用</td><td style="text-align:left">最常用，适配性好</td></tr><tr><td style="text-align:left">纯对话格式（messages 数组）</td><td style="text-align:left">多轮对话任务</td><td style="text-align:left">与推理时格式一致</td></tr><tr><td style="text-align:left">分类/生成对</td><td style="text-align:left">单一任务</td><td style="text-align:left">最简单</td></tr></tbody></table>
+<h5>数据质量要求（比数量重要）</h5>
+<table><thead><tr><th style="text-align:left">要求</th><th style="text-align:left">为什么</th></tr></thead><tbody><tr><td style="text-align:left"><strong>输出格式绝对一致</strong></td><td style="text-align:left">微调会学走<strong>任何</strong>模式，包括你不想要的（比如有的样本带 markdown 围栏、有的不带 → 模型输出会随机带或不带）</td></tr><tr><td style="text-align:left"><strong>覆盖边界情况</strong></td><td style="text-align:left">只给正常样本，模型遇到缺失字段就乱编。要<strong>显式给"字段缺失时输出 null"的样本</strong></td></tr><tr><td style="text-align:left"><strong>不要有互相矛盾的样本</strong></td><td style="text-align:left">同输入不同输出会让模型学成"随机选一个"</td></tr><tr><td style="text-align:left"><strong>规模参考</strong></td><td style="text-align:left">格式/风格微调通常几百到几千条足够；不要一上来就标几万条</td></tr></tbody></table>
+<blockquote><strong>最容易犯的错</strong>：数据里混了不同格式的样本。 比如 100 条 JSON 输出中，有 3 条是纯文本。模型学完后，<strong>约 3% 的概率输出纯文本</strong>—— 这个比例足以让你的生产系统偶发解析失败，而且极难排查（因为你在训练时根本没注意那 3 条）。</blockquote>
+<h4>四、QLoRA：在消费级 GPU 上微调</h4>
+<p><strong>LoRA 解决了「训练参数多」，QLoRA 进一步解决了「基座模型太大装不下」。</strong></p>
+<table><thead><tr><th style="text-align:left">技术</th><th style="text-align:left">做法</th><th style="text-align:left">效果</th></tr></thead><tbody><tr><td style="text-align:left">LoRA</td><td style="text-align:left">冻结 $W_0$，只训练低秩增量</td><td style="text-align:left">训练参数量降 100–1000 倍</td></tr><tr><td style="text-align:left"><strong>QLoRA</strong></td><td style="text-align:left">把<strong>冻结的 $W_0$ 量化到 4-bit</strong>，LoRA 增量仍用较高精度训练</td><td style="text-align:left"><strong>显存再降约 4 倍</strong></td></tr></tbody></table>
+<p><strong>关键点</strong>：量子化只作用于<strong>冻结的基座</strong>，可训练的 LoRA 部分保持较高精度—— 这样才能保证训练效果。这是 QLoRA 的巧妙之处：<strong>它量化的是不需要梯度的那部分。</strong></p>
+<h5>量化的四个关键参数</h5>
+<blockquote><strong>⚠️ 一个高频的错误归因</strong>：<code>BitsAndBytesConfig</code> <strong>不在 &lt;code&gt;bitsandbytes&lt;/code&gt; 包里，而在 &lt;code&gt;transformers&lt;/code&gt; 里</strong>。 正确导入是 <code>from transformers import BitsAndBytesConfig</code>。 写成 <code>from bitsandbytes import BitsAndBytesConfig</code> 会直接 ImportError。 （bitsandbytes 只提供量化后端实现，配置类由 transformers 定义。）</blockquote>
+<table><thead><tr><th style="text-align:left">参数</th><th style="text-align:left">含义</th><th style="text-align:left">常用值（含默认值）</th></tr></thead><tbody><tr><td style="text-align:left"><code>load_in_4bit</code></td><td style="text-align:left">用 4-bit 加载基座</td><td style="text-align:left"><code>True</code>（默认 <code>False</code>）</td></tr><tr><td style="text-align:left"><code>bnb_4bit_quant_type</code></td><td style="text-align:left">量化数据类型</td><td style="text-align:left"><code>"nf4"</code>（正态浮点，比 fp4 更适合权重分布）。<strong>默认是 &lt;code&gt;"fp4"&lt;/code&gt;</strong></td></tr><tr><td style="text-align:left"><code>bnb_4bit_compute_dtype</code></td><td style="text-align:left">计算时用什么精度</td><td style="text-align:left"><code>torch.bfloat16</code>（新卡）或 <code>float16</code>（默认 <code>float32</code>，显存占用更高）</td></tr><tr><td style="text-align:left"><code>bnb_4bit_use_double_quant</code></td><td style="text-align:left">二次量化（量化常数本身）</td><td style="text-align:left"><code>True</code>（再省一点显存，默认 <code>False</code>）</td></tr></tbody></table>
+<blockquote><strong>约束</strong>：<code>load_in_4bit</code> 和 <code>load_in_8bit</code> <strong>不能同时为 True</strong>，同时传会直接 <code>ValueError</code>。</blockquote>
+<h5>动手</h5>
+<pre class="code lang-powershell"><code># 本地（无 GPU）只能看代码与数据构造部分
+python code/ch08/20_qlora_colab.py --dry-run     # 只验证数据与配置，不训练
+
+# Colab / GPU 机器上完整运行（脚本头部有依赖安装命令）</code></pre>
+<p><strong>脚本里的步骤</strong>（每一处都标注了「为什么这样做」）：</p>
+<ol><li>构造 SFT 数据集并<strong>做质量检查</strong>（格式一致性、字段完整性、去重）；</li><li>配置 <code>BitsAndBytesConfig</code>（4-bit，<strong>从 &lt;code&gt;transformers&lt;/code&gt; 导入</strong>）；</li><li>配置 <code>LoraConfig</code>（<code>r</code> / <code>lora_alpha</code> / <code>target_modules</code> / <code>lora_dropout</code>）；</li><li>用 <code>SFTTrainer</code> + <code>SFTConfig</code> 训练，记录 loss；</li><li>保存 adapter，并验证加载；</li><li>对比微调前后的输出（用同一批测试输入）。</li></ol>
+<blockquote><strong>API 变化提示（已核实的当前写法，核实日期 2026-09-21）</strong>：  | 库 | 当前版本 | 需要注意的点 | |---|---:|---| | <code>peft</code> | 0.21.0 | <code>LoraConfig</code> 默认 <code>r=8</code> / <code>lora_alpha=8</code> / <code>lora_dropout=0.0</code>。LoRA+ 走优化器，不在 config 里 | | <code>trl</code> | <strong>1.13.0</strong>（已进入 1.x 线） | <code>SFTTrainer</code> / <code>SFTConfig</code> <strong>类名未变</strong>，仍从 <code>trl</code> 顶层导出。<strong>但序列长度参数名是 &lt;code&gt;max_length&lt;/code&gt;，不是老版的 &lt;code&gt;max_seq_length&lt;/code&gt;</strong> —— 这是最容易照抄旧教程踩的坑 | | <code>transformers</code> | — | <code>BitsAndBytesConfig</code> 在这里，不在 bitsandbytes | | <code>bitsandbytes</code> | 0.50.2 | 量化后端实现 |  <code>SFTConfig</code> 其他常用参数的默认值：<code>max_length=1024</code>、<code>packing=False</code>、 <code>packing_strategy="bfd"</code>、<code>truncation_mode="keep_start"</code>。  <strong>换版本后以官方文档为准</strong>，不要照抄任何教程（包括本课件）里硬编码的参数名。</blockquote>
+<h4>五、读懂 loss 曲线</h4>
+<table><thead><tr><th style="text-align:left">曲线形态</th><th style="text-align:left">说明</th><th style="text-align:left">处理</th></tr></thead><tbody><tr><td style="text-align:left">平稳下降后收敛</td><td style="text-align:left">正常</td><td style="text-align:left">可以停</td></tr><tr><td style="text-align:left">下降后<strong>上升</strong></td><td style="text-align:left">过拟合，或学习率太大</td><td style="text-align:left">早停 / 降低学习率 / 加数据</td></tr><tr><td style="text-align:left">剧烈震荡</td><td style="text-align:left">学习率太大，或 batch 太小</td><td style="text-align:left">降学习率 / 提高梯度累积</td></tr><tr><td style="text-align:left">基本不降</td><td style="text-align:left">学习率太小、数据太少、或目标任务超出模型能力</td><td style="text-align:left">检查数据质量</td></tr><tr><td style="text-align:left">降到很低但效果差</td><td style="text-align:left">过拟合到训练集</td><td style="text-align:left">看验证集，不要只看训练 loss</td></tr></tbody></table>
+<blockquote><strong>必须做的一件事</strong>：留出<strong>验证集</strong>。 只看训练 loss 就像只看练习册答案——你无法知道模型是否真的学会了。</blockquote>
+<h4>六、评估微调效果：不要只看「感觉更好了」</h4>
+<p><strong>必须做对照实验</strong>：</p>
+<table><thead><tr><th style="text-align:left">对照组</th><th style="text-align:left">目的</th></tr></thead><tbody><tr><td style="text-align:left">基座模型（未微调）</td><td style="text-align:left">基线</td></tr><tr><td style="text-align:left">基座 + 优化后的 Prompt（Few-shot）</td><td style="text-align:left"><strong>关键对照</strong>：微调是否真的比 Prompt 工程更好？</td></tr><tr><td style="text-align:left">微调后模型</td><td style="text-align:left">实验组</td></tr></tbody></table>
+<p><strong>评估指标</strong>（延续第 1 章评测器的思路）：</p>
+<table><thead><tr><th style="text-align:left">指标</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left">格式遵循率</td><td style="text-align:left">输出能被正确解析的比例（微调最直接的收益）</td></tr><tr><td style="text-align:left">任务准确率</td><td style="text-align:left">用固定测试集 + 规则评分</td></tr><tr><td style="text-align:left"><strong>泛化能力</strong></td><td style="text-align:left">用<strong>训练集里没出现过的</strong>输入测试（这是最容易被忽略、也最重要的）</td></tr><tr><td style="text-align:left">通用能力是否退化</td><td style="text-align:left">用几个通用问题测一下（检查灾难性遗忘）</td></tr><tr><td style="text-align:left">推理成本</td><td style="text-align:left">如果用小模型替代大模型，实际省了多少</td></tr></tbody></table>
+<blockquote><strong>如果「基座 + 好 Prompt」和「微调」效果差不多，那就不该微调。</strong> 这个结论看起来很朴素，但它是很多团队浪费几周时间后才得出的。</blockquote>
+<h4>七、当日验收</h4>
+<ul><li>[ ] 能说出 SFT 数据的三个质量要求，特别是「格式绝对一致」为什么关键</li><li>[ ] 能说出 QLoRA 相对 LoRA 多解决了什么问题，以及为什么只量化冻结部分</li><li>[ ] 能根据 loss 曲线判断训练是否正常</li><li>[ ] 完成对照实验（基座 / 基座+Prompt / 微调），有真实数据</li><li>[ ] 能回答：什么情况下<strong>不该</strong>微调？</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 1, "id": "q08-02-01", "last_answer": "", "last_feedback": "", "options": ["from transformers import BitsAndBytesConfig", "from peft import BitsAndBytesConfig", "from trl import BitsAndBytesConfig", "from bitsandbytes.config import BitsAndBytesConfig"], "points": 27, "solved": false, "statement": "\u4f60\u5728\u811a\u672c\u91cc\u5199\u4e0b from bitsandbytes import BitsAndBytesConfig\uff0c\u8fd0\u884c\u540e\u76f4\u63a5\u62a5 ImportError\u3002\n\u6b63\u786e\u7684\u5bfc\u5165\u65b9\u5f0f\u5e94\u8be5\u662f\u4ec0\u4e48\uff1f", "tags": ["QLoRA", "transformers", "\u5e38\u89c1\u9519\u8bef"], "title": "BitsAndBytesConfig \u7684\u5bfc\u5165\u4f4d\u7f6e", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "id": "q08-02-02", "last_answer": "", "last_feedback": "", "options": ["\u56e0\u4e3a 4-bit \u65e0\u6cd5\u8868\u793a LoRA \u7684\u4f4e\u79e9\u77e9\u9635\u5f62\u72b6", "\u91cf\u5316\u7684\u662f\u4e0d\u9700\u8981\u68af\u5ea6\u7684\u90e8\u5206\uff0c\u53ef\u8bad\u7ec3\u90e8\u5206\u4fdd\u6301\u7cbe\u5ea6\u4ee5\u4fdd\u8bc1\u8bad\u7ec3\u6548\u679c", "\u56e0\u4e3a LoRA \u589e\u91cf\u53c2\u6570\u91cf\u592a\u5c0f\uff0c\u91cf\u5316\u540e\u7701\u4e0d\u4e0b\u663e\u5b58", "\u56e0\u4e3a 4-bit \u53cd\u91cf\u5316\u901f\u5ea6\u6162\uff0c\u4f1a\u62d6\u6162\u524d\u5411\u4f20\u64ad"], "points": 76, "solved": false, "statement": "QLoRA \u628a\u57fa\u5ea7\u6743\u91cd $W_0$ \u91cf\u5316\u5230 4-bit\uff0c\u800c LoRA \u589e\u91cf\u4ecd\u7528\u8f83\u9ad8\u7cbe\u5ea6\u8bad\u7ec3\u3002\n\u8fd9\u6837\u8bbe\u8ba1\u7684\u5173\u952e\u539f\u56e0\u662f\u4ec0\u4e48\uff1f", "tags": ["QLoRA", "LoRA", "\u663e\u5b58"], "title": "QLoRA \u53ea\u91cf\u5316\u51bb\u7ed3\u90e8\u5206\u7684\u539f\u56e0", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "id": "q08-02-03", "last_answer": "", "last_feedback": "", "options": ["\u5b66\u4e60\u7387\u592a\u5c0f\uff0c\u5e94\u63d0\u9ad8\u5b66\u4e60\u7387\u5e76\u589e\u52a0\u6570\u636e", "batch \u592a\u5c0f\u5bfc\u81f4\u9707\u8361\uff0c\u5e94\u63d0\u9ad8\u68af\u5ea6\u7d2f\u79ef", "\u8fc7\u62df\u5408\u6216\u5b66\u4e60\u7387\u592a\u5927\uff0c\u5e94\u65e9\u505c\u3001\u964d\u5b66\u4e60\u7387\u6216\u52a0\u6570\u636e", "\u76ee\u6807\u4efb\u52a1\u8d85\u51fa\u6a21\u578b\u80fd\u529b\uff0c\u5e94\u6362\u66f4\u5927\u7684\u57fa\u5ea7\u6a21\u578b"], "points": 76, "solved": false, "statement": "\u8bad\u7ec3\u65e5\u5fd7\u663e\u793a\uff1a\u8bad\u7ec3 loss \u5e73\u7a33\u4e0b\u964d\u540e\u5f00\u59cb\u6301\u7eed\u4e0a\u5347\u3002\n\u6309\u6559\u6750\u7684\u5224\u65ad\u8868\uff0c\u6700\u53ef\u80fd\u7684\u539f\u56e0\u548c\u5904\u7406\u65b9\u5f0f\u662f\u4ec0\u4e48\uff1f", "tags": ["loss \u66f2\u7ebf", "\u8bad\u7ec3\u8bca\u65ad"], "title": "loss \u66f2\u7ebf\u5f62\u6001\u7684\u8bca\u65ad", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "hints": ["\u60f3\u60f3\u6a21\u578b\u4f1a\u6a21\u4eff\u6570\u636e\u91cc\u7684\u54ea\u4e9b\u7ec6\u8282", "3% \u7684\u9519\u8bef\u7387\u5728\u751f\u4ea7\u4e0a\u610f\u5473\u7740\u4ec0\u4e48"], "id": "q08-02-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e SFT \u6570\u636e\u7684\u4e09\u4e2a\u8d28\u91cf\u8981\u6c42\uff0c\u5e76\u89e3\u91ca\u300c\u8f93\u51fa\u683c\u5f0f\u7edd\u5bf9\u4e00\u81f4\u300d\u4e3a\u4ec0\u4e48\u5173\u952e\u3002\n\u7ed3\u5408\u300c100 \u6761 JSON \u6837\u672c\u91cc\u6df7\u5165 3 \u6761\u7eaf\u6587\u672c\u300d\u8fd9\u4e2a\u4f8b\u5b50\uff0c\u8bf4\u660e\u5b83\u5bf9\u751f\u4ea7\u7cfb\u7edf\u7684\u5b9e\u9645\u5f71\u54cd\u3002", "tags": ["SFT", "\u6570\u636e\u8d28\u91cf", "\u9a8c\u6536\u70b9"], "title": "SFT \u6570\u636e\u8d28\u91cf\u4e09\u8981\u6c42\u4e0e\u683c\u5f0f\u4e00\u81f4\u6027", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 3, "hints": ["\u5bf9\u7167\u5b9e\u9a8c\u81f3\u5c11\u8981\u6709\u4e09\u7ec4", "\u6cdb\u5316\u80fd\u529b\u6700\u5bb9\u6613\u88ab\u5ffd\u7565"], "id": "q08-02-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u56e2\u961f\u51c6\u5907\u82b1\u51e0\u5468\u505a\u4e00\u6b21 LoRA \u5fae\u8c03\u3002\u8bf7\u8bf4\u660e\u5e94\u8be5\u505a\u54ea\u4e9b\u5bf9\u7167\u5b9e\u9a8c\u3001\u770b\u54ea\u4e9b\u8bc4\u4f30\u6307\u6807\uff0c\n\u5e76\u7ed9\u51fa\u300c\u4e0d\u8be5\u5fae\u8c03\u300d\u7684\u5224\u65ad\u4f9d\u636e\u3002\u4e3a\u4ec0\u4e48\u8fd9\u4e2a\u7ed3\u8bba\u5bf9\u5f88\u591a\u56e2\u961f\u6765\u8bf4\u4ee3\u4ef7\u5f88\u9ad8\uff1f", "tags": ["\u8bc4\u4f30", "\u5bf9\u7167\u5b9e\u9a8c", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u4ec0\u4e48\u60c5\u51b5\u4e0b\u4e0d\u8be5\u5fae\u8c03", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "hints": ["\u683c\u5f0f\u4e00\u81f4\u6027\u53ef\u4ee5\u7528 json.loads \u662f\u5426\u629b\u5f02\u5e38\u5224\u65ad", "\u53bb\u91cd\u9700\u8981\u628a\u4e09\u4e2a\u5b57\u6bb5\u7ec4\u6210\u5143\u7ec4\u505a key"], "id": "q08-02-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def build_sft_dataset(raw):\n    # \u8fd4\u56de\u7edf\u4e00\u683c\u5f0f\u7684\u6837\u672c\u5217\u8868\n    pass\n\n\ndef check_quality(samples):\n    # \u8fd4\u56de {\"format_mismatch\": int, \"missing_field\": int, \"duplicate\": int}\n    pass\n\n\nraw = [\n    {\"instruction\": \"\u62bd\u53d6\u610f\u56fe\", \"input\": \"\u6211\u8981\u9000\u8d27\", \"output\": \"{\\\"intent\\\": \\\"\u9000\u8d27\\\"}\"},\n    {\"instruction\": \"\u62bd\u53d6\u610f\u56fe\", \"input\": \"\u6211\u8981\u9000\u8d27\", \"output\": \"{\\\"intent\\\": \\\"\u9000\u8d27\\\"}\"},\n    {\"instruction\": \"\u62bd\u53d6\u610f\u56fe\", \"input\": \"\u8033\u673a\u6ca1\u58f0\u97f3\", \"output\": \"intent=\u9000\u8d27\"},\n    {\"instruction\": \"\u62bd\u53d6\u610f\u56fe\", \"input\": \"\", \"output\": \"\"},\n]\nsamples = build_sft_dataset(raw)\nprint(check_quality(samples))", "statement": "\u5b9e\u73b0 build_sft_dataset(raw) \u4e0e check_quality(samples) \u4e24\u4e2a\u51fd\u6570\u3002\nraw \u662f\u5f62\u5982 {\"instruction\":..., \"input\":..., \"output\":...} \u7684\u5b57\u5178\u5217\u8868\u3002\n\u8981\u6c42\uff1a\u7edf\u4e00\u8f93\u51fa\u4e3a instruction/input/output \u4e09\u5b57\u6bb5\uff1b\u8d28\u68c0\u8fd4\u56de\u683c\u5f0f\u4e0d\u4e00\u81f4\u3001\u5b57\u6bb5\u7f3a\u5931\u3001\u91cd\u590d\u4e09\u7c7b\u95ee\u9898\u7684\u6570\u91cf\u3002\n\u8f93\u5165\u8f93\u51fa\u7528\u4e0b\u9762\u7684\u65ad\u8a00\u9a8c\u8bc1\u3002", "tags": ["SFT", "\u6570\u636e\u8d28\u68c0", "\u4ee3\u7801"], "title": "\u6784\u9020\u5e76\u8d28\u68c0 SFT \u6570\u636e\u96c6", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 3, "hints": ["\u914d\u7f6e\u7c7b\u5206\u522b\u6765\u81ea transformers \u548c peft", "\u540c\u65f6\u4f20 4bit \u548c 8bit \u4f1a ValueError"], "id": "q08-02-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "def build_configs():\n    # \u8fd4\u56de (bnb_config, lora_config)\n    pass\n\n\ndef validate(bnb_config):\n    # \u8fd4\u56de True \u8868\u793a\u914d\u7f6e\u5408\u6cd5\n    pass", "statement": "\u5199\u4e00\u4e2a build_configs() \u51fd\u6570\uff0c\u8fd4\u56de (bnb_config, lora_config)\u3002\n\u8981\u6c42\uff1a4-bit \u52a0\u8f7d\u3001\u91cf\u5316\u7c7b\u578b nf4\u3001\u8ba1\u7b97\u7cbe\u5ea6 bfloat16\u3001\u5f00\u542f\u4e8c\u6b21\u91cf\u5316\uff1b\nLoRA \u7684 r=8\u3001lora_alpha=16\u3001lora_dropout=0.05\u3001target_modules \u4e3a [\"q_proj\", \"v_proj\"]\u3002\n\u518d\u5199\u4e00\u4e2a validate(bnb_config) \u68c0\u67e5\u662f\u5426\u5b58\u5728 load_in_4bit \u4e0e load_in_8bit \u540c\u65f6\u4e3a True \u7684\u975e\u6cd5\u7ec4\u5408\u3002", "tags": ["QLoRA", "LoraConfig", "\u4ee3\u7801"], "title": "\u914d\u7f6e QLoRA \u4e0e LoRA \u53c2\u6570", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="8" data-kp="1"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 36｜LoRA / QLoRA 微调实战">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 36｜LoRA / QLoRA 微调实战">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-3" data-kp-index="2"
+             data-kp-key="8_2" >
+      <div class="kp-head">
+        <span class="kp-no">D37</span>
+        <div class="kp-head-main">
+          <h3>Day 37｜上下文工程与成本优化</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>一、教学目标</h4>
+<ol><li>说清上下文工程与 Prompt 工程的区别；</li><li>掌握上下文组装、裁剪、压缩、外部化四种手段；</li><li>用真实数据做出成本优化决策。</li></ol>
+<h4>二、上下文工程 vs Prompt 工程</h4>
+<table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Prompt 工程</th><th style="text-align:left">上下文工程</th></tr></thead><tbody><tr><td style="text-align:left">关注点</td><td style="text-align:left">单次指令怎么写</td><td style="text-align:left"><strong>整个上下文窗口里放什么</strong></td></tr><tr><td style="text-align:left">内容</td><td style="text-align:left">system prompt 的措辞</td><td style="text-align:left">system + 历史 + 检索证据 + 工具定义 + 外部记忆</td></tr><tr><td style="text-align:left">时间尺度</td><td style="text-align:left">一次调用</td><td style="text-align:left">整个会话/任务的生命周期</td></tr><tr><td style="text-align:left">核心问题</td><td style="text-align:left">「怎么问」</td><td style="text-align:left">「放什么、放多少、什么时候清理」</td></tr></tbody></table>
+<p><strong>三篇权威论述（答辩引用这些，比引用博客可信得多）</strong>：</p>
+<table><thead><tr><th style="text-align:left">来源</th><th style="text-align:left">定义 / 核心论点</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Anthropic《Effective context engineering for AI agents》</strong>(2025-09-29)</td><td style="text-align:left">定义："the set of strategies for curating and maintaining the optimal set of tokens (information) during LLM inference"；与 prompt engineering 的关系："<strong>the natural progression of prompt engineering</strong>"。推荐技术：right-altitude system prompts、token-efficient 且<strong>互不重叠</strong>的工具设计、精选少量 few-shot（而非穷举边界情况）、just-in-time 检索、<strong>compaction</strong>（接近上限时摘要）、<strong>structured note-taking</strong>、sub-agent 架构</td></tr><tr><td style="text-align:left"><strong>Manus《Context Engineering for AI Agents》</strong>(2025-07-18)</td><td style="text-align:left">核心论点：<strong>KV-cache 命中率是生产级 Agent 最重要的单一指标</strong>。实践："Keep your prompt prefix stable"、"Make your context append-only"、<strong>"Mask, Don't Remove"</strong>（工具按需屏蔽而非删除）、<strong>"treat the file system as the ultimate context"</strong>、压缩要设计成<strong>可恢复的（restorable）</strong>、<strong>"leave the wrong turns in the context"</strong>（保留错误，因为错误恢复是 agentic 行为的标志）</td></tr><tr><td style="text-align:left"><strong>LangChain《Context Engineering for Agents》</strong>(2025-07-02)</td><td style="text-align:left">定义："the delicate art and science of filling the context window with just the right information for the next step"。<strong>四大策略：Write / Select / Compress / Isolate</strong></td></tr></tbody></table>
+<blockquote><strong>这三篇里最有实践价值的两个洞察</strong>：  1. <strong>保留错误痕迹</strong>（Manus）：把失败的工具调用从上下文里删掉，会让模型重复犯同样的错。 保留它，模型反而能"学会"绕开——这是一个反直觉但极其有用的经验； 2. <strong>KV-cache 命中率</strong>（Manus）：这意味着<strong>改动 system prompt 的开头</strong>比改动结尾代价高得多， 因为前缀一变，整个缓存失效。这直接影响你的 Prompt 版本管理策略。</blockquote>
+<p><strong>上下文窗口的构成</strong>（这张图请记住，它是优化的地图）：</p>
+<pre class="code lang-text"><code>┌─────────────────────── 上下文窗口 ───────────────────────┐
+│ 1. system prompt 与规则        ← 固定成本，必须保留        │
+│ 2. 工具定义（tools schema）    ← 固定成本，工具多时很可观  │
+│ 3. 检索到的证据（RAG）          ← 每次都可能变，重点优化对象 │
+│ 4. 对话历史                    ← 随轮数增长，最大的变量    │
+│ 5. 当前用户输入                ← 必须保留                 │
+│ 6. 外部记忆的引用              ← 按需检索，不常驻          │
+└───────────────────────────────────────────────────────────┘
+        固定成本                可变成本（优化重点）</code></pre>
+<blockquote><strong>一个容易被忽略的成本</strong>：<strong>工具定义本身占 token</strong>。 如果你注册了 30 个工具，每个工具的 JSON Schema 可能占 100–200 token， 那就是 3000–6000 token 的固定开销，<strong>每一次调用都要付</strong>。 所以「工具太多」不只是让模型选错的概率上升，也是实打实的成本。 （解法：按场景动态加载工具子集。）</blockquote>
+<h4>三、四种优化手段及各自代价</h4>
+<table><thead><tr><th style="text-align:left">手段</th><th style="text-align:left">做法</th><th style="text-align:left">省 token</th><th style="text-align:left">代价</th><th style="text-align:left">适用</th></tr></thead><tbody><tr><td style="text-align:left"><strong>裁剪</strong>（Truncate）</td><td style="text-align:left">保留最近 N 轮</td><td style="text-align:left">中</td><td style="text-align:left">丢失早期信息</td><td style="text-align:left">对话类，早期内容不重要时</td></tr><tr><td style="text-align:left"><strong>压缩</strong>（Summarize）</td><td style="text-align:left">早期内容摘要</td><td style="text-align:left">高</td><td style="text-align:left">有损；摘要本身要调用一次模型</td><td style="text-align:left">长任务，主线信息重要</td></tr><tr><td style="text-align:left"><strong>外部化</strong>（Externalize）</td><td style="text-align:left">中间产物存外部，上下文只留引用</td><td style="text-align:left">极高</td><td style="text-align:left">Agent 需要主动查询，多一步</td><td style="text-align:left">产物大的任务（代码、长文档）</td></tr><tr><td style="text-align:left"><strong>选择性检索</strong></td><td style="text-align:left">历史不常驻，按需检索相关轮次</td><td style="text-align:left">极高</td><td style="text-align:left">检索可能漏；实现复杂</td><td style="text-align:left">超长会话</td></tr></tbody></table>
+<p><strong>组合使用的实际方案</strong>：</p>
+<pre class="code lang-text"><code>system + 工具定义     → 永久保留（关键约束不可裁剪）
+最近 K 轮             → 完整保留（保证当前决策质量）
+更早的轮次            → 摘要为「已完成 + 关键结论」
+中间产物（代码/文档）  → 外部存储，上下文只留一行引用</code></pre>
+<h4>四、动手：三种策略的真实对比</h4>
+<pre class="code lang-powershell"><code>python code/ch08/30_context_engineering.py</code></pre>
+<p>脚本会模拟一个 30 轮的长对话，对比三种策略：</p>
+<p><img src="static/course-assets/ch08/02_context_engineering.webp" alt="三种上下文策略的 token 增长曲线与终局对比" loading="lazy"></p>
+<p><img src="static/course-assets/figures/ch08_context_strategies.webp" alt="上下文策略对比" loading="lazy"></p>
+<p><strong>实测结果（真实 tiktoken 计数，30 轮对话）</strong>：</p>
+<table><thead><tr><th style="text-align:left">策略</th><th style="text-align:right">第 30 轮上下文 token</th><th style="text-align:right">相对直接拼接</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left">① 直接拼接（无裁剪）</td><td style="text-align:right">3,597</td><td style="text-align:right">100%</td><td style="text-align:left">线性增长，永不回落</td></tr><tr><td style="text-align:left">② 滑动窗口（预算 3000）</td><td style="text-align:right"><strong>1,423</strong></td><td style="text-align:right"><strong>40%</strong></td><td style="text-align:left">到第 11 轮后稳定在预算线上</td></tr><tr><td style="text-align:left">③ 摘要压缩（保留最近 6 条）</td><td style="text-align:right">704</td><td style="text-align:right"><strong>20%</strong></td><td style="text-align:left">曲线在第 5 轮后走平</td></tr></tbody></table>
+<p><strong>但这里有一个必须讲清的陷阱</strong> —— 看右图的橙色部分：</p>
+<table><thead><tr><th style="text-align:left">策略</th><th style="text-align:right">上下文 token</th><th style="text-align:right"><strong>摘要调用的额外 token</strong></th><th style="text-align:right">合计</th></tr></thead><tbody><tr><td style="text-align:left">① 直接拼接</td><td style="text-align:right">3,597</td><td style="text-align:right">0</td><td style="text-align:right">3,597</td></tr><tr><td style="text-align:left">② 滑动窗口</td><td style="text-align:right">1,423</td><td style="text-align:right">0</td><td style="text-align:right"><strong>1,423</strong></td></tr><tr><td style="text-align:left">③ 摘要压缩</td><td style="text-align:right">704</td><td style="text-align:right"><strong>2,893</strong></td><td style="text-align:right"><strong>3,597</strong></td></tr></tbody></table>
+<blockquote><strong>结论完全反转了。</strong> 摘要压缩的上下文看起来最省（只有 20%）， 但<strong>生成摘要本身要调用模型</strong>，把额外开销算进去后，30 轮对话的<strong>总消耗反而和"什么都不做"持平</strong>， 而且比滑动窗口贵 2.5 倍。  这个实测结果回答了一个很多人想当然的问题：<strong>"压缩总是省钱的吗？"——不是。</strong></blockquote>
+<p><strong>必须用数据回答的三个问题</strong>：</p>
+<ol><li><strong>压缩从第几轮开始划算？</strong> 关键看「累计节省的上下文 token」何时超过「摘要本身的开销」。</li></ol>
+<p>本实验的答案是：<strong>30 轮都还没回本</strong>。如果你的对话只有几十轮，优先用滑动窗口；</p>
+<ol><li><strong>滑动窗口在什么时候开始丢关键信息？</strong> 脚本会构造一个「早期设定、后期依赖」的场景来暴露这个问题</li></ol>
+<p>—— 这是滑动窗口的固有代价，<strong>它省 token 是靠牺牲记忆</strong>；</p>
+<ol><li><strong>「关键约束永不裁剪」是怎么实现的？</strong> 答案：system prompt 与用户原始需求单独保存，</li></ol>
+<p>不进裁剪池。<strong>无论用哪种策略，这条都必须遵守</strong>，否则 Agent 会"忘掉"最初的任务约束。</p>
+<p><strong>工程结论</strong>（这才是可以外推的经验，而不是具体数字）：</p>
+<pre class="code lang-text"><code>对话短（几十轮以内）     → 滑动窗口最划算，简单且无额外调用
+对话很长（几百轮以上）   → 摘要压缩才开始划算（摘要开销被摊薄）
+中间产物很大            → 用外部化（存文件/DB，上下文只留引用），这一招最省</code></pre>
+<blockquote><strong>注意</strong>：本实验的数字来自离线靶场与特定的消息长度分布。 <strong>不要照搬"30 轮不划算"这个结论</strong> —— 你要在自己的任务和模型单价上重跑一遍。 可以外推的是<strong>分析方法</strong>：永远把「节省」和「额外开销」放在同一张表里比较。</blockquote>
+<h4>五、成本优化的完整检查表</h4>
+<table><thead><tr><th style="text-align:left">优化点</th><th style="text-align:left">检查什么</th><th style="text-align:left">典型收益</th></tr></thead><tbody><tr><td style="text-align:left">输出长度</td><td style="text-align:left">是否有限制？输出单价通常是输入的 2–4 倍</td><td style="text-align:left">高</td></tr><tr><td style="text-align:left">工具定义</td><td style="text-align:left">是否加载了用不到的工具？</td><td style="text-align:left">中（工具多时高）</td></tr><tr><td style="text-align:left">检索条数</td><td style="text-align:left"><code>top_k</code> 是否过大？证据是否去重？</td><td style="text-align:left">中–高（RAG 场景）</td></tr><tr><td style="text-align:left">证据块大小</td><td style="text-align:left">切块是否过大？（第 3 章 Day12）</td><td style="text-align:left">中</td></tr><tr><td style="text-align:left">历史管理</td><td style="text-align:left">是否每轮都重发全部历史？</td><td style="text-align:left">高（长会话）</td></tr><tr><td style="text-align:left">模型选型</td><td style="text-align:left">简单任务是否用了大模型？</td><td style="text-align:left">高</td></tr><tr><td style="text-align:left">缓存</td><td style="text-align:left">是否有可复用的结果（相同问题、相同文档）？</td><td style="text-align:left">视场景</td></tr><tr><td style="text-align:left">批处理</td><td style="text-align:left">能批量的是否逐条调用？</td><td style="text-align:left">中</td></tr></tbody></table>
+<blockquote><strong>优化顺序建议</strong>：先做「高收益 + 低风险」的（输出长度、模型选型、缓存）， 再做「需要改造架构」的（历史管理、外部化）。 <strong>不要一上来就做最复杂的优化</strong> —— 先量化，再动刀。</blockquote>
+<h4>六、当日验收</h4>
+<ul><li>[ ] 能说出上下文工程与 Prompt 工程的区别</li><li>[ ] 能画出上下文窗口的六个组成部分，并指出哪些是固定成本</li><li>[ ] 能说出四种优化手段各自的代价</li><li>[ ] 有真实的 token 对比曲线，并回答了「压缩从第几轮开始划算」</li><li>[ ] 完成成本检查表，标注每项的<strong>预期</strong>收益与<strong>实测</strong>收益</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "id": "q08-03-01", "last_answer": "", "last_feedback": "", "options": ["\u4fee\u6539 system prompt \u5f00\u5934\u7684\u63aa\u8f9e", "\u5728\u5bf9\u8bdd\u672b\u5c3e\u8ffd\u52a0\u4e00\u6761\u7528\u6237\u6d88\u606f", "\u5728\u4e0a\u4e0b\u6587\u672b\u5c3e\u8ffd\u52a0\u4e00\u6b21\u5de5\u5177\u8fd4\u56de\u7ed3\u679c", "\u5728\u5386\u53f2\u4e2d\u8ffd\u52a0\u4e00\u6761\u65b0\u7684\u52a9\u624b\u56de\u590d"], "points": 76, "solved": false, "statement": "Manus \u628a KV-cache \u547d\u4e2d\u7387\u79f0\u4e3a\u751f\u4ea7\u7ea7 Agent \u6700\u91cd\u8981\u7684\u5355\u4e00\u6307\u6807\u3002\n\u636e\u6b64\uff0c\u4e0b\u9762\u54ea\u79cd\u6539\u52a8\u5bf9\u6210\u672c\u7684\u4f24\u5bb3\u6700\u5927\uff1f", "tags": ["KV-cache", "\u4e0a\u4e0b\u6587\u5de5\u7a0b", "\u6210\u672c\u4f18\u5316"], "title": "KV-cache \u4e0e Prompt \u7248\u672c\u7ba1\u7406", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 3, "id": "q08-03-02", "last_answer": "", "last_feedback": "", "options": ["\u6458\u8981\u538b\u7f29\u5408\u8ba1 3,597\uff0c\u4e0e\u4ec0\u4e48\u90fd\u4e0d\u505a\u6301\u5e73\uff0c\u6bd4\u6ed1\u52a8\u7a97\u53e3\u8d35\u7ea6 2.5 \u500d", "\u6458\u8981\u538b\u7f29\u5408\u8ba1 704\uff0c\u662f\u4e09\u79cd\u7b56\u7565\u91cc\u6700\u7701\u7684\u4e00\u79cd", "\u6458\u8981\u538b\u7f29\u5408\u8ba1 2,893\uff0c\u6bd4\u6ed1\u52a8\u7a97\u53e3\u7701\u4e00\u534a", "\u4e09\u79cd\u7b56\u7565\u5408\u8ba1\u76f8\u540c\uff0c\u56e0\u4e3a\u6458\u8981\u5f00\u9500\u53ef\u4ee5\u5ffd\u7565"], "points": 189, "solved": false, "statement": "30 \u8f6e\u5bf9\u8bdd\u5b9e\u6d4b\uff1a\u76f4\u63a5\u62fc\u63a5 3,597 token\uff0c\u6ed1\u52a8\u7a97\u53e3 1,423\uff0c\u6458\u8981\u538b\u7f29\u4e0a\u4e0b\u6587 704\u3002\n\u4f46\u6458\u8981\u538b\u7f29\u8fd8\u8981\u989d\u5916 2,893 token \u7528\u4e8e\u751f\u6210\u6458\u8981\u3002\n\u4e0b\u5217\u7ed3\u8bba\u54ea\u4e2a\u6b63\u786e\uff1f", "tags": ["\u6458\u8981\u538b\u7f29", "\u6210\u672c\u4f18\u5316", "\u5b9e\u6d4b\u6570\u636e"], "title": "\u6458\u8981\u538b\u7f29\u7684\u771f\u5b9e\u6210\u672c", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 1, "id": "q08-03-03", "last_answer": "", "last_feedback": "", "options": ["\u5c5e\u4e8e\u56fa\u5b9a\u6210\u672c\uff0c\u6bcf\u6b21\u8c03\u7528\u90fd\u8981\u4ed8\uff0c\u53ef\u7528\u52a8\u6001\u52a0\u8f7d\u5de5\u5177\u5b50\u96c6\u7f13\u89e3", "\u53ea\u5728\u7b2c\u4e00\u6b21\u8c03\u7528\u65f6\u8ba1\u5165\uff0c\u540e\u7eed\u8c03\u7528\u4e0d\u518d\u91cd\u590d\u8ba1\u8d39", "\u5c5e\u4e8e\u53ef\u53d8\u6210\u672c\uff0c\u968f\u5bf9\u8bdd\u8f6e\u6570\u7ebf\u6027\u589e\u957f", "\u53ea\u5728\u6a21\u578b\u5b9e\u9645\u8c03\u7528\u67d0\u4e2a\u5de5\u5177\u65f6\u624d\u8ba1\u5165 token"], "points": 27, "solved": false, "statement": "\u6ce8\u518c\u4e86 30 \u4e2a\u5de5\u5177\uff0c\u6bcf\u4e2a\u5de5\u5177\u7684 JSON Schema \u7ea6 100\u2013200 token\u3002\n\u5173\u4e8e\u8fd9\u7b14\u5f00\u9500\uff0c\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["\u5de5\u5177\u5b9a\u4e49", "\u56fa\u5b9a\u6210\u672c", "\u4e0a\u4e0b\u6587\u7a97\u53e3"], "title": "\u5de5\u5177\u5b9a\u4e49\u7684\u56fa\u5b9a\u6210\u672c", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "hints": ["\u5148\u5217\u56db\u4e2a\u7ef4\u5ea6\u505a\u6210\u5bf9\u7167", "\u60f3\u60f3\u7b2c 30 \u8f6e\u65f6\u7a97\u53e3\u91cc\u90fd\u6709\u4ec0\u4e48"], "id": "q08-03-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u4ece\u5173\u6ce8\u70b9\u3001\u5185\u5bb9\u8303\u56f4\u3001\u65f6\u95f4\u5c3a\u5ea6\u3001\u6838\u5fc3\u95ee\u9898\u56db\u4e2a\u7ef4\u5ea6\uff0c\u5bf9\u6bd4 Prompt \u5de5\u7a0b\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b\u3002\n\u5e76\u8bf4\u660e\u4e3a\u4ec0\u4e48\u5728\u957f\u4f1a\u8bdd Agent \u573a\u666f\u4e0b\uff0c\u53ea\u505a Prompt \u5de5\u7a0b\u4e0d\u591f\u3002", "tags": ["\u4e0a\u4e0b\u6587\u5de5\u7a0b", "Prompt\u5de5\u7a0b", "\u6982\u5ff5\u5bf9\u6bd4"], "title": "\u4e0a\u4e0b\u6587\u5de5\u7a0b\u4e0e Prompt \u5de5\u7a0b\u7684\u533a\u522b", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 3, "hints": ["\u628a\u4ee3\u4ef7\u548c\u9002\u7528\u573a\u666f\u4e00\u4e00\u5bf9\u5e94", "\u60f3\u60f3\u6458\u8981\u5f00\u9500\u4f55\u65f6\u88ab\u644a\u8584"], "id": "q08-03-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u88c1\u526a\u3001\u538b\u7f29\u3001\u5916\u90e8\u5316\u3001\u9009\u62e9\u6027\u68c0\u7d22\u56db\u79cd\u624b\u6bb5\u5404\u80fd\u7701 token\uff0c\u4f46\u90fd\u6709\u4ee3\u4ef7\u3002\n\u8bf7\u5206\u522b\u8bf4\u660e\u5404\u81ea\u7684\u4ee3\u4ef7\uff0c\u5e76\u7ed9\u51fa\u4e00\u4e2a\u300c\u5bf9\u8bdd\u51e0\u5341\u8f6e\u3001\u4e2d\u95f4\u4ea7\u7269\u5f88\u5927\u300d\u573a\u666f\u7684\u7ec4\u5408\u65b9\u6848\u4e0e\u7406\u7531\u3002", "tags": ["\u4f18\u5316\u624b\u6bb5", "\u5de5\u7a0b\u5224\u65ad", "\u7ec4\u5408\u65b9\u6848"], "title": "\u56db\u79cd\u4f18\u5316\u624b\u6bb5\u7684\u4ee3\u4ef7\u4e0e\u9009\u578b", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 2, "hints": ["system \u5355\u72ec\u62ce\u51fa\u6765", "\u5012\u7740\u904d\u5386\u518d reverse \u56de\u6765"], "id": "q08-03-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def sliding_window(messages, budget, count_tokens):\n    # messages: [{\u0027role\u0027: str, \u0027content\u0027: str}]\n    # count_tokens: \u4f20\u5165\u5b57\u7b26\u4e32\u8fd4\u56de token \u6570\n    # \u8fd4\u56de\u88c1\u526a\u540e\u7684\u5217\u8868\uff0c\u4fdd\u6301\u539f\u987a\u5e8f\n    pass", "statement": "\u5b9e\u73b0\u51fd\u6570 sliding_window(messages, budget, count_tokens)\uff0cmessages \u662f [{\u0027role\u0027,\u0027content\u0027}] \u5217\u8868\u3002\n\u8981\u6c42\uff1a\u4ece\u6700\u65b0\u4e00\u6761\u5f80\u524d\u7d2f\u52a0\uff0c\u76f4\u5230\u518d\u52a0\u4e00\u6761\u4f1a\u8d85\u8fc7 budget \u4e3a\u6b62\uff1bsystem \u89d2\u8272\u7684\u6d88\u606f\u6c38\u8fdc\u4fdd\u7559\u4e14\u4e0d\u8ba1\u5165\u9884\u7b97\u3002\n\u8fd4\u56de\u88c1\u526a\u540e\u7684\u6d88\u606f\u5217\u8868\uff0c\u4fdd\u6301\u539f\u6709\u987a\u5e8f\u3002", "tags": ["\u6ed1\u52a8\u7a97\u53e3", "\u88c1\u526a", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u6ed1\u52a8\u7a97\u53e3\u88c1\u526a\u5b9e\u73b0", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 8, "chapter_title": "\u6a21\u578b\u5fae\u8c03\u4e0e\u4e0a\u4e0b\u6587\u5de5\u7a0b", "difficulty": 3, "hints": ["window \u7528\u5012\u5e8f\u7d2f\u52a0", "summary_total \u624d\u662f\u53ef\u6bd4\u53e3\u5f84"], "id": "q08-03-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "def compare_strategies(messages, budget, recent_k, count_tokens, summary_cost):\n    # \u8fd4\u56de {\u0027direct\u0027: int, \u0027window\u0027: int, \u0027summary\u0027: int, \u0027summary_total\u0027: int}\n    pass", "statement": "\u7ed9\u5b9a 30 \u8f6e\u5bf9\u8bdd\uff08\u6bcf\u8f6e user+assistant \u4e24\u6761\uff09\uff0c\u5b9e\u73b0\u51fd\u6570 compare_strategies(messages, budget, recent_k, count_tokens, summary_cost)\u3002\n\u8fd4\u56de\u5b57\u5178\uff0c\u542b\u4e09\u79cd\u7b56\u7565\u7684\u4e0a\u4e0b\u6587 token\uff1adirect\uff08\u5168\u90e8\u62fc\u63a5\uff09\u3001window\uff08\u6ed1\u52a8\u7a97\u53e3 budget\uff09\u3001summary\uff08\u4fdd\u7559\u6700\u8fd1 recent_k \u6761\uff0c\u5176\u4f59\u538b\u7f29\u4e3a\u4e00\u6761\u6458\u8981\uff0c\u6458\u8981\u6210\u672c\u6309 summary_cost \u8ba1\uff09\u3002\n\u5e76\u989d\u5916\u8fd4\u56de summary \u7b56\u7565\u7684 total\uff08\u4e0a\u4e0b\u6587 + summary_cost\uff09\u3002", "tags": ["\u6210\u672c\u5bf9\u6bd4", "\u6458\u8981\u538b\u7f29", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u4e09\u79cd\u7b56\u7565\u6210\u672c\u5bf9\u6bd4\u8868", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="8" data-kp="2"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 37｜上下文工程与成本优化">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 37｜上下文工程与成本优化">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson"><h3>8.11 常见错误与排查</h3>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">原因</th><th style="text-align:left">修复</th></tr></thead><tbody><tr><td style="text-align:left">微调后格式反而更不稳定</td><td style="text-align:left">训练数据里格式不统一</td><td style="text-align:left">清洗数据，统一输出格式</td></tr><tr><td style="text-align:left">微调后通用能力下降</td><td style="text-align:left">灾难性遗忘（数据太窄 / 训练太久）</td><td style="text-align:left">混入通用数据；减少训练步数；降低学习率</td></tr><tr><td style="text-align:left">OOM（显存不足）</td><td style="text-align:left">基座太大 / batch 太大 / 序列太长</td><td style="text-align:left">用 QLoRA；减小 batch + 梯度累积；截断序列</td></tr><tr><td style="text-align:left">loss 不下降</td><td style="text-align:left">学习率太小 / 数据太少 / 任务超出模型能力</td><td style="text-align:left">调高学习率；检查数据；考虑换更大基座</td></tr><tr><td style="text-align:left"><code>SFTTrainer</code> 报参数错误</td><td style="text-align:left">库版本变化，API 不同</td><td style="text-align:left">查当前版本文档（不要照抄旧教程）</td></tr><tr><td style="text-align:left">上下文压缩后 Agent 变笨</td><td style="text-align:left">摘要丢了关键细节</td><td style="text-align:left">关键约束单独保留；摘要要用结构化模板（保留数字、约束、结论）</td></tr><tr><td style="text-align:left">成本优化后效果明显下降</td><td style="text-align:left">优化过度，裁掉了必要信息</td><td style="text-align:left">每次优化都要跑评测集，用数据守住底线</td></tr></tbody></table>
+<hr>
+<h3>8.12 参考资料</h3>
+<table><thead><tr><th style="text-align:left">资源</th><th style="text-align:left">用途</th></tr></thead><tbody><tr><td style="text-align:left"><a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noreferrer">LoRA 原论文</a></td><td style="text-align:left">低秩适应的理论基础</td></tr><tr><td style="text-align:left"><a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noreferrer">QLoRA 原论文</a></td><td style="text-align:left">4-bit 量化 + LoRA</td></tr><tr><td style="text-align:left"><a href="https://huggingface.co/docs/peft" target="_blank" rel="noreferrer">PEFT 文档</a></td><td style="text-align:left">LoRA 实现与参数说明</td></tr><tr><td style="text-align:left"><a href="https://huggingface.co/docs/trl" target="_blank" rel="noreferrer">TRL 文档</a></td><td style="text-align:left">SFT / DPO 训练器</td></tr><tr><td style="text-align:left"><a href="https://huggingface.co/docs/transformers" target="_blank" rel="noreferrer">transformers 文档</a></td><td style="text-align:left">模型加载与量化配置</td></tr><tr><td style="text-align:left"><a href="https://github.com/bitsandbytes-foundation/bitsandbytes" target="_blank" rel="noreferrer">bitsandbytes</a></td><td style="text-align:left">量化后端</td></tr></tbody></table>
+<blockquote>各库 API 迭代快，使用时以官方文档当前版本为准。</blockquote>
+<hr>
+<h3>下一章预告</h3>
+<p>第 9 章（Day38–40）收尾：把前面八章的成果组装成一个<strong>可上线的完整产品</strong>—— 加前端界面（流式打字机）、容器化打包、成本与质量监控， 最后完成毕业答辩与作品集。</p></div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    
+    <a class="ch-neighbor hot" href="chapter-4.html">
+      <span class="cn-rel">前 4 章</span>
+      <b>🛰️ Agent 核心机制（从零自研）</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-5.html">
+      <span class="cn-rel">前 3 章</span>
+      <b>🔧 Agent 框架实战</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-6.html">
+      <span class="cn-rel">前 2 章</span>
+      <b>🕸️ 多智能体系统与 MCP</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-7.html">
+      <span class="cn-rel">上一章</span>
+      <b>🔍 开源 Agent 项目源码拆解</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-9.html">
+      <span class="cn-rel">下一章</span>
+      <b>🏗️ 全栈落地与毕业项目</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="training.html?chapters=8">做本章专项练习</a>
+      <a class="btn agent" href="coach.html?chapter=8">让教练追问我</a>
+      
+      <a class="btn ghost" href="warp.html?to=/chapter/9&kicker=章节完成&next=正在跃迁到 全栈落地与毕业项目">⚡ 跃迁到下一章</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/chapter.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#060817" />
+    <meta name="description" content="AIMaster 私有化大模型与 RAG 沉浸式学习章节" />
+    <title>AIMaster · Private RAG Starlab</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+
+    <header class="site-header" id="top">
+      <a class="brand" href="#top" aria-label="返回顶部">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <span>AIMaster <em>/ STARLAB</em></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links">菜单</button>
+      <nav id="nav-links" class="nav-links" aria-label="主导航">
+        <a href="#route">学习航线</a>
+        <a href="#architecture">RAG 架构</a>
+        <a href="#lab">交互实验</a>
+        <a class="nav-cta" href="#checklist">部署清单 <span>↗</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero section-pad" aria-labelledby="hero-title">
+        <div class="hero-copy reveal">
+          <p class="eyebrow"><span></span> AIMaster 第 08 章 · 私有化部署</p>
+          <h1 id="hero-title">在自己的星系，<br /><span>部署可信赖的 AI。</span></h1>
+          <p class="hero-summary">从模型落地到知识检索，搭建一套数据不出域、答案有依据、可以持续演进的企业级智能系统。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#route">启动学习航线 <b>↓</b></a>
+            <button class="text-button" type="button" data-scroll="#lab">先运行一次 RAG 实验 <span>→</span></button>
+          </div>
+          <dl class="hero-stats" aria-label="课程重点">
+            <div><dt>06</dt><dd>关键任务节点</dd></div>
+            <div><dt>03</dt><dd>部署拓扑方案</dd></div>
+            <div><dt>100%</dt><dd>数据本地可控</dd></div>
+          </dl>
+        </div>
+
+        <div class="hero-orbit" id="heroOrbit" aria-label="私有化 RAG 运行星图">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
+          <div class="glow-cloud"></div>
+          <div class="core"><span>LLM</span><small>LOCAL<br />CORE</small></div>
+          <button class="orbit-point point-model" type="button" data-tip="推理模型：Qwen / Llama / DeepSeek"><i></i><span>01<br /><b>模型</b></span></button>
+          <button class="orbit-point point-docs" type="button" data-tip="资料入库：切片、清洗、向量化"><i></i><span>02<br /><b>知识</b></span></button>
+          <button class="orbit-point point-search" type="button" data-tip="混合检索：召回、重排、溯源"><i></i><span>03<br /><b>检索</b></span></button>
+          <button class="orbit-point point-answer" type="button" data-tip="受控生成：引用上下文再回答"><i></i><span>04<br /><b>回答</b></span></button>
+          <p class="orbit-hint">移动光标探索节点</p>
+        </div>
+        <div class="hero-scroll">SCROLL TO EXPLORE <span></span></div>
+      </section>
+
+      <section class="manifesto section-pad" aria-label="课程导语">
+        <p class="section-label reveal">WHY PRIVATE AI</p>
+        <div class="manifesto-grid">
+          <h2 class="reveal">不是把模型<br />装进服务器。<br /><em>而是建立一条<br />可验证的知识引力场。</em></h2>
+          <div class="manifesto-note reveal">
+            <span class="note-index">01 / 04</span>
+            <p>私有化的价值，来自边界、性能与信任三者之间恰到好处的平衡。我们从一次真正可运行的项目出发，而不是一份抽象配置单。</p>
+            <div class="signal-line"><i></i><span>TRUST / CONTROL / EVOLVE</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="route section-pad" id="route" aria-labelledby="route-title">
+        <div class="section-heading reveal">
+          <div><p class="section-label">LEARNING ROUTE</p><h2 id="route-title">六个坐标，完成一次<br />从硬件到回答的着陆。</h2></div>
+          <p>选择任意节点，查看本节要解决的问题与完成标准。</p>
+        </div>
+        <div class="route-layout">
+          <div class="route-list" role="tablist" aria-label="学习章节"></div>
+          <article class="route-detail glass-panel reveal" aria-live="polite">
+            <p class="detail-kicker">MISSION 01</p>
+            <div class="detail-orb"><span>01</span></div>
+            <h3></h3><p class="detail-copy"></p>
+            <ul class="detail-list"></ul>
+            <div class="detail-footer"><span>完成标准</span><strong></strong></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="architecture section-pad" id="architecture" aria-labelledby="architecture-title">
+        <div class="section-heading reveal">
+          <div><p class="section-label">RAG ARCHITECTURE</p><h2 id="architecture-title">把一份文档，变成<br />有据可查的回答。</h2></div>
+          <p>点击信号链路中的任意模块，理解它如何影响最终答案。</p>
+        </div>
+        <div class="architecture-stage reveal">
+          <div class="architecture-map" role="list" aria-label="RAG 处理流程">
+            <span class="map-line line-a"></span><span class="map-line line-b"></span><span class="map-line line-c"></span><span class="map-line line-d"></span>
+            <button class="architecture-node active" type="button" data-architecture="0"><b>01</b><i>⌁</i><span>资料入库</span></button>
+            <button class="architecture-node" type="button" data-architecture="1"><b>02</b><i>⋮</i><span>向量索引</span></button>
+            <button class="architecture-node" type="button" data-architecture="2"><b>03</b><i>⌕</i><span>混合检索</span></button>
+            <button class="architecture-node" type="button" data-architecture="3"><b>04</b><i>✦</i><span>上下文生成</span></button>
+            <button class="architecture-node node-result" type="button" data-architecture="4"><b>05</b><i>✓</i><span>可溯源回答</span></button>
+          </div>
+          <aside class="architecture-detail glass-panel" aria-live="polite">
+            <p>MODULE <span>01</span></p><h3></h3><p class="architecture-copy"></p>
+            <div class="architecture-tags"></div>
+            <div class="signal-meter"><span>信号强度</span><i><b></b></i><em></em></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="deployment section-pad" aria-labelledby="deployment-title">
+        <div class="deployment-intro reveal">
+          <p class="section-label">DEPLOYMENT CONSTELLATION</p>
+          <h2 id="deployment-title">为你的引力范围<br />选择第一颗星。</h2>
+        </div>
+        <div class="deployment-console glass-panel reveal">
+          <div class="scenario-tabs" role="tablist" aria-label="部署场景"></div>
+          <div class="scenario-content" aria-live="polite">
+            <div class="scenario-copy"><p class="scenario-label"></p><h3></h3><p></p><dl></dl></div>
+            <div class="terminal-window"><div class="terminal-bar"><span></span><span></span><span></span><b>deployment.yaml</b></div><pre><code></code></pre></div>
+          </div>
+          <div class="scenario-foot"><span><i></i> 本地数据路径</span><span><i></i> 模型推理服务</span><span><i></i> 可观测性</span></div>
+        </div>
+      </section>
+
+      <section class="lab section-pad" id="lab" aria-labelledby="lab-title">
+        <div class="section-heading reveal"><div><p class="section-label">LIVE RAG LAB</p><h2 id="lab-title">运行一次，看看答案<br />如何带着证据抵达。</h2></div><p>这是一个教学模拟器：提交问题后，系统将展示检索、重排与生成的过程。</p></div>
+        <div class="lab-shell reveal">
+          <div class="lab-query glass-panel">
+            <div class="lab-topline"><span>YOUR QUESTION</span><b>PRIVATE KNOWLEDGE BASE / 12 DOCS</b></div>
+            <label for="rag-query">向你的私有知识库提问</label>
+            <textarea id="rag-query" rows="3">如何让 RAG 的回答可追溯，并避免引用过期知识？</textarea>
+            <button class="button button-primary run-button" type="button" id="runLab">运行检索实验 <b>→</b></button>
+            <p class="lab-example">试试：<button type="button" data-example="私有化部署前，怎样评估 GPU 显存是否足够？">显存评估</button> / <button type="button" data-example="为什么需要给检索结果增加重排模型？">为什么要重排？</button></p>
+          </div>
+          <div class="lab-output glass-panel" aria-live="polite">
+            <div class="lab-topline"><span>RETRIEVAL TRACE</span><b id="lab-status">READY</b></div>
+            <ol class="trace-list">
+              <li><i></i><span>01</span><div><strong>等待你的问题</strong><small>向量召回与关键词检索将从这里开始</small></div></li>
+              <li><i></i><span>02</span><div><strong>候选证据</strong><small>尚未检索</small></div></li>
+              <li><i></i><span>03</span><div><strong>受控回答</strong><small>尚未生成</small></div></li>
+            </ol>
+            <div class="answer-card"><p><span>✦</span> GROUNDED ANSWER</p><strong id="answer-text">准备好后，运行左侧的 RAG 实验。</strong><div class="citations" id="citations"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="checklist section-pad" id="checklist" aria-labelledby="checklist-title">
+        <div class="checklist-intro reveal"><p class="section-label">LAUNCH CHECKLIST</p><h2 id="checklist-title">让系统起飞前，<br />逐项确认它的边界。</h2><p>勾选内容会保留在当前浏览器中，方便回到 AIMaster 时继续学习。</p></div>
+        <div class="checklist-board glass-panel reveal">
+          <div class="checklist-progress"><span>LAUNCH READINESS</span><strong id="checkProgress">0 / 5</strong><i><b></b></i></div>
+          <div class="check-items" id="checkItems"></div>
+          <div class="ready-state" id="readyState"><span>✦</span><div><strong>发射条件已满足</strong><p>你已经准备好把这条 RAG 航线迁移到真实业务。</p></div></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer section-pad"><a class="brand" href="#top"><span class="brand-mark"><i></i><i></i><i></i></span><span>AIMaster <em>/ STARLAB</em></span></a><p>PRIVATE LLM · RAG · TRUSTED AI SYSTEMS</p><a href="#top">返回星图 ↑</a></footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

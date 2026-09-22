@@ -1,0 +1,184 @@
+{
+ "1": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/llm_intro.html",
+   "title": "开场 · 走进大模型",
+   "blurb": "5 幕讲清 LLM 是什么、从哪来、怎么训出来"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/prompt_cg_starlab/index.html",
+   "title": "开场 · 提示词工程",
+   "blurb": "6 幕 CG：从「会说话」到「可控输出」"
+  },
+  {
+   "kind": "lab",
+   "url": "/static/lab/bpe_game.html",
+   "title": "实验室 · BPE 分词器",
+   "blurb": "亲手做一次 BPE 合并，看 token 是怎么切出来的"
+  },
+  {
+   "kind": "lab",
+   "url": "/static/lab/llm_training_game.html",
+   "title": "实验室 · 训练模拟器",
+   "blurb": "跑一遍 预训练 → SFT → 对齐，看 loss 曲线怎么降"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "2": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/api_engineering_cg.html",
+   "title": "开场 · 从函数到服务",
+   "blurb": "5 幕：并发、SSE 流式、重试限流、六层后端"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "3": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/rag_cg/index.html",
+   "title": "开场 · RAG 技术叙事",
+   "blurb": "6 幕 CG：为什么「外挂知识库」能治幻觉"
+  },
+  {
+   "kind": "lab",
+   "url": "/static/cg/rag_starlab/index.html",
+   "title": "实验室 · 私有 RAG 全链路",
+   "blurb": "混合检索 + 重排 + 引用，六步走完一条 RAG 管线"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/prompt_cg.html",
+   "title": "开场 · 提示词简史",
+   "blurb": "另一版叙事：提示词工程是怎么变成一门工程的"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "4": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/agentic_cg/index.html",
+   "title": "开场 · 驾驭智能体",
+   "blurb": "5 幕 CG：Agent 到底比「一次性问答」多了什么"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "5": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/agent_framework_cg.html",
+   "title": "开场 · 把循环画成图",
+   "blurb": "5 幕：State/Node/Edge、断点续跑、人工审批"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/claude_cg/index.html",
+   "title": "对照 · Claude Code 实战",
+   "blurb": "框架之外：一个真实编码智能体的全流程"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "6": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/multi_agent_cg.html",
+   "title": "开场 · 一群 Agent 与一条协议",
+   "blurb": "5 幕：三种协作模式、MCP 无状态、成本护栏"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "7": [
+  {
+   "kind": "show",
+   "url": "/static/cg/trae_tutorial/index.html",
+   "title": "实战 · Trae 智能体教程",
+   "blurb": "用真实 IDE 智能体读一遍别人的项目"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "8": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/transformer_cg.html",
+   "title": "开场 · Attention 论文",
+   "blurb": "6 幕电影级 CG：一篇论文如何改写整个行业"
+  },
+  {
+   "kind": "lab",
+   "url": "/static/lab/transformer_lab.html",
+   "title": "实验室 · 注意力可视化",
+   "blurb": "亲手调 Q/K/V，看注意力热力图实时变化"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "9": [
+  {
+   "kind": "show",
+   "url": "/static/cg/workbuddy_showcase.html",
+   "title": "实战 · WorkBuddy 拆解",
+   "blurb": "一个真实办公智能体的三层架构与六种能力"
+  },
+  {
+   "kind": "show",
+   "url": "/static/cg/zcode_showcase.html",
+   "title": "实战 · ZCode 拆解",
+   "blurb": "从新手村到 Hooks / Skills 的高手之路"
+  },
+  {
+   "kind": "cine",
+   "url": "/static/cg/revelation_cg.html",
+   "title": "收束 · 星辰启示",
+   "blurb": "翻过这一章时，看一眼星图留言"
+  }
+ ],
+ "global": [
+  {
+   "kind": "cine",
+   "url": "/static/cg/ai_odyssey.html",
+   "title": "沉浸远征 · 3D 星门",
+   "blurb": "穿过星门，沿着 3D 航线进入四个章节"
+  }
+ ]
+}

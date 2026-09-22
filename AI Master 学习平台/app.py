@@ -82,6 +82,65 @@ app = Flask(__name__)
 app.template_folder = os.path.join(BUNDLE_DIR, 'templates')
 app.static_folder = os.path.join(BUNDLE_DIR, 'static')
 
+# Flask 的 CLI 在「导不进 dotenv 但根目录存在 .env」时会打一条「建议安装
+# python-dotenv」的黄字提示，而 .env 是我们在 ark_client 里自己读的。
+# 这条提示对学生毫无意义，只会让人以为环境缺了东西。
+# 这里提供一个最小的 dotenv 实现顶上：能真的读 .env（格式与我们的写法一致），
+# 也满足 flask.cli.load_dotenv 的接口要求。
+import types as _types  # noqa: E402
+
+
+def _read_env_file(path):
+    values = {}
+    try:
+        with open(path, encoding='utf-8') as handle:
+            for line in handle:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, value = line.split('=', 1)
+                values[key.strip()] = value.strip().strip('"').strip("'")
+    except OSError:
+        return {}
+    return values
+
+
+_dotenv_stub = _types.ModuleType('dotenv')
+
+
+def _dotenv_values(*paths, **_kwargs):
+    merged = {}
+    for path in paths or ['.env']:
+        merged.update(_read_env_file(path))
+    return merged
+
+
+def _load_dotenv(*paths, **_kwargs):
+    values = _dotenv_values(*paths) if paths else _dotenv_values('.env')
+    for key, value in values.items():
+        os.environ.setdefault(key, value)
+    return bool(values)
+
+
+def _find_dotenv(filename='.env', **_kwargs):
+    """从当前目录向上找 .env。flask.cli 会用它定位要读的文件。"""
+    current = os.path.abspath(os.getcwd())
+    for _ in range(12):
+        candidate = os.path.join(current, filename)
+        if os.path.isfile(candidate):
+            return candidate
+        parent = os.path.dirname(current)
+        if parent == current:
+            break
+        current = parent
+    return ''
+
+
+_dotenv_stub.load_dotenv = _load_dotenv
+_dotenv_stub.dotenv_values = _dotenv_values
+_dotenv_stub.find_dotenv = _find_dotenv
+sys.modules.setdefault('dotenv', _dotenv_stub)
+
 SECRET_FILE = os.path.join(DATA_DIR, '.secret_key')
 
 
@@ -178,10 +237,22 @@ def current_user():
 
 
 def _state(username=None):
-    return lab.load_state(username or who())
+    """读学习档案。
+
+    演示账号的档案走内存：它有一份预置好的作答记录，评审一进来就能看到
+    真实的修为、星器与进度，而不是空壳；他的改动也全部留在内存里，
+    重启即还原，不会污染磁盘上的任何文件。
+    """
+    name = username or who()
+    if demo_mode.is_enabled() and demo_mode.is_demo(name):
+        return demo_mode.get_state()
+    return lab.load_state(name)
 
 
 def _persist(username, mutate):
+    """写学习档案。演示账号走内存，其余走磁盘。"""
+    if demo_mode.is_enabled() and demo_mode.is_demo(username):
+        return demo_mode.mutate_state(mutate)
     return lab.mutate_state(username, mutate)
 
 
@@ -364,6 +435,22 @@ def _plain(text):
     return re.sub(r'\s+', ' ', _plain_text(text)).strip()
 
 
+def short_title(text, limit=12):
+    """把标题裁成适合按钮的长度，并保证不在词中间断开。
+
+    硬切 [:10] 会切出「工具调用（Funct」这种半截词，比长一点更难读。
+    这里优先在标点处断开（中文括号、冒号、顿号都不该进入按钮文案）。
+    """
+    text = str(text or '').strip()
+    if len(text) <= limit:
+        return text
+    for mark in ('（', '(', '：', ':', '·', '，', ','):
+        cut = text.find(mark)
+        if 4 <= cut <= limit:
+            return text[:cut]
+    return text[:limit] + '…'
+
+
 # ── 全局智能体「星语」 ──────────────────────────────────
 # 三层结构（本地意图 → 检索 → 决策）在这里落地。
 STAR_SYSTEM_PROMPT = """你是「星语」，AI Master 星辰学习系统的全局学习智能体。
@@ -488,15 +575,15 @@ def local_intent(question):
                 return {'type': 'open_training', 'chapter_id': chapter['id'], 'kp_index': -1,
                         'label': '打开《%s》练习' % chapter['title'][:8]}
             return {'type': 'goto_chapter', 'chapter_id': chapter['id'], 'kp_index': -1,
-                    'label': '去看《%s》' % chapter['title'][:8]}
+                    'label': '去看《%s》' % short_title(chapter['title'])}
         return None
 
     _, chapter, kp = best
     if ask_practice:
         return {'type': 'open_training', 'chapter_id': chapter['id'], 'kp_index': kp['index'],
-                'label': '做《%s》的题' % kp['title'][:8]}
+                'label': '做《%s》的题' % short_title(kp['title'], 8)}
     return {'type': 'goto_kp', 'chapter_id': chapter['id'], 'kp_index': kp['index'],
-            'label': '去看「%s」' % kp['title'][:10]}
+            'label': '去看「%s」' % short_title(kp['title'])}
 
 
 def normalize_action(raw):
@@ -513,7 +600,7 @@ def normalize_action(raw):
         kp_index = int(raw.get('kp_index') if raw.get('kp_index') is not None else -1)
     except (TypeError, ValueError):
         kp_index = -1
-    label = str(raw.get('label') or '').strip()[:16]
+    label = short_title(str(raw.get('label') or '').strip(), 16)
     if kind in ('goto_kp', 'goto_chapter', 'open_training'):
         if chapter_id not in valid_chapters:
             return {'type': 'none', 'chapter_id': 0, 'kp_index': -1, 'label': ''}
@@ -525,9 +612,9 @@ def normalize_action(raw):
         chapter_id, kp_index, label = 0, -1, ''
     if not label:
         if kind == 'goto_kp':
-            label = '去看「%s」' % valid_chapters[chapter_id]['knowledge_points'][kp_index]['title'][:10]
+            label = '去看「%s」' % short_title(valid_chapters[chapter_id]['knowledge_points'][kp_index]['title'])
         elif kind == 'goto_chapter':
-            label = '去看《%s》' % valid_chapters[chapter_id]['title'][:8]
+            label = '去看《%s》' % short_title(valid_chapters[chapter_id]['title'])
         elif kind == 'open_training':
             label = '打开第 %d 章练习' % chapter_id
         elif kind == 'open_roadmap':
@@ -634,6 +721,8 @@ def dashboard():
             'id': chapter['id'], 'title': chapter['title'], 'icon': chapter.get('icon', '✦'),
             'description': chapter.get('description', ''), 'stage': chapter.get('stage', ''),
             'stage_id': chapter.get('stage_id', 0), 'stage_color': chapter.get('stage_color', ''),
+            'stage_goal': chapter.get('stage_goal', ''),
+            'day_range': '%02d–%02d' % (chapter.get('day_start') or 0, chapter.get('day_end') or 0),
             'highlight': bool(chapter.get('highlight')), 'level': chapter.get('level', ''),
             'hours': chapter.get('hours', 0), 'tags': chapter.get('tags') or [],
             'knowledge_count': len(kps), 'done_count': finished,
@@ -644,6 +733,47 @@ def dashboard():
     return render_template('dashboard.html', chapters=chapters, profile=profile, stats=stats,
                            username=who(), is_guest=who() == 'guest',
                            instruments=game.STAR_INSTRUMENTS)
+
+
+_CG_REGISTRY = None
+
+
+def cg_assets(chapter_id):
+    """某一章的视觉资产（开场 CG / 实验室 / 实战展示）。
+
+    数据来自 tools/attach_cg_assets.py 写出的 data/cg_registry.json ——
+    「哪章配哪个 CG」只有那一份定义，章节页、智能体、星海页都从这里取，
+    避免加一个 CG 要改好几处。
+    """
+    global _CG_REGISTRY
+    if _CG_REGISTRY is None:
+        _CG_REGISTRY = load_json(os.path.join(DATA_DIR, 'cg_registry.json'), {}) or {}
+    return _CG_REGISTRY.get(str(chapter_id)) or []
+
+
+def neighbors_of(chapter_id, limit=4):
+    """前后各取几章，构成「上一章 / 下一章 / 顺路去看看」的导览。
+
+    只给上一章下一章不够用：学生看完一章常常还没决定学哪一章，
+    给一条可点的邻域比逼他做决定更顺手。
+    """
+    courses = lab.courses()
+    index = next((i for i, c in enumerate(courses) if c['id'] == chapter_id), 0)
+    rows = []
+    for offset in range(-limit, limit + 1):
+        if offset == 0:
+            continue
+        pos = index + offset
+        if 0 <= pos < len(courses):
+            chapter = courses[pos]
+            rows.append({
+                'id': chapter['id'], 'title': chapter['title'],
+                'icon': chapter.get('icon', '✦'), 'stage': chapter.get('stage', ''),
+                'highlight': bool(chapter.get('highlight')),
+                'relation': 'prev' if offset < 0 else 'next',
+                'gap': abs(offset),
+            })
+    return rows
 
 
 @app.route('/chapter/<int:chapter_id>')
@@ -662,17 +792,26 @@ def chapter_page(chapter_id):
         kps.append({
             'index': kp['index'], 'title': kp['title'], 'content': kp.get('content', ''),
             'minutes': kp.get('minutes', 20), 'done': key in done,
-            'questions': questions,
+            'day': kp.get('course_day'), 'questions': questions,
         })
     chapter_questions = [lab.question_brief(item, st) for item in lab.load_bank()
                          if item.get('chapter_id') == chapter['id'] and item.get('kp_index') is None]
     total_questions = sum(len(kp['questions']) for kp in kps) + len(chapter_questions)
+    facts = [
+        {'label': 'Day', 'value': '%d–%d' % (chapter.get('day_start') or 0,
+                                             chapter.get('day_end') or 0)},
+        {'label': '知识点', 'value': '%d 节' % len(kps)},
+        {'label': '学时', 'value': '约 %s 小时' % chapter.get('hours', '')},
+        {'label': '练习题', 'value': '%d 道' % total_questions},
+    ]
     return render_template(
         'chapter.html', chapter=chapter, kps=kps, chapter_questions=chapter_questions,
-        total_questions=total_questions,
+        total_questions=total_questions, facts=facts, cg_assets=cg_assets(chapter_id),
+        neighbors=neighbors_of(chapter_id),
         username=who(), is_guest=who() == 'guest', accent=colors[chapter['id'] % len(colors)],
         prev_chapter=chapter['id'] - 1 if chapter['id'] > 1 else 0,
-        next_chapter=chapter['id'] + 1 if chapter['id'] < len(lab.courses()) else 0)
+        next_chapter=chapter['id'] + 1 if chapter['id'] < len(lab.courses()) else 0,
+        next_title=next((c['title'] for c in lab.courses() if c['id'] == chapter['id'] + 1), ''))
 
 
 @app.route('/agent')
@@ -708,38 +847,61 @@ def progress_page():
     return render_template('progress.html', username=who(), is_guest=who() == 'guest')
 
 
+@app.route('/transition')
+def transition_page():
+    """星际导航：章节之间的跃迁过场。
+
+    原版 AI Master 的这个页面只留下了 js + css，宿主 HTML 已经不存在，
+    而且目的地与时长都写死在 js 里（5 秒后硬跳 dashboard）。
+    这里把它恢复成一个可配置的页面：
+        /transition?to=/chapter/5&kicker=SECTOR 05&hold=1
+    hold=1 用于截图验收：停住不跳走。
+    """
+    to_url = request.args.get('to') or url_for('dashboard')
+    # 只允许站内路径，避免把跃迁页变成开放重定向。
+    if not to_url.startswith('/') or to_url.startswith('//'):
+        to_url = url_for('dashboard')
+    kicker = (request.args.get('kicker') or '').strip()[:40]
+    if not kicker:
+        kicker = '即将跃迁'
+    # 引言默认用原版那句，也允许按章节换；长度限制是为了不被塞进超长文案把版面撑坏
+    quote = (request.args.get('quote') or '').strip()[:60]
+    next_label = (request.args.get('next') or '').strip()[:40]
+    try:
+        duration = max(1500, min(15000, int(request.args.get('duration') or 5200)))
+    except (TypeError, ValueError):
+        duration = 5200
+    return render_template('transition.html', to_url=to_url, kicker=kicker, quote=quote,
+                           next_label=next_label or '正在进入下一站…',
+                           hold=request.args.get('hold') == '1',
+                           duration=duration)
+
+
 @app.route('/stars')
 def stars_page():
-    st = _state()
-    done = _done_kps(st)
-    galaxies = []
-    total_kps = 0
-    for chapter in lab.courses():
-        kps = []
-        for kp in chapter.get('knowledge_points') or []:
-            total_kps += 1
-            kps.append({'index': kp['index'], 'title': kp['title'],
-                        'done': '%s_%s' % (chapter['id'], kp['index']) in done})
-        finished = len([kp for kp in kps if kp['done']])
-        galaxies.append({
-            'id': chapter['id'], 'title': chapter['title'], 'icon': chapter.get('icon', '✦'),
-            'highlight': bool(chapter.get('highlight')), 'kps': kps, 'done': finished,
-            'progress': int(round(finished / len(kps) * 100)) if kps else 0,
-        })
-    return render_template('stars.html', username=who(), is_guest=who() == 'guest',
-                           galaxies=galaxies, total_kps=total_kps)
+    """知识星海 —— 直接回原版那套 three.js 3D 星海。
+
+    之前这里我用一个 DOM 卡片列表替代过它，是个错误：原版的 3D 星海有
+    拖拽旋转、滚轮缩放、射线拾取、星系/星球两级导航，是这门课的招牌。
+    现在直接把 static/atlas/index.html 发出去，数据由 /api/knowledge-universe
+    提供（所以它反映的是学生真实进度，而不是导出时的快照）。
+    """
+    return send_from_directory(os.path.join(app.static_folder, 'atlas'), 'index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
+    courses = lab.courses()
+    stats = {'chapters': len(courses),
+             'kps': sum(len(c.get('knowledge_points') or []) for c in courses)}
     if request.method == 'GET':
-        return render_template('login.html', username=who(), error='')
+        return render_template('login.html', username=who(), error='', stats=stats)
     username = (request.form.get('username') or '').strip()
     password = request.form.get('password') or ''
     data = users()
     record = data.get(username)
     if not record or not check_password_hash(record.get('password', ''), password):
-        return render_template('login.html', username=who(), error='用户名或密码不对。')
+        return render_template('login.html', username=who(), error='用户名或密码不对。', stats=stats)
     session.permanent = True
     session['username'] = username
     return redirect(url_for('dashboard'))
@@ -864,8 +1026,11 @@ def api_knowledge_universe():
     """知识星海的数据源：每章一个星系，每个知识点一颗星。"""
     st = _state()
     done = _done_kps(st)
-    palette = [['0x7ee1ff', '0x2f75c9'], ['0xe2b4ff', '0x7a4fc9'], ['0x8ff0c8', '0x2f8f6d'],
-               ['0xffd28a', '0xc07a2f'], ['0xff9f9f', '0xc04f6f'], ['0xb8c4ff', '0x4f5fc0']]
+    # 颜色写成 '#rrggbb'，不要写成 '0xrrggbb'：
+    # three.js 的 Color.setStyle 认得 '#rrggbb'、'rgb(...)' 和颜色名，
+    # 但认不出带 0x 前缀的字符串 —— 它会警告并退成白色，所有星系就都变白了。
+    palette = [['#7ee1ff', '#2f75c9'], ['#e2b4ff', '#7a4fc9'], ['#8ff0c8', '#2f8f6d'],
+               ['#ffd28a', '#c07a2f'], ['#ff9f9f', '#c04f6f'], ['#b8c4ff', '#4f5fc0']]
     galaxies = []
     total_stars = completed = 0
     for chapter in lab.courses():
@@ -1424,7 +1589,7 @@ def api_create_exam():
     count = max(1, min(20, int(payload.get('count') or 5)))
     difficulty = payload.get('difficulty') or None
     track = payload.get('track') or None
-    state = lab.load_state(username)
+    state = _state(username)
     ids = lab.build_exam(state, chapters=chapters, count=count,
                          difficulty=difficulty, track=track)
     if not ids:
@@ -1433,14 +1598,14 @@ def api_create_exam():
             'chapters': [str(c) for c in chapters], 'track': track or '',
             'difficulty': difficulty, 'questions': ids, 'answers': {},
             'status': 'open', 'score': None, 'review': '', 'finished_at': ''}
-    lab.mutate_state(username, lambda st: st.setdefault('exams', []).append(exam) or
-                     st.update({'active_exam': exam['id']}))
-    return jsonify({'success': True, 'exam': lab.exam_summary(lab.load_state(username), exam)})
+    _persist(username, lambda st: st.setdefault('exams', []).append(exam) or
+             st.update({'active_exam': exam['id']}))
+    return jsonify({'success': True, 'exam': lab.exam_summary(_state(username), exam)})
 
 
 @app.route('/api/training/exam/<exam_id>')
 def api_get_exam(exam_id):
-    state = lab.load_state(who())
+    state = _state()
     exam = next((e for e in state.get('exams') or [] if e.get('id') == exam_id), None)
     if not exam:
         return jsonify({'success': False, 'message': '试卷不存在'}), 404
@@ -1471,7 +1636,7 @@ def api_finish_exam(exam_id):
         state['_exam'] = lab.exam_summary(state, exam)
         return True
 
-    state = lab.mutate_state(username, mutate)
+    state = _persist(username, mutate)
     if state.get('_error'):
         return jsonify({'success': False, 'message': state['_error']}), 404
     return jsonify({'success': True, 'exam': state.get('_exam')})
@@ -1480,7 +1645,7 @@ def api_finish_exam(exam_id):
 @app.route('/api/training/exam/<exam_id>/review', methods=['POST'])
 def api_review_exam(exam_id):
     """交卷后的 AI 讲评：按题目逐题说错在哪，并给出下一步练什么。"""
-    state = lab.load_state(who())
+    state = _state()
     exam = next((e for e in state.get('exams') or [] if e.get('id') == exam_id), None)
     if not exam:
         return jsonify({'success': False, 'message': '试卷不存在'}), 404
@@ -1507,7 +1672,7 @@ def api_review_exam(exam_id):
             return
         text = ''.join(chunks).strip()
         if text:
-            lab.mutate_state(who(), lambda st: _set_review(st, exam_id, text) or True)
+            _persist(who(), lambda st: _set_review(st, exam_id, text) or True)
             if who() != 'guest':
                 coach.record_exchange(who(), '组卷讲评 %s' % exam_id, text, source='exam')
         yield sse({'type': 'done', 'model': ark.active_model})
@@ -1690,20 +1855,22 @@ def api_game_state():
     username = who()
     granted = []
     if username != 'guest':
-        granted, _ = game.claim_trials(username)
-    st = lab.load_state(username)
+        # 注入当前身份对应的存取器：演示账号走内存，普通账号走磁盘。
+        # 若让它用默认的磁盘实现，演示账号一看修为页就会在
+        # data/training/ 下留下一个空档，违反「改动不落盘」的承诺。
+        granted, _ = game.claim_trials(username, load=_state, store=_persist)
+    st = _state(username)
     snap = game.snapshot(username, st)
     snap['success'] = True
     snap['is_guest'] = username == 'guest'
     snap['granted_trials'] = granted
-    snap['equipment'] = [row for row in snap['equipment']]
     return jsonify(snap)
 
 
 @app.route('/api/progress/overview')
 def api_progress_overview():
     username = who()
-    st = lab.load_state(username)
+    st = _state(username)
     profile = game.level_from_points(st.get('points'))
     stats = game.derive_stats(st)
     attempts = st.get('attempts') or {}
@@ -1734,6 +1901,51 @@ def api_progress_overview():
         'exams': [lab.exam_summary(st, exam) for exam in (st.get('exams') or [])[-6:]],
         'log': list(reversed((st.get('log') or [])[-14:])),
     })
+
+
+@app.route('/api/chapter-revelation/<int:chapter_id>')
+def api_chapter_revelation(chapter_id):
+    """学完一章后的「星辰启示」：一段贴合这一章内容的收束语。
+
+    revelation_cg.html 会调这个接口；拿不到时它自己有兜底文案，
+    所以这里失败也不影响页面可用。走缓存，同一章的启示不会重复生成。
+    """
+    chapter = next((c for c in lab.courses() if c['id'] == chapter_id), None)
+    if not chapter:
+        return jsonify({'success': False, 'message': '章节不存在'}), 404
+    kp_titles = [kp['title'] for kp in chapter.get('knowledge_points') or []]
+    key = cache_key([{'role': 'revelation', 'content': 'ch%d' % chapter_id}])
+    cached = cache_get(key)
+    if cached:
+        return jsonify({'success': True, 'cached': True, **cached})
+
+    # 提示词写成多行拼接而不是一个长字符串：这样每一条约束都能单独读、单独改，
+    # 也避免长文本里混进不可见的转义问题。
+    lines = [
+        '一位学生刚学完这门课的第 %d 章《%s》（%s）。这一章包含这些内容：' % (
+            chapter_id, chapter['title'], chapter.get('stage', '')),
+        '\n'.join('- ' + title for title in kp_titles),
+        '',
+        '请写一段 60-90 字的收束语，作为他翻过这一章时的「星图寄语」。要求：',
+        '- 用第二人称对他说话，语气克制、有分量，不要鸡汤和排比。',
+        '- 必须呼应这一章真正讲的东西（提到其中 1-2 个具体概念），不要泛泛谈努力。',
+        '- 输出纯文本，不要 Markdown，不要引号，不要 emoji。',
+        '只输出一个 JSON 对象：{"title": "<4-8 字的标题>", "text": "<正文>"}',
+    ]
+    prompt = '\n'.join(lines)
+    try:
+        raw = ark.complete([{'role': 'user', 'content': prompt}], max_tokens=500, temperature=0.7)
+    except ArkError as exc:
+        return jsonify({'success': False, 'message': str(exc)})
+    parsed = _extract_json(raw) or {}
+    result = {
+        'title': str(parsed.get('title') or '星辰指引').strip()[:20],
+        'text': str(parsed.get('text') or '').strip()[:400],
+    }
+    if not result['text']:
+        return jsonify({'success': False, 'message': '生成失败'})
+    cache_put(key, result)
+    return jsonify({'success': True, 'cached': False, **result})
 
 
 @app.route('/api/glossary')

@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>全栈落地与毕业项目 · AI Master 星辰学习系统</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/chapter.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="chapter-page"
+      data-page="全栈落地与毕业项目" data-chapter-id="9">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+
+<section class="ch-head fade-up" style="--accent:#ff9f9f">
+  
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="static/cg/workbuddy_showcase.html">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>实战 · WorkBuddy 拆解</h2>
+      <p>一个真实办公智能体的三层架构与六种能力</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    
+    <div class="ch-cg-rest">
+      
+      <a class="ch-cg-chip show" href="static/cg/zcode_showcase.html" target="_blank" rel="noreferrer">
+        <b>实战 · ZCode 拆解</b><em>从新手村到 Hooks / Skills 的高手之路</em>
+      </a>
+      
+      <a class="ch-cg-chip cine" href="static/cg/revelation_cg.html" target="_blank" rel="noreferrer">
+        <b>收束 · 星辰启示</b><em>翻过这一章时，看一眼星图留言</em>
+      </a>
+      
+    </div>
+    
+  </div>
+  
+
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR 09 / 阶段四 · 源码、调优与落地</p>
+    <h1>🏗️ 全栈落地与毕业项目</h1>
+    <p class="lead">Day 38–40：前端展示与容器化；LLMOps：监控、成本与安全上线；毕业答辩与就业指导</p>
+    <div class="row">
+      
+      <span class="chip"><b style="color:var(--ink)">38–40</b> Day</span>
+      
+      <span class="chip"><b style="color:var(--ink)">3 节</b> 知识点</span>
+      
+      <span class="chip"><b style="color:var(--ink)">约 18 小时</b> 学时</span>
+      
+      <span class="chip"><b style="color:var(--ink)">21 道</b> 练习题</span>
+      
+      
+      <span class="chip">Gradio</span><span class="chip">Streamlit</span><span class="chip">Docker</span><span class="chip">LLMOps</span><span class="chip">答辩</span>
+    </div>
+  </div>
+
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / 3</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="training.html?chapters=9">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      <a class="ch-nav" href="chapter-8.html">← 上一章</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson"><blockquote><strong>版本</strong>：v1.0（2026-09-21 编写） <strong>建议学时</strong>：3 天 × 6 学时 + 答辩 <strong>先修要求</strong>：完成第 1–8 章，已有可运行的 AI 应用后端 <strong>章节交付物</strong>：<strong>可上线的完整产品</strong>（前端 + 容器化 + 监控）+ 答辩 + 作品集</blockquote>
+<hr>
+<h3>9.0 最后三天的目标</h3>
+<p>前八章你学到了各种能力。最后三天的唯一目标是：<strong>把它们组装成一个别人能用的产品</strong>。</p>
+<p>「能用」和「能演示」之间有一条很宽的鸿沟：</p>
+<table><thead><tr><th style="text-align:left">能演示</th><th style="text-align:left">能上线</th></tr></thead><tbody><tr><td style="text-align:left">你本机 <code>python xxx.py</code> 能跑</td><td style="text-align:left">换台机器按文档就能跑起来</td></tr><tr><td style="text-align:left">只有你知道怎么配环境</td><td style="text-align:left">环境变量有模板，密钥不泄露</td></tr><tr><td style="text-align:left">出错了看终端报错</td><td style="text-align:left">有日志、有监控、有告警</td></tr><tr><td style="text-align:left">界面是命令行输出</td><td style="text-align:left">有可交互的界面，有加载状态</td></tr><tr><td style="text-align:left">没算过成本</td><td style="text-align:left">知道每个用户每天花多少钱</td></tr><tr><td style="text-align:left">没有测试</td><td style="text-align:left">有关键路径的测试，改代码不慌</td></tr></tbody></table>
+<p><strong>这三天就是把左边一列变成右边一列。</strong></p>
+<hr></div>
+  </div>
+</section>
+
+
+<section class="section">
+  <header>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
+  </header>
+  <div class="route" id="route">
+    
+    <article class="kp" id="kp-1" data-kp-index="0"
+             data-kp-key="9_0" >
+      <div class="kp-head">
+        <span class="kp-no">D38</span>
+        <div class="kp-head-main">
+          <h3>Day 38｜前端展示与容器化</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">收起</button>
+      </div>
+
+      
+      <div class="kp-body" >
+        <div class="lesson"><h4>一、教学目标</h4>
+<ol><li>用 Gradio / Streamlit 给应用加一个能用的界面（含流式打字机效果）；</li><li>会用 Docker 打包应用，做到「换个环境也能跑」；</li><li>知道容器化的常见坑。</li></ol>
+<h4>二、为什么需要前端</h4>
+<p><strong>给非技术用户用的产品必须有界面。</strong> 命令行输出对演示够用，对产品是不够的。而 LLM 应用的界面有一个特殊要求：</p>
+<p><strong>流式输出（打字机效果）不是装饰，是体验必需品。</strong></p>
+<table><thead><tr><th style="text-align:left"></th><th style="text-align:left">等待全部生成完再显示</th><th style="text-align:left">逐字流式显示</th></tr></thead><tbody><tr><td style="text-align:left">首字可见时间</td><td style="text-align:left">5–15 秒（等于总生成时间）</td><td style="text-align:left">0.3–1 秒</td></tr><tr><td style="text-align:left">用户感知</td><td style="text-align:left">「卡住了？是不是坏了？」</td><td style="text-align:left">「它在打字，在工作」</td></tr><tr><td style="text-align:left">心理等待时长</td><td style="text-align:left">等于实际时长</td><td style="text-align:left"><strong>显著短于实际时长</strong></td></tr></tbody></table>
+<blockquote>这是<strong>真实的产品指标</strong>，不是审美偏好。同一次响应，流式能让用户的主观等待感下降一半以上。 所以第 2 章 Day08 花大力气讲 SSE，就是为了这一天。</blockquote>
+<h4>三、Gradio 与 Streamlit</h4>
+<table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Gradio</th><th style="text-align:left">Streamlit</th></tr></thead><tbody><tr><td style="text-align:left">定位</td><td style="text-align:left">快速搭建 ML/AI 演示界面</td><td style="text-align:left">数据应用与仪表盘</td></tr><tr><td style="text-align:left">对话界面</td><td style="text-align:left"><code>gr.ChatInterface</code> 开箱即用</td><td style="text-align:left">需要自己组合</td></tr><tr><td style="text-align:left">流式支持</td><td style="text-align:left">回调函数 <code>yield</code> 部分结果</td><td style="text-align:left"><code>st.write_stream(generator)</code></td></tr><tr><td style="text-align:left">适合</td><td style="text-align:left"><strong>本课程：聊天类应用</strong></td><td style="text-align:left">带图表的分析面板</td></tr><tr><td style="text-align:left">部署</td><td style="text-align:left">可挂 Hugging Face Spaces</td><td style="text-align:left">需要自己部署</td></tr></tbody></table>
+<p><strong>共同的优点</strong>：几行代码就有可用界面，把时间留给业务逻辑。</p>
+<h5>Gradio 的流式写法（要点）</h5>
+<pre class="code lang-python"><code>import gradio as gr
+
+def respond(message, history):
+    # 关键：用 yield 逐步返回，而不是 return 一次性返回
+    buffer = ""
+    for piece in client.stream([...]):
+        buffer += piece
+        yield buffer          # 每次 yield 都会更新界面
+
+gr.ChatInterface(fn=respond).launch()</code></pre>
+<blockquote><strong>⚠️ 两个高频误区（已核实，核实日期 2026-09-21，Gradio 当前 6.28.0）</strong>：  1. <strong>打字机效果不是靠 &lt;code&gt;.stream()&lt;/code&gt; 实现的</strong>。<code>.stream()</code> 是<strong>输入组件</strong>的事件 （摄像头/麦克风/滑动条连续输入），它的参数 <code>stream_every</code> / <code>time_limit</code> 说明里 明确写着 "Parameter only used for the <code>.stream()</code> event." <strong>文本打字机效果靠的是把回调函数写成生成器并 &lt;code&gt;yield&lt;/code&gt; 字符串</strong>。 2. <strong>Gradio 6 有几个破坏性变更</strong>（都是实测踩出来的）： - <code>gr.Chatbot(type=...)</code> 参数<strong>已被移除</strong>，传了会直接 <code>TypeError</code>（messages 格式现为默认）； - <code>theme</code> 参数<strong>从 &lt;code&gt;Blocks()&lt;/code&gt; 移到了 &lt;code&gt;launch()&lt;/code&gt;</strong>； - <code>ChatInterface</code> 的 <code>type</code> 参数同样不存在了。  <strong>一个必须搞清的语义差异</strong>（这是实测发现的，很多教程讲错）：  | 框架 | 生成器 <code>yield</code> 的应该是 | |---|---| | <strong>Gradio</strong> | <strong>累积</strong>的完整文本（每次 yield 完整内容，它内部算 diff 只发增量） | | <strong>Streamlit</strong> | <strong>增量</strong>分片（<code>st.write_stream</code> 自己负责拼接） |  两者方向相反。如果你在两个框架间复用同一个生成器函数，<strong>必须写一个适配函数转换语义</strong>， 否则 Gradio 上会看到文字重复叠加、Streamlit 上会看到只有最后一片。  官方 demo 的写法就是最标准的： ``<code>python def slow_echo(message, history): for i in range(len(message)): time.sleep(0.05) yield "You typed: " + message[: i + 1]     # ← 注意是累积的完整字符串 </code>``</blockquote>
+<h5>Streamlit 的流式写法（要点）</h5>
+<pre class="code lang-python"><code>import streamlit as st
+
+def stream_data():
+    for piece in client.stream([...]):
+        yield piece
+
+if prompt := st.chat_input("问点什么"):
+    st.write_stream(stream_data)      # 自动渲染打字机效果</code></pre>
+<blockquote><strong>已核实</strong>：<code>st.write_stream(stream, *, cursor=None)</code> 当前版本 <strong>v1.64.0</strong>。 它"iterates through the given sequences and writes all chunks to the app"， 字符串分片用 typewriter effect 显示，并返回完整响应。 <code>cursor</code> 参数（1.51.0 加入）可自定义光标；1.59.0 起还支持 OpenAI Responses API 的流。 它同样支持 async generator（1.41.0 起）。</blockquote>
+<blockquote><strong>两者的共同本质</strong>：把一个<strong>生成器</strong>交给界面框架，它负责在每次产出时刷新视图。 理解这一点，你就能在任意前端框架里实现同样的效果。</blockquote>
+<h5>动手</h5>
+<pre class="code lang-powershell"><code># Gradio 版本（含后端切换控件）
+python code/ch09/10_gradio_app.py
+
+# Streamlit 版本
+streamlit run code/ch09/11_streamlit_app.py</code></pre>
+<p>两个界面都要有：</p>
+<ul><li>流式打字机效果；</li><li><strong>后端切换控件</strong>（离线靶场 ↔ 真实平台）——这是本课程「配置化」理念的界面体现；</li><li>错误提示（后端连不上时给明确提示，而不是白屏）。</li></ul>
+<h4>四、容器化：让「换个环境也能跑」成为默认</h4>
+<h5>为什么必须容器化</h5>
+<p><strong>「在我机器上能跑」是工程事故的头号来源。</strong> 它通常来自：</p>
+<table><thead><tr><th style="text-align:left">差异</th><th style="text-align:left">容器如何解决</th></tr></thead><tbody><tr><td style="text-align:left">Python 版本不同</td><td style="text-align:left">镜像固定版本</td></tr><tr><td style="text-align:left">依赖版本不同</td><td style="text-align:left"><code>requirements.txt</code> 锁定 + 镜像固化</td></tr><tr><td style="text-align:left">系统库缺失</td><td style="text-align:left">Dockerfile 里显式安装</td></tr><tr><td style="text-align:left">环境变量不同</td><td style="text-align:left">用 <code>.env</code> 或 compose 显式声明</td></tr><tr><td style="text-align:left">工作目录结构不同</td><td style="text-align:left">镜像内路径固定</td></tr></tbody></table>
+<h5>Dockerfile 的关键要素</h5>
+<pre class="code lang-dockerfile"><code># 1. 基础镜像固定版本（不要用 latest —— 那等于每天换一次环境）
+FROM python:3.12-slim
+
+# 2. 先复制依赖清单再装依赖（利用 Docker 层缓存：
+#    只要 requirements.txt 没变，改代码时不会重装依赖）
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 3. 再复制代码（这一步频繁变化，放在后面）
+COPY code/ ./code/
+COPY tools/ ./tools/
+
+# 4. 用非 root 用户运行（安全要求，不要用 root 跑应用）
+RUN useradd -m appuser
+USER appuser
+
+# 5. 健康检查（编排系统靠它判断容器是否真的可用）
+HEALTHCHECK CMD python -c "import httpx; httpx.get('http://127.0.0.1:8000/health').raise_for_status()"
+
+EXPOSE 8000
+CMD ["uvicorn", "code.ch02.api:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+<blockquote><strong>基础镜像的当前情况</strong>（核实日期 2026-09-21）：  - <code>python:3.12-slim</code> <strong>依然有效可用</strong>，是社区主流写法。官方 tag 清单确认存在 <code>3.12.14-slim</code>、<code>3.12-slim</code>、<code>3.12-slim-trixie</code>、<code>3.12-slim-bookworm</code> 等； - 当前最新稳定线是 <strong>3.14</strong>（另有 3.15 RC），若想用最新可写 <code>python:3.14-slim</code>； - <strong>但要注意</strong>：Docker 官方 Python 指南现在已改用 <strong>Docker Hardened Images (DHI)</strong> （<code>dhi.io/python:3.12-dev</code> 做构建阶段、<code>dhi.io/python:3.12</code> 做运行时，默认非 root）。 这些镜像<strong>需要登录才能拉取</strong>。  <strong>教学建议</strong>：课堂用 <code>python:3.12-slim</code>（开放、易拉取、写法通用）。 但在讲义和答辩里<strong>不要声称「这是 Docker 官方推荐」</strong>—— 官方当前推荐的是 DHI，只是它需要账号，不适合课堂。</blockquote>
+<p><strong>每一行的理由</strong>：</p>
+<table><thead><tr><th style="text-align:left">做法</th><th style="text-align:left">为什么</th></tr></thead><tbody><tr><td style="text-align:left">固定基础镜像版本</td><td style="text-align:left"><code>latest</code> 会在某天悄悄换版本，导致「昨天还好好的今天崩了」</td></tr><tr><td style="text-align:left">依赖先复制</td><td style="text-align:left">层缓存：改代码不触发依赖重装，构建从几分钟降到几秒</td></tr><tr><td style="text-align:left"><code>--no-cache-dir</code></td><td style="text-align:left">pip 缓存会白白增大镜像体积</td></tr><tr><td style="text-align:left">非 root 用户</td><td style="text-align:left">容器逃逸时限制影响范围</td></tr><tr><td style="text-align:left"><code>HEALTHCHECK</code></td><td style="text-align:left">编排系统据此重启不健康的容器</td></tr><tr><td style="text-align:left">不要复制 <code>.env</code></td><td style="text-align:left">密钥必须通过运行时注入，不能进镜像（<strong>镜像层可被任何人拉取查看</strong>）</td></tr></tbody></table>
+<h5>常见坑（<code>.dockerignore</code> 的必要性）</h5>
+<table><thead><tr><th style="text-align:left">坑</th><th style="text-align:left">后果</th><th style="text-align:left">解决</th></tr></thead><tbody><tr><td style="text-align:left">把 <code>.env</code> 打进了镜像</td><td style="text-align:left"><strong>密钥泄露</strong></td><td style="text-align:left"><code>.dockerignore</code> 排除 <code>.env</code>，改用运行时注入</td></tr><tr><td style="text-align:left">把 <code>.git</code> / <code>venv</code> / <code>__pycache__</code> 打进去</td><td style="text-align:left">镜像从 200MB 变成 2GB</td><td style="text-align:left"><code>.dockerignore</code></td></tr><tr><td style="text-align:left">用 root 运行</td><td style="text-align:left">安全风险</td><td style="text-align:left"><code>USER</code> 指令</td></tr><tr><td style="text-align:left">没有健康检查</td><td style="text-align:left">编排系统无法判断容器状态</td><td style="text-align:left"><code>HEALTHCHECK</code></td></tr><tr><td style="text-align:left">每次改代码都重装依赖</td><td style="text-align:left">构建慢</td><td style="text-align:left">依赖与代码分层复制</td></tr></tbody></table>
+<h5>动手</h5>
+<pre class="code lang-powershell"><code># 查看准备好的文件
+# code/ch09/20_dockerfile
+# code/ch09/21_docker_compose.yml
+# code/ch09/22_docker_notes.md
+
+# 有 Docker 的环境上执行
+docker build -f code/ch09/20_dockerfile -t ai-course-app .
+docker compose -f code/ch09/21_docker_compose.yml up</code></pre>
+<blockquote><strong>说明</strong>：本机如未安装 Docker，请在有 Docker 的环境验证。 <code>22_docker_notes.md</code> 里列出了完整的验证命令与常见报错处理。</blockquote>
+<h4>五、当日验收</h4>
+<ul><li>[ ] 界面能流式显示（能观察到逐字出现，而不是一次性出现）</li><li>[ ] 界面能在靶场与真实平台间切换</li><li>[ ] Dockerfile 能构建成功，容器内应用可访问</li><li>[ ] <strong>验证密钥没有进入镜像</strong>（这是硬性安全检查）：</li></ul>
+<p><code>docker run --rm &lt;image&gt; sh -c "env | grep -i key"</code> 应该看不到真实密钥</p>
+<ul><li>[ ] 能说出 <code>.dockerignore</code> 至少要排除哪四类文件</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 1, "id": "q09-01-01", "last_answer": "", "last_feedback": "", "options": ["\u6d41\u5f0f\u80fd\u628a\u9996\u5b57\u53ef\u89c1\u65f6\u95f4\u4ece 5\u201315 \u79d2\u964d\u5230 0.3\u20131 \u79d2\uff0c\u7528\u6237\u4e3b\u89c2\u7b49\u5f85\u611f\u4e0b\u964d\u4e00\u534a\u4ee5\u4e0a", "\u6d41\u5f0f\u80fd\u51cf\u5c11\u6a21\u578b\u7684 token \u6d88\u8017\uff0c\u4ece\u800c\u964d\u4f4e\u8c03\u7528\u6210\u672c", "\u6d41\u5f0f\u80fd\u8ba9\u6700\u7ec8\u751f\u6210\u7684\u7b54\u6848\u8d28\u91cf\u66f4\u9ad8\u3001\u66f4\u51c6\u786e", "\u6d41\u5f0f\u80fd\u8ba9\u540e\u7aef\u5e76\u53d1\u80fd\u529b\u63d0\u5347\uff0c\u652f\u6301\u66f4\u591a\u7528\u6237\u540c\u65f6\u8bbf\u95ee"], "points": 27, "solved": false, "statement": "\u67d0 LLM \u5e94\u7528\u603b\u751f\u6210\u65f6\u95f4\u7ea6 10 \u79d2\u3002\u56e2\u961f\u8ba8\u8bba\u662f\u5426\u8981\u505a\u6d41\u5f0f\u6253\u5b57\u673a\u6548\u679c\uff0c\u6709\u4eba\u8ba4\u4e3a\u8fd9\u53ea\u662f\u5ba1\u7f8e\u504f\u597d\u3002\n\u4e0b\u5217\u54ea\u9879\u6700\u80fd\u8bf4\u660e\u6d41\u5f0f\u8f93\u51fa\u662f\u4ea7\u54c1\u5fc5\u9700\u800c\u975e\u88c5\u9970\uff1f", "tags": ["\u6d41\u5f0f\u8f93\u51fa", "\u4ea7\u54c1\u6307\u6807", "\u524d\u7aef\u4f53\u9a8c"], "title": "\u6d41\u5f0f\u8f93\u51fa\u7684\u4ea7\u54c1\u4ef7\u503c", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 3, "id": "q09-01-02", "last_answer": "", "last_feedback": "", "options": ["Gradio \u5e94 yield \u7d2f\u79ef\u7684\u5b8c\u6574\u6587\u672c\uff0cStreamlit \u5e94 yield \u589e\u91cf\u5206\u7247\uff0c\u4e24\u8005\u65b9\u5411\u76f8\u53cd\uff0c\u590d\u7528\u9700\u5199\u9002\u914d\u51fd\u6570", "\u4e24\u8005\u90fd\u5e94 yield \u589e\u91cf\u5206\u7247\uff0c\u6846\u67b6\u81ea\u5df1\u8d1f\u8d23\u62fc\u63a5\uff0c\u6240\u4ee5\u53ef\u4ee5\u76f4\u63a5\u590d\u7528", "\u4e24\u8005\u90fd\u5e94 yield \u7d2f\u79ef\u7684\u5b8c\u6574\u6587\u672c\uff0c\u6846\u67b6\u5185\u90e8\u8ba1\u7b97 diff \u53ea\u53d1\u589e\u91cf", "Gradio \u5e94 yield \u589e\u91cf\u5206\u7247\uff0cStreamlit \u5e94 yield \u7d2f\u79ef\u6587\u672c\uff0c\u4e24\u8005\u65b9\u5411\u76f8\u53cd"], "points": 189, "solved": false, "statement": "\u540c\u4e00\u4e2a\u751f\u6210\u5668\u51fd\u6570\u8981\u5728 Gradio \u548c Streamlit \u4e24\u4e2a\u754c\u9762\u95f4\u590d\u7528\u3002\n\u5173\u4e8e\u4e24\u8005\u751f\u6210\u5668 yield \u7684\u5185\u5bb9\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["Gradio", "Streamlit", "\u6d41\u5f0f", "\u751f\u6210\u5668"], "title": "Gradio \u4e0e Streamlit \u7684 yield \u8bed\u4e49", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "id": "q09-01-03", "last_answer": "", "last_feedback": "", "options": ["\u5148\u590d\u5236\u4f9d\u8d56\u6e05\u5355\u518d\u590d\u5236\u4ee3\u7801\uff0c\u53ef\u5229\u7528\u5c42\u7f13\u5b58\uff1a\u6539\u4ee3\u7801\u65f6\u4e0d\u91cd\u88c5\u4f9d\u8d56\uff0c\u6784\u5efa\u4ece\u51e0\u5206\u949f\u964d\u5230\u51e0\u79d2", "\u5e94\u8be5\u628a COPY code/ \u653e\u5728 pip install \u4e4b\u524d\uff0c\u8fd9\u6837\u4ee3\u7801\u53d8\u66f4\u65f6\u80fd\u66f4\u5feb\u547d\u4e2d\u7f13\u5b58", "useradd \u4e0e USER \u53ea\u662f\u5f62\u5f0f\uff0c\u5bb9\u5668\u5185\u7528 root \u8fd0\u884c\u5bf9\u5b89\u5168\u6ca1\u6709\u5b9e\u9645\u5f71\u54cd", "--no-cache-dir \u4f1a\u62d6\u6162\u6784\u5efa\u901f\u5ea6\uff0c\u5e94\u5f53\u53bb\u6389\u4ee5\u52a0\u5feb pip \u5b89\u88c5"], "points": 76, "solved": false, "statement": "\u4e0b\u9762\u662f\u4e00\u4efd Dockerfile \u7684\u5173\u952e\u7247\u6bb5\uff1a\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY code/ ./code/\nRUN useradd -m appuser\nUSER appuser\n\n\u5173\u4e8e\u8fd9\u4efd\u5199\u6cd5\uff0c\u4e0b\u5217\u5224\u65ad\u6b63\u786e\u7684\u662f\uff1f", "tags": ["Dockerfile", "\u5c42\u7f13\u5b58", "\u5b89\u5168", "\u5bb9\u5668\u5316"], "title": "Dockerfile \u5206\u5c42\u4e0e\u5b89\u5168", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["\u4ece\u8bed\u8a00\u8fd0\u884c\u65f6\u3001\u4f9d\u8d56\u3001\u7cfb\u7edf\u5e93\u3001\u914d\u7f6e\u3001\u8def\u5f84\u51e0\u4e2a\u7ef4\u5ea6\u60f3", "\u6bcf\u4e00\u7c7b\u90fd\u8981\u8bf4\u6e05\u5bb9\u5668\u7ed9\u51fa\u7684\u5177\u4f53\u624b\u6bb5"], "id": "q09-01-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u300c\u5728\u6211\u673a\u5668\u4e0a\u80fd\u8dd1\u300d\u662f\u5de5\u7a0b\u4e8b\u6545\u7684\u5934\u53f7\u6765\u6e90\u3002\n\u8bf7\u5217\u4e3e\u81f3\u5c11\u56db\u7c7b\u5e38\u89c1\u7684\u73af\u5883\u5dee\u5f02\uff0c\u5e76\u5206\u522b\u8bf4\u660e\u5bb9\u5668\u662f\u5982\u4f55\u89e3\u51b3\u5b83\u4eec\u7684\u3002", "tags": ["\u5bb9\u5668\u5316", "\u73af\u5883\u4e00\u81f4\u6027", "Docker"], "title": "\u5bb9\u5668\u5316\u89e3\u51b3\u54ea\u4e9b\u73af\u5883\u5dee\u5f02", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["\u60f3\u6e05\u695a\u955c\u50cf\u5c42\u662f\u5426\u53ef\u88ab\u62c9\u53d6\u67e5\u770b", "\u9a8c\u8bc1\u547d\u4ee4\u8981\u80fd\u5728\u5bb9\u5668\u5185\u5217\u51fa\u73af\u5883\u53d8\u91cf"], "id": "q09-01-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u6709\u4eba\u56fe\u7701\u4e8b\uff0c\u628a .env \u76f4\u63a5 COPY \u8fdb\u955c\u50cf\uff0c\u8ba4\u4e3a\u53cd\u6b63\u955c\u50cf\u53ea\u5728\u5185\u7f51\u7528\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u79cd\u505a\u6cd5\u7684\u95ee\u9898\uff0c\u5e76\u7ed9\u51fa\u6b63\u786e\u7684\u5bc6\u94a5\u6ce8\u5165\u65b9\u5f0f\u4e0e\u4e00\u6761\u9a8c\u8bc1\u547d\u4ee4\u3002", "tags": ["\u5bc6\u94a5\u5b89\u5168", "dockerignore", "\u955c\u50cf"], "title": "\u4e3a\u4ec0\u4e48\u5bc6\u94a5\u4e0d\u80fd\u8fdb\u955c\u50cf", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["Gradio \u8981\u7684\u662f\u7d2f\u79ef\u6587\u672c\u8fd8\u662f\u589e\u91cf\uff1f", "\u7528\u4e00\u4e2a buffer \u53d8\u91cf\u628a\u5206\u7247\u62fc\u8d77\u6765"], "id": "q09-01-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import gradio as gr\n\ndef pieces(message):\n    # \u6a21\u62df\u540e\u7aef\u6d41\u5f0f\u8fd4\u56de\u7684\u589e\u91cf\u5206\u7247\n    for ch in message:\n        yield ch\n\ndef respond(message, history):\n    # TODO: \u5b9e\u73b0\u6d41\u5f0f\u56de\u8c03\n    pass\n\ngr.ChatInterface(fn=respond).launch()", "statement": "\u5b9e\u73b0\u4e00\u4e2a Gradio \u804a\u5929\u56de\u8c03 respond(message, history)\uff0c\u8981\u6c42\u4ea7\u751f\u6253\u5b57\u673a\u6548\u679c\u3002\n\u7528\u4e00\u4e2a\u6a21\u62df\u7684\u5206\u7247\u6765\u6e90 pieces(message) \u9010\u4e2a\u4ea7\u51fa\u6587\u672c\u7247\u6bb5\uff08\u5df2\u7ed9\u51fa\uff09\u3002\n\u8981\u6c42\uff1a\u56de\u8c03\u5fc5\u987b\u662f\u751f\u6210\u5668\uff0c\u4e14\u6bcf\u6b21 yield \u7684\u5185\u5bb9\u7b26\u5408 Gradio \u7684\u8bed\u4e49\u3002", "tags": ["Gradio", "\u6d41\u5f0f", "\u751f\u6210\u5668", "\u6253\u5b57\u673a"], "title": "\u5199\u4e00\u4e2a Gradio \u6d41\u5f0f\u56de\u8c03", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 3, "hints": ["\u54ea\u4e00\u6b65\u5e94\u8be5\u653e\u5728\u6700\u524d\u9762\u624d\u80fd\u547d\u4e2d\u7f13\u5b58\uff1f", "\u5065\u5eb7\u68c0\u67e5\u53ef\u4ee5\u7528 httpx \u8bf7\u6c42 /health"], "id": "q09-01-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "# \u8bf7\u8865\u5168 Dockerfile\n# \u63d0\u793a\uff1a\u57fa\u7840\u955c\u50cf\u3001\u4f9d\u8d56\u3001\u4ee3\u7801\u3001\u7528\u6237\u3001\u5065\u5eb7\u68c0\u67e5\u3001\u542f\u52a8\u547d\u4ee4", "statement": "\u4e3a FastAPI \u5e94\u7528\u5199\u4e00\u4efd Dockerfile\uff0c\u8981\u6c42\uff1a\u56fa\u5b9a\u57fa\u7840\u955c\u50cf\u7248\u672c\u3001\u5229\u7528\u5c42\u7f13\u5b58\u3001\u975e root \u8fd0\u884c\u3001\u5e26\u5065\u5eb7\u68c0\u67e5\u3001\u66b4\u9732 8000 \u7aef\u53e3\u5e76\u4ee5 uvicorn \u542f\u52a8 code.ch02.api:app\u3002\n\u4f9d\u8d56\u6e05\u5355\u4e3a requirements.txt\uff0c\u4ee3\u7801\u76ee\u5f55\u4e3a code/ \u4e0e tools/\u3002", "tags": ["Dockerfile", "\u5c42\u7f13\u5b58", "\u5065\u5eb7\u68c0\u67e5", "\u975eroot"], "title": "\u5199\u4e00\u4efd\u53ef\u7528\u7684 Dockerfile", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="9" data-kp="0"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 38｜前端展示与容器化">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 38｜前端展示与容器化">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-2" data-kp-index="1"
+             data-kp-key="9_1" >
+      <div class="kp-head">
+        <span class="kp-no">D39</span>
+        <div class="kp-head-main">
+          <h3>Day 39｜LLMOps：监控、成本与安全上线</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>一、教学目标</h4>
+<ol><li>建立 LLM 应用的四个监控维度；</li><li>用真实数据做成本核算与预警；</li><li>完成上线前的安全检查清单。</li></ol>
+<h4>二、LLM 应用要监控什么</h4>
+<p>传统后端监控 CPU、内存、QPS。<strong>LLM 应用需要额外监控四类指标</strong>：</p>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:left">指标</th><th style="text-align:left">为什么 LLM 应用特别需要</th></tr></thead><tbody><tr><td style="text-align:left"><strong>质量</strong></td><td style="text-align:left">拒答率、格式遵循率、引用正确率、用户反馈</td><td style="text-align:left">模型输出没有"异常栈"，质量退化是<strong>静默</strong>的</td></tr><tr><td style="text-align:left"><strong>成本</strong></td><td style="text-align:left">token 消耗、单次成本、按用户/功能拆分</td><td style="text-align:left">成本随上下文长度动态变化，且可能在无人察觉时翻倍</td></tr><tr><td style="text-align:left"><strong>性能</strong></td><td style="text-align:left">首字延迟（TTFT）、总延迟 P50/P95、流式速率</td><td style="text-align:left"><strong>首字延迟</strong>是流式体验的核心指标，与总延迟是两回事</td></tr><tr><td style="text-align:left"><strong>可靠性</strong></td><td style="text-align:left">上游错误率、重试次数、限流触发次数</td><td style="text-align:left">上游模型服务会波动，必须有降级方案</td></tr></tbody></table>
+<h5>最容易被忽略的两个指标</h5>
+<p><strong>指标一：首字延迟（TTFT, Time To First Token）</strong></p>
+<p>流式场景下，用户感知的是 TTFT，不是总延迟。一个 10 秒生成、TTFT 0.5 秒的响应， 体验远好于 5 秒生成、TTFT 4 秒的响应。<strong>优化要优化对的那个。</strong></p>
+<p><strong>指标二：拒答率</strong></p>
+<p>拒答率<strong>双向</strong>都危险：</p>
+<ul><li>太高 → 用户在正常问题上被拒，体验崩坏；</li><li>太低 → 说明护栏没生效，模型在编造（第 3 章的拒答阈值就是管这个的）。</li></ul>
+<p><strong>必须同时监控两个方向</strong>，只看一头会走向另一个极端。</p>
+<h4>三、成本监控与预警</h4>
+<pre class="code lang-powershell"><code>python code/ch09/30_llmops_dashboard.py</code></pre>
+<p>脚本会：</p>
+<ol><li>从历史运行记录中统计每日调用量、token 消耗、成本、失败率、P50/P95 延迟；</li><li>画趋势图（便于发现异常拐点）；</li><li>执行成本预警逻辑。</li></ol>
+<p><img src="static/course-assets/ch09/01_llmops_dashboard.webp" alt="LLMOps 监控面板" loading="lazy"></p>
+<p><img src="static/course-assets/figures/ch09_llmops.webp" alt="LLMOps 成本与质量趋势" loading="lazy"></p>
+<blockquote><strong>读图的三个要点</strong>：  1. <strong>看趋势而不是看绝对值</strong>：某天成本高可能是正常的业务高峰， 但<strong>连续三天上涨</strong>说明有系统性变化（用户开始问更长的问题、知识库变大、某段 Prompt 变长了）； 2. <strong>把 P95 和成本放在一起看</strong>：延迟上升往往伴随 token 增加（上下文变长）， 两个指标同时异动通常指向同一个根因； 3. <strong>失败率要看状态码分布</strong>，不只看总数 —— 429（限流）和 5xx（上游故障） 需要完全不同的应对措施。</blockquote>
+<h5>成本预警的三条规则（实践经验）</h5>
+<table><thead><tr><th style="text-align:left">规则</th><th style="text-align:left">目的</th></tr></thead><tbody><tr><td style="text-align:left"><strong>日总量告警</strong>：日成本超过预算线</td><td style="text-align:left">防止异常流量或死循环</td></tr><tr><td style="text-align:left"><strong>单请求告警</strong>：单次请求 token 超过阈值</td><td style="text-align:left">发现上下文失控（通常是历史没清理）</td></tr><tr><td style="text-align:left"><strong>趋势告警</strong>：同期成本环比上涨超过 X%</td><td style="text-align:left">发现缓慢的劣化（如用户开始问更长的问题、知识库变大）</td></tr></tbody></table>
+<blockquote><strong>第三条最容易忽视，也最有价值</strong>：突然翻倍的问题容易被发现， <strong>每周涨 10% 的缓慢劣化</strong>往往三个月后才被察觉，那时成本已经翻了三倍。</blockquote>
+<h4>四、上线前的安全检查清单</h4>
+<table><thead><tr><th style="text-align:left">检查项</th><th style="text-align:left">怎么验证</th></tr></thead><tbody><tr><td style="text-align:left">密钥不在代码里</td><td style="text-align:left">全局搜索 <code>sk-</code> / 密钥模式，确认无硬编码</td></tr><tr><td style="text-align:left">密钥不在镜像里</td><td style="text-align:left">检查 <code>.dockerignore</code>，构建后 <code>env</code> 检查</td></tr><tr><td style="text-align:left">密钥不在日志里</td><td style="text-align:left">检查日志输出是否打印了 <code>Authorization</code></td></tr><tr><td style="text-align:left">密钥不在 Git 历史里</td><td style="text-align:left">`git log -p \</td><td style="text-align:left">grep -i "api_key"`；<strong>如果提交过，必须轮换密钥</strong>（删历史也不够，因为可能已被克隆）</td></tr><tr><td style="text-align:left">用户输入做了长度限制</td><td style="text-align:left">构造超长输入测试</td></tr><tr><td style="text-align:left">文件上传有类型与大小限制</td><td style="text-align:left">上传超大文件与非法扩展名测试（第 2 章 Day09）</td></tr><tr><td style="text-align:left">写操作需要人工确认</td><td style="text-align:left">测试高危工具（删除/支付/发送）是否必须确认</td></tr><tr><td style="text-align:left">有速率限制</td><td style="text-align:left">连续快速请求，验证限流生效</td></tr><tr><td style="text-align:left">错误响应不泄露内部信息</td><td style="text-align:left">触发上游错误，检查返回给客户端的内容</td></tr><tr><td style="text-align:left">有成本上限</td><td style="text-align:left">构造超长对话，验证预算护栏生效</td></tr><tr><td style="text-align:left">有降级方案</td><td style="text-align:left">断开上游，验证是否有友好的错误提示而不是白屏</td></tr><tr><td style="text-align:left">提示词注入有防护</td><td style="text-align:left">用第 1 章 Day04 的注入测试集跑一遍</td></tr></tbody></table>
+<blockquote><strong>密钥泄露的第一处置不是删代码，是轮换密钥。</strong> 因为密钥一旦进入 Git 历史或被推到公开仓库，就必须假设它已经泄露。 删掉历史只能防止后续泄露，不能收回已泄露的密钥。</blockquote>
+<h4>五、当日验收</h4>
+<ul><li>[ ] 能说出四个监控维度，以及 TTFT 和总延迟的区别</li><li>[ ] 能说出拒答率为什么双向都要监控</li><li>[ ] 成本预警的三条规则都实现并有演示</li><li>[ ] 完成安全检查清单，<strong>每一项都有验证证据</strong>（不是打勾了事）</li><li>[ ] 能回答：发现密钥泄露，第一步该做什么？</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 1, "id": "q09-02-01", "last_answer": "", "last_feedback": "", "options": ["TTFT\uff0c\u56e0\u4e3a\u7528\u6237\u611f\u77e5\u7684\u662f\u9996\u5b57\u5ef6\u8fdf", "\u603b\u5ef6\u8fdf\uff0c\u56e0\u4e3a\u603b\u8017\u65f6\u66f4\u77ed\u4f53\u9a8c\u66f4\u597d", "\u6d41\u5f0f\u901f\u7387\uff0c\u56e0\u4e3a\u5b83\u51b3\u5b9a\u603b\u5ef6\u8fdf", "QPS\uff0c\u56e0\u4e3a\u5e76\u53d1\u91cf\u51b3\u5b9a\u4f53\u611f"], "points": 27, "solved": false, "statement": "\u4e24\u4e2a\u54cd\u5e94\uff1aA \u603b\u751f\u6210 10 \u79d2\u3001TTFT 0.5 \u79d2\uff1bB \u603b\u751f\u6210 5 \u79d2\u3001TTFT 4 \u79d2\u3002\n\u4ece\u6d41\u5f0f\u4f53\u9a8c\u770b\uff0c\u5e94\u8be5\u4f18\u5148\u4f18\u5316\u54ea\u4e2a\u6307\u6807\uff1f", "tags": ["\u76d1\u63a7\u6307\u6807", "TTFT", "\u6027\u80fd"], "title": "\u6d41\u5f0f\u573a\u666f\u8be5\u4f18\u5316\u54ea\u4e2a\u5ef6\u8fdf", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "id": "q09-02-02", "last_answer": "", "last_feedback": "", "options": ["\u62d2\u7b54\u7387\u8d8a\u4f4e\u8d8a\u597d\uff0c\u8bf4\u660e\u6a21\u578b\u56de\u7b54\u80fd\u529b\u5f3a", "\u62d2\u7b54\u7387\u8d8a\u9ad8\u8d8a\u597d\uff0c\u8bf4\u660e\u62a4\u680f\u4e25\u683c\u5b89\u5168", "\u4e24\u4e2a\u65b9\u5411\u90fd\u5371\u9669\uff0c\u5fc5\u987b\u540c\u65f6\u76d1\u63a7\u9ad8\u4f4e\u4e24\u4fa7", "\u53ea\u9700\u76d1\u63a7\u62d2\u7b54\u7387\u662f\u5426\u8d85\u8fc7\u8bbe\u5b9a\u4e0a\u9650"], "points": 76, "solved": false, "statement": "\u5173\u4e8e\u62d2\u7b54\u7387\u76d1\u63a7\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["\u8d28\u91cf\u76d1\u63a7", "\u62d2\u7b54\u7387", "\u62a4\u680f"], "title": "\u62d2\u7b54\u7387\u4e3a\u4ec0\u4e48\u8981\u53cc\u5411\u76d1\u63a7", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "id": "q09-02-03", "last_answer": "", "last_feedback": "", "options": ["\u65e5\u603b\u91cf\u544a\u8b66\uff0c\u56e0\u4e3a\u5f02\u5e38\u6d41\u91cf\u6700\u96be\u53d1\u73b0", "\u5355\u8bf7\u6c42\u544a\u8b66\uff0c\u56e0\u4e3a\u4e0a\u4e0b\u6587\u5931\u63a7\u5f88\u9690\u853d", "\u8d8b\u52bf\u544a\u8b66\uff0c\u56e0\u4e3a\u7f13\u6162\u52a3\u5316\u4e0d\u6613\u5bdf\u89c9", "\u4e09\u6761\u4ef7\u503c\u76f8\u540c\uff0c\u6ca1\u6709\u4e3b\u6b21\u4e4b\u5206"], "points": 76, "solved": false, "statement": "\u6210\u672c\u9884\u8b66\u6709\u4e09\u6761\u89c4\u5219\uff1a\u65e5\u603b\u91cf\u544a\u8b66\u3001\u5355\u8bf7\u6c42\u544a\u8b66\u3001\u8d8b\u52bf\u544a\u8b66\u3002\n\u54ea\u4e00\u6761\u6700\u5bb9\u6613\u88ab\u5ffd\u89c6\uff0c\u5374\u6700\u6709\u4ef7\u503c\uff1f\u4e3a\u4ec0\u4e48\uff1f", "tags": ["\u6210\u672c\u76d1\u63a7", "\u9884\u8b66\u89c4\u5219", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u6210\u672c\u9884\u8b66\u54ea\u6761\u6700\u6613\u88ab\u5ffd\u89c6", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["\u5148\u5217\u56db\u4e2a\u7ef4\u5ea6\u518d\u8865\u6307\u6807", "\u60f3\u60f3\u4f20\u7edf\u540e\u7aef\u76d1\u63a7\u7f3a\u4e86\u4ec0\u4e48"], "id": "q09-02-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u51fa LLM \u5e94\u7528\u9700\u8981\u989d\u5916\u76d1\u63a7\u7684\u56db\u4e2a\u7ef4\u5ea6\uff0c\u6bcf\u4e2a\u7ef4\u5ea6\u5404\u4e3e\u4e00\u4e2a\u6307\u6807\uff0c\u5e76\u8bf4\u660e\u4e3a\u4ec0\u4e48 TTFT \u548c\u62d2\u7b54\u7387\u6700\u5bb9\u6613\u88ab\u5ffd\u7565\u3002", "tags": ["\u76d1\u63a7\u7ef4\u5ea6", "TTFT", "\u62d2\u7b54\u7387"], "title": "\u56db\u4e2a\u76d1\u63a7\u7ef4\u5ea6\u4e0e\u4e24\u4e2a\u6613\u5ffd\u7565\u6307\u6807", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 3, "hints": ["\u60f3\u60f3\u5220\u6389\u5386\u53f2\u80fd\u4e0d\u80fd\u6536\u56de\u5bc6\u94a5", "\u5bc6\u94a5\u53ef\u80fd\u5df2\u7ecf\u88ab\u4eba\u514b\u9686\u8d70\u4e86"], "id": "q09-02-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u5047\u8bbe\u4f60\u5728\u6392\u67e5\u65f6\u53d1\u73b0 API \u5bc6\u94a5\u66fe\u88ab\u63d0\u4ea4\u8fdb Git \u5386\u53f2\u5e76\u5df2\u63a8\u9001\u5230\u8fdc\u7a0b\u4ed3\u5e93\u3002\n\u8bf7\u8bf4\u660e\u7b2c\u4e00\u6b65\u8be5\u505a\u4ec0\u4e48\u3001\u4e3a\u4ec0\u4e48\uff0c\u4ee5\u53ca\u540e\u7eed\u8fd8\u9700\u8981\u505a\u54ea\u4e9b\u52a8\u4f5c\u3002", "tags": ["\u5b89\u5168\u68c0\u67e5", "\u5bc6\u94a5\u6cc4\u9732", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u5bc6\u94a5\u6cc4\u9732\u7684\u7b2c\u4e00\u6b65\u5904\u7f6e", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["\u8d8b\u52bf\u544a\u8b66\u7528\u76f8\u90bb\u4e24\u5929\u505a\u73af\u6bd4", "\u6ce8\u610f prev cost \u4e3a 0 \u7684\u60c5\u51b5"], "id": "q09-02-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def check_alerts(records, daily_budget, request_token_limit, growth_rate):\n    \"\"\"\u8fd4\u56de\u544a\u8b66\u5b57\u7b26\u4e32\u5217\u8868\"\"\"\n    alerts = []\n    # TODO: \u5b9e\u73b0\u4e09\u6761\u89c4\u5219\n    return alerts", "statement": "\u7ed9\u5b9a\u6bcf\u65e5\u6210\u672c\u8bb0\u5f55\u5217\u8868\uff0c\u6bcf\u6761\u5f62\u5982 {\"date\": \"2024-06-01\", \"cost\": 12.5, \"max_request_tokens\": 8000}\u3002\n\u8bf7\u5b9e\u73b0 check_alerts(records, daily_budget, request_token_limit, growth_rate)\uff0c\u8fd4\u56de\u89e6\u53d1\u7684\u544a\u8b66\u5217\u8868\uff0c\u8986\u76d6\u4e09\u6761\u89c4\u5219\uff1a\u65e5\u603b\u91cf\u544a\u8b66\u3001\u5355\u8bf7\u6c42\u544a\u8b66\u3001\u8d8b\u52bf\u544a\u8b66\uff08\u540c\u671f\u73af\u6bd4\u6da8\u5e45\u8d85\u8fc7 growth_rate\uff09\u3002", "tags": ["\u6210\u672c\u9884\u8b66", "\u4ee3\u7801\u5b9e\u73b0", "LLMOps"], "title": "\u5b9e\u73b0\u4e09\u6761\u6210\u672c\u9884\u8b66\u89c4\u5219", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 3, "hints": ["\u7528\u6b63\u5219\u7edf\u4e00\u5339\u914d\u5bc6\u94a5\u6a21\u5f0f", "\u65e5\u5fd7\u8981\u540c\u65f6\u770b Authorization"], "id": "q09-02-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import re\n\nKEY_PATTERN = re.compile(r\"sk-[A-Za-z0-9]{8,}\")\n\ndef run_security_check(files, log_text, git_history):\n    \"\"\"\u8fd4\u56de [(\u68c0\u67e5\u9879, \u662f\u5426\u901a\u8fc7, \u8bf4\u660e)] \u5217\u8868\"\"\"\n    results = []\n    # TODO: \u5b9e\u73b0\u5404\u9879\u68c0\u67e5\n    return results", "statement": "\u8bf7\u5b9e\u73b0 run_security_check(files, log_text, git_history)\uff0c\u5bf9\u4e00\u4efd\u5b89\u5168\u68c0\u67e5\u6e05\u5355\u505a\u81ea\u52a8\u5316\u6821\u9a8c\u5e76\u8fd4\u56de\u7ed3\u679c\u5217\u8868\u3002\nfiles \u662f {\u8def\u5f84: \u5185\u5bb9} \u5b57\u5178\uff0clog_text \u662f\u65e5\u5fd7\u6587\u672c\uff0cgit_history \u662f\u5386\u53f2\u63d0\u4ea4\u6587\u672c\u3002\n\u81f3\u5c11\u8986\u76d6\uff1a\u5bc6\u94a5\u786c\u7f16\u7801\u3001\u5bc6\u94a5\u8fdb\u65e5\u5fd7\u3001\u5bc6\u94a5\u8fdb Git \u5386\u53f2\u3001.dockerignore \u662f\u5426\u5b58\u5728\u3002", "tags": ["\u5b89\u5168\u68c0\u67e5", "\u81ea\u52a8\u5316\u6821\u9a8c", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b89\u5168\u68c0\u67e5\u6e05\u5355\u81ea\u52a8\u5316\u6821\u9a8c", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="9" data-kp="1"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 39｜LLMOps：监控、成本与安全上线">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 39｜LLMOps：监控、成本与安全上线">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-3" data-kp-index="2"
+             data-kp-key="9_2" >
+      <div class="kp-head">
+        <span class="kp-no">D40</span>
+        <div class="kp-head-main">
+          <h3>Day 40｜毕业答辩与就业指导</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>一、答辩要求</h4>
+<p><strong>15 分钟演示 + 10 分钟提问</strong>。</p>
+<h5>演示结构（建议时间分配）</h5>
+<table><thead><tr><th style="text-align:right">时间</th><th style="text-align:left">内容</th><th style="text-align:left">要点</th></tr></thead><tbody><tr><td style="text-align:right">2 min</td><td style="text-align:left">问题与价值</td><td style="text-align:left">解决什么问题？给谁用？不讲技术</td></tr><tr><td style="text-align:right">3 min</td><td style="text-align:left">现场演示</td><td style="text-align:left"><strong>真跑，不播录像</strong>。包含一次成功路径 + 一次失败路径</td></tr><tr><td style="text-align:right">5 min</td><td style="text-align:left">技术架构</td><td style="text-align:left">分层图 + 为什么这样分层 + 一个关键取舍</td></tr><tr><td style="text-align:right">3 min</td><td style="text-align:left">数据与证据</td><td style="text-align:left">评测数据、成本数据、性能数据（<strong>有数字才有说服力</strong>）</td></tr><tr><td style="text-align:right">2 min</td><td style="text-align:left">边界与演进</td><td style="text-align:left">现在不能做什么？下一步做什么？</td></tr></tbody></table>
+<h5>评分重点</h5>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:left">关键看什么</th></tr></thead><tbody><tr><td style="text-align:left">完整性</td><td style="text-align:left">前端 → 后端 → 数据 → 部署，链路是否完整</td></tr><tr><td style="text-align:left">工程质量</td><td style="text-align:left">配置外置、异常处理、测试、文档</td></tr><tr><td style="text-align:left"><strong>数据意识</strong></td><td style="text-align:left">有没有评测数据？改动有没有量化对比？</td></tr><tr><td style="text-align:left">深度</td><td style="text-align:left">能不能讲清一个子系统的设计取舍（而不只是"我用了 X 框架"）</td></tr><tr><td style="text-align:left">诚实</td><td style="text-align:left">能否清楚说出系统的局限与不足</td></tr><tr><td style="text-align:left">表达</td><td style="text-align:left">听众（非本方向的人）能否听懂核心价值</td></tr></tbody></table>
+<blockquote><strong>「诚实」单独列为评分项</strong>：答辩时说「这里我用了一个不太好的方案， 因为时间限制，如果重做我会改成 X」比硬说「我的方案很完美」得分高得多。 面试官和评委都见过大量项目，<strong>能指出自己方案局限的人，才是真的理解了问题</strong>。</blockquote>
+<h4>二、高频答辩问题（按类型准备）</h4>
+<h5>架构类</h5>
+<ol><li>画出你的系统架构图，说明每一层的职责与依赖方向。</li><li>如果要支持 1 万并发用户，哪里会先扛不住？怎么改？</li><li>为什么用（不用）框架？这个取舍的依据是什么？</li></ol>
+<h5>数据与评测类</h5>
+<ol><li>你怎么证明你的改动是有效的？给出具体的对比数据。</li><li>你的评测集是怎么设计的？覆盖了哪些边界情况？</li><li>有没有哪个指标看起来变好但实际体验变差的情况？</li></ol>
+<h5>成本与性能类</h5>
+<ol><li>一次请求的成本是多少？怎么算出来的？</li><li>P95 延迟是多少？瓶颈在哪一层？</li><li>如果成本要降一半，你会先动哪里？</li></ol>
+<h5>安全与可靠性类</h5>
+<ol><li>如何防止提示词注入？你的防护在哪几层？</li><li>上游模型服务挂了，你的系统怎么表现？</li><li>密钥是怎么管理的？如果泄露怎么办？</li><li>写操作（删除/支付）如何防止误执行？</li></ol>
+<h5>反思类</h5>
+<ol><li>这个项目里你最不满意的部分是什么？为什么当时那样做了？</li><li>如果给你两周时间继续做，你的优先级是什么？</li></ol>
+<blockquote><strong>准备方法</strong>：不是背答案，而是<strong>每个问题都准备一个具体的例子或数字</strong>。 「我们做了限流」不如「我们用了滑动窗口限流，单用户每秒 5 次， 压测时 20 并发触发了限流，成功率从 100% 降到 92%」——后者才叫回答了问题。</blockquote>
+<h4>三、作品集（GitHub 仓库）规范</h4>
+<p><strong>README 必须有的七块</strong>（这是招聘方真正会看的）：</p>
+<pre class="code lang-markdown"><code># 项目名 — 一句话说明它做什么
+
+## 1. 演示（截图 / GIF，30 秒内看懂）
+## 2. 快速开始（3 条命令能跑起来，用离线靶场，不需要密钥）
+## 3. 架构图（分层 + 数据流）
+## 4. 关键设计决策（2-3 个取舍，说明为什么）
+## 5. 评测数据（有对比表，不是"效果良好"）
+## 6. 成本与性能（真实数字）
+## 7. 已知局限与后续计划</code></pre>
+<p><strong>第 2 条和第 7 条最容易加分，也最容易被忽略</strong>：</p>
+<ul><li>第 2 条：如果招聘方需要花 30 分钟配环境才能跑起来，他大概率会关掉页面。</li></ul>
+<p><strong>能用离线靶场一键跑起来，是巨大的加分项</strong>（本课程的靶场设计就是为此）；</p>
+<ul><li>第 7 条：主动写出局限，显得可信。</li></ul>
+<h4>四、简历中的 AI 应用岗（怎么写才不像培训班作业）</h4>
+<table><thead><tr><th style="text-align:left">❌ 常见写法</th><th style="text-align:left">✅ 更好的写法</th></tr></thead><tbody><tr><td style="text-align:left">「基于 LangChain 开发了 RAG 问答系统」</td><td style="text-align:left">「交付企业制度问答系统，Recall@5 从 0.62 提升到 0.85（混合检索 + 重排），答案引用准确率 94%」</td></tr><tr><td style="text-align:left">「熟悉大模型 API 调用」</td><td style="text-align:left">「封装统一调用层，支持 4 家 OpenAI 兼容平台热切换，含重试退避与限流，压测 20 并发成功率 100%」</td></tr><tr><td style="text-align:left">「实现了多轮对话」</td><td style="text-align:left">「实现多轮会话与上下文治理，50 轮长对话成本降低 68%（摘要压缩 + 证据去重）」</td></tr><tr><td style="text-align:left">「了解 Agent」</td><td style="text-align:left">「从零实现 ReAct Agent（无框架），含工具注册表、SQLite 持久记忆、预算护栏；对照 LangGraph 版本，说明各自取舍」</td></tr></tbody></table>
+<p><strong>共同点</strong>：<strong>都有数字，都说明了「解决了什么问题」，而不是「用了什么技术」。</strong></p>
+<h4>五、岗位地图与面试准备</h4>
+<table><thead><tr><th style="text-align:left">岗位方向</th><th style="text-align:left">核心要求</th><th style="text-align:left">作品集匹配点</th></tr></thead><tbody><tr><td style="text-align:left">AI 应用开发</td><td style="text-align:left">后端能力 + LLM 集成</td><td style="text-align:left">第 2 章（后端）+ 第 3 章（RAG）</td></tr><tr><td style="text-align:left">RAG / 知识库工程师</td><td style="text-align:left">检索优化 + 评测能力</td><td style="text-align:left">第 3 章（消融实验、评测数据）</td></tr><tr><td style="text-align:left">Agent 开发</td><td style="text-align:left">Agent 架构 + 工具生态</td><td style="text-align:left">第 4–7 章（手写循环 + MCP + 框架 + 自研框架）</td></tr><tr><td style="text-align:left">AI 平台 / 基础设施</td><td style="text-align:left">工程化 + 可观测</td><td style="text-align:left">第 2、6、9 章（稳定性、追踪、LLMOps）</td></tr><tr><td style="text-align:left">AI 产品（技术向）</td><td style="text-align:left">技术 + 产品判断</td><td style="text-align:left">全课程的取舍论证能力</td></tr></tbody></table>
+<p><strong>面试准备的三条建议</strong>：</p>
+<ol><li><strong>准备一个能讲 10 分钟的深度案例</strong>——不是介绍项目功能，而是讲一个具体的技术难题</li></ol>
+<p>（怎么发现的、怎么定位的、试了哪些方案、为什么选这个、最后效果如何）；</p>
+<ol><li><strong>准备好被追问「为什么」</strong>——「为什么用混合检索」→「为什么 BM25 和向量互补」→</li></ol>
+<p>「BM25 的 IDF 是怎么算的」。<strong>能答到第三层，就明显区别于背简历的人</strong>；</p>
+<ol><li><strong>准备一个失败案例</strong>——面试官很爱问「你踩过最大的坑」。</li></ol>
+<p>本课程的实验里有很多真实失败（否定句相似度陷阱、JSON 截断、并发反而变慢）， 随便挑一个都能讲得很具体。</p>
+<h4>六、毕业自检</h4>
+<pre class="code lang-powershell"><code>python code/ch09/40_graduation_checklist.py</code></pre>
+<p>这个脚本会检查你的项目：</p>
+<ul><li>结构完整性（必要文件是否齐全）；</li><li>代码规范（硬编码密钥、模块可导入性）；</li><li>交付物完整性（README / 评测报告 / 架构图 / Dockerfile）；</li><li>输出「通过 / 不通过 / 缺失」清单。</li></ul>
+<p><img src="static/course-assets/ch09/02_graduation_checklist.webp" alt="毕业项目自检：结构完整性、代码规范、交付物清单" loading="lazy"></p>
+<blockquote><strong>自检脚本本身也是一个交付物</strong>。 面试时你可以说：「我写了一个自检脚本，能验证项目结构和规范」—— 这比说「我代码写得规范」有说服力得多，因为前者可执行、可复现。 <strong>能被自动化验证的规范，才是真的规范。</strong></blockquote>
+<p><strong>毕业标准</strong>（全部满足才算通过）：</p>
+<ul><li>[ ] 完整链路可运行（前端 → 后端 → 模型 → 数据）</li><li>[ ] 有评测数据，且包含<strong>一次改动的前后对比</strong></li><li>[ ] 有成本数据，且实现了成本护栏</li><li>[ ] 有 Dockerfile 且验证过（或明确说明未验证的原因）</li><li>[ ] 有安全自查清单，密钥管理合规</li><li>[ ] README 满足七块结构</li><li>[ ] 能回答答辩问题清单里的所有架构类与安全类问题</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 1, "id": "q09-03-01", "last_answer": "", "last_feedback": "", "options": ["3 min\uff0c\u5305\u542b\u4e00\u6b21\u6210\u529f\u8def\u5f84 + \u4e00\u6b21\u5931\u8d25\u8def\u5f84", "2 min\uff0c\u53ea\u6f14\u793a\u6210\u529f\u8def\u5f84\u5373\u53ef", "5 min\uff0c\u5305\u542b\u5206\u5c42\u56fe\u8bb2\u89e3", "3 min\uff0c\u64ad\u653e\u63d0\u524d\u5f55\u597d\u7684\u6f14\u793a\u5f55\u50cf"], "points": 27, "solved": false, "statement": "\u6bd5\u4e1a\u7b54\u8fa9\u5efa\u8bae\u7684\u6f14\u793a\u7ed3\u6784\u4e2d\uff0c\u300c\u73b0\u573a\u6f14\u793a\u300d\u73af\u8282\u7684\u65f6\u95f4\u5206\u914d\u662f\u591a\u5c11\uff0c\u5e76\u4e14\u8981\u6c42\u5305\u542b\u4ec0\u4e48\uff1f", "tags": ["\u7b54\u8fa9", "\u6f14\u793a\u7ed3\u6784"], "title": "\u7b54\u8fa9\u65f6\u95f4\u5206\u914d", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "id": "q09-03-02", "last_answer": "", "last_feedback": "", "options": ["\u8bf4\u300c\u8fd9\u91cc\u6211\u7528\u4e86\u4e00\u4e2a\u4e0d\u592a\u597d\u7684\u65b9\u6848\uff0c\u56e0\u4e3a\u65f6\u95f4\u9650\u5236\uff0c\u5982\u679c\u91cd\u505a\u6211\u4f1a\u6539\u6210 X\u300d", "\u5f3a\u8c03\u300c\u6211\u7684\u65b9\u6848\u5f88\u5b8c\u7f8e\uff0c\u6ca1\u6709\u660e\u663e\u7f3a\u9677\u300d", "\u56de\u907f\u5c40\u9650\u95ee\u9898\uff0c\u8f6c\u800c\u591a\u8bb2\u6280\u672f\u6808", "\u53ea\u8bb2\u529f\u80fd\u5217\u8868\uff0c\u4e0d\u8c08\u8bbe\u8ba1\u53d6\u820d"], "points": 76, "solved": false, "statement": "\u8bc4\u5206\u91cd\u70b9\u628a\u300c\u8bda\u5b9e\u300d\u5355\u72ec\u5217\u4e3a\u4e00\u9879\u3002\u4e0b\u5217\u54ea\u79cd\u7b54\u8fa9\u8868\u73b0\u5f97\u5206\u66f4\u9ad8\uff1f", "tags": ["\u7b54\u8fa9", "\u8bc4\u5206\u7ef4\u5ea6"], "title": "\u8bda\u5b9e\u4e3a\u4f55\u5355\u72ec\u8bc4\u5206", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "id": "q09-03-03", "last_answer": "", "last_feedback": "", "options": ["\u5feb\u901f\u5f00\u59cb\uff08\u79bb\u7ebf\u9776\u573a\u4e00\u952e\u8dd1\uff09\u4e0e\u5df2\u77e5\u5c40\u9650\u53ca\u540e\u7eed\u8ba1\u5212", "\u67b6\u6784\u56fe\u4e0e\u5173\u952e\u8bbe\u8ba1\u51b3\u7b56", "\u8bc4\u6d4b\u6570\u636e\u4e0e\u6210\u672c\u6027\u80fd", "\u6f14\u793a\u622a\u56fe\u4e0e\u9879\u76ee\u540d\u4e00\u53e5\u8bdd\u8bf4\u660e"], "points": 76, "solved": false, "statement": "\u4f5c\u54c1\u96c6 README \u7684\u4e03\u5757\u7ed3\u6784\u4e2d\uff0c\u54ea\u4e24\u5757\u6700\u5bb9\u6613\u52a0\u5206\u4e5f\u6700\u5bb9\u6613\u88ab\u5ffd\u7565\uff1f", "tags": ["\u4f5c\u54c1\u96c6", "README"], "title": "README \u6700\u6613\u52a0\u5206\u9879", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["\u6ce8\u610f\u4e24\u79cd\u5199\u6cd5\u5404\u81ea\u5f3a\u8c03\u4e86\u4ec0\u4e48", "\u60f3\u60f3\u62db\u8058\u65b9\u771f\u6b63\u5173\u5fc3\u7684\u662f\u6280\u672f\u8fd8\u662f\u7ed3\u679c"], "id": "q09-03-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u5bf9\u6bd4\u300c\u57fa\u4e8e LangChain \u5f00\u53d1\u4e86 RAG \u95ee\u7b54\u7cfb\u7edf\u300d\u4e0e\u300c\u4ea4\u4ed8\u4f01\u4e1a\u5236\u5ea6\u95ee\u7b54\u7cfb\u7edf\uff0cRecall@5 \u4ece 0.62 \u63d0\u5347\u5230 0.85\uff08\u6df7\u5408\u68c0\u7d22 + \u91cd\u6392\uff09\uff0c\u7b54\u6848\u5f15\u7528\u51c6\u786e\u7387 94%\u300d\u4e24\u79cd\u7b80\u5386\u5199\u6cd5\uff0c\u8bf4\u660e\u540e\u8005\u597d\u5728\u54ea\u91cc\uff0c\u5e76\u603b\u7ed3 AI \u5e94\u7528\u5c97\u7b80\u5386\u7684\u5171\u540c\u70b9\u3002", "tags": ["\u7b80\u5386", "\u5c31\u4e1a\u6307\u5bfc"], "title": "\u7b80\u5386\u5199\u6cd5\u5bf9\u6bd4\u5206\u6790", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 3, "hints": ["\u4e09\u5c42\u5206\u522b\u8003\u7684\u662f\u9009\u578b\u3001\u539f\u7406\u3001\u516c\u5f0f", "\u60f3\u60f3\u80cc\u7b54\u6848\u7684\u4eba\u80fd\u6491\u5230\u7b2c\u51e0\u5c42"], "id": "q09-03-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u9762\u8bd5\u51c6\u5907\u5efa\u8bae\u300c\u51c6\u5907\u597d\u88ab\u8ffd\u95ee\u4e3a\u4ec0\u4e48\u300d\uff0c\u5e76\u4e3e\u4f8b\uff1a\u4e3a\u4ec0\u4e48\u7528\u6df7\u5408\u68c0\u7d22 \u2192 \u4e3a\u4ec0\u4e48 BM25 \u548c\u5411\u91cf\u4e92\u8865 \u2192 BM25 \u7684 IDF \u662f\u600e\u4e48\u7b97\u7684\u3002\u8bf7\u8bf4\u660e\u8fd9\u79cd\u4e09\u5c42\u8ffd\u95ee\u7684\u610f\u4e49\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u80fd\u7b54\u5230\u7b2c\u4e09\u5c42\u5c31\u660e\u663e\u533a\u522b\u4e8e\u80cc\u7b80\u5386\u7684\u4eba\u3002", "tags": ["\u9762\u8bd5", "\u8ffd\u95ee", "\u6df1\u5ea6"], "title": "\u9762\u8bd5\u8ffd\u95ee\u4e09\u5c42\u51c6\u5907", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["\u7528 os.path.isfile \u5224\u65ad\u6587\u4ef6\u662f\u5426\u5b58\u5728", "\u7528\u4e00\u4e2a\u5e03\u5c14\u53d8\u91cf\u8bb0\u5f55\u662f\u5426\u5168\u90e8\u901a\u8fc7"], "id": "q09-03-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import os\n\nREQUIRED = [\"README.md\", \"Dockerfile\", \"eval_report.md\", \"architecture.png\"]\n\ndef check_project(root: str) -\u003e bool:\n    # TODO: \u9010\u4e2a\u68c0\u67e5\u5fc5\u8981\u6587\u4ef6\uff0c\u6253\u5370\u6e05\u5355\uff0c\u8fd4\u56de\u662f\u5426\u5168\u90e8\u901a\u8fc7\n    pass", "statement": "\u7f16\u5199\u4e00\u4e2a\u6bd5\u4e1a\u81ea\u68c0\u811a\u672c\uff0c\u68c0\u67e5\u9879\u76ee\u76ee\u5f55\u4e0b\u7684\u5fc5\u8981\u6587\u4ef6\u662f\u5426\u9f50\u5168\uff0c\u5e76\u8f93\u51fa\u300c\u901a\u8fc7 / \u4e0d\u901a\u8fc7 / \u7f3a\u5931\u300d\u6e05\u5355\u3002\n\u8981\u6c42\uff1a\n1. \u5fc5\u8981\u6587\u4ef6\u5305\u62ec README.md\u3001Dockerfile\u3001\u8bc4\u6d4b\u62a5\u544a\uff08eval_report.md\uff09\u3001\u67b6\u6784\u56fe\uff08architecture.png\uff09\uff1b\n2. \u5bf9\u6bcf\u4e2a\u6587\u4ef6\u8f93\u51fa \u901a\u8fc7\uff08\u5b58\u5728\uff09\u6216 \u7f3a\u5931\uff08\u4e0d\u5b58\u5728\uff09\uff1b\n3. \u5168\u90e8\u5b58\u5728\u5219\u6574\u4f53\u8f93\u51fa\u300c\u901a\u8fc7\u300d\uff0c\u5426\u5219\u8f93\u51fa\u300c\u4e0d\u901a\u8fc7\u300d\u3002\n\u51fd\u6570\u7b7e\u540d\uff1acheck_project(root: str) -\u003e bool\uff0c\u8fd4\u56de\u662f\u5426\u5168\u90e8\u901a\u8fc7\u3002", "tags": ["\u81ea\u68c0\u811a\u672c", "\u4ea4\u4ed8\u7269", "\u6587\u4ef6\u68c0\u67e5"], "title": "\u5b9e\u73b0\u6bd5\u4e1a\u81ea\u68c0\u811a\u672c", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 9, "chapter_title": "\u5168\u6808\u843d\u5730\u4e0e\u6bd5\u4e1a\u9879\u76ee", "difficulty": 2, "hints": ["\u904d\u5386 BUDGET \u9010\u9879\u5bf9\u6bd4", "\u7528 actual.get(name, 0) \u9632\u6b62\u952e\u7f3a\u5931\u62a5\u9519"], "id": "q09-03-07", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "BUDGET = {\n    \"\u95ee\u9898\u4e0e\u4ef7\u503c\": 2,\n    \"\u73b0\u573a\u6f14\u793a\": 3,\n    \"\u6280\u672f\u67b6\u6784\": 5,\n    \"\u6570\u636e\u4e0e\u8bc1\u636e\": 3,\n    \"\u8fb9\u754c\u4e0e\u6f14\u8fdb\": 2,\n}\n\ndef check_timing(actual: dict):\n    # TODO: \u9010\u9879\u5bf9\u6bd4\u5efa\u8bae\u7528\u65f6\uff0c\u6253\u5370\u72b6\u6001\uff0c\u8fd4\u56de (\u603b\u7528\u65f6, \u662f\u5426\u5168\u90e8\u4e0d\u8d85\u65f6)\n    pass", "statement": "\u7b54\u8fa9\u6f14\u793a\u7ed3\u6784\u6709\u56fa\u5b9a\u65f6\u95f4\u5206\u914d\u3002\u8bf7\u5b9e\u73b0\u4e00\u4e2a\u51fd\u6570\uff0c\u8f93\u5165\u5404\u73af\u8282\u5b9e\u9645\u7528\u65f6\uff08\u5206\u949f\uff0c\u5b57\u5178\uff09\uff0c\u6821\u9a8c\u662f\u5426\u7b26\u5408\u5efa\u8bae\u5206\u914d\uff0c\u5e76\u8f93\u51fa\u6bcf\u9879\u662f\u5426\u8d85\u65f6\u3002\n\u5efa\u8bae\u5206\u914d\uff1a\u95ee\u9898\u4e0e\u4ef7\u503c 2\u3001\u73b0\u573a\u6f14\u793a 3\u3001\u6280\u672f\u67b6\u6784 5\u3001\u6570\u636e\u4e0e\u8bc1\u636e 3\u3001\u8fb9\u754c\u4e0e\u6f14\u8fdb 2\u3002\n\u8981\u6c42\uff1a\n1. \u5bf9\u6bcf\u4e2a\u73af\u8282\uff0c\u5b9e\u9645\u7528\u65f6\u5927\u4e8e\u5efa\u8bae\u5219\u6807\u8bb0\u300c\u8d85\u65f6\u300d\uff0c\u5426\u5219\u300c\u6b63\u5e38\u300d\uff1b\n2. \u8fd4\u56de\u603b\u7528\u65f6\u4e0e\u662f\u5426\u5168\u90e8\u4e0d\u8d85\u65f6\u3002\n\u51fd\u6570\u7b7e\u540d\uff1acheck_timing(actual: dict) -\u003e tuple[int, bool]\u3002", "tags": ["\u7b54\u8fa9", "\u65f6\u95f4\u5206\u914d", "\u6821\u9a8c"], "title": "\u7b54\u8fa9\u65f6\u95f4\u5206\u914d\u6821\u9a8c", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="9" data-kp="2"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 40｜毕业答辩与就业指导">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 40｜毕业答辩与就业指导">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson"><h3>9.10 全课程回顾</h3>
+<p>40 天，你走过了这条路径：</p>
+<table><thead><tr><th style="text-align:left">章</th><th style="text-align:left">你获得的<strong>可迁移能力</strong>（不是知识点）</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">会<strong>测量</strong>：把「感觉更好」变成「通过率 +42%，成本 +76%」</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">会<strong>交付服务</strong>：把脚本变成别人能调用的接口</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left">会<strong>控制知识来源</strong>：让模型基于证据说话，且能溯源</td></tr><tr><td style="text-align:left">4</td><td style="text-align:left">会<strong>让模型动手</strong>：工具调用、循环控制、安全边界</td></tr><tr><td style="text-align:left">5</td><td style="text-align:left">会<strong>编排</strong>：用状态图管理复杂流程与人工介入</td></tr><tr><td style="text-align:left">6</td><td style="text-align:left">会<strong>协作与标准化</strong>：多 Agent、开放协议、可观测、成本护栏</td></tr><tr><td style="text-align:left">7</td><td style="text-align:left">会<strong>读与抽象</strong>：从开源项目里提取设计，并自己造框架</td></tr><tr><td style="text-align:left">8</td><td style="text-align:left">会<strong>理解模型内部</strong>：知道微调与 RAG / Prompt 的边界</td></tr><tr><td style="text-align:left">9</td><td style="text-align:left">会<strong>交付产品</strong>：界面、容器、监控、安全、答辩</td></tr></tbody></table>
+<p><strong>最后一条建议</strong>：技术会变。这 40 天里你用的具体模型 ID、框架版本、协议版本， 一年后可能都变了。但你建立的这些习惯不会变：</p>
+<ul><li>用<strong>数据</strong>而不是感觉做判断；</li><li>用<strong>评测集</strong>守住改动质量的底线；</li><li>用<strong>配置化</strong>隔离变化；</li><li>用<strong>分层</strong>隔离复杂度；</li><li>用<strong>诚实</strong>对待系统的边界。</li></ul>
+<p><strong>这些才是这 40 天真正的产出。</strong></p>
+<hr>
+<h3>9.11 参考资料</h3>
+<blockquote>核实日期：<strong>2026-09-21</strong>。</blockquote>
+<h4>界面与部署</h4>
+<table><thead><tr><th style="text-align:left">资源</th><th style="text-align:left">用途</th><th style="text-align:left">核实时版本</th></tr></thead><tbody><tr><td style="text-align:left"><a href="https://www.gradio.app/docs" target="_blank" rel="noreferrer">Gradio 文档</a></td><td style="text-align:left">对话界面</td><td style="text-align:left"><strong>6.28.0</strong>（注意 Gradio 6 移除 <code>type</code> 参数）</td></tr><tr><td style="text-align:left"><a href="https://docs.streamlit.io/" target="_blank" rel="noreferrer">Streamlit 文档</a></td><td style="text-align:left">数据应用界面</td><td style="text-align:left"><strong>1.64.0</strong></td></tr><tr><td style="text-align:left"><a href="https://docs.docker.com/" target="_blank" rel="noreferrer">Docker 官方文档</a></td><td style="text-align:left">容器化</td><td style="text-align:left">官方 Python 指南现用 DHI 镜像</td></tr></tbody></table>
+<h4>LLMOps 工具生态（按功能分类，用于毕业项目的技术选型）</h4>
+<table><thead><tr><th style="text-align:left">功能</th><th style="text-align:left">工具</th><th style="text-align:left">核实时状态</th></tr></thead><tbody><tr><td style="text-align:left"><strong>可观测 / 成本追踪</strong></td><td style="text-align:left"><strong>Langfuse</strong></td><td style="text-align:left">SDK <code>langfuse</code> 4.15.4；服务端 v4.40.0。有专门的 Token & Cost Tracking 文档与 Spend Alerts。<strong>支持自托管</strong></td></tr><tr><td style="text-align:left"></td><td style="text-align:left">Helicone</td><td style="text-align:left">开源 LLM 可观测平台，活跃（6.1k stars）</td></tr><tr><td style="text-align:left"></td><td style="text-align:left">Arize Phoenix</td><td style="text-align:left"><code>arize-phoenix</code> 20.14.0</td></tr><tr><td style="text-align:left"></td><td style="text-align:left">OpenLLMetry (Traceloop)</td><td style="text-align:left"><code>traceloop-sdk</code> 0.62.3，基于 OpenTelemetry</td></tr><tr><td style="text-align:left"><strong>模型网关 + 成本控制</strong></td><td style="text-align:left"><strong>LiteLLM</strong></td><td style="text-align:left"><code>litellm</code> 1.102.0。统一 100+ 模型并提供成本跟踪与预算。Langfuse 有官方集成页</td></tr><tr><td style="text-align:left"><strong>Prompt 版本管理</strong></td><td style="text-align:left">Langfuse Prompt Management</td><td style="text-align:left">含 Version Control / A/B Testing / GitHub Integration / Playground 等</td></tr><tr><td style="text-align:left"></td><td style="text-align:left">Promptfoo</td><td style="text-align:left">npm <code>promptfoo</code> 0.123.1，25k+ stars。<strong>测试 Prompt</strong>（适合做 CI 里的一致性检查）</td></tr><tr><td style="text-align:left"></td><td style="text-align:left">Agenta</td><td style="text-align:left"><code>agenta</code> 0.119.0，开源 LLMOps 平台</td></tr><tr><td style="text-align:left"><strong>A/B 测试</strong></td><td style="text-align:left">Langfuse</td><td style="text-align:left">用 prompt 标签（如 <code>prod-a</code> / <code>prod-b</code>）随机分流，同时跟踪延迟、成本、token、评测指标。适用场景明确包含 <strong>canary deployment（灰度发布）</strong></td></tr><tr><td style="text-align:left"></td><td style="text-align:left">GrowthBook</td><td style="text-align:left">通用特性开关/实验平台（非 LLM 专用）</td></tr></tbody></table>
+<blockquote><strong>给毕业项目的选型建议</strong>： 如果你只想接一个工具，<strong>接 Langfuse</strong>——它把可观测、Prompt 管理、评测、A/B 测试 放在一个平台里，且支持自托管（数据合规场景必需）。 如果你还需要统一的模型网关（多供应商切换 + 集中预算控制），<strong>加 LiteLLM</strong>。  <strong>不建议一开始就堆工具</strong>。先在自建追踪层（第 6 章）把「我要看什么」想清楚， 再上平台——否则你只是把数据从一个看不懂的地方搬到另一个看不懂的地方。</blockquote>
+<h4>安全</h4>
+<table><thead><tr><th style="text-align:left">资源</th><th style="text-align:left">用途</th></tr></thead><tbody><tr><td style="text-align:left"><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noreferrer">OWASP LLM Top 10</a></td><td style="text-align:left">上线安全检查的权威清单</td></tr></tbody></table>
+<hr>
+<h3>结课寄语</h3>
+<p>你现在的水平，取决于你<strong>做完</strong>了什么，而不是<strong>看过</strong>什么。</p>
+<p>如果你的作品集里只有一个「跟着教程做的 demo」，那就再挑一个真实的小需求， 用这 40 天的方法论从头做一遍——从<strong>定义问题</strong>开始，而不是从选框架开始。</p>
+<p><strong>能把一个真实问题拆解成可交付的系统，并诚实说明它的边界——这就是职业工程师的标志。</strong></p></div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    
+    <a class="ch-neighbor hot" href="chapter-5.html">
+      <span class="cn-rel">前 4 章</span>
+      <b>🔧 Agent 框架实战</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-6.html">
+      <span class="cn-rel">前 3 章</span>
+      <b>🕸️ 多智能体系统与 MCP</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-7.html">
+      <span class="cn-rel">前 2 章</span>
+      <b>🔍 开源 Agent 项目源码拆解</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-8.html">
+      <span class="cn-rel">上一章</span>
+      <b>🎛️ 模型微调与上下文工程</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="training.html?chapters=9">做本章专项练习</a>
+      <a class="btn agent" href="coach.html?chapter=9">让教练追问我</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/chapter.js"></script>
+
+</body>
+</html>

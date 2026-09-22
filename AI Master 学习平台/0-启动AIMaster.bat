@@ -3,50 +3,55 @@ chcp 936 >nul
 cd /d "%~dp0"
 
 REM ============================================================
-REM  AI Master æ˜Ÿè¾°å­¦ä¹ ç³»ç»Ÿ â€”â€” ä¸€é”®å¯åŠ¨
+REM  AI Master ÐÇ³½Ñ§Ï°ÏµÍ³ ¡ª¡ª Ò»¼üÆô¶¯
 REM
-REM  å­¦ç”Ÿæœºå™¨ä¸Šçš„å¤±è´¥ç‚¹åªæœ‰ä¸¤ä¸ªï¼šã€Œæ²¡è£… Pythonã€å’Œã€Œpip è£…ä¸ä¸Šã€ã€‚
-REM  æ‰€ä»¥è¿™é‡Œåªè®¤ä¸¤æ¡è·¯å¾„ï¼Œé€»è¾‘åˆ»æ„å†™å¾—å¾ˆç›´ç™½ï¼š
-REM    â‘  éšåŒ… Pythonï¼ˆruntime\python\python.exeï¼‰â€”â€” ä¸éœ€è¦ç”¨æˆ·è£…ä»»ä½•ä¸œè¥¿
-REM    â‘¡ ç³»ç»Ÿ Python å»ºè™šæ‹ŸçŽ¯å¢ƒï¼ˆruntime\venvï¼‰â€”â€” ç²¾ç®€åŒ…èµ°è¿™æ¡è·¯
-REM  Python è·¯å¾„ä¸€å¾‹ç”¨ %~dp0 æ‹¼ï¼Œä¸åš for /f æ•èŽ·ï¼š
-REM  ä¸­æ–‡ç”¨æˆ·åä¸‹å‘½ä»¤è¾“å‡ºä¼šè¿‡ä»£ç é¡µè½¬æ¢ï¼Œæ•å›žæ¥çš„è·¯å¾„æ˜¯ä¹±ç ã€‚
+REM  Ñ§Éú»úÆ÷ÉÏµÄÊ§°ÜµãÖ»ÓÐÁ½¸ö£º¡¸Ã»×° Python¡¹ºÍ¡¸pip ×°²»ÉÏ¡¹¡£
+REM  ËùÒÔÕâÀïÖ»ÈÏÁ½ÌõÂ·¾¶£¬Âß¼­¿ÌÒâÐ´µÃºÜÖ±°×£º
+REM    ¢Ù Ëæ°ü Python£¨runtime\python\python.exe£©¡ª¡ª ²»ÐèÒªÓÃ»§×°ÈÎºÎ¶«Î÷
+REM    ¢Ú ÏµÍ³ Python ½¨ÐéÄâ»·¾³£¨runtime\venv£©¡ª¡ª ¾«¼ò°ü×ßÕâÌõÂ·
+REM  Python Â·¾¶Ò»ÂÉÓÃ %~dp0 Æ´£¬²»×ö for /f ²¶»ñ£º
+REM  ÖÐÎÄÓÃ»§ÃûÏÂÃüÁîÊä³ö»á¹ý´úÂëÒ³×ª»»£¬²¶»ØÀ´µÄÂ·¾¶ÊÇÂÒÂë¡£
 REM ============================================================
 
 if not exist "app.py" (
-  echo   [é”™è¯¯] è¿™ä¸ªå¯åŠ¨è„šæœ¬å¿…é¡»å’Œ app.py æ”¾åœ¨åŒä¸€ä¸ªæ–‡ä»¶å¤¹é‡Œã€‚
-  echo          è¯·æŠŠå®ƒæ”¾å›ž AI Master å­¦ä¹ å¹³å° ç›®å½•ä¸‹å†åŒå‡»ã€‚
+  echo   [´íÎó] Õâ¸öÆô¶¯½Å±¾±ØÐëºÍ app.py ·ÅÔÚÍ¬Ò»¸öÎÄ¼þ¼ÐÀï¡£
+  echo          Çë°ÑËü·Å»Ø AI Master Ñ§Ï°Æ½Ì¨ Ä¿Â¼ÏÂÔÙË«»÷¡£
   echo.
   pause
   exit /b 1
 )
 
-title AI Master æ˜Ÿè¾°å­¦ä¹ ç³»ç»Ÿ
+REM Python Ä¬ÈÏ°´ UTF-8 Êä³ö£¬¶øÕâ¸ö´°¿ÚÊÇ 936 ´úÂëÒ³£»Á½±ß²»Ò»ÖÂ¾ÍÊÇÂÒÂë¡£
+REM ÏÔÊ½ÈÃ Python ÓÃ GBK Ëµ»°£¬¿ØÖÆÌ¨µÄÖÐÎÄÌáÊ¾²ÅÄÜÕý³£ÏÔÊ¾¡£
+set "PYTHONIOENCODING=gbk"
+set "PYTHONUTF8=0"
+
+title AI Master ÐÇ³½Ñ§Ï°ÏµÍ³
 
 echo.
 echo   ============================================================
-echo      AI Master æ˜Ÿè¾°å­¦ä¹ ç³»ç»Ÿ
-echo      å­¦ä¹ è·¯çº¿ / æ™ºèƒ½ä½“ / æ˜Ÿè¾°æ•™ç»ƒ / æ˜Ÿç©ºä¿®ä¸º
+echo      AI Master ÐÇ³½Ñ§Ï°ÏµÍ³
+echo      Ñ§Ï°Â·Ïß / ÖÇÄÜÌå / ÐÇ³½½ÌÁ· / ÐÇ¿ÕÐÞÎª
 echo   ============================================================
 echo.
-echo   ç¬¬ä¸€æ¬¡å¯åŠ¨ä¼šè‡ªåŠ¨å‡†å¤‡è¿è¡ŒçŽ¯å¢ƒï¼ˆçº¦ 1 åˆ†é’Ÿï¼Œä¹‹åŽç§’å¼€ï¼‰ã€‚
-echo   å¯åŠ¨å®ŒæˆåŽæµè§ˆå™¨ä¼šè‡ªåŠ¨æ‰“å¼€ http://127.0.0.1:5178
-echo   å…³é—­æœ¬çª—å£å³åœæ­¢æœåŠ¡ã€‚
+echo   µÚÒ»´ÎÆô¶¯»á×Ô¶¯×¼±¸ÔËÐÐ»·¾³£¨Ô¼ 1 ·ÖÖÓ£¬Ö®ºóÃë¿ª£©¡£
+echo   Æô¶¯Íê³Éºóä¯ÀÀÆ÷»á×Ô¶¯´ò¿ª http://127.0.0.1:5178
+echo   ¹Ø±Õ±¾´°¿Ú¼´Í£Ö¹·þÎñ¡£
 echo.
 
 set "PY="
 
-REM â‘  éšåŒ… Python
+REM ¢Ù Ëæ°ü Python
 if exist "runtime\python\python.exe" set "PY=%~dp0runtime\python\python.exe"
 if defined PY goto ready
 
-REM â‘¡ ä¸Šæ¬¡å»ºå¥½çš„è™šæ‹ŸçŽ¯å¢ƒ
+REM ¢Ú ÉÏ´Î½¨ºÃµÄÐéÄâ»·¾³
 if exist "runtime\venv\Scripts\python.exe" set "PY=%~dp0runtime\venv\Scripts\python.exe"
 if defined PY goto ready
 
-REM â‘¢ åŒ…é‡Œæœ‰ Python åŽ‹ç¼©åŒ…ä½†è¿˜æ²¡è§£å¼€ï¼šè‡ªå·±è§£ï¼Œä¸ä¾èµ–ç³»ç»Ÿ Python
+REM ¢Û °üÀïÓÐ Python Ñ¹Ëõ°üµ«»¹Ã»½â¿ª£º×Ô¼º½â£¬²»ÒÀÀµÏµÍ³ Python
 if exist "runtime\python-embed.zip" (
-  echo   [1/3] æ­£åœ¨è§£åŽ‹éšåŒ… Pythonï¼ˆåªéœ€ä¸€æ¬¡ï¼‰...
+  echo   [1/3] ÕýÔÚ½âÑ¹Ëæ°ü Python£¨Ö»ÐèÒ»´Î£©...
   if not exist "runtime\python" mkdir "runtime\python"
   tar -xf "runtime\python-embed.zip" -C "runtime\python" 2>nul
   if not exist "runtime\python\python.exe" powershell -NoProfile -Command "Expand-Archive -LiteralPath 'runtime\python-embed.zip' -DestinationPath 'runtime\python' -Force" >nul 2>nul
@@ -54,8 +59,8 @@ if exist "runtime\python-embed.zip" (
 if exist "runtime\python\python.exe" set "PY=%~dp0runtime\python\python.exe"
 if defined PY goto ready
 
-REM â‘£ ç²¾ç®€åŒ…ï¼ˆä¸å« Pythonï¼‰ï¼šåªèƒ½ç”¨ç³»ç»Ÿ Python å»ºè™šæ‹ŸçŽ¯å¢ƒ
-echo   [1/3] æ²¡æœ‰éšåŒ… Pythonï¼Œæ”¹ç”¨ç³»ç»Ÿ Python å‡†å¤‡çŽ¯å¢ƒ...
+REM ¢Ü ¾«¼ò°ü£¨²»º¬ Python£©£ºÖ»ÄÜÓÃÏµÍ³ Python ½¨ÐéÄâ»·¾³
+echo   [1/3] Ã»ÓÐËæ°ü Python£¬¸ÄÓÃÏµÍ³ Python ×¼±¸»·¾³...
 py -3 "tools\bootstrap_runtime.py"
 if not errorlevel 1 goto system_ready
 python "tools\bootstrap_runtime.py"
@@ -69,24 +74,24 @@ goto launch
 
 :need_python
 echo.
-echo   [é”™è¯¯] è¿™å°ç”µè„‘ä¸Šæ²¡æœ‰å¯ç”¨çš„ Pythonï¼Œè¿™ä¸ªåŽ‹ç¼©åŒ…é‡Œä¹Ÿæ²¡æœ‰é™„å¸¦ã€‚
+echo   [´íÎó] ÕâÌ¨µçÄÔÉÏÃ»ÓÐ¿ÉÓÃµÄ Python£¬Õâ¸öÑ¹Ëõ°üÀïÒ²Ã»ÓÐ¸½´ø¡£
 echo.
-echo   ä¸¤ä¸ªåŠžæ³•ï¼Œä»»é€‰å…¶ä¸€ï¼š
-echo     1. ä¸‹è½½"å®Œæ•´ç‰ˆ"åŽ‹ç¼©åŒ…ï¼ˆè‡ªå¸¦ Pythonï¼Œä¸éœ€è¦ä½ è£…ä»»ä½•ä¸œè¥¿ï¼‰
-echo     2. è‡ªå·±è£… Python 3.12ï¼šhttps://www.python.org/downloads/
-echo        å®‰è£…æ—¶åŠ¡å¿…å‹¾é€‰ "Add python.exe to PATH"ï¼Œè£…å®Œé‡æ–°åŒå‡»æœ¬æ–‡ä»¶
+echo   Á½¸ö°ì·¨£¬ÈÎÑ¡ÆäÒ»£º
+echo     1. ÏÂÔØ"ÍêÕû°æ"Ñ¹Ëõ°ü£¨×Ô´ø Python£¬²»ÐèÒªÄã×°ÈÎºÎ¶«Î÷£©
+echo     2. ×Ô¼º×° Python 3.12£ºhttps://www.python.org/downloads/
+echo        °²×°Ê±Îñ±Ø¹´Ñ¡ "Add python.exe to PATH"£¬×°ÍêÖØÐÂË«»÷±¾ÎÄ¼þ
 goto end
 
 :ready
-echo   [1/3] æ£€æŸ¥è¿è¡ŒçŽ¯å¢ƒ...
+echo   [1/3] ¼ì²éÔËÐÐ»·¾³...
 "%PY%" "tools\bootstrap_runtime.py"
 if errorlevel 1 goto failed
 
 :launch
-echo   [2/3] çŽ¯å¢ƒå°±ç»ªï¼Œæ­£åœ¨å¯åŠ¨æœåŠ¡ http://127.0.0.1:5178
+echo   [2/3] »·¾³¾ÍÐ÷£¬ÕýÔÚÆô¶¯·þÎñ http://127.0.0.1:5178
 echo.
-echo   æµè§ˆå™¨æ²¡è‡ªåŠ¨æ‰“å¼€çš„è¯ï¼Œæ‰‹åŠ¨è®¿é—® http://127.0.0.1:5178 å³å¯ã€‚
-echo   é¦–æ¬¡ä½¿ç”¨ï¼šç›´æŽ¥ä»¥æ¸¸å®¢èº«ä»½ä½“éªŒï¼Œæˆ–æ³¨å†Œè´¦å·ä¿å­˜å­¦ä¹ è¿›åº¦ã€‚
+echo   ä¯ÀÀÆ÷Ã»×Ô¶¯´ò¿ªµÄ»°£¬ÊÖ¶¯·ÃÎÊ http://127.0.0.1:5178 ¼´¿É¡£
+echo   Ê×´ÎÊ¹ÓÃ£ºÖ±½ÓÒÔÓÎ¿ÍÉí·ÝÌåÑé£¬»ò×¢²áÕËºÅ±£´æÑ§Ï°½ø¶È¡£
 echo.
 
 set STARLAB_OPEN_BROWSER=1
@@ -95,18 +100,18 @@ set "EXITCODE=%errorlevel%"
 
 echo.
 if not "%EXITCODE%"=="0" (
-  echo   [é”™è¯¯] æœåŠ¡å¼‚å¸¸é€€å‡ºï¼ˆä»£ç  %EXITCODE%ï¼‰ã€‚å¸¸è§åŽŸå› ï¼š
-  echo     Â· 5178 ç«¯å£è¢«åˆ«çš„ç¨‹åºå ç”¨ï¼šå…³æŽ‰å…¶å®ƒ AI Master çª—å£åŽé‡è¯•
-  echo     Â· æ€æ¯’è½¯ä»¶æ‹¦æˆªäº† Pythonï¼šæŠŠæœ¬æ–‡ä»¶å¤¹åŠ å…¥ç™½åå•
-  echo     Â· ä¸Šé¢çš„æŠ¥é”™ä¿¡æ¯å¯ä»¥ç›´æŽ¥æˆªå›¾åé¦ˆ
+  echo   [´íÎó] ·þÎñÒì³£ÍË³ö£¨´úÂë %EXITCODE%£©¡£³£¼ûÔ­Òò£º
+  echo     ¡¤ 5178 ¶Ë¿Ú±»±ðµÄ³ÌÐòÕ¼ÓÃ£º¹ØµôÆäËü AI Master ´°¿ÚºóÖØÊÔ
+  echo     ¡¤ É±¶¾Èí¼þÀ¹½ØÁË Python£º°Ñ±¾ÎÄ¼þ¼Ð¼ÓÈë°×Ãûµ¥
+  echo     ¡¤ ÉÏÃæµÄ±¨´íÐÅÏ¢¿ÉÒÔÖ±½Ó½ØÍ¼·´À¡
 ) else (
-  echo   æœåŠ¡å·²åœæ­¢ã€‚
+  echo   ·þÎñÒÑÍ£Ö¹¡£
 )
 goto end
 
 :failed
 echo.
-echo   [é”™è¯¯] è¿è¡ŒçŽ¯å¢ƒæ²¡æœ‰å‡†å¤‡å¥½ï¼Œè¯·æŠŠä¸Šé¢çš„æç¤ºæˆªå›¾åé¦ˆã€‚
+echo   [´íÎó] ÔËÐÐ»·¾³Ã»ÓÐ×¼±¸ºÃ£¬Çë°ÑÉÏÃæµÄÌáÊ¾½ØÍ¼·´À¡¡£
 
 :end
 echo.
