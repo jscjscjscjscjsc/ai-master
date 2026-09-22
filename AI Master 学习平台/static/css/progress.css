@@ -1,0 +1,44 @@
+/* 学习档案 */
+
+.pg-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 12px; }
+.pg-kpi { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(165deg, rgba(11, 16, 32, .9), rgba(6, 10, 22, .86)); }
+.pg-kpi span { display: block; color: var(--muted); font-size: 11.5px; }
+.pg-kpi b { display: block; margin-top: 4px; font: 700 26px var(--mono); letter-spacing: -.02em; }
+.pg-kpi b.hl { color: var(--cyan); }
+.pg-kpi b.gold { color: var(--gold); }
+.pg-kpi em { display: block; margin-top: 3px; color: var(--muted); font-size: 10.5px; font-style: normal; }
+
+.pg-table-wrap { padding: 4px 6px; overflow-x: auto; }
+.pg-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.pg-table th, .pg-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+.pg-table th { color: var(--muted); font-size: 11px; font-weight: 500; }
+.pg-table tr:last-child td { border-bottom: 0; }
+.pg-table tr:hover td { background: rgba(255, 255, 255, .02); }
+.pg-table .hot td { background: rgba(169, 155, 255, .06); }
+.pg-table .cell-bar { display: flex; gap: 8px; align-items: center; min-width: 118px; }
+.pg-table .cell-bar .bar { flex: 1; height: 5px; }
+.pg-table .cell-bar span { flex-shrink: 0; color: var(--muted); font: 10.5px var(--mono); }
+.pg-table a { color: var(--cyan); }
+
+.pg-wrong { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 11px; }
+.pg-wrong-card { padding: 15px; border: 1px solid rgba(255, 157, 179, .32); border-radius: var(--radius); background: linear-gradient(160deg, rgba(38, 16, 26, .72), rgba(8, 10, 20, .8)); }
+.pg-wrong-card h4 { margin: 0 0 5px; font-size: 13.5px; }
+.pg-wrong-card p { margin: 0 0 11px; color: var(--muted); font-size: 11.5px; }
+.pg-wrong-card .row { justify-content: space-between; }
+
+/* 空状态给一个最小高度：只有一行字的空块夹在两张表之间，
+   看起来像加载失败。给足留白并解释清楚比"瘦"更重要。 */
+.pg-wrong .empty, .pg-exams .empty { padding: 26px 20px; border: 1px dashed var(--line); border-radius: var(--radius); }
+.pg-log-empty, #pg-log.empty { padding: 26px 20px; text-align: center; }
+
+.pg-exams { display: grid; gap: 10px; }
+.pg-exam { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding: 14px 17px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(6, 10, 24, .72); }
+.pg-exam b { font: 700 19px var(--mono); color: var(--gold); }
+.pg-exam .meta { flex: 1; color: var(--muted); font-size: 11.5px; }
+.pg-exam .meta strong { display: block; margin-bottom: 3px; color: var(--ink-2); font-size: 12.5px; font-weight: 500; }
+
+.pg-log-row { display: flex; gap: 13px; align-items: center; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
+.pg-log-row:last-child { border: 0; }
+.pg-log-row .ts { flex-shrink: 0; color: var(--muted); font: 10.5px var(--mono); }
+.pg-log-row .note { flex: 1; color: var(--ink-2); }
+.pg-log-row .delta { flex-shrink: 0; color: var(--gold); font: 700 12px var(--mono); }

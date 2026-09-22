@@ -1,0 +1,48 @@
+{# 单题卡片：章节页与刷题页共用同一套 DOM 契约，
+   JS 端只认 data-qid / data-type，不重新实现一遍渲染逻辑。 #}
+<div class="qcard" data-qid="{{ q.id }}" data-type="{{ q.type }}"
+     data-difficulty="{{ q.difficulty }}" data-points="{{ q.points }}"
+     {% if q.solved %}data-solved="1"{% endif %}>
+  <div class="q-head">
+    <span class="q-type">{{ {'choice': '选择题', 'short': '简答题', 'code': '代码题'}.get(q.type, q.type) }}</span>
+    <span class="q-diff d{{ q.difficulty }}">{{ ['基础', '进阶', '挑战'][q.difficulty - 1] }}</span>
+    <span class="q-title">{{ q.title }}</span>
+    {% if q.solved %}<span class="chip green">{{ q.best_stars or 3 }} 星</span>{% endif %}
+    {% if q.wrong and not q.solved %}<span class="chip" style="border-color:rgba(255,157,179,.5);color:#ffd6e0">待订正</span>{% endif %}
+  </div>
+
+  <div class="q-statement md">{{ q.statement | safe }}</div>
+
+  {% if q.type == 'choice' %}
+  <div class="q-options">
+    {% for option in q.options %}
+    <label class="q-option">
+      <input type="radio" name="q-{{ q.id }}" value="{{ loop.index0 }}">
+      <span>{{ option }}</span>
+    </label>
+    {% endfor %}
+  </div>
+  {% else %}
+  <textarea class="q-answer" rows="5"
+            placeholder="{% if q.type == 'code' %}把你的代码写在这里，写清关键步骤的注释。{% else %}用自己的话回答 —— 讲得清楚比抄概念重要。{% endif %}"></textarea>
+  {% if q.hints %}
+  <div class="q-hints">
+    {% for hint in q.hints %}<span class="chip">提示 {{ loop.index }}：{{ hint }}</span>{% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <div class="q-actions">
+    {% if q.type == 'choice' %}
+      <button class="btn primary sm" data-act="submit">提交答案</button>
+    {% else %}
+      <button class="btn primary sm" data-act="submit">AI 批改</button>
+    {% endif %}
+    <button class="btn sm ghost" data-act="hint">不会，给点思路</button>
+    <button class="btn sm ghost" data-act="answer">看参考答案</button>
+    <span class="q-score" hidden></span>
+  </div>
+
+  <div class="q-feedback" hidden></div>
+  <div class="q-model" hidden></div>
+</div>

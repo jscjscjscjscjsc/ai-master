@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}学习档案 · AI Master{% endblock %}
+{% block bodyclass %}workbench-page{% endblock %}
+{% block bodydata %}data-page="学习档案"{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/progress.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="section" style="margin-top:26px">
+  <header>
+    <h2>学习档案</h2>
+    <small>所有数字都来自真实作答记录，不做任何估算</small>
+  </header>
+  <div class="pg-kpis" id="pg-kpis"></div>
+</section>
+
+<section class="section">
+  <header><h2>各章进度</h2><small>知识点完成度与做题情况</small></header>
+  <div class="pg-table-wrap card">
+    <table class="pg-table" id="pg-chapters"></table>
+  </div>
+</section>
+
+<section class="section">
+  <header><h2>错题本</h2><small>没重做通关的题会一直留在这里</small></header>
+  <div id="pg-wrong" class="pg-wrong"></div>
+</section>
+
+<section class="section">
+  <header><h2>组卷记录</h2><small>最近六次</small></header>
+  <div id="pg-exams" class="pg-exams"></div>
+</section>
+
+<section class="section">
+  <header><h2>修为流水</h2><small>最近 14 笔</small></header>
+  <div class="card" id="pg-log"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+{% endblock %}

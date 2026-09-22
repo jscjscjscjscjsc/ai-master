@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}知识星海 · AI Master{% endblock %}
+{% block bodyclass %}atlas-page{% endblock %}
+{% block bodydata %}data-page="知识星海" data-atm="nebula"{% endblock %}
+{% block pageclass %}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/constellation_atlas.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="atlas-head">
+  <p class="kicker">KNOWLEDGE ATLAS</p>
+  <h1>把整门课画成一片星海</h1>
+  <p class="lead">
+    13 个星系，{{ total_kps }} 颗星。学完一颗亮一颗 —— 一眼就能看出还剩多少，
+    比看百分比进度条更让人想继续。
+  </p>
+</section>
+
+<section class="atlas-grid">
+  {% for galaxy in galaxies %}
+  <article class="galaxy {{ 'hot' if galaxy.highlight else '' }}">
+    <header>
+      <div>
+        <span class="g-idx">SECTOR {{ '%02d' % galaxy.id }}</span>
+        <h2>{{ galaxy.icon }} {{ galaxy.title }}</h2>
+      </div>
+      <div class="g-progress">
+        <b>{{ galaxy.done }}/{{ galaxy.kps|length }}</b>
+        <div class="bar"><i style="width:{{ galaxy.progress }}%"></i></div>
+      </div>
+    </header>
+    <div class="g-stars">
+      {% for kp in galaxy.kps %}
+      <a class="g-star {{ 'on' if kp.done else '' }}" href="/chapter/{{ galaxy.id }}#kp-{{ kp.index + 1 }}"
+         title="{{ kp.title }}">
+        <i></i><span>{{ kp.title }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}
+
+{% block scripts %}{% endblock %}

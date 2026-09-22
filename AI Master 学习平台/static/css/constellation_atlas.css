@@ -1,0 +1,43 @@
+/* 知识星海 —— 用 DOM 而不是 WebGL。
+   理由：这里的核心信息是「哪颗星亮了、点了能跳过去」。
+   WebGL 能做更炫的星系，但会带来三个真实代价：
+   移动端发热、卡片上的文字变成贴图后不可选中、
+   屏幕阅读器读不出结构。用 DOM + CSS 做星空，信息密度和可达性都更好。 */
+
+.atlas-page .atlas-head { padding: 46px 0 14px; }
+.atlas-page h1 { margin: 12px 0 16px; font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px); }
+.atlas-page .lead { max-width: 700px; margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.9; }
+
+.atlas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+.galaxy {
+  position: relative; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 22% 18%, rgba(114, 246, 228, .07), transparent 55%),
+    radial-gradient(circle at 82% 76%, rgba(169, 155, 255, .09), transparent 55%),
+    linear-gradient(165deg, rgba(10, 15, 32, .94), rgba(5, 8, 20, .9));
+  overflow: hidden;
+}
+.galaxy.hot { border-color: rgba(169, 155, 255, .38); }
+.galaxy > header { display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; margin-bottom: 15px; }
+.g-idx { color: var(--muted); font: 9.5px var(--mono); letter-spacing: .16em; }
+.galaxy h2 { margin: 6px 0 0; font-size: 16px; }
+.g-progress { flex-shrink: 0; width: 84px; text-align: right; }
+.g-progress b { display: block; margin-bottom: 6px; color: var(--cyan); font: 12px var(--mono); }
+.g-progress .bar { height: 4px; }
+
+.g-stars { display: grid; gap: 3px; }
+.g-star {
+  display: flex; gap: 10px; align-items: center; padding: 6px 9px;
+  border-radius: 6px; color: var(--muted); font-size: 12px;
+  transition: background .18s, color .18s, transform .18s;
+}
+.g-star i {
+  flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(177, 195, 255, .28); transition: background .2s, box-shadow .2s;
+}
+.g-star span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-star:hover { background: rgba(114, 246, 228, .08); color: var(--ink); transform: translateX(3px); }
+.g-star.on { color: #c8fff4; }
+.g-star.on i { background: var(--cyan); box-shadow: 0 0 10px var(--cyan), 0 0 22px rgba(114, 246, 228, .5); }
+.g-star.on + .g-star.on i { animation: twinkle 2.6s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }

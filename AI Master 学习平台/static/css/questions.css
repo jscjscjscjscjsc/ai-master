@@ -1,0 +1,40 @@
+/* 题目卡片：章节页 / 刷题页 / 组卷共用。
+   和 qcards.js 是成对的 —— 改了这里的类名，三个页面一起坏。 */
+
+/* 题目卡片 */
+.qcard { margin-bottom: 12px; padding: 17px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(6, 10, 24, .72); }
+.qcard[data-solved] { border-color: rgba(125, 232, 168, .3); }
+.q-head { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.q-type { padding: 2px 8px; border: 1px solid rgba(114, 246, 228, .4); border-radius: 4px; color: #b9fff5; font-size: 10.5px; }
+.q-diff { padding: 2px 8px; border-radius: 4px; font-size: 10.5px; }
+.q-diff.d1 { background: rgba(125, 232, 168, .16); color: #c8ffe0; }
+.q-diff.d2 { background: rgba(240, 204, 116, .16); color: #ffe9b8; }
+.q-diff.d3 { background: rgba(255, 157, 179, .16); color: #ffd6e0; }
+.q-title { flex: 1; min-width: 140px; color: var(--ink-2); font-size: 12.5px; }
+.q-statement { margin-bottom: 13px; font-size: 13.5px; }
+
+.q-options { display: grid; gap: 7px; }
+.q-option { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; transition: border-color .18s, background .18s; font-size: 13px; }
+.q-option:hover { border-color: rgba(114, 246, 228, .4); background: rgba(114, 246, 228, .05); }
+.q-option input { margin-top: 4px; accent-color: var(--cyan); }
+.q-option.right { border-color: rgba(125, 232, 168, .6); background: rgba(125, 232, 168, .09); }
+.q-option.wrong { border-color: rgba(255, 157, 179, .6); background: rgba(255, 157, 179, .09); }
+
+.q-answer { min-height: 110px; margin-top: 4px; font-size: 13px; }
+.q-hints { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 9px; }
+.q-hints .chip { max-width: 100%; white-space: normal; text-align: left; }
+
+.q-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 13px; }
+.q-score { margin-left: auto; font: 700 13px var(--mono); }
+.q-score.good { color: var(--green); }
+.q-score.mid { color: var(--gold); }
+.q-score.bad { color: var(--rose); }
+
+.q-feedback { margin-top: 13px; padding: 13px 15px; border-radius: 9px; border-left: 2px solid var(--cyan); background: rgba(114, 246, 228, .06); font-size: 13px; }
+.q-feedback.bad { border-color: var(--rose); background: rgba(255, 157, 179, .07); }
+.q-breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 11px; margin-top: 11px; }
+.q-breakdown > div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; background: rgba(4, 8, 18, .6); }
+.q-breakdown h5 { margin: 0 0 6px; font-size: 11.5px; color: var(--muted); letter-spacing: .04em; }
+.q-breakdown ul { margin: 0; padding-left: 17px; font-size: 12.5px; color: var(--ink-2); }
+.q-breakdown li { margin: 3px 0; }
+.q-model { margin-top: 11px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 9px; background: rgba(4, 8, 18, .62); font-size: 13px; }

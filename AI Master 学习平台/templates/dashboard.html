@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}指挥舱 · AI Master 星辰学习系统{% endblock %}
+{% block bodyclass %}dashboard-page{% endblock %}
+{% block bodydata %}data-page="指挥舱"{% endblock %}
+{% block pageclass %}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="hero fade-up">
+  <div class="hero-copy">
+    <p class="kicker">AI MASTER / 星辰学习系统</p>
+    <h1>欢迎归航，<span data-username>{{ username }}</span>。<br><em>下一片星域正在等你。</em></h1>
+    <p class="lead">
+      这不是一份书单，而是一条能走完的路线：13 个星域、{{ chapters|sum(attribute='knowledge_count') }} 个知识点、
+      每节都有练习题与 AI 批改。学完你会拿到的是能写进简历的项目能力，而不是"了解过"。
+    </p>
+    <div class="row">
+      <a class="btn primary" href="/roadmap">看我今天该学什么</a>
+      <a class="btn agent" href="/agent">问星语：我该从哪开始</a>
+      <a class="btn ghost" href="/constellation">我的星辰修为</a>
+    </div>
+  </div>
+  <div class="hero-card card">
+    <div class="level-head">
+      <span class="chip gold">{{ profile.realm }}</span>
+      <strong>{{ profile.name }}</strong>
+    </div>
+    <div class="bar"><i style="width:{{ profile.progress }}%"></i></div>
+    <div class="level-meta">
+      <span>{{ profile.points }} 修为</span>
+      {% if profile.is_max %}<span>已至巅峰</span>
+      {% else %}<span>距 {{ profile.next_name }} 还差 {{ profile.to_next }}</span>{% endif %}
+    </div>
+    <p class="whisper">{{ instruments.get(profile.level, instruments[0])[2] if instruments is defined else '' }}</p>
+    <div class="hero-stats">
+      <span><b>{{ stats.total_solved }}</b> 题通关</span>
+      <span><b>{{ stats.stars3 }}</b> 次满分</span>
+      <span><b>{{ stats.kp_done }}</b> 知识点</span>
+      <span><b>{{ stats.streak_days }}</b> 天连续</span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>四个阶段，一条主线</h2>
+    <small>智能体是平台主线，单独占一个阶段</small>
+  </header>
+  <div class="stage-legend">
+    <span class="chip" style="border-color:rgba(126,225,255,.5);color:#cdf3ff">阶段一 · 认知筑基</span>
+    <span class="chip violet">阶段二 · 智能体内核（主线）</span>
+    <span class="chip green">阶段三 · 知识增强与调优</span>
+    <span class="chip gold">阶段四 · 工程落地</span>
+  </div>
+</section>
+
+{% set stages = [
+  ('阶段一 · 认知筑基', '看懂大模型是什么、怎么运转的'),
+  ('阶段二 · 智能体内核', '把模型变成会规划、会用工具的智能体'),
+  ('阶段三 · 知识增强与调优', '让模型接上私有知识、跑得更快更省'),
+  ('阶段四 · 工程落地', '把方案做成能上线的产品，并拿下认证')] %}
+
+{% for stage_name, stage_goal in stages %}
+{% set rows = chapters | selectattr('stage', 'equalto', stage_name) | list %}
+{% if rows %}
+<section class="section stage-block" id="stage-{{ loop.index }}">
+  <header>
+    <div>
+      <h2>{{ stage_name }}</h2>
+      <small>{{ stage_goal }}</small>
+    </div>
+    <span class="chip">{{ rows|length }} 个星域</span>
+  </header>
+  <div class="chapters">
+    {% for ch in rows %}
+    <a class="chapter-card {% if ch.highlight %}hot{% endif %}" href="/chapter/{{ ch.id }}">
+      <div class="ch-top">
+        <span class="ch-icon">{{ ch.icon }}</span>
+        <span class="ch-idx">SECTOR {{ '%02d' % ch.id }}</span>
+      </div>
+      <h3>{{ ch.title }}</h3>
+      <p>{{ ch.description }}</p>
+      <div class="ch-tags">
+        <span class="chip">{{ ch.level }}</span>
+        <span class="chip">≈{{ ch.hours }} 小时</span>
+        {% if ch.highlight %}<span class="chip violet">平台主线</span>{% endif %}
+      </div>
+      <div class="ch-foot">
+        <div class="bar"><i style="width:{{ ch.progress }}%"></i></div>
+        <span>{{ ch.done_count }}/{{ ch.knowledge_count }} 知识点</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endfor %}
+
+<section class="section">
+  <header><h2>平台功能</h2><small>五个核心系统，彼此数据打通</small></header>
+  <div class="grid c3">
+    <a class="tool card" href="/agent">
+      <span class="chip violet">主线</span>
+      <h3>星语 · 全局智能体</h3>
+      <p>不只是答疑。说「我对工具调用不熟悉」，它会直接跳到那一节；说「我想做题」，它打开练习。</p>
+    </a>
+    <a class="tool card" href="/roadmap">
+      <h3>逐日学习路线</h3>
+      <p>按你每天能投入的时间，把 {{ chapters|sum(attribute='knowledge_count') }} 个知识点排到具体某一天，含复盘日与冲刺日。</p>
+    </a>
+    <a class="tool card" href="/training">
+      <h3>分章练习与组卷</h3>
+      <p>每个知识点都有题。答完立刻 AI 评分，讲清哪里对、哪里含糊、下一步练什么。</p>
+    </a>
+    <a class="tool card" href="/coach">
+      <h3>星辰教练</h3>
+      <p>陪练式答疑，外加模拟大模型面试：面试官追问、当场评分、复盘薄弱点。支持语音问答。</p>
+    </a>
+    <a class="tool card" href="/constellation">
+      <h3>星空修为</h3>
+      <p>十一阶境界线，从观星者到星系织者。星器与试炼全部由你的真实作答数据推导。</p>
+    </a>
+    <a class="tool card" href="/stars">
+      <h3>知识星海</h3>
+      <p>把整门课画成星系图：每个知识点一颗星，学完一颗亮一颗，能一眼看到还剩多少。</p>
+    </a>
+  </div>
+</section>
+
+<section class="section" id="guest-note" data-guest-only hidden>
+  <div class="card pad-lg notice-panel">
+    <h3>你目前是游客模式</h3>
+    <p>可以浏览全部课程、做题、用智能体答疑，但进度不会保存 —— 换台电脑或清浏览器就要重头再来。
+       注册只需要用户名和密码，进度存在本机。</p>
+    <div class="row"><a class="btn primary" href="/login">注册并保存进度</a></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* 仪表盘只需要两件事：把修为条画进 hero，以及给新手一句可执行的动作。 */
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.Cultivation && window.Star) {
+    Star.api('/api/cultivation/profile').then((data) => {
+      if (data && data.success) Cultivation.applySettlement({ profile: data.profile });
+    }).catch(() => {});
+  }
+});
+</script>
+{% endblock %}

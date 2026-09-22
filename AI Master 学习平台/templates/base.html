@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}AI Master 星辰学习系统{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/core.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/questions.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/agent.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/atmosphere.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cultivation.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body class="{% block bodyclass %}{% endblock %}"
+      {% block bodydata %}{% endblock %}>
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="{% if page == 'dashboard' %}on{% endif %}">指挥舱</a>
+    <a href="/roadmap" class="{% if page == 'roadmap' %}on{% endif %}">学习路线</a>
+    <a href="/agent" class="hot {% if page == 'agent' %}on{% endif %}">智能体</a>
+    <a href="/training" class="{% if page == 'training' %}on{% endif %}">刷题</a>
+    <a href="/coach" class="{% if page == 'coach' %}on{% endif %}">星辰教练</a>
+    <a href="/constellation" class="{% if page == 'constellation' %}on{% endif %}">星空修为</a>
+    <a href="/stars" class="hide-sm {% if page == 'stars' %}on{% endif %}">知识星海</a>
+    <a href="/progress" class="hide-sm {% if page == 'progress' %}on{% endif %}">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>{{ username }}</span>
+    {% if is_guest %}
+      <a class="btn sm" href="/login">登录 / 注册</a>
+    {% else %}
+      <a class="btn sm ghost" href="/logout">退出</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main class="page {% block pageclass %}{% endblock %}">
+{% block content %}{% endblock %}
+</main>
+
+<script src="{{ url_for('static', filename='js/portrait.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cultivation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/md_lite.js') }}"></script>
+<script src="{{ url_for('static', filename='js/star.js') }}"></script>
+<script src="{{ url_for('static', filename='js/qcards.js') }}"></script>
+<script src="{{ url_for('static', filename='js/atmosphere.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

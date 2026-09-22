@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}{{ chapter.title }} · AI Master 星辰学习系统{% endblock %}
+{% block bodyclass %}chapter-page{% endblock %}
+{% block bodydata %}data-page="{{ chapter.title }}" data-chapter-id="{{ chapter.id }}"{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chapter.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="ch-head fade-up" style="--accent:{{ accent }}">
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR {{ '%02d' % chapter.id }} / {{ chapter.stage }}</p>
+    <h1>{{ chapter.icon }} {{ chapter.title }}</h1>
+    <p class="lead">{{ chapter.description }}</p>
+    <div class="row">
+      <span class="chip">{{ chapter.level }}</span>
+      <span class="chip">≈{{ chapter.hours }} 小时</span>
+      <span class="chip">{{ kps|length }} 个知识点</span>
+      <span class="chip">{{ total_questions }} 道练习</span>
+      {% if chapter.highlight %}<span class="chip violet">平台主线</span>{% endif %}
+    </div>
+  </div>
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / {{ kps|length }}</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="/training?chapters={{ chapter.id }}">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      {% if prev_chapter %}<a class="ch-nav" href="/chapter/{{ prev_chapter }}">← 上一章</a>{% endif %}
+      {% if next_chapter %}<a class="ch-nav" href="/chapter/{{ next_chapter }}">下一章 →</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>知识航线</h2>
+    <small>每节下面的题做完就会亮起来</small>
+  </header>
+  <div class="route" id="route">
+    {% for kp in kps %}
+    <article class="kp" id="kp-{{ kp.index + 1 }}" data-kp-index="{{ kp.index }}"
+             data-kp-key="{{ chapter.id }}_{{ kp.index }}" {% if kp.done %}data-done="1"{% endif %}>
+      <div class="kp-head">
+        <span class="kp-no">{{ '%02d' % (kp.index + 1) }}</span>
+        <div class="kp-head-main">
+          <h3>{{ kp.title }}</h3>
+          <div class="kp-meta">
+            <span>≈{{ kp.minutes }} 分钟</span>
+            {% if kp.questions %}<span>{{ kp.questions|length }} 道练习</span>{% endif %}
+            {% if kp.done %}<span class="chip green">已掌握</span>{% endif %}
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">{% if loop.first %}收起{% else %}展开{% endif %}</button>
+      </div>
+
+      {# 默认展开第一节，其余收起。
+         全部收起会让页面看起来"这一章没有内容"；全部展开又有 3 万像素高，
+         学生根本划不到底。展开第一节等于先给一个可读的起点。 #}
+      <div class="kp-body" {% if not loop.first %}hidden{% endif %}>
+        <div class="lesson">{{ kp.content | safe }}</div>
+
+        {% if kp.questions %}
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='{{ kp.questions | tojson }}'></div>
+        </div>
+        {% endif %}
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="{{ chapter.id }}" data-kp="{{ kp.index }}"
+                  {% if kp.done %}disabled{% endif %}>
+            {% if kp.done %}已标记掌握{% else %}标记为已掌握（+12 修为）{% endif %}
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="{{ kp.title | e }}">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="{{ kp.title | e }}">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+{% if chapter_questions %}
+<section class="section">
+  <header><h2>本章综合自测</h2><small>覆盖全章的选择题</small></header>
+  <div class="practice">
+    <div class="q-slots" data-questions='{{ chapter_questions | tojson }}'></div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="/training?chapters={{ chapter.id }}">做本章专项练习</a>
+      <a class="btn agent" href="/coach?chapter={{ chapter.id }}">让教练追问我</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chapter.js') }}"></script>
+{% endblock %}

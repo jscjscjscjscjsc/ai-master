@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}逐日学习路线 · AI Master{% endblock %}
+{% block bodyclass %}roadmap-page{% endblock %}
+{% block bodydata %}data-page="学习路线"{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/roadmap.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="hero fade-up">
+  <p class="kicker">ROADMAP / 逐日路线</p>
+  <h1>把整门课拆到某一天，<em>然后跟着走就行。</em></h1>
+  <p class="lead">
+    不用每天重新决定学什么。这份计划按你每天能投入的时间算出来：
+    每个知识点要多少分钟是照正文长度估的，装不下就顺延到明天。
+    已完成的会被划掉，所以它是活的。
+  </p>
+</section>
+
+<section class="section">
+  <div class="rm-summary card pad-lg" id="rm-summary"></div>
+</section>
+
+<section class="section">
+  <div class="rm-controls card">
+    <div>
+      <h3>每天能学多久</h3>
+      <p>改一下这个数字，整条路线会重排。别高估自己 —— 排得满但天天完不成，比排得松更打击人。</p>
+    </div>
+    <div class="rm-picks" id="rm-picks">
+      <button class="rm-pick" data-min="30">30 分钟<em>只有碎片时间</em></button>
+      <button class="rm-pick" data-min="60">1 小时<em>还有别的课</em></button>
+      <button class="rm-pick" data-min="90">1.5 小时<em>想认真学</em></button>
+      <button class="rm-pick" data-min="180">3 小时<em>集中冲刺</em></button>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>逐日安排</h2>
+    <small id="rm-count"></small>
+  </header>
+  <div class="rm-days" id="rm-days"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/roadmap.js') }}"></script>
+{% endblock %}

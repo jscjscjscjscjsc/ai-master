@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}星空修为 · 星空漫步者{% endblock %}
+{% block bodyclass %}cultivation-page{% endblock %}
+{% block bodydata %}data-page="星空修为"{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/constellation.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="cx-hero fade-up">
+  <div class="cx-portrait" id="cx-portrait"></div>
+  <div class="cx-headline">
+    <p class="kicker">CONSTELLATION / 星空漫步者</p>
+    <h1 id="cx-name">正在读取你的星轨…</h1>
+    <p class="cx-whisper" id="cx-whisper"></p>
+    <div class="cx-bar-row">
+      <div class="bar"><i id="cx-bar" style="width:0%"></i></div>
+      <span id="cx-points">0 修为</span>
+    </div>
+    <div class="row" id="cx-next"></div>
+  </div>
+  <div class="cx-power card">
+    <span>探索战力</span>
+    <b id="cx-power">0</b>
+    <div id="cx-power-parts"></div>
+  </div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>十一阶境界线</h2>
+    <small>从观星者到星系织者 —— 每一阶都对应一种真实的能力状态</small>
+  </header>
+  <div class="cx-realms" id="cx-realms"></div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>星器</h2>
+    <small id="cx-equip-sub"></small>
+  </header>
+  <div class="cx-equipment" id="cx-equipment"></div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>星辰试炼</h2>
+    <small>每个大境界三条目标，全达成发一次突破奖励</small>
+  </header>
+  <div class="cx-trials" id="cx-trials"></div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>星仪谱</h2>
+    <small>每一级一件观测仪器 —— 名字取自真实天文器材，对应一种能力。点标题展开说明</small>
+  </header>
+  <div class="cx-levels" id="cx-levels"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/constellation.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+# 离线分发包按这份清单安装依赖（由 tools/make_release.py 生成/校验）。
+# 只列 flask 与 edge-tts 及其传递依赖 —— 平台不依赖数值计算或绘图库。
+aiohappyeyeballs==2.7.1
+aiohttp==3.14.3
+aiosignal==1.4.0
+attrs==26.1.0
+blinker==1.9.0
+certifi==2026.7.22
+charset-normalizer==3.5.1
+click==8.5.0
+colorama==0.4.6
+edge-tts==7.2.8
+flask==3.1.3
+frozenlist==1.8.0
+idna==3.20
+itsdangerous==2.2.0
+jinja2==3.1.6
+markupsafe==3.0.3
+multidict==6.8.0
+propcache==0.5.4
+tabulate==0.10.0
+typing-extensions==4.16.0
+werkzeug==3.1.8
+yarl==1.25.1

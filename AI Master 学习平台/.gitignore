@@ -1,0 +1,26 @@
+# 本地运行环境与产物（跟机器相关，不该进仓库）
+__pycache__/
+*.py[cod]
+runtime/
+logs/
+.build-video/
+.build-ppt/
+.pytest_cache/
+
+# 用户数据与密钥（绝不入库）
+.env
+.env.*
+!.env.example
+data/users.json
+data/.secret_key
+data/coach/
+data/training/
+data/audio_cache/
+data/*.log
+
+# 打包产物
+dist/
+*.zip
+
+# 离线依赖 wheel：本机打分发/自举用，52MB，不进仓库
+vendor/wheels/

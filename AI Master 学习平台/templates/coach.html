@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}星辰教练 · AI Master{% endblock %}
+{% block bodyclass %}coach-page{% endblock %}
+{% block bodydata %}data-page="星辰教练"{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/coach_page.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="coach-shell" id="coach-shell">
+  <aside class="coach-side">
+    <div class="coach-figure" id="coach-figure"></div>
+    <div class="coach-form-name" id="coach-form-name"></div>
+
+    <div class="coach-tabs">
+      <button class="coach-tab on" data-mode="coach">答疑</button>
+      <button class="coach-tab" data-mode="interview">模拟面试</button>
+    </div>
+
+    <div id="coach-sessions" class="coach-sessions"></div>
+    <button class="btn sm" id="coach-new">+ 新对话</button>
+    <div class="coach-voice">
+      <label class="coach-switch">
+        <input type="checkbox" id="voice-on"> <span>朗读回答（语音问答）</span>
+      </label>
+      <p>打开后教练的每条回答会自动读出来；你也可以按住麦克风用说的提问。</p>
+    </div>
+  </aside>
+
+  <section class="coach-main">
+    <header class="coach-top">
+      <div>
+        <h1 id="coach-title">星辰教练</h1>
+        <p id="coach-sub">陪练式答疑 · 只给思路不给答案，直到你自己讲清楚</p>
+      </div>
+      <div class="row">
+        <button class="btn sm ghost" id="coach-tts-last">🔊 朗读上一条</button>
+        <button class="btn sm ghost" id="coach-copy">复制记录</button>
+        <button class="btn sm ghost" id="coach-clear">清空</button>
+      </div>
+    </header>
+
+    <div class="coach-thread" id="coach-thread"></div>
+
+    <div class="coach-compose">
+      <textarea id="coach-input" rows="2" placeholder="把你的问题、代码或思路贴进来…（Enter 发送）"></textarea>
+      <div class="compose-actions">
+        <button class="btn ghost sm" id="coach-mic" title="按住说话（浏览器语音识别）">🎙 说</button>
+        <button class="btn primary" id="coach-send">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="coach-interview" id="interview-panel" hidden>
+    <header>
+      <h3>模拟大模型面试</h3>
+      <p>面试官会根据你的薄弱章节开场，一次只问一个问题，答完当场点评并追问。</p>
+    </header>
+    <div class="iv-focus">
+      <label class="field"><span>面试方向（留空则按你的薄弱章节自动选）</span>
+        <input type="text" id="iv-focus" placeholder="例：第 4 章 智能体原理与架构">
+      </label>
+      <button class="btn primary sm" id="iv-start">开始面试</button>
+    </div>
+    <div class="iv-log" id="iv-log"></div>
+    <div class="iv-score" id="iv-score" hidden></div>
+  </aside>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{# star_coach.js 负责画那尊会随境界变化的法相，starfield.js 负责背后那片星海。
+   两者都必须在 coach_page.js 之前加载：coach_page 里是同步调用
+   window.StarCoach.render 的，晚一步就画不出来。 #}
+<script src="{{ url_for('static', filename='js/star_coach.js') }}"></script>
+<script src="{{ url_for('static', filename='js/starfield.js') }}"></script>
+<script src="{{ url_for('static', filename='js/coach_page.js') }}"></script>
+{% endblock %}

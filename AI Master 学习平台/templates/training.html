@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}刷题中心 · AI Master{% endblock %}
+{% block bodyclass %}workbench-page{% endblock %}
+{% block bodydata %}data-page="刷题中心"{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/training.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="wb">
+  <aside class="wb-side">
+    <div class="wb-block">
+      <h3>章节</h3>
+      <div class="wb-quick">
+        <button class="btn sm ghost" data-quick="agent">只看智能体</button>
+        <button class="btn sm ghost" data-quick="all">全部章节</button>
+        <button class="btn sm ghost" data-quick="wrong">我的错题</button>
+      </div>
+      <div id="wb-chapters" class="wb-chapters"></div>
+    </div>
+    <div class="wb-block">
+      <h3>难度</h3>
+      <div class="wb-seg" id="wb-difficulty">
+        <button class="on" data-value="">不限</button>
+        <button data-value="1">基础</button>
+        <button data-value="2">进阶</button>
+        <button data-value="3">挑战</button>
+      </div>
+    </div>
+    <div class="wb-block">
+      <h3>题型</h3>
+      <div class="wb-seg" id="wb-type">
+        <button class="on" data-value="">全部</button>
+        <button data-value="choice">选择题</button>
+        <button data-value="short">简答题</button>
+        <button data-value="code">代码题</button>
+      </div>
+    </div>
+    <div class="wb-block">
+      <h3>组卷</h3>
+      <p class="wb-note">限时完成，交卷后 AI 逐题讲评。</p>
+      <div class="row">
+        <select id="wb-exam-count">
+          <option value="5">5 题</option>
+          <option value="8">8 题</option>
+          <option value="10">10 题</option>
+        </select>
+        <button class="btn sm primary" id="wb-exam-start">开始组卷</button>
+      </div>
+    </div>
+  </aside>
+
+  <section class="wb-main">
+    <header class="wb-top">
+      <div>
+        <h1>刷题中心</h1>
+        <p id="wb-count">正在载入题库…</p>
+      </div>
+      <div class="row">
+        <span class="chip" id="wb-solved">0 题通关</span>
+        <span class="chip gold" id="wb-points">0 修为</span>
+      </div>
+    </header>
+    <div id="wb-exam-strip" hidden></div>
+    <div class="wb-list" id="wb-list"></div>
+  </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/training.js') }}"></script>
+{% endblock %}
