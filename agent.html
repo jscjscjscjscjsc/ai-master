@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>星语 · 全局学习智能体</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/agent_page.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="agent-page"
+      data-page="智能体工作台">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+<section class="hero fade-up">
+  <div>
+    <p class="kicker">PLATFORM MAINLINE / 智能体</p>
+    <h1>星语不只是回答你，<br><em>它把你送到该去的那一页。</em></h1>
+    <p class="lead">
+      普通答疑助手会告诉你「去看第 4 章第 3 节」。星语会直接打开那一节，
+      并且沿途告诉你为什么是这一节、你缺的到底是什么。
+      它的判断依据是你真实的作答档案 —— 不是话术。
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="ask-shell">
+    <div class="ask-main card">
+      <div class="ask-thread" id="ask-thread">
+        <div class="ask-hint">
+          <h3>试着这样说</h3>
+          <div class="ask-samples" id="ask-samples"></div>
+        </div>
+      </div>
+      <div class="ask-compose">
+        <textarea id="ask-input" rows="2"
+          placeholder="例：我对工具调用不熟悉 ／ 我想做 RAG 的题 ／ 我该怎么安排这三周 ／ 我现在什么水平"></textarea>
+        <button class="btn primary" id="ask-send">发送</button>
+      </div>
+      <div class="ask-note">Enter 发送 · Shift+Enter 换行 · 回答基于课程讲义，不会跑题</div>
+    </div>
+
+    <aside class="ask-side">
+      <div class="card">
+        <h3>它现在看到的状态</h3>
+        <p class="side-note">智能体的判断完全基于这张表。你可以对照检查它有没有看错。</p>
+        <div id="board"></div>
+      </div>
+      <div class="card">
+        <h3>它能做的六件事</h3>
+        <ul class="ability">
+          <li><b>讲</b><span>按课程讲义讲解知识点，不跑题</span></li>
+          <li><b>带路</b><span>把你直接送到具体某一节</span></li>
+          <li><b>出题</b><span>打开某章练习，或直接组卷</span></li>
+          <li><b>排计划</b><span>按每天能投入的时间排逐日路线</span></li>
+          <li><b>看进度</b><span>算清你还差多少、卡在哪</span></li>
+          <li><b>陪面试</b><span>转到星辰教练开始模拟面试</span></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="section">
+  <header>
+    <h2>为什么它比「聊天框 + 提示词」强</h2>
+    <small>三层结构，每一层都能单独解释</small>
+  </header>
+  <div class="grid c3">
+    <div class="card layer">
+      <span class="chip cyan">第 1 层</span>
+      <h3>本地意图识别</h3>
+      <p>「我对 XX 不熟悉」这类最高频的话，直接在本地用课程表做同义词打分，
+         命中就零延迟给动作。不烧 token，也就不会因为限流而变傻。</p>
+    </div>
+    <div class="card layer">
+      <span class="chip violet">第 2 层</span>
+      <h3>课程内容检索</h3>
+      <p>全站知识点、题目、答案要点被索引成同一份文档库。
+         回答前先检索，所以它讲的内容与章节里写的一致，不会两套说法。</p>
+    </div>
+    <div class="card layer">
+      <span class="chip gold">第 3 层</span>
+      <h3>动作白名单</h3>
+      <p>模型给出的跳转目标必须通过白名单校验：章节存在、知识点编号合法、
+         地址由服务端拼装。所以它不可能给出一个打不开的页面。</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <header><h2>它带着你走完的流程</h2><small>这条链路每一步都可验证</small></header>
+  <div class="flow">
+    <div class="flow-step"><b>1</b><span>你问「我对工具调用不熟悉」</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><b>2</b><span>本地打分命中「工具调用协议：Function Calling 到 MCP」</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><b>3</b><span>检索该节讲义，生成讲解</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><b>4</b><span>给出跳转按钮，你点进去就在那一节</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><b>5</b><span>做完那节的题，修为与星器自动结算</span></div>
+  </div>
+</section>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/agent_page.js"></script>
+
+</body>
+</html>

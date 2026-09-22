@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API ENGINEERING · CG · 从函数到能上线的后端</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./engine/star-cinema.css">
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="brand" id="brand">AI MASTER / API ENGINEERING</div>
+
+<div class="scene-info">
+  <p class="scene-num" id="sceneNum">01</p>
+  <h1 class="scene-title" id="sceneTitle">PROLOGUE</h1>
+  <p class="scene-sub" id="sceneSub"></p>
+</div>
+<p class="caption" id="caption"></p>
+
+<div class="cta-wrap" id="ctaWrap">
+  <a class="cta" id="ctaBtn" href="../../chapter-2.html">开始学习 API 工程化 <span class="arrow">→</span></a>
+  <p class="cta-sub" id="ctaSub">DAY 06 – 10 · 把模型能力变成一项服务</p>
+</div>
+
+<div class="bottom-bar">
+  <div class="progress-track" id="progressTrack">
+    <div class="progress-fill" id="progressFill"></div>
+    <div class="chapter-marks" id="chapterMarks"></div>
+  </div>
+  <div class="bar-row">
+    <span class="time-label" id="timeLabel">00:00 / 00:00</span>
+    <div class="controls">
+      <button class="ctrl-btn" id="ctrlPrev">◀◀</button>
+      <button class="ctrl-btn" id="ctrlPlay">暂停</button>
+      <button class="ctrl-btn" id="ctrlNext">▶▶</button>
+      <button class="ctrl-btn" id="ctrlSkip">跳过</button>
+      <button class="ctrl-btn" id="ctrlFull">全屏</button>
+    </div>
+  </div>
+</div>
+
+<script src="./engine/star-cinema.js"></script>
+<script>
+/* ===========================================================
+   第 2 章开场 CG：从函数到能上线的后端（Day 06–10）
+   -----------------------------------------------------------
+   这一幕的叙事线是「一次调用 → 一项服务」：教材前两天讲并发与协议，
+   中间两天讲流式与会话，最后一天把四件事拼成一个后端。
+   所以场景就按这条线走 —— 每一幕对应教材里真实做出来的东西。
+   =========================================================== */
+const S = StarCinema;
+const { C, TAU, lerp, clamp, easeOut, easeIn, rand, pick } = S;
+
+const SCENES = [
+
+/* ---------- 01 PROLOGUE 一个函数 ---------- */
+{
+  id: 'prologue', num: '01', title: 'PROLOGUE',
+  sub: '序章 · 一次调用，不等于一项服务',
+  caption: '第 1 天你写通了第一个调用。今天的问题是：别人怎么用它？',
+  duration: 8000,
+  init() {
+    this.code = [
+      'resp = client.chat(messages)',
+      'print(resp.choices[0].message.content)',
+    ];
+    this.dots = [];
+    for (let i = 0; i < 90; i += 1) {
+      this.dots.push({ x: rand(0, S.W), y: rand(0, S.H), vx: rand(-0.3, 0.3), vy: rand(-0.3, 0.3), r: rand(1, 2.6) });
+    }
+  },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const cx = W / 2, cy = H * 0.42;
+
+    // 一屏代码，逐字写出来 —— 这是所有人都写过的第一版
+    const lines = Math.floor(clamp(p / 0.45, 0, 1) * this.code.length);
+    ctx.save();
+    ctx.font = "500 17px 'JetBrains Mono', monospace";
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= lines && i < this.code.length; i += 1) {
+      const text = this.code[i];
+      const shown = i < lines ? text : S.typed(text, (p - 0.45 + 0.1) / 0.1, 1);
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = i === 0 ? C.cyan : C.green;
+      ctx.fillText(shown, cx, cy - 16 + i * 34);
+    }
+    ctx.restore();
+
+    // 代码块边框
+    if (p > 0.1) {
+      S.roundRect(cx - 260, cy - 46, 520, 108, 12, {
+        stroke: S.hexA(C.cyan, 0.35 * clamp((p - 0.1) / 0.2, 0, 1)), lw: 1.4,
+      });
+    }
+
+    // 0.55 之后：同一份逻辑被两个箭头分开 —— 一个是"我跑一次"，
+    // 一个是"一万个人同时用"。这就是这一章的全部动机。
+    if (p > 0.55) {
+      const k = easeOut(clamp((p - 0.55) / 0.35, 0, 1));
+      for (const d of this.dots) {
+        d.x += d.vx * k * 2.4;
+        d.y += d.vy * k * 2.4;
+        if (d.x < 0) d.x += W;
+        if (d.x > W) d.x -= W;
+        if (d.y < 0) d.y += H;
+        if (d.y > H) d.y -= H;
+        S.glowDot(d.x, d.y, d.r, pick([C.cyan, C.purple]), 0.4 * k);
+      }
+      S.drawLabel('一个人跑一次', cx - 300 * k, cy + 120, C.muted, k * 0.9, 13, 'center');
+      S.drawLabel('一万个人同时用', cx + 300 * k, cy + 120, C.amber, k * 0.9, 13, 'center');
+    }
+    if (p > 0.86) {
+      S.gradText('需要一个服务', cx, cy + 190, 34, easeOut((p - 0.86) / 0.14), 700);
+    }
+  },
+},
+
+/* ---------- 02 并发 ---------- */
+{
+  id: 'concurrency', num: '02', title: 'CONCURRENCY',
+  sub: '第 06 天 · 同步串行 vs 异步并发',
+  caption: '同样 8 个请求：串行等 8 次往返，并发只等最慢的那一次。',
+  duration: 10000,
+  init() {
+    this.t = 0;
+  },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const rows = 8;
+    const unit = Math.min(W * 0.16, 120);
+    const leftX = W * 0.10, rightX = W * 0.54;
+    const top = H * 0.28;
+    const rowH = H * 0.052;
+
+    // 左：串行。每次往返都要等上一次结束 —— 所以柱子**阶梯式向右推进**，
+    // 一眼看出总时长是相加的。原来每根柱子只有 1/8 单位宽，细成一条线，
+    // 完全看不出"在等"，等于把这张图想说的事丢掉了一半。
+    S.drawLabel('① 同步串行 · 总耗时 = 每次往返之和', leftX, top - 34, C.pink, 0.9, 13);
+    const unitW = unit * 0.62;
+    for (let i = 0; i < rows; i += 1) {
+      const appear = clamp((p - i * 0.062) / 0.10, 0, 1);
+      if (appear <= 0) continue;
+      const y = top + i * rowH;
+      const x = leftX + i * unitW * 0.42;      // 阶梯：每个请求都往后排
+      S.roundRect(x, y, unitW, rowH * 0.62, 4, {
+        fill: S.hexA(C.pink, 0.26 * appear), stroke: S.hexA(C.pink, 0.72 * appear), lw: 1.2, alpha: appear,
+      });
+      S.flowDot(x, y + rowH * 0.31, x + unitW, y + rowH * 0.31, p * 7 + i * 0.25, C.amber, appear * 0.8);
+      S.drawLabel('等待 ' + (i + 1), x + unitW + 12, y + rowH * 0.31, C.muted, appear * 0.8, 11);
+    }
+    const serialDone = clamp(p / 0.78, 0, 1);
+    S.drawLabel('总耗时 ' + (serialDone * 8).toFixed(1) + ' 个单位（一次一次等）',
+      leftX, top + rows * rowH + 24, C.pink, 0.92, 12.5);
+
+    // 右：并发。所有请求同时出发，总时长 = 最慢的一个。
+    S.drawLabel('② 异步并发 · 总耗时 ≈ 最慢的一次', rightX, top - 34, C.green, 0.9, 13);
+    const concStart = clamp((p - 0.30) / 0.08, 0, 1);
+    if (concStart > 0) {
+      for (let i = 0; i < rows; i += 1) {
+        const y = top + i * rowH;
+        const grow = clamp((p - 0.34) / 0.30, 0, 1);
+        // 并发：所有请求从同一条起跑线出发，长度只取决于自己有多慢
+        const w = unitW * grow * (0.78 + (i % 3) * 0.09);
+        S.roundRect(rightX, y, Math.max(3, w), rowH * 0.62, 4, {
+          fill: S.hexA(C.green, 0.26), stroke: S.hexA(C.green, 0.72), lw: 1.2,
+        });
+        S.flowDot(rightX, y + rowH * 0.31, rightX + w, y + rowH * 0.31, p * 6 + i * 0.3, C.cyan, 0.75);
+      }
+      const concDone = clamp((p - 0.34) / 0.30, 0, 1);
+      S.drawLabel('总耗时 ' + (concDone * 1.6).toFixed(1) + ' 个单位（一起等）',
+        rightX, top + rows * rowH + 24, C.green, 0.95, 12.5);
+    }
+
+    // 结论：差值就是这一章帮你省下的东西
+    if (p > 0.76) {
+      const k = easeOut((p - 0.76) / 0.24);
+      S.gradText('8 次等待 → 1 次等待', W / 2, H * 0.86, Math.min(34, W / 30), k, 700);
+      S.drawLabel('并发不是让单个请求变快，是让等待重叠起来',
+        W / 2, H * 0.86 + 46, C.muted, k * 0.9, 13.5, 'center');
+    }
+  },
+},
+
+/* ---------- 03 流式 ---------- */
+{
+  id: 'streaming', num: '03', title: 'STREAMING',
+  sub: '第 08 天 · SSE：让字先到，而不是等整段',
+  caption: '用户感知的不是总耗时，是首字延迟。',
+  duration: 10000,
+  init() {
+    this.text = '把整段答案等回来再显示，首字要等 4 秒；边生成边发送，首字 0.4 秒就到。';
+  },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const topBoxY = H * 0.24;
+    const boxW = Math.min(W * 0.74, 820);
+    const boxX = (W - boxW) / 2;
+
+    // 上：非流式。整块出现，之前是一片空白。
+    S.drawLabel('① 一次性返回 · 首字延迟 = 总耗时', boxX, topBoxY - 26, C.amber, 0.9, 13);
+    S.roundRect(boxX, topBoxY, boxW, 74, 10, {
+      fill: 'rgba(255,255,255,.03)', stroke: S.hexA(C.amber, 0.35), lw: 1.2,
+    });
+    const appear = clamp((p - 0.42) / 0.06, 0, 1);
+    if (appear > 0) {
+      ctx.save();
+      ctx.globalAlpha = appear;
+      ctx.font = "400 15px 'Noto Sans SC', sans-serif";
+      ctx.fillStyle = C.white;
+      ctx.fillText(this.text.slice(0, 34) + '…', boxX + 18, topBoxY + 44);
+      ctx.restore();
+    } else {
+      S.drawLabel('（界面一片空白，用户不知道发生了什么）', boxX + 18, topBoxY + 44,
+        C.muted, 0.7, 13);
+    }
+
+    // 下：流式。字按 SSE 分片陆续到达，每一片画一条竖线标出到达时刻。
+    const streamY = H * 0.52;
+    S.drawLabel('② SSE 流式 · 首字立刻可见', boxX, streamY - 26, C.cyan, 0.9, 13);
+    S.roundRect(boxX, streamY, boxW, 74, 10, {
+      fill: 'rgba(0,217,255,.05)', stroke: S.hexA(C.cyan, 0.5), lw: 1.4,
+      shadow: S.hexA(C.cyan, 0.3), blur: 20,
+    });
+    const streamP = clamp((p - 0.10) / 0.62, 0, 1);
+    const shown = this.text.slice(0, Math.floor(streamP * this.text.length));
+    ctx.save();
+    ctx.font = "400 15px 'Noto Sans SC', sans-serif";
+    ctx.fillStyle = C.white;
+    ctx.fillText(shown, boxX + 18, streamY + 44);
+    // 光标
+    const tw = ctx.measureText(shown).width;
+    if (streamP < 1) {
+      ctx.globalAlpha = 0.5 + 0.5 * Math.sin(p * 40);
+      ctx.fillStyle = C.cyan;
+      ctx.fillRect(boxX + 20 + tw, streamY + 30, 2, 18);
+    }
+    ctx.restore();
+
+    // 分片到达的证据：教材 Day 08 的验收要求就是「有逐 chunk 到达时间证据」
+    if (p > 0.16) {
+      const marks = 9;
+      for (let i = 0; i < marks; i += 1) {
+        const arrive = 0.10 + (i / marks) * 0.62;
+        const k = clamp((p - arrive) / 0.04, 0, 1);
+        if (k <= 0) continue;
+        const x = boxX + (i + 1) / (marks + 1) * boxW;
+        ctx.save();
+        ctx.globalAlpha = k * 0.75;
+        ctx.strokeStyle = C.cyan;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, streamY + 78);
+        ctx.lineTo(x, streamY + 78 + 14 * k);
+        ctx.stroke();
+        ctx.restore();
+      }
+      S.drawLabel('每一小段到达的时刻都可观测 —— 这才叫"真的在流式"',
+        boxX + boxW, streamY + 104, C.muted, clamp((p - 0.55) / 0.2, 0, 0.85), 11.5, 'right');
+    }
+
+    if (p > 0.80) {
+      const k = easeOut((p - 0.80) / 0.20);
+      S.gradText('首字 0.4s vs 4s', W / 2, H * 0.86, Math.min(30, W / 34), k, 700);
+    }
+  },
+},
+
+/* ---------- 04 稳定性 ---------- */
+{
+  id: 'stability', num: '04', title: 'RESILIENCE',
+  sub: '第 09 天 · 重试、限流、日志：把意外挡在用户之外',
+  caption: '失败一定会发生。问题只是它发生在日志里，还是发生在用户面前。',
+  duration: 9500,
+  init() {
+    this.guards = [
+      { name: '带退避的有限重试', detail: '失败等一等再试，最多 3 次', color: C.cyan },
+      { name: '滑动窗口限流', detail: '每用户每窗口限定次数', color: C.green },
+      { name: '安全文件上传', detail: '不信用户给的文件名', color: C.amber },
+      { name: '结构化日志', detail: '带 request_id，可回溯', color: C.purple },
+    ];
+    this.hits = [];
+  },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const x = W * 0.5, y = H * 0.42;
+    const radius = Math.min(W, H) * 0.19;
+
+    // 中心的环形护栏
+    const spin = p * 0.6;
+    for (let i = 0; i < 3; i += 1) {
+      const r = radius * (0.66 + i * 0.17);
+      ctx.save();
+      ctx.globalAlpha = 0.22 + i * 0.08;
+      ctx.strokeStyle = [C.cyan, C.green, C.purple][i];
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(x, y, r, spin * (i + 1) * 0.5, spin * (i + 1) * 0.5 + TAU * 0.72);
+      ctx.stroke();
+      ctx.restore();
+    }
+    S.gradText('SERVICE', x, y, Math.min(30, W / 40), 0.9, 700);
+
+    // 从外面打进来的「意外」：被环拦下，或者穿过去
+    if (this.hits.length < 26 && p < 0.86 && Math.random() < 0.22) {
+      const ang = rand(0, TAU);
+      this.hits.push({ ang, start: p, stopped: Math.random() < 0.76 });
+    }
+    this.hits = this.hits.filter((h) => p - h.start < 0.42);
+    for (const h of this.hits) {
+      const age = clamp((p - h.start) / 0.34, 0, 1);
+      const dist = lerp(Math.max(W, H) * 0.62, h.stopped ? radius * 0.86 : radius * 0.2, easeOut(age));
+      const px = x + Math.cos(h.ang) * dist;
+      const py = y + Math.sin(h.ang) * dist;
+      const color = h.stopped ? C.muted : C.pink;
+      S.glowDot(px, py, h.stopped ? 2.4 : 3.6, color, h.stopped ? 0.45 : 0.9);
+      if (h.stopped && age > 0.5) {
+        // 被拦下的那一刻闪一下环
+        ctx.save();
+        ctx.globalAlpha = (1 - age) * 0.5;
+        ctx.strokeStyle = C.cyan;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, radius * 0.9, h.ang - 0.24, h.ang + 0.24);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 四道护栏的说明
+    const listY = H * 0.70;
+    this.guards.forEach((g, i) => {
+      const k = clamp((p - 0.18 - i * 0.09) / 0.14, 0, 1);
+      if (k <= 0) return;
+      const rowY = listY + i * 30;
+      const rowX = W * 0.14 + (i % 2) * W * 0.42;
+      if (i % 2 === 0) {
+        S.glowDot(rowX - 12, rowY, 3.2, g.color, k);
+        S.drawLabel(g.name, rowX, rowY, g.color, k, 14);
+        S.drawLabel(g.detail, rowX + 152, rowY, C.muted, k * 0.85, 12);
+      } else {
+        S.glowDot(rowX - 12, rowY, 3.2, g.color, k);
+        S.drawLabel(g.name, rowX, rowY, g.color, k, 14);
+        S.drawLabel(g.detail, rowX + 152, rowY, C.muted, k * 0.85, 12);
+      }
+    });
+  },
+},
+
+/* ---------- 05 FINALE 六层 ---------- */
+{
+  id: 'finale', num: '05', title: 'FINALE',
+  sub: '第 10 天 · 六层叠起来，就是企业级聊天后端',
+  caption: '配置 → 模型接入 → 会话 → 服务 → 稳定性 → 验证。',
+  duration: 9500,
+  init() { this.t = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const layers = [
+      { name: '配置层', note: '密钥与模型名集中一处', color: C.cyan },
+      { name: '模型接入层', note: '统一的请求与响应对象', color: C.green },
+      { name: '会话层', note: '多轮上下文与裁剪', color: C.amber },
+      { name: '服务层', note: '/health /chat /chat/stream /upload', color: C.purple },
+      { name: '稳定性层', note: '重试 · 限流 · 日志', color: C.pink },
+      { name: '验证层', note: '压测与验收脚本', color: C.white },
+    ];
+    // 六层要往上收：CTA 按钮会在最后一幕的中下方出现，
+    // 如果结构图铺满整屏，按钮就会压住中间两层（验收抓到的问题）。
+    // 这里把整体高度压到 62% 屏高、并上移到 0.20H 起，给 CTA 留出干净的下方。
+    // 结构图占 0.13H–0.60H 这一段，CTA 固定在 0.72H ——
+    // 两者用同一个比例尺推导，改一个不会把另一个压住。
+    // （上一版没约束，六层画到 0.60H 之后仍与 56% 处的 CTA 重叠。）
+    const boxW = Math.min(W * 0.60, 700);
+    const boxH = Math.min(H * 0.058, 44);
+    const gap = 9;
+    const totalH = layers.length * boxH + (layers.length - 1) * gap;
+    const startY = H * 0.13;
+    const x = (W - boxW) / 2;
+
+    for (let i = 0; i < layers.length; i += 1) {
+      const k = clamp((p - i * 0.10) / 0.22, 0, 1);
+      if (k <= 0) continue;
+      const y = startY + (layers.length - 1 - i) * (boxH + gap);
+      const slide = (1 - easeOut(k)) * 40;
+
+      S.roundRect(x + slide, y, boxW, boxH, 9, {
+        fill: S.hexA(layers[i].color, 0.10 * k),
+        stroke: S.hexA(layers[i].color, 0.55 * k), lw: 1.3,
+        alpha: k,
+        shadow: S.hexA(layers[i].color, 0.28 * k), blur: 16,
+      });
+      S.drawLabel(layers[i].name, x + 22 + slide, y + boxH / 2, layers[i].color, k, 14);
+      S.drawLabel(layers[i].note, x + 156 + slide, y + boxH / 2, C.muted, k * 0.9, 12);
+    }
+
+    // 层与层之间是"调用"，不是"并列" —— 用流动的光点说明方向
+    if (p > 0.5) {
+      for (let i = 0; i < layers.length - 1; i += 1) {
+        const y1 = startY + (layers.length - 1 - i) * (boxH + gap);
+        const y2 = y1 + gap;
+        S.flowDot(x + boxW / 2, y1 + boxH, x + boxW / 2, y2, p * 8 + i * 0.4, C.cyan, 0.6);
+      }
+    }
+  },
+},
+];
+
+S.start({
+  title: 'AI MASTER / API ENGINEERING',
+  learnUrl: '../../chapter-2.html',
+  learnLabel: '开始学习 API 工程化',
+  learnSub: 'DAY 06 – 10 · 把模型能力变成一项服务',
+  scenes: SCENES,
+});
+</script>
+</body>
+</html>

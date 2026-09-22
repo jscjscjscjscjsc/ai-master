@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent 核心机制（从零自研） · AI Master 星辰学习系统</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/chapter.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="chapter-page"
+      data-page="Agent 核心机制（从零自研）" data-chapter-id="4">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+
+<section class="ch-head fade-up" style="--accent:#ff9f9f">
+  
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="static/cg/agentic_cg/index.html">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>开场 · 驾驭智能体</h2>
+      <p>5 幕 CG：Agent 到底比「一次性问答」多了什么</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    
+    <div class="ch-cg-rest">
+      
+      <a class="ch-cg-chip cine" href="static/cg/revelation_cg.html" target="_blank" rel="noreferrer">
+        <b>收束 · 星辰启示</b><em>翻过这一章时，看一眼星图留言</em>
+      </a>
+      
+    </div>
+    
+  </div>
+  
+
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR 04 / 阶段三 · 智能体内核（主线）</p>
+    <h1>🛰️ Agent 核心机制（从零自研）</h1>
+    <p class="lead">Day 17–20：Function Calling 与工具注册表；手写 ReAct 风格 Agent 控制器；记忆系统与工具适配边界 等 4 天内容</p>
+    <div class="row">
+      
+      <span class="chip"><b style="color:var(--ink)">17–20</b> Day</span>
+      
+      <span class="chip"><b style="color:var(--ink)">4 节</b> 知识点</span>
+      
+      <span class="chip"><b style="color:var(--ink)">约 24 小时</b> 学时</span>
+      
+      <span class="chip"><b style="color:var(--ink)">28 道</b> 练习题</span>
+      
+      <span class="chip violet">平台主线</span>
+      <span class="chip">Function Calling</span><span class="chip">ReAct</span><span class="chip">记忆系统</span><span class="chip">安全护栏</span><span class="chip">MCP</span>
+    </div>
+  </div>
+
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / 4</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="training.html?chapters=4">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      <a class="ch-nav" href="chapter-3.html">← 上一章</a>
+      
+      <a class="ch-nav ch-nav-warp" href="warp.html?to=/chapter/5&kicker=SECTOR 05&next=正在跃迁到 Agent 框架实战">
+        下一章 →<em>走星际跃迁</em>
+      </a>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson"><blockquote>建议学时：4 天，每天 6 学时 学习方式：协议拆解、教师手写、故障注入、项目答辩 章节交付：不依赖 Agent 框架的 Enterprise Copilot Agent</blockquote>
+<h3>4.0 本章学习目标</h3>
+<p>完成本章后，学生能够：</p>
+<ol><li>解释普通对话、工作流与 Agent 的控制流差异。</li><li>使用 JSON Schema 描述工具输入，完成 tool call、tool result 的往返循环。</li><li>手写带最大步数、超时、参数校验和停止原因的 Agent 控制器。</li><li>用“动作、观察、状态更新”实现可审计的 ReAct 风格循环。</li><li>使用 SQLite 保存对话与事件，进程重启后仍能恢复必要上下文。</li><li>将第三章的 RAG 作为一个工具接入 Agent。</li><li>识别提示词注入、工具越权、重复执行、循环失控等风险，并设置护栏。</li></ol>
+<h3>4.1 Agent 到底多了什么</h3>
+<p>普通聊天程序的控制流由开发者写死：收到问题，调用一次模型，返回文字。Agent 允许模型在受控范围内选择下一步动作，但程序仍掌握工具、权限、执行和停止。</p>
+<pre class="code lang-mermaid"><code>flowchart TD
+    U[用户任务] --&gt; C[控制器]
+    C --&gt; M[LLM 决策]
+    M --&gt;|最终回答| F[结束]
+    M --&gt;|工具调用| V[参数与权限校验]
+    V --&gt;|通过| T[执行工具]
+    V --&gt;|失败| ER[结构化错误结果]
+    T --&gt; O[工具结果摘要]
+    ER --&gt; C
+    O --&gt; C
+    C --&gt;|达到步数/预算/超时| S[安全终止]</code></pre>
+<p>四个能力可以这样理解：</p>
+<table><thead><tr><th style="text-align:left">能力</th><th style="text-align:left">程序中的载体</th><th style="text-align:left">课堂问题</th></tr></thead><tbody><tr><td style="text-align:left">感知</td><td style="text-align:left">用户输入、工具结果、环境状态</td><td style="text-align:left">Agent 目前知道什么？</td></tr><tr><td style="text-align:left">规划</td><td style="text-align:left">模型输出的下一动作或任务计划</td><td style="text-align:left">下一步为何是这个工具？</td></tr><tr><td style="text-align:left">行动</td><td style="text-align:left">受注册表约束的函数调用</td><td style="text-align:left">程序允许它做什么？</td></tr><tr><td style="text-align:left">记忆</td><td style="text-align:left">消息窗口、摘要、SQLite、向量库</td><td style="text-align:left">哪些信息需要跨轮或跨进程保留？</td></tr></tbody></table>
+<p>重要边界：课堂日志记录工具名、参数、结果摘要、耗时、错误和停止原因。不要要求模型输出隐藏推理过程，也不要把私有思维链当作系统可观测性。</p>
+<hr></div>
+  </div>
+</section>
+
+
+<section class="section">
+  <header>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
+  </header>
+  <div class="route" id="route">
+    
+    <article class="kp" id="kp-1" data-kp-index="0"
+             data-kp-key="4_0" >
+      <div class="kp-head">
+        <span class="kp-no">D17</span>
+        <div class="kp-head-main">
+          <h3>Day 17｜Function Calling 与工具注册表</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">收起</button>
+      </div>
+
+      
+      <div class="kp-body" >
+        <div class="lesson"><h4>4.2.1 当日问题与验收</h4>
+<p>当日问题：模型输出“想调用工具”之后，程序如何安全地把它变成一次真实函数调用？</p>
+<p>验收要求：</p>
+<ul><li>注册计算器和天气模拟器两个工具。</li><li>模型只能调用白名单工具。</li><li>参数经过类型和范围校验。</li><li>成功与失败都转换成结构化 tool result，再回传模型。</li><li>日志中同一次调用使用唯一 <code>call_id</code>。</li></ul>
+<h4>4.2.2 工具 Schema</h4>
+<pre class="code lang-python"><code>CALCULATOR_SCHEMA = {
+    "type": "function",
+    "function": {
+        "name": "calculator",
+        "description": "执行两个数的基础四则运算",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "a": {"type": "number"},
+                "b": {"type": "number"},
+                "operator": {"type": "string", "enum": ["+", "-", "*", "/"]},
+            },
+            "required": ["a", "b", "operator"],
+            "additionalProperties": False,
+        },
+    },
+}</code></pre>
+<p>讲解重点：</p>
+<ul><li><code>name</code> 是协议标识，修改后调用方也要同步修改。</li><li><code>description</code> 应说明工具能力和适用范围，不能只写“计算工具”。</li><li><code>enum</code> 缩小模型可选择的动作空间。</li><li><code>additionalProperties: False</code> 阻止模型悄悄加入未定义字段。</li><li>Schema 只描述参数，程序仍必须在运行时校验。</li></ul>
+<h4>4.2.3 不使用 <code>eval</code> 的计算器</h4>
+<pre class="code lang-python"><code>from typing import Literal
+
+from pydantic import BaseModel
+
+
+class CalculatorArgs(BaseModel):
+    a: float
+    b: float
+    # 用 Literal 而不是 str：让类型系统直接拦住非法运算符。
+    # 这不是"更好的写法"，而是本章教学点的落地 —— 参数校验是安全边界。
+    # 写成 str 时，非法值要到函数体里的 if 判断才被拒绝；
+    # 写成 Literal 时，Pydantic 在进入函数之前就拒绝了，错误位置更靠前、消息更明确。
+    operator: Literal["+", "-", "*", "/"]
+
+
+def calculator(args: CalculatorArgs) -&gt; dict[str, float]:
+    operations = {
+        "+": lambda a, b: a + b,
+        "-": lambda a, b: a - b,
+        "*": lambda a, b: a * b,
+        "/": lambda a, b: a / b,
+    }
+    if args.operator == "/" and args.b == 0:
+        raise ValueError("除数不能为 0")
+    return {"value": operations[args.operator](args.a, args.b)}</code></pre>
+<p>不允许把模型产生的表达式传给 <code>eval</code>。模型输入属于不可信输入，<code>eval</code> 可能执行任意 Python 代码。 上例用 <code>operations</code> 字典做<strong>白名单分派</strong>，正是为了避免 <code>eval</code>。 （第 7 章自研框架时你会看到同一个原则的实现方式：<code>@tool</code> 装饰器 + 注册表。）</p>
+<h4>4.2.4 可重复的天气模拟器</h4>
+<pre class="code lang-python"><code>from typing import Literal
+
+
+class WeatherArgs(BaseModel):
+    city: str
+    unit: Literal["celsius", "fahrenheit"] = "celsius"
+
+
+WEATHER_DATA = {
+    "北京": {"condition": "晴", "celsius": 26.0},
+    "上海": {"condition": "多云", "celsius": 28.0},
+}
+
+
+def get_weather(args: WeatherArgs) -&gt; dict[str, object]:
+    item = WEATHER_DATA.get(args.city)
+    if item is None:
+        raise ValueError(f"没有城市 {args.city} 的模拟数据")
+    value = float(item["celsius"])
+    if args.unit == "fahrenheit":
+        value = value * 9 / 5 + 32
+    return {"city": args.city, "condition": item["condition"], "temperature": value, "unit": args.unit}</code></pre>
+<p>课堂先用模拟数据，保证所有学生得到同样结果。接真实 API 是后续扩展，不让网络和账号问题掩盖工具调用机制。</p>
+<h4>4.2.5 类型安全的工具定义与注册表</h4>
+<pre class="code lang-python"><code>from dataclasses import dataclass
+from typing import Callable, Type
+from pydantic import BaseModel, ValidationError
+
+
+@dataclass(frozen=True)
+class Tool:
+    name: str
+    description: str
+    args_model: Type[BaseModel]
+    handler: Callable[[BaseModel], dict]
+
+
+TOOLS = {
+    "calculator": Tool("calculator", "基础四则运算", CalculatorArgs, calculator),
+    "get_weather": Tool("get_weather", "查询课堂模拟天气", WeatherArgs, get_weather),
+}
+
+
+def execute_tool(name: str, raw_arguments: dict) -&gt; dict:
+    tool = TOOLS.get(name)
+    if tool is None:
+        return {"ok": False, "error": {"type": "unknown_tool", "message": f"工具不存在: {name}"}}
+    try:
+        args = tool.args_model.model_validate(raw_arguments)
+        data = tool.handler(args)
+        return {"ok": True, "data": data}
+    except ValidationError as exc:
+        return {"ok": False, "error": {"type": "invalid_arguments", "details": exc.errors()}}
+    except Exception as exc:
+        return {"ok": False, "error": {"type": "tool_error", "message": str(exc)}}</code></pre>
+<p>注册表同时承担三项责任：白名单、参数模型映射、函数路由。错误也作为普通观察结果返回，让模型有机会修正参数，而不是让整个进程崩溃。</p>
+<h4>4.2.6 Tool call / result 最小循环</h4>
+<p>不同供应商的字段可能略有差异，课堂统一在 <code>llm_client</code> 中归一化为：</p>
+<pre class="code lang-python"><code>from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class ToolCall:
+    call_id: str
+    name: str
+    arguments: dict[str, Any]
+
+
+@dataclass
+class ModelTurn:
+    text: str | None
+    tool_calls: list[ToolCall]</code></pre>
+<pre class="code lang-python"><code>import json
+
+
+def run_tool_round(llm, messages: list[dict], tool_schemas: list[dict]) -&gt; str:
+    turn: ModelTurn = llm.decide(messages=messages, tools=tool_schemas)
+    if not turn.tool_calls:
+        return turn.text or ""
+
+    messages.append(llm.assistant_message(turn))
+    for call in turn.tool_calls:
+        result = execute_tool(call.name, call.arguments)
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call.call_id,
+            "name": call.name,
+            # ⚠️ 必须序列化成字符串。
+            # OpenAI 兼容协议要求 tool 消息的 content 是 string；
+            # 直接传 dict 会被服务端拒绝（HTTP 400 Invalid parameter）。
+            # 这是一个"看起来无害、实际必炸"的协议细节。
+            "content": json.dumps(result, ensure_ascii=False),
+        })
+
+    final_turn: ModelTurn = llm.decide(messages=messages, tools=tool_schemas)
+    return final_turn.text or ""</code></pre>
+<p>这里先完成一轮工具调用。Day18 再把"一轮"扩展为有明确停止条件的循环。</p>
+<h4>4.2.7 归一化层：<code>llm.decide()</code> 怎么实现</h4>
+<p>上面用到的 <code>llm.decide()</code> 与 <code>llm.assistant_message()</code> 是本课程定义的<strong>归一化接口</strong>。 这一步很关键：<strong>真实 API 返回的原始结构不能直接给 Agent 用</strong>，中间必须有一层转换。</p>
+<p>为什么必须归一化：</p>
+<table><thead><tr><th style="text-align:left">原始响应的问题</th><th style="text-align:left">归一化后</th></tr></thead><tbody><tr><td style="text-align:left"><code>arguments</code> 是 JSON <strong>字符串</strong>，不是对象</td><td style="text-align:left">解析成 <code>dict</code></td></tr><tr><td style="text-align:left"><code>content</code> 在工具调用时是 <code>null</code></td><td style="text-align:left">统一成 `str \</td><td style="text-align:left">None`</td></tr><tr><td style="text-align:left">可能返回多个 <code>tool_calls</code></td><td style="text-align:left">统一成 <code>list[ToolCall]</code></td></tr><tr><td style="text-align:left">各家平台字段细节有差异</td><td style="text-align:left">上层只依赖 <code>ModelTurn</code></td></tr></tbody></table>
+<pre class="code lang-python"><code>import json
+
+
+class AgentLLM:
+    """把 OpenAI 兼容接口的原始响应，转成 Agent 能直接用的 ModelTurn。"""
+
+    def __init__(self, client):
+        self.client = client
+
+    def decide(self, messages: list[dict], tools: list[dict]) -&gt; ModelTurn:
+        result = self.client.chat(messages, tools=tools, temperature=0)
+        raw_calls = result.tool_calls or []
+
+        calls: list[ToolCall] = []
+        for index, raw in enumerate(raw_calls):
+            function = raw.get("function") or {}
+            raw_args = function.get("arguments")
+
+            # arguments 是 JSON 字符串，需要解析；解析失败不能让整个 Agent 崩
+            if isinstance(raw_args, str):
+                try:
+                    arguments = json.loads(raw_args)
+                except json.JSONDecodeError:
+                    arguments = {}          # 兜底：交给 Pydantic 报"缺少必填参数"
+            else:
+                arguments = raw_args or {}
+
+            calls.append(ToolCall(
+                # 缺 id 时补一个稳定的兜底值，保证 tool 消息能对应上
+                call_id=raw.get("id") or f"call_{index}",
+                name=function.get("name", ""),
+                arguments=arguments,
+            ))
+
+        return ModelTurn(text=result.text or None, tool_calls=calls)
+
+    def assistant_message(self, turn: ModelTurn) -&gt; dict:
+        """转回真实 OpenAI 格式。注意 arguments 要变回字符串。"""
+        message: dict = {"role": "assistant", "content": turn.text}
+        if turn.tool_calls:
+            message["content"] = None          # 有工具调用时 content 为 null
+            message["tool_calls"] = [
+                {
+                    "id": call.call_id,
+                    "type": "function",
+                    "function": {
+                        "name": call.name,
+                        # 注意：这里必须序列化回字符串，
+                        # 与上面 decide() 里的解析正好是一对反向操作
+                        "arguments": json.dumps(call.arguments, ensure_ascii=False),
+                    },
+                }
+                for call in turn.tool_calls
+            ]
+        return message</code></pre>
+<blockquote><strong>这一层为什么值得单独讲</strong>： 原课件 v1.0 直接调用 <code>llm.decide()</code> 和 <code>llm.assistant_message()</code>， <strong>但全章没有给出这两个方法的任何实现</strong> —— 学生照抄代码会发现根本跑不起来。 这是本课程审校中发现的<strong>最严重的阻断级缺陷</strong>。  <strong>教训</strong>：讲义里出现的每一个自定义方法，都必须给出实现或明确指出"由你实现，参考第 N 节"。 否则"代码可复制运行"这个承诺就是空的。</blockquote>
+<p>下面这段代码演示了它的行为（<strong>这是真实的原始响应</strong>，请对照上面的解析逻辑看）：</p>
+<pre class="code lang-json"><code>{
+  "choices": [{
+    "message": {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_abc123",
+          "type": "function",
+          "function": {
+            "name": "calculator",
+            "arguments": "{\"a\": 125, \"b\": 37, \"operator\": \"*\"}"
+          }
+        }
+      ]
+    },
+    "finish_reason": "tool_calls"
+  }]
+}</code></pre>
+<p><strong>四个必须记住的细节</strong>：</p>
+<table><thead><tr><th style="text-align:left">细节</th><th style="text-align:left">说明</th><th style="text-align:left">踩坑后果</th></tr></thead><tbody><tr><td style="text-align:left"><code>arguments</code> 是 <strong>JSON 字符串</strong></td><td style="text-align:left">必须 <code>json.loads()</code></td><td style="text-align:left">直接当 dict 用会 <code>TypeError</code></td></tr><tr><td style="text-align:left"><code>finish_reason == "tool_calls"</code></td><td style="text-align:left">据此判断"要调工具"还是"答完了"</td><td style="text-align:left">判断错会提前结束</td></tr><tr><td style="text-align:left"><code>content</code> 此时是 <code>null</code></td><td style="text-align:left">不要假设它总有值</td><td style="text-align:left"><code>None</code> 参与字符串运算会崩</td></tr><tr><td style="text-align:left">可能有<strong>多个</strong> <code>tool_calls</code></td><td style="text-align:left">要遍历，且每个都要回一条 tool 消息</td><td style="text-align:left">漏回会导致下一轮 400</td></tr></tbody></table>
+<blockquote><strong>工程规范</strong>：<code>decide()</code> 里对 <code>arguments</code> 解析失败做了兜底（返回空 dict）而不是抛异常。 原因是：<strong>让 Pydantic 报"缺少必填参数 a"比让 Agent 因 JSONDecodeError 崩溃更有用</strong> —— 前者模型能看到错误并自我修正，后者整个流程中断。 这个"错误要转化成模型能理解的信息"的思路，贯穿整个第 4 章。</blockquote>
+<p><strong>运行验证：工具调用的四种路径</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch04/10_tool_calling.py</code></pre>
+<p><img src="static/course-assets/ch04/01_tool_calling.webp" alt="工具调用四种路径的真实输出：三工具注册表（calculator / get_weather / search_policy，risk 均为 read）、发给模型的 OpenAI tools Schema、参数错误的结构化返回、未知工具被白名单拦截、以及 tool 消息协议一致性自检" loading="lazy"></p>
+<p><strong>这张图是 Day17 全部验收项的现场证据，重点看四段</strong>：</p>
+<p><strong>（1）工具清单与 Schema</strong>——注册了 3 个工具，每个都带 <code>risk</code> 等级（本日全部为 <code>read</code>，这是 4.5.4 安全策略表的雏形）和 <code>required</code> 参数。图中打印了发给模型的 <code>calculator</code> 定义原文，可以对照 4.2.2 的 Schema 逐字段看。</p>
+<p><strong>（2）参数错误结构化返回：9 种故障，0 次进程中断。</strong> 这是本日最重要的教学点。三种错误（参数不合法 / 工具执行时业务失败 / 未知工具）<strong>都"不作为异常抛出"</strong>——原因写在图上：</p>
+<blockquote>模型需要「看到错误」才能自我纠错，而进程崩溃会让整个 Agent 挂掉 —— <strong>错误应当是一条观察，不是一次事故。</strong></blockquote>
+<p>终端里有一条完整的自我修正轨迹，值得逐行读：第 1 步 <code>tool_result.ok=false</code>（除零错误），第 2 步模型改用合法参数后成功，最终回答「10 除以 2 等于 5」。<strong>这就是「结构化错误」的价值</strong>：不是程序容错，而是给模型一次改正的机会。</p>
+<p><strong>（3）未知工具被白名单拦截。</strong> 模型幻觉出一个不存在的工具 <code>delete_all_files</code>，注册表直接拒绝。要点：<strong>注册表 = 白名单，未注册的工具永远不可能被执行，不管模型怎么请求。</strong> 而且错误信息里带上「可用工具：calculator、get_weather、search_policy」的列表——这是在帮模型走回正轨，而不是单纯报错。</p>
+<p><strong>（4）协议一致性自检：修掉一个「靶场能跑、线上必炸」的 bug。</strong> 原写法把 <code>result</code>（一个 <code>dict</code>）直接塞进 <code>tool</code> 消息的 <code>content</code>。离线靶场的 <code>Message.content</code> 声明为 <code>Any</code>、很宽松，所以能跑；但真实平台（OpenAI / DeepSeek / 通义 / 智谱）要求 <code>content</code> 必须是<strong>字符串</strong>，传 <code>dict</code> 会返回 <code>HTTP 400 invalid type for 'messages[n].content'</code>。因为靶场不校验，这个 bug 在本地永远暴露不出来——<strong>属于最危险的一类问题</strong>。本项目用 <code>AgentLLM.tool_message()</code> 从根上堵住，并加了一条自动一致性检查：图中 (a) 正确写法通过、(b) 故意复现的原写法被检查器成功捕获。</p>
+<p><strong>（5）不使用 &lt;code&gt;eval&lt;/code&gt;。</strong> 结论表最后一行：calculator 走 <code>operator</code> 模块分派，表达式用正则白名单解析。</p>
+<p>最终验收结论（截图末尾的核对表）：工具 Schema 导出 3 个工具格式符合 OpenAI 规范、单工具调用往返全链路通过、多工具连续调用（2 轮，calculator 与 search_policy 各自被正确触发）、参数错误 9 种故障全部结构化返回、未知工具拦截、协议一致性检查通过。</p>
+<blockquote><strong>Day17 交付：可测试的工具层</strong>（白名单 + Pydantic 校验 + 结构化结果 + 协议合规的 tool 消息）。四项缺一不可。</blockquote>
+<h4>4.2.7 当日教学流程</h4>
+<table><thead><tr><th style="text-align:right">时间</th><th style="text-align:left">教学活动</th><th style="text-align:left">学生产出</th></tr></thead><tbody><tr><td style="text-align:right">30 min</td><td style="text-align:left">人工扮演模型、控制器、工具</td><td style="text-align:left">协议时序图</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">拆解 Schema 与安全边界</td><td style="text-align:left">两个 Schema</td></tr><tr><td style="text-align:right">90 min</td><td style="text-align:left">手写注册表和执行器</td><td style="text-align:left">可测试工具层</td></tr><tr><td style="text-align:right">80 min</td><td style="text-align:left">接入模型归一化接口</td><td style="text-align:left">call/result 日志</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">注入错误参数、未知工具、除零</td><td style="text-align:left">错误恢复记录</td></tr><tr><td style="text-align:right">40 min</td><td style="text-align:left">抽讲与提交</td><td style="text-align:left">验收表</td></tr></tbody></table>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 1, "id": "q04-01-01", "last_answer": "", "last_feedback": "", "options": ["\u963b\u6b62\u6a21\u578b\u6084\u6084\u52a0\u5165\u672a\u5b9a\u4e49\u7684\u5b57\u6bb5", "\u9650\u5236\u6a21\u578b\u53ea\u80fd\u8c03\u7528\u767d\u540d\u5355\u5185\u7684\u5de5\u5177", "\u5f3a\u5236\u53c2\u6570\u5728\u8fd0\u884c\u65f6\u901a\u8fc7 Pydantic \u6821\u9a8c", "\u7f29\u5c0f\u6a21\u578b\u53ef\u9009\u7684\u52a8\u4f5c\u7a7a\u95f4\u5230\u679a\u4e3e\u503c"], "points": 27, "solved": false, "statement": "\u5728\u5de5\u5177 Schema \u7684 parameters \u4e2d\u8bbe\u7f6e additionalProperties: False\uff0c\u4e3b\u8981\u76ee\u7684\u662f\u4ec0\u4e48\uff1f", "tags": ["\u5de5\u5177Schema", "\u53c2\u6570\u6821\u9a8c"], "title": "additionalProperties \u7684\u4f5c\u7528", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-01-02", "last_answer": "", "last_feedback": "", "options": ["json.dumps(result, ensure_ascii=False) \u5e8f\u5217\u5316\u6210\u5b57\u7b26\u4e32", "\u76f4\u63a5\u4f20 result \u8fd9\u4e2a dict\uff0c\u8ba9\u670d\u52a1\u7aef\u81ea\u5df1\u89e3\u6790", "\u7528 str(result)\uff0c\u5373 Python \u5b57\u5178\u7684 repr \u5f62\u5f0f", "\u53ea\u4f20 data \u5b57\u6bb5\uff0c\u9519\u8bef\u4fe1\u606f\u901a\u8fc7\u5f02\u5e38\u629b\u51fa"], "points": 76, "solved": false, "statement": "\u5728 run_tool_round \u4e2d\uff0c\u628a\u5de5\u5177\u6267\u884c\u7ed3\u679c\u56de\u4f20\u7ed9\u6a21\u578b\u65f6\uff0ccontent \u5b57\u6bb5\u5e94\u8be5\u600e\u4e48\u586b\uff1f", "tags": ["tool\u6d88\u606f", "\u534f\u8bae\u7ec6\u8282"], "title": "tool \u6d88\u606f content \u7684\u683c\u5f0f", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-01-03", "last_answer": "", "last_feedback": "", "options": ["\u628a arguments \u515c\u5e95\u6210\u7a7a dict\uff0c\u4ea4\u7ed9\u540e\u7eed\u6821\u9a8c\u5904\u7406", "\u76f4\u63a5\u5411\u4e0a\u629b\u51fa\u5f02\u5e38\uff0c\u7ec8\u6b62\u6574\u4e2a Agent \u8fdb\u7a0b", "\u628a\u539f\u59cb\u5b57\u7b26\u4e32\u539f\u6837\u4f20\u7ed9 handler \u4f7f\u7528", "\u91cd\u8bd5\u8c03\u7528\u6a21\u578b\uff0c\u8981\u6c42\u5b83\u91cd\u65b0\u751f\u6210\u53c2\u6570"], "points": 76, "solved": false, "statement": "\u5f52\u4e00\u5316\u5c42\u89e3\u6790 arguments \u65f6\uff0c\u5982\u679c json.loads \u629b\u51fa JSONDecodeError\uff0c\u8bfe\u5802\u505a\u6cd5\u662f\u4ec0\u4e48\uff1f", "tags": ["\u5f52\u4e00\u5316", "\u5bb9\u9519"], "title": "arguments \u89e3\u6790\u5931\u8d25\u7684\u515c\u5e95", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u60f3\u60f3\u9519\u8bef\u5728\u54ea\u4e00\u5c42\u88ab\u62e6\u4f4f", "\u9519\u8bef\u8d8a\u65e9\u66b4\u9732\u8d8a\u597d"], "id": "q04-01-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8ba1\u7b97\u5668\u7684 operator \u53c2\u6570\u5199\u6210 Literal[\"+\", \"-\", \"*\", \"/\"] \u800c\u4e0d\u662f str\u3002\u8bf7\u8bf4\u660e\u8fd9\u4e24\u79cd\u5199\u6cd5\u5728\u9519\u8bef\u53d1\u751f\u4f4d\u7f6e\u4e0a\u6709\u4ec0\u4e48\u5dee\u522b\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u8fd9\u4f53\u73b0\u4e86\u300c\u53c2\u6570\u6821\u9a8c\u662f\u5b89\u5168\u8fb9\u754c\u300d\u8fd9\u4e00\u6559\u5b66\u70b9\u3002", "tags": ["Pydantic", "\u7c7b\u578b\u6821\u9a8c"], "title": "\u4e3a\u4ec0\u4e48\u7528 Literal \u800c\u975e str", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u770b execute_tool \u7684\u8fd4\u56de\u7ed3\u6784", "\u60f3\u60f3\u6a21\u578b\u80fd\u5426\u81ea\u6211\u7ea0\u9519"], "id": "q04-01-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "TOOLS \u6ce8\u518c\u8868\u540c\u65f6\u627f\u62c5\u767d\u540d\u5355\u3001\u53c2\u6570\u6a21\u578b\u6620\u5c04\u3001\u51fd\u6570\u8def\u7531\u4e09\u9879\u8d23\u4efb\u3002\u8bf7\u5206\u522b\u8bf4\u660e\u6bcf\u4e00\u9879\u8d23\u4efb\u7531\u4ee3\u7801\u4e2d\u7684\u54ea\u4e2a\u90e8\u5206\u5b9e\u73b0\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u9519\u8bef\u8981\u4ee5\u666e\u901a\u89c2\u5bdf\u7ed3\u679c\u8fd4\u56de\u800c\u4e0d\u662f\u76f4\u63a5\u629b\u5f02\u5e38\u3002", "tags": ["\u6ce8\u518c\u8868", "\u9519\u8bef\u5904\u7406"], "title": "\u6ce8\u518c\u8868\u7684\u4e09\u9879\u8d23\u4efb", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["ValidationError \u8981\u5728 Exception \u4e4b\u524d\u6355\u83b7", "\u8fd4\u56de\u7ed3\u6784\u7edf\u4e00\u5e26 ok \u5b57\u6bb5"], "id": "q04-01-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def execute_tool(name: str, raw_arguments: dict) -\u003e dict:\n    # \u4f9d\u6b21\u5904\u7406\uff1a\u672a\u77e5\u5de5\u5177\u3001\u53c2\u6570\u6821\u9a8c\u3001\u6267\u884c\u5f02\u5e38\u3001\u6210\u529f\n    pass", "statement": "\u7ed9\u5b9a Tool \u6570\u636e\u7c7b\uff08\u542b name\u3001description\u3001args_model\u3001handler\uff09\u548c TOOLS \u6ce8\u518c\u8868\uff0c\u8bf7\u5b9e\u73b0 execute_tool(name, raw_arguments)\uff0c\u8981\u6c42\uff1a\u5de5\u5177\u4e0d\u5b58\u5728\u8fd4\u56de unknown_tool\uff1b\u53c2\u6570\u6821\u9a8c\u5931\u8d25\u8fd4\u56de invalid_arguments \u5e76\u5e26\u4e0a exc.errors()\uff1bhandler \u629b\u5f02\u5e38\u8fd4\u56de tool_error\uff1b\u6210\u529f\u8fd4\u56de ok \u4e0e data\u3002", "tags": ["\u6ce8\u518c\u8868", "\u5f02\u5e38\u5206\u5c42"], "title": "\u5b9e\u73b0\u7c7b\u578b\u5b89\u5168\u7684 execute_tool", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 3, "hints": ["assistant \u6d88\u606f\u8981\u5728 tool \u6d88\u606f\u4e4b\u524d", "content \u4e0d\u80fd\u76f4\u63a5\u4f20 dict"], "id": "q04-01-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import json\n\ndef run_tool_round(llm, messages: list[dict], tool_schemas: list[dict]) -\u003e str:\n    turn = llm.decide(messages=messages, tools=tool_schemas)\n    # \u5904\u7406\u65e0\u5de5\u5177\u8c03\u7528\u4e0e\u6709\u5de5\u5177\u8c03\u7528\u4e24\u79cd\u60c5\u51b5\n    pass", "statement": "\u8bf7\u5b9e\u73b0 run_tool_round(llm, messages, tool_schemas)\uff1a\u8c03\u7528 llm.decide \u83b7\u53d6 ModelTurn\uff1b\u82e5\u65e0 tool_calls \u76f4\u63a5\u8fd4\u56de\u6587\u672c\uff1b\u5426\u5219\u628a assistant \u6d88\u606f\u548c\u6bcf\u4e2a\u5de5\u5177\u7ed3\u679c\u8ffd\u52a0\u8fdb messages\uff0c\u518d\u8c03\u7528\u4e00\u6b21 decide \u8fd4\u56de\u6700\u7ec8\u6587\u672c\u3002\u6ce8\u610f tool \u6d88\u606f\u7684\u5b57\u6bb5\u4e0e content \u5e8f\u5217\u5316\u3002", "tags": ["\u5de5\u5177\u8c03\u7528\u5faa\u73af", "\u6d88\u606f\u534f\u8bae"], "title": "\u5b9e\u73b0\u4e00\u8f6e\u5de5\u5177\u8c03\u7528\u5faa\u73af", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="4" data-kp="0"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 17｜Function Calling 与工具注册表">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 17｜Function Calling 与工具注册表">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-2" data-kp-index="1"
+             data-kp-key="4_1" >
+      <div class="kp-head">
+        <span class="kp-no">D18</span>
+        <div class="kp-head-main">
+          <h3>Day 18｜手写 ReAct 风格 Agent 控制器</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>4.3.1 控制器状态机</h4>
+<p>课程使用“观察、选择动作、执行、更新状态”的公开控制轨迹，不展示隐藏思维链。</p>
+<pre class="code lang-mermaid"><code>stateDiagram-v2
+    [*] --&gt; Decide
+    Decide --&gt; Finish: 返回最终回答
+    Decide --&gt; Validate: 返回工具调用
+    Validate --&gt; Execute: 参数与权限通过
+    Validate --&gt; Observe: 参数或权限失败
+    Execute --&gt; Observe
+    Observe --&gt; Decide: 未达到停止条件
+    Observe --&gt; SafeStop: 超时/预算/最大步数
+    Finish --&gt; [*]
+    SafeStop --&gt; [*]</code></pre>
+<h4>4.3.2 运行结果与审计事件</h4>
+<pre class="code lang-python"><code>from dataclasses import dataclass, field
+from time import monotonic
+
+
+@dataclass
+class AgentEvent:
+    step: int
+    event_type: str
+    detail: dict
+
+
+@dataclass
+class AgentResult:
+    answer: str
+    stop_reason: str
+    steps: int
+    events: list[AgentEvent] = field(default_factory=list)</code></pre>
+<p><code>stop_reason</code> 至少区分：<code>completed</code>、<code>max_steps</code>、<code>timeout</code>、<code>budget_exceeded</code>、<code>model_error</code>。只有这样才能统计 Agent 失败类型。</p>
+<blockquote><strong>⚠️ 实现要求（原课件 v1.0 的缺陷）</strong>： v1.0 在此处列出了 <code>budget_exceeded</code>，但控制器<strong>只实现了 &lt;code&gt;max_steps&lt;/code&gt; 和 &lt;code&gt;timeout&lt;/code&gt;， 没有任何预算（token / 成本）追踪代码</strong>。这是一个典型的"文档承诺了但代码没做"。  <strong>本版要求</strong>：既然列了 <code>budget_exceeded</code>，就必须真的实现它。最小实现：</blockquote>
+<pre class="code lang-python"><code>from dataclasses import dataclass, field
+
+
+@dataclass
+class BudgetGuard:
+    """预算护栏：累计 token，超限时抛出明确的异常。
+
+    为什么必须"调用前检查"而不是"调用后统计"：
+    调用后统计的话，超支已经发生了。正确做法是在每步开始前，
+    用「已消耗 + 本步估算」预判是否会超，超了就提前终止。
+    """
+    max_tokens: int
+    used_tokens: int = 0
+    history: list[int] = field(default_factory=list)   # 每次调用的 token 消耗
+
+    def estimate_next(self) -&gt; int:
+        """估算下一次调用的消耗：用历史平均值，没有历史就给一个保守默认值。"""
+        if not self.history:
+            return 2000        # 保守估计：system + 工具定义 + 首轮对话
+        return int(sum(self.history) / len(self.history) * 1.2)   # 留 20% 余量
+
+    def check(self) -&gt; None:
+        """每步开始前调用。预测会超限就提前终止。"""
+        if self.used_tokens + self.estimate_next() &gt; self.max_tokens:
+            raise BudgetExceeded(
+                f"预算不足：已用 {self.used_tokens}，"
+                f"预计本步还需 {self.estimate_next()}，上限 {self.max_tokens}"
+            )
+
+    def charge(self, usage) -&gt; None:
+        """每步结束后调用，记账。"""
+        spent = usage.prompt_tokens + usage.completion_tokens
+        self.used_tokens += spent
+        self.history.append(spent)
+
+
+class BudgetExceeded(RuntimeError):
+    """预算超限。带上完整信息，便于日志与用户提示。"""</code></pre>
+<p>然后在控制器循环里，<strong>每步开始前 &lt;code&gt;guard.check()&lt;/code&gt;，每步结束后 &lt;code&gt;guard.charge(result.usage)&lt;/code&gt;</strong>。 捕获 <code>BudgetExceeded</code> 时把 <code>stop_reason</code> 设为 <code>"budget_exceeded"</code>。</p>
+<blockquote><strong>教学要点</strong>：<code>estimate_next()</code> 用历史平均而不是固定值，是因为 Agent 的每步消耗 会随上下文增长而变大——固定值会在后几步严重低估。 这个"预测 + 余量"的思路，和第 6 章 Day29 的成本控制是同一套方法。</blockquote>
+<p><strong>运行验证：带护栏的可审计 ReAct 控制器</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch04/20_react_agent.py</code></pre>
+<p><img src="static/course-assets/ch04/02_react_agent.webp" alt="ReAct 控制器的真实输出：预算与限流按调用次数熔断、幂等保护（同一 call_id 只执行一次副作用）、重复调用检测（第 2 次警告、第 3 次终止）、用假模型做的确定性分支测试，以及五项验收结论表" loading="lazy"></p>
+<p><strong>这张图是「Agent 的可靠性来自护栏，而不是来自模型」这条结论的证据。重点看四段</strong>：</p>
+<p><strong>（1）预算熔断真的会触发，而且有口径之分。</strong> 图中 <code>预算 200 tokens → stop_reason='budget_exceeded'</code>，实际用了 530 tokens 调用 2 次；<code>预算 600 tokens</code> 那组用了 1244 tokens 调用 3 次。另外还演示了<strong>按调用次数限流</strong>（<code>max_calls=2</code>）——两种口径（token / 次数）都生效。注意熔断时 <code>stop_reason</code> 被正确置为 <code>budget_exceeded</code>，这就是 4.3.2 要求的实现落地。</p>
+<p><strong>（2）幂等保护：同一个 &lt;code&gt;call_id&lt;/code&gt; 只真正执行一次副作用。</strong> 图中 <code>execute_once()</code> 被调用两次，两次都返回 <code>ok: True</code>，但<strong>实际副作用触发次数 = 1</strong>。这是 4.3.4 的直接验证——重试安全不是靠"小心"，而是靠幂等键。</p>
+<p><strong>（3）重复调用检测。</strong> 规则是第 2 次警告、第 3 次终止：图中累计到第 3 次时动作变成 <code>abort</code>，注入死循环后控制器以 <code>stop_reason='max_steps'</code> 安全终止，并给出告警「calculator 被以相同参数调用第 2 次，疑似陷入循环」。图上特别解释了一个<strong>必须讲清楚的取舍</strong>：这里的 <code>stop_reason</code> 报的是 <code>max_steps</code>，而不是新增一个 <code>repeat_detected</code> 取值——因为 <code>stop_reason</code> 是<strong>监控报表的统计维度</strong>，取值集合必须封闭且稳定，随便加值会让历史报表断档。<strong>正确的做法是维度用枚举、原因用明细</strong>（见 trace 中的 <code>{"reason": "repeat_abort", ...}</code> 事件）。</p>
+<p><strong>（4）用假模型做确定性测试。</strong> 这是最实用的一段：<strong>测试 Agent 控制器不应该依赖真实模型</strong>——真实模型每次回答都不同，「最大步数停止」「工具报错后修正」这些分支根本测不稳定。图中 <code>ScriptedLLM</code> 实现了和 <code>AgentLLM</code> 相同的三个方法、可以直接替换，四个用例（正常完成 / 工具报错后自我修正 / 幻觉工具名被白名单拦截 / 模型直接回答不需要工具）<strong>全部确定性通过</strong>。</p>
+<p>截图末尾的验收表给出了 Day18 的交付标准：五种 <code>stop_reason</code>（<code>completed</code> / <code>max_steps</code> / <code>timeout</code> / <code>model_error</code> / <code>budget_exceeded</code>）<strong>全部在真实环境复现</strong>，且程序内有 <code>assertion</code> 强校验合法取值。</p>
+<h4>4.3.3 完整控制循环</h4>
+<pre class="code lang-python"><code>import json
+
+
+class ReactAgent:
+    def __init__(self, llm, tool_schemas: list[dict], max_steps: int = 6, timeout_seconds: float = 60):
+        self.llm = llm
+        self.tool_schemas = tool_schemas
+        self.max_steps = max_steps
+        self.timeout_seconds = timeout_seconds
+
+    def run(self, task: str) -&gt; AgentResult:
+        if not task.strip():
+            raise ValueError("任务不能为空")
+
+        started = monotonic()
+        messages = [
+            {"role": "system", "content": "按需使用工具。工具失败时根据结构化错误修正。证据不足时明确说明。"},
+            {"role": "user", "content": task},
+        ]
+        events: list[AgentEvent] = []
+
+        for step in range(1, self.max_steps + 1):
+            if monotonic() - started &gt; self.timeout_seconds:
+                return AgentResult("任务超过时间限制。", "timeout", step - 1, events)
+
+            try:
+                turn: ModelTurn = self.llm.decide(messages, self.tool_schemas)
+            except Exception as exc:
+                events.append(AgentEvent(step, "model_error", {"error": type(exc).__name__}))
+                return AgentResult("模型服务暂时不可用。", "model_error", step, events)
+
+            if not turn.tool_calls:
+                events.append(AgentEvent(step, "final", {"text_length": len(turn.text or "")}))
+                return AgentResult(turn.text or "", "completed", step, events)
+
+            messages.append(self.llm.assistant_message(turn))
+            for call in turn.tool_calls:
+                events.append(AgentEvent(step, "tool_call", {"call_id": call.call_id, "name": call.name, "arguments": call.arguments}))
+                result = execute_tool(call.name, call.arguments)
+                events.append(AgentEvent(step, "tool_result", {"call_id": call.call_id, "name": call.name, "ok": result["ok"]}))
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.call_id,
+                    "name": call.name,
+                    "content": json.dumps(result, ensure_ascii=False),
+                })
+
+        return AgentResult("已达到最大执行步数，任务安全终止。", "max_steps", self.max_steps, events)</code></pre>
+<p>代码走读：</p>
+<ol><li>控制器而非模型决定最大步数和超时。</li><li>每次模型调用前检查总超时，避免长循环持续占用资源。</li><li>模型没有返回工具调用时，当前文字才被视为最终回答。</li><li>每个工具调用单独执行和记录，<code>call_id</code> 关联请求与结果。</li><li>工具失败不直接退出。结构化错误回到消息列表，模型可以在下一步纠正。</li><li>达到最大步数时返回安全终止说明，不能伪装成成功完成。</li></ol>
+<h4>4.3.4 防止重复副作用</h4>
+<pre class="code lang-python"><code>class IdempotencyGuard:
+    def __init__(self):
+        self.completed: dict[str, dict] = {}
+
+    def execute_once(self, call_id: str, action) -&gt; dict:
+        if call_id in self.completed:
+            return self.completed[call_id]
+        result = action()
+        self.completed[call_id] = result
+        return result</code></pre>
+<p>对计算器重复执行没有明显危害，对“发送邮件、创建订单、删除文件”则可能造成严重后果。生产系统应使用业务幂等键和持久化记录，不能只靠内存字典。</p>
+<h4>4.3.5 故障注入清单</h4>
+<table><thead><tr><th style="text-align:left">故障</th><th style="text-align:left">期望行为</th></tr></thead><tbody><tr><td style="text-align:left">模型请求不存在的工具</td><td style="text-align:left">返回 <code>unknown_tool</code>，下一步可改正</td></tr><tr><td style="text-align:left">参数缺字段</td><td style="text-align:left">Pydantic 返回字段错误，不执行工具</td></tr><tr><td style="text-align:left">除数为 0</td><td style="text-align:left">工具返回业务错误，进程不中断</td></tr><tr><td style="text-align:left">模型连续调用同一工具</td><td style="text-align:left">幂等保护或重复检测介入</td></tr><tr><td style="text-align:left">模型始终不结束</td><td style="text-align:left">达到 <code>max_steps</code> 安全终止</td></tr><tr><td style="text-align:left">模型接口超时</td><td style="text-align:left">记录 <code>model_error</code> 或 <code>timeout</code>，不无限重试</td></tr></tbody></table>
+<h4>4.3.6 当日作业</h4>
+<p>新增一个只读工具，例如汇率模拟器或第三章的知识库检索工具。提交四条测试：正常调用、参数错误、未知工具、最大步数停止。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-02-01", "last_answer": "", "last_feedback": "", "options": ["\u8c03\u7528\u540e\u7edf\u8ba1\u65f6\u8d85\u652f\u5df2\u7ecf\u53d1\u751f\uff0c\u65e0\u6cd5\u963b\u6b62\u672c\u6b21\u8d85\u9650", "\u8c03\u7528\u524d\u68c0\u67e5\u53ef\u4ee5\u5c11\u7edf\u8ba1\u4e00\u6b21 token\uff0c\u8282\u7701\u5f00\u9500", "\u8c03\u7528\u540e\u7edf\u8ba1\u65e0\u6cd5\u62ff\u5230 usage \u5bf9\u8c61\u91cc\u7684 token \u6570", "\u8c03\u7528\u524d\u68c0\u67e5\u80fd\u8ba9\u6a21\u578b\u81ea\u5df1\u51b3\u5b9a\u662f\u5426\u7ee7\u7eed\u8c03\u7528\u5de5\u5177"], "points": 76, "solved": false, "statement": "BudgetGuard \u8981\u6c42\u5728\u6bcf\u6b65\u5f00\u59cb\u524d\u8c03\u7528 check()\uff0c\u800c\u4e0d\u662f\u5728\u6bcf\u6b65\u7ed3\u675f\u540e\u7edf\u8ba1\u3002\n\u8fd9\u6837\u8bbe\u8ba1\u6700\u6838\u5fc3\u7684\u7406\u7531\u662f\u4ec0\u4e48\uff1f", "tags": ["\u9884\u7b97\u62a4\u680f", "BudgetGuard", "stop_reason"], "title": "\u9884\u7b97\u62a4\u680f\u4e3a\u4f55\u8c03\u7528\u524d\u68c0\u67e5", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-02-02", "last_answer": "", "last_feedback": "", "options": ["Agent \u6bcf\u6b65\u6d88\u8017\u968f\u4e0a\u4e0b\u6587\u589e\u957f\u800c\u53d8\u5927\uff0c\u56fa\u5b9a\u503c\u4f1a\u5728\u540e\u51e0\u6b65\u4e25\u91cd\u4f4e\u4f30", "\u5386\u53f2\u5e73\u5747\u503c\u8ba1\u7b97\u66f4\u7b80\u5355\uff0c\u4ee3\u7801\u91cf\u66f4\u5c11", "\u56fa\u5b9a\u503c\u65e0\u6cd5\u901a\u8fc7\u7c7b\u578b\u68c0\u67e5\uff0c\u4f1a\u629b TypeError", "\u4e58 1.2 \u662f\u4e3a\u4e86\u628a token \u6362\u7b97\u6210\u91d1\u989d"], "points": 76, "solved": false, "statement": "estimate_next() \u5728\u65e0\u5386\u53f2\u65f6\u8fd4\u56de 2000\uff0c\u6709\u5386\u53f2\u65f6\u7528\u5386\u53f2\u5e73\u5747\u503c\u4e58 1.2\u3002\n\u4e3a\u4ec0\u4e48\u4e0d\u7528\u4e00\u4e2a\u56fa\u5b9a\u4f30\u7b97\u503c\uff1f", "tags": ["estimate_next", "\u9884\u7b97\u4f30\u7b97", "\u6210\u672c\u63a7\u5236"], "title": "estimate_next \u4e3a\u4f55\u7528\u5386\u53f2\u5747\u503c", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 3, "id": "q04-02-03", "last_answer": "", "last_feedback": "", "options": ["stop_reason \u662f\u76d1\u63a7\u62a5\u8868\u7edf\u8ba1\u7ef4\u5ea6\uff0c\u53d6\u503c\u96c6\u5408\u987b\u5c01\u95ed\u7a33\u5b9a\uff0c\u52a0\u503c\u4f1a\u8ba9\u5386\u53f2\u62a5\u8868\u65ad\u6863", "repeat_detected \u8fd9\u4e2a\u540d\u5b57\u592a\u957f\uff0c\u4e0d\u9002\u5408\u653e\u8fdb\u679a\u4e3e", "\u63a7\u5236\u5668\u65e0\u6cd5\u533a\u5206\u91cd\u590d\u8c03\u7528\u548c\u6b63\u5e38\u8c03\u7528", "max_steps \u7684\u8bed\u4e49\u672c\u6765\u5c31\u5305\u542b\u91cd\u590d\u68c0\u6d4b"], "points": 189, "solved": false, "statement": "\u6ce8\u5165\u6b7b\u5faa\u73af\u540e\u63a7\u5236\u5668\u4ee5 stop_reason=\u0027max_steps\u0027 \u7ec8\u6b62\uff0c\n\u800c\u4e0d\u662f\u65b0\u589e\u4e00\u4e2a repeat_detected \u53d6\u503c\u3002\n\u8fd9\u6837\u53d6\u820d\u7684\u4e3b\u8981\u7406\u7531\u662f\u4ec0\u4e48\uff1f", "tags": ["stop_reason", "\u91cd\u590d\u8c03\u7528\u68c0\u6d4b", "\u53ef\u89c2\u6d4b\u6027"], "title": "\u91cd\u590d\u8c03\u7528\u4e3a\u4f55\u62a5 max_steps", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u56de\u5fc6 4.3.2 \u5217\u51fa\u7684\u53d6\u503c", "\u9a8c\u6536\u8868\u8981\u6c42\u5168\u90e8\u5728\u771f\u5b9e\u73af\u5883\u590d\u73b0"], "id": "q04-02-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e AgentResult.stop_reason \u81f3\u5c11\u9700\u8981\u533a\u5206\u54ea\u4e94\u79cd\u53d6\u503c\uff0c\n\u5e76\u89e3\u91ca\u4e3a\u4ec0\u4e48\u5fc5\u987b\u533a\u5206\u5b83\u4eec\u3001Day18 \u7684\u9a8c\u6536\u6807\u51c6\u662f\u4ec0\u4e48\u3002\n\u518d\u8bf4\u660e\u63a7\u5236\u5668\u4ee3\u7801\u91cc\u5bf9\u53d6\u503c\u505a\u4e86\u4ec0\u4e48\u5f3a\u6821\u9a8c\u3002", "tags": ["stop_reason", "\u9a8c\u6536\u6807\u51c6", "\u5931\u8d25\u5206\u7c7b"], "title": "\u4e94\u79cd stop_reason \u4e0e\u9a8c\u6536", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u60f3\u6700\u5927\u6b65\u6570\u505c\u6b62\u3001\u5de5\u5177\u62a5\u9519\u4fee\u6b63\u8fd9\u4e9b\u5206\u652f", "\u63a5\u53e3\u4e00\u81f4\u624d\u80fd\u65e0\u7f1d\u66ff\u6362"], "id": "q04-02-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u4e3a\u4ec0\u4e48\u6d4b\u8bd5 Agent \u63a7\u5236\u5668\u4e0d\u5e94\u8be5\u4f9d\u8d56\u771f\u5b9e\u6a21\u578b\uff1f\n\u8bf7\u8bf4\u660e ScriptedLLM \u9700\u8981\u6ee1\u8db3\u4ec0\u4e48\u6761\u4ef6\u624d\u80fd\u76f4\u63a5\u66ff\u6362\u771f\u5b9e\u6a21\u578b\uff0c\n\u5e76\u5217\u4e3e\u7528\u5b83\u8986\u76d6\u7684\u56db\u4e2a\u6d4b\u8bd5\u7528\u4f8b\u3002", "tags": ["ScriptedLLM", "\u786e\u5b9a\u6027\u6d4b\u8bd5", "\u4f9d\u8d56\u6ce8\u5165"], "title": "\u5047\u6a21\u578b\u505a\u786e\u5b9a\u6027\u6d4b\u8bd5", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u5148\u5199 estimate_next \u518d\u5199 check", "charge \u91cc\u522b\u5fd8\u4e86 append \u5230 history"], "id": "q04-02-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "from dataclasses import dataclass, field\n\nclass BudgetExceeded(RuntimeError):\n    ...\n\n@dataclass\nclass BudgetGuard:\n    max_tokens: int\n    used_tokens: int = 0\n    history: list[int] = field(default_factory=list)\n\n    def estimate_next(self) -\u003e int:\n        ...\n\n    def check(self) -\u003e None:\n        ...\n\n    def charge(self, usage) -\u003e None:\n        ...", "statement": "\u5b9e\u73b0 BudgetGuard\uff1a\n- \u5b57\u6bb5 max_tokens\u3001used_tokens\u3001history\uff08\u6bcf\u6b21\u8c03\u7528\u6d88\u8017\u5217\u8868\uff09\n- estimate_next()\uff1a\u65e0\u5386\u53f2\u8fd4\u56de 2000\uff0c\u5426\u5219\u5386\u53f2\u5747\u503c\u4e58 1.2 \u53d6\u6574\n- check()\uff1a\u82e5 used_tokens + estimate_next() \u8d85\u8fc7 max_tokens\uff0c\u629b BudgetExceeded\n- charge(usage)\uff1a\u628a prompt_tokens + completion_tokens \u7d2f\u52a0\u5e76\u8bb0\u5165 history\n\u5e76\u7ed9\u51fa BudgetExceeded \u5f02\u5e38\u5b9a\u4e49\u3002", "tags": ["BudgetGuard", "\u9884\u7b97\u62a4\u680f", "\u5f02\u5e38\u8bbe\u8ba1"], "title": "\u5b9e\u73b0 BudgetGuard \u9884\u7b97\u62a4\u680f", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 3, "hints": ["\u6ce8\u610f assistant \u6d88\u606f\u5fc5\u987b\u5728\u5de5\u5177\u6267\u884c\u524d\u8ffd\u52a0", "tool \u6d88\u606f\u8981\u5e26 tool_call_id \u624d\u80fd\u5bf9\u4e0a"], "id": "q04-02-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import json\nfrom time import monotonic\n\ndef run(self, task: str) -\u003e AgentResult:\n    if not task.strip():\n        raise ValueError(\"\u4efb\u52a1\u4e0d\u80fd\u4e3a\u7a7a\")\n    started = monotonic()\n    messages = [\n        {\"role\": \"system\", \"content\": \"\u6309\u9700\u4f7f\u7528\u5de5\u5177\u3002\u5de5\u5177\u5931\u8d25\u65f6\u6839\u636e\u7ed3\u6784\u5316\u9519\u8bef\u4fee\u6b63\u3002\u8bc1\u636e\u4e0d\u8db3\u65f6\u660e\u786e\u8bf4\u660e\u3002\"},\n        {\"role\": \"user\", \"content\": task},\n    ]\n    events: list[AgentEvent] = []\n    for step in range(1, self.max_steps + 1):\n        # TODO: \u8d85\u65f6\u68c0\u67e5 / \u6a21\u578b\u8c03\u7528 / \u5206\u652f\u5904\u7406\n        pass\n    return AgentResult(\"\u5df2\u8fbe\u5230\u6700\u5927\u6267\u884c\u6b65\u6570\uff0c\u4efb\u52a1\u5b89\u5168\u7ec8\u6b62\u3002\", \"max_steps\", self.max_steps, events)", "statement": "\u8865\u5168 ReactAgent.run \u7684\u5faa\u73af\u4f53\uff0c\u8981\u6c42\uff1a\n- \u6bcf\u6b65\u5f00\u59cb\u524d\u68c0\u67e5\u8d85\u65f6\uff0c\u8d85\u65f6\u8fd4\u56de stop_reason=\u0027timeout\u0027\n- \u8c03\u7528 llm.decide\uff0c\u5f02\u5e38\u65f6\u8bb0\u5f55 model_error \u4e8b\u4ef6\u5e76\u8fd4\u56de stop_reason=\u0027model_error\u0027\n- \u65e0 tool_calls \u65f6\u8bb0\u5f55 final \u4e8b\u4ef6\u5e76\u8fd4\u56de completed\n- \u6709 tool_calls \u65f6\u8ffd\u52a0 assistant \u6d88\u606f\u3001\u9010\u4e2a\u6267\u884c\u5de5\u5177\u3001\u8bb0\u5f55 tool_call/tool_result \u4e8b\u4ef6\u5e76\u8ffd\u52a0 tool \u6d88\u606f\n- \u5faa\u73af\u7ed3\u675f\u8fd4\u56de max_steps", "tags": ["ReAct", "\u63a7\u5236\u5faa\u73af", "\u6d88\u606f\u5e8f\u5217"], "title": "\u8865\u5168 ReAct \u63a7\u5236\u5faa\u73af", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="4" data-kp="1"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 18｜手写 ReAct 风格 Agent 控制器">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 18｜手写 ReAct 风格 Agent 控制器">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-3" data-kp-index="2"
+             data-kp-key="4_2" >
+      <div class="kp-head">
+        <span class="kp-no">D19</span>
+        <div class="kp-head-main">
+          <h3>Day 19｜记忆系统与工具适配边界</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>4.4.1 记忆不是把所有历史塞进 Prompt</h4>
+<table><thead><tr><th style="text-align:left">记忆类型</th><th style="text-align:left">保存内容</th><th style="text-align:left">生命周期</th><th style="text-align:left">风险</th></tr></thead><tbody><tr><td style="text-align:left">工作记忆</td><td style="text-align:left">当前任务的消息与工具结果</td><td style="text-align:left">一次运行</td><td style="text-align:left">上下文过长</td></tr><tr><td style="text-align:left">对话记忆</td><td style="text-align:left">最近若干轮或摘要</td><td style="text-align:left">一个会话</td><td style="text-align:left">摘要丢细节</td></tr><tr><td style="text-align:left">长期事实</td><td style="text-align:left">用户明确授权保存的偏好或业务事实</td><td style="text-align:left">跨会话</td><td style="text-align:left">隐私、过期、错误写入</td></tr><tr><td style="text-align:left">事件日志</td><td style="text-align:left">工具调用、结果、耗时、停止原因</td><td style="text-align:left">审计周期</td><td style="text-align:left">敏感参数泄露</td></tr></tbody></table>
+<p>设计原则：原始事件与给模型的摘要分开；每条长期记忆保留来源、时间与作用域；支持删除和过期。</p>
+<h4>4.4.2 SQLite 消息仓库</h4>
+<pre class="code lang-python"><code>import json
+import sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+import threading
+
+
+class MemoryStore:
+    def __init__(self, db_path: str = "storage/memory.db"):
+        # ✅ 修复 1：目录不存在时 sqlite3.connect 会抛
+        #    OperationalError: unable to open database file
+        #    SQLite 只创建数据库文件，不会替你创建父目录。
+        Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+
+        # ✅ 修复 2：sqlite3 默认 check_same_thread=True，连接只能在创建它的线程里使用。
+        #    在 FastAPI 里，同步路由跑在线程池中，不同请求可能落到不同线程，
+        #    于是会抛 ProgrammingError: SQLite objects created in a thread can only be
+        #    used in that same thread.
+        #    关闭这个检查后，线程安全必须由调用方自己保证 —— 所以配一把锁。
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        self.lock = threading.Lock()
+
+        self.conn.row_factory = sqlite3.Row
+        with self.lock:
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    metadata_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+            """)
+            self.conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, id)")
+            self.conn.commit()
+
+    def append(self, session_id: str, role: str, content: str, metadata: dict | None = None) -&gt; None:
+        now = datetime.now(timezone.utc).isoformat()
+        with self.lock:
+            self.conn.execute(
+                "INSERT INTO messages(session_id, role, content, metadata_json, created_at) VALUES (?, ?, ?, ?, ?)",
+                (session_id, role, content, json.dumps(metadata or {}, ensure_ascii=False), now),
+            )
+            self.conn.commit()
+
+    def recent(self, session_id: str, limit: int = 12) -&gt; list[dict]:
+        rows = self.conn.execute(
+            "SELECT role, content, metadata_json, created_at FROM messages WHERE session_id = ? ORDER BY id DESC LIMIT ?",
+            (session_id, limit),
+        ).fetchall()
+        return [
+            {"role": row["role"], "content": row["content"], "metadata": json.loads(row["metadata_json"]), "created_at": row["created_at"]}
+            for row in reversed(rows)
+        ]</code></pre>
+<p>逐行讲解：</p>
+<ul><li>SQL 使用 <code>?</code> 参数，不拼接用户输入，降低注入风险。</li><li>时间统一保存 UTC ISO 字符串，展示时再转本地时区。</li><li>查询先按倒序取最近 N 条，再反转为时间正序。</li><li><code>session_id</code> 是隔离边界，不能把其他会话历史混入当前 Prompt。</li><li>课堂代码每次写入立即提交，生产环境需考虑事务批处理和连接管理。</li></ul>
+<h4>4.4.3 上下文窗口装配</h4>
+<pre class="code lang-python"><code>def build_working_memory(history: list[dict], max_chars: int = 8000) -&gt; list[dict[str, str]]:
+    selected: list[dict[str, str]] = []
+    used = 0
+    for item in reversed(history):
+        size = len(item["content"])
+        if selected and used + size &gt; max_chars:
+            break
+        selected.append({"role": item["role"], "content": item["content"]})
+        used += size
+    return list(reversed(selected))</code></pre>
+<p>这是按字符预算的教学版。后续上下文工程章节应改为 tokenizer 计数，并加入“固定 system、近期原文、较早摘要、检索记忆”的优先级策略。</p>
+<h4>4.4.4 把第三章 RAG 变成工具</h4>
+<pre class="code lang-python"><code>class KnowledgeArgs(BaseModel):
+    question: str
+
+
+def search_knowledge(args: KnowledgeArgs) -&gt; dict:
+    result = rag_pipeline.answer(args.question)
+    return {
+        "answer": result.answer,
+        "citations": result.citations,
+        "abstained": result.abstained,
+    }
+
+
+TOOLS["search_knowledge"] = Tool(
+    name="search_knowledge",
+    description="查询企业制度知识库，适合回答考勤、报销、休假等内部规则问题",
+    args_model=KnowledgeArgs,
+    handler=search_knowledge,
+)</code></pre>
+<p>这样，RAG 仍可单独测试，Agent 只是按任务选择是否调用它。模块组合不会破坏第三章已有评测。</p>
+<h4>4.4.5 工具适配层与 MCP 预告</h4>
+<p>本日只建立“外部工具都先适配成内部 <code>Tool</code>”的边界。无论工具来自本地 Python 函数、HTTP 服务还是 MCP Server，Agent 控制器只接收统一的名称、Schema 和执行结果。</p>
+<p><strong>&lt;code&gt;ExternalToolAdapter&lt;/code&gt; 的思路就是这样</strong>：把外部工具包装成内部统一的「可调用 + 带 Schema」形态， Agent 完全不需要知道它背后是本地函数还是远程服务。</p>
+<pre class="code lang-python"><code>class ExternalToolAdapter:
+    def __init__(self, remote_client, remote_name: str):
+        self.remote_client = remote_client
+        self.remote_name = remote_name
+
+    def __call__(self, args: BaseModel) -&gt; dict:
+        return self.remote_client.call_tool(self.remote_name, args.model_dump())</code></pre>
+<h5>关于「内部契约」与「外部协议」的区分</h5>
+<p>上例里的 <code>remote_client.call_tool(name, args)</code> 是<strong>本课程定义的内部接口</strong>， 和真实 MCP 的请求格式<strong>不是一回事</strong>。真实 MCP 请求长这样（2026-07-28 规范）：</p>
+<pre class="code lang-json"><code>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "search_policy",
+    "arguments": {"question": "年假有几天？"},
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientCapabilities": {}
+    }
+  }
+}</code></pre>
+<p><strong>两者的关系是</strong>：<code>ExternalToolAdapter</code> 负责把内部调用<strong>翻译</strong>成外部协议。 这正是适配器层的职责——<strong>隔离变化</strong>。</p>
+<blockquote><strong>为什么这里只给内部契约</strong>：MCP 协议需要一整节来讲（无状态设计、<code>_meta</code> 必需字段、 请求头一致性校验、错误码……），放在 Day 17-20 会打断 Agent 主线。 但<strong>大纲 Day19 的验收标准要求「Agent 能调用 MCP 工具」</strong>， 所以本课程的做法是：Day19 先接入一个<strong>最小可用的 MCP 工具</strong>（见下）， Day27 再完整讲协议细节与自建 Server。</blockquote>
+<h5>Day19 的最小 MCP 接入（对齐大纲验收）</h5>
+<pre class="code lang-python"><code>class MCPToolAdapter:
+    """把 MCP 工具适配成内部 Tool。对 Agent 来说它与本地工具没有区别。"""
+
+    def __init__(self, client, tool_spec: dict):
+        self.client = client
+        self.name = tool_spec["name"]
+        self.description = tool_spec.get("description", "")
+        # 注意字段名是 inputSchema（驼峰），不是 parameters —— 这是 MCP 的命名
+        self.parameters = tool_spec["inputSchema"]
+
+    def schema(self) -&gt; dict:
+        """转成 OpenAI Function Calling 的 tools 格式。"""
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": self.parameters,
+            },
+        }
+
+    def __call__(self, **kwargs) -&gt; dict:
+        return self.client.call_tool(self.name, kwargs)</code></pre>
+<p><strong>这个适配层带来的三个收益</strong>（这是本节真正的教学点）：</p>
+<table><thead><tr><th style="text-align:left">收益</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left">Agent 逻辑零改动</td><td style="text-align:left">加入 MCP 工具后，ReAct 循环一行都不用改</td></tr><tr><td style="text-align:left">可测试</td><td style="text-align:left">用假的 MCP client 就能测试 Agent，不需要真实的 Server</td></tr><tr><td style="text-align:left">可替换</td><td style="text-align:left">换协议、换工具源，只改这一层</td></tr></tbody></table>
+<blockquote><strong>Day27 会补上的内容</strong>：<code>client.call_tool()</code> 内部的真实请求构造 （<code>_meta</code> 必需字段、<code>Mcp-Method</code> / <code>Mcp-Name</code> 请求头、头部与请求体一致性校验、 <code>-32602</code> / <code>-32020</code> 等错误码的处理）。 到那时你会看到：适配层把「协议复杂度」和「Agent 决策逻辑」干净地分开了—— <strong>这正是分层的价值。</strong></blockquote>
+<h4>4.4.6 当日验收</h4>
+<ol><li>会话 A 告诉 Agent 一个允许保存的偏好，<strong>关闭程序（换一个进程）再启动</strong>后可以查询到。</li></ol>
+<blockquote>注意：必须在<strong>两个独立进程</strong>里验证。在同一个进程里"重启"是无效验证—— 内存里的变量也能读到，你无法证明它真的落盘了。</blockquote>
+<ol><li>会话 B 不能读到会话 A 的普通对话历史。</li><li><code>search_knowledge</code> 能返回答案和引用；空知识问题仍能拒答。</li><li>数据库中可查询工具事件，但密钥和完整敏感参数不落库。</li><li><strong>Agent 能调用一个 MCP 工具</strong>（与大纲 Day19 验收标准对齐）。</li></ol>
+<p><strong>运行验证：记忆落盘与拒答</strong></p>
+<pre class="code lang-powershell"><code>python code/ch04/30_memory_agent.py</code></pre>
+<p><img src="static/course-assets/ch04/03_memory_agent.webp" alt="记忆系统的真实输出：直接读 SQLite 数据库文件的行数（messages / facts / events 三张表）、空证据拒答验证、以及 9 项验收结论表" loading="lazy"></p>
+<p><strong>这张图要看一个真实的失败形态——它比验收通过的部分更有价值</strong>：</p>
+<p><strong>（1）拒答必须在工具层裁定，而不是靠模型自觉。</strong> 测试问题是「公司年会抽奖规则是什么」（语料完全不覆盖），工具层返回 <code>ok=True</code>、<code>abstained=True</code>、<code>evidence 条数=0</code>、<code>citations 条数=0</code>，<strong>并且不返回任何条款文本</strong>。这是本图最关键的工程判断：</p>
+<blockquote><strong>模型手里没有任何可引用材料，也就无从编造</strong> —— 这是最有效的防幻觉手段。不是要求模型「别编」，而是让程序不把编造素材递给它。</blockquote>
+<p>图上还解释了为什么把拒答判定放进<strong>工具层</strong>而不是交给模型自觉：<strong>模型天然倾向于「总要答点什么」</strong>，把阈值判断交给程序，行为才可复现、可评测。</p>
+<p><strong>（2）一个真实的失败形态：模型没有调用工具，直接凭自己的知识回答了。</strong> 图中 <code>stop_reason='completed'</code>、<code>steps=1</code>、工具被调用次数=0，最终回答却给出了一条<strong>看起来很正常</strong>的制度条款。脚本明确标注：</p>
+<blockquote><strong>这正是「该查不查」——企业 Agent 最危险的一类问题，因为它看起来一切正常（&lt;code&gt;stop_reason=completed&lt;/code&gt;），但答案完全没有证据支撑。</strong></blockquote>
+<p>原因也写清楚了：离线靶场用<strong>关键词</strong>判定工具意图（年假/报销/差旅/考勤），而「年会抽奖」不在它的触发词表里，所以它根本没意识到该查。<strong>真实模型也有同样的毛病，只是没那么机械。</strong></p>
+<p>工程上的正确应对是三条一起上，缺一不可：</p>
+<ol><li><strong>system prompt 里写死</strong>「回答制度问题前必须先检索」——最弱，但要有；</li><li><strong>对高风险意图用 &lt;code&gt;tool_choice&lt;/code&gt; 强制首轮调用工具</strong>——由程序保证，不靠模型自觉；</li><li><strong>校验最终回答里是否带 &lt;code&gt;citations&lt;/code&gt;，「没有引用不许返回」</strong>——最后一道闸门。</li></ol>
+<p><strong>（3）落盘证据不是靠"我以为"。</strong> 脚本<strong>直接读 SQLite 数据库文件</strong>（绕过所有 Python 代码）确认落盘情况：<code>messages</code> 6 行（短期对话记忆）、<code>facts</code> 5 行（长期可检索事实）、<code>events</code> 9 行（工具事件审计）。验收表里有几条特别值得讲：</p>
+<ul><li><strong>线程安全</strong>：8 线程 × 60 次并发写，480/480 无丢失数据；</li><li><strong>重启后恢复</strong>：<strong>用两个独立进程验证</strong>（进程 2 读到进程 1 的数据）——图上专门强调：同进程 <code>close/open</code> 只能证明文件没删，<strong>证明不了进程退出后状态还在</strong>；</li><li><strong>会话隔离</strong>：会话 B 读不到会话 A 的对话与事实；</li><li><strong>密钥不落库</strong>：扫描数据库文件搜不到原始密钥；</li><li><strong>事件可关联</strong>：<code>request_id</code> 贯穿 Agent trace 与工具事件。</li></ul>
+<p>图上还给了三条<strong>答辩要点</strong>，都是"为什么这样设计"的问题：为什么"重启恢复"必须用两个进程验证；为什么长期记忆要<strong>显式写入</strong>而不是自动保存全部对话（隐私 + 错误记忆风险，而且「什么值得记」本身就是业务判断，不该交给模型自动决定）；为什么事件日志要<strong>脱敏后再落库</strong>（落库即泄漏，事后过滤没有意义）。</p>
+<p>数据库文件位置也打印在终端里：<code>code/ch04/storage/day19_memory.db</code>，学生可以直接用 SQLite 客户端打开核对。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 1, "id": "q04-03-01", "last_answer": "", "last_feedback": "", "options": ["SQLite \u53ea\u521b\u5efa\u6570\u636e\u5e93\u6587\u4ef6\uff0c\u4e0d\u4f1a\u81ea\u52a8\u521b\u5efa\u7236\u76ee\u5f55\uff0c\u5426\u5219\u629b unable to open database file", "SQLite \u8981\u6c42\u6570\u636e\u5e93\u5fc5\u987b\u653e\u5728\u5df2\u5b58\u5728\u7684\u76ee\u5f55\u4e0b\u624d\u80fd\u542f\u7528\u7d22\u5f15", "mkdir \u7528\u4e8e\u63d0\u524d\u9501\u5b9a\u6587\u4ef6\uff0c\u907f\u514d\u591a\u7ebf\u7a0b\u5e76\u53d1\u5199\u5165\u51b2\u7a81", "\u4e3a\u4e86\u8ba9 SQLite \u81ea\u52a8\u542f\u7528 WAL \u65e5\u5fd7\u6a21\u5f0f"], "points": 27, "solved": false, "statement": "MemoryStore \u5728 sqlite3.connect \u4e4b\u524d\u5148\u6267\u884c\u4e86 Path(db_path).parent.mkdir(parents=True, exist_ok=True)\u3002\n\u8fd9\u6837\u505a\u7684\u76f4\u63a5\u539f\u56e0\u662f\u4ec0\u4e48\uff1f", "tags": ["\u8bb0\u5fc6\u7cfb\u7edf", "SQLite", "\u5e38\u89c1\u9519\u8bef"], "title": "SQLite \u5efa\u5e93\u524d\u4e3a\u4f55\u8981\u5efa\u76ee\u5f55", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-03-02", "last_answer": "", "last_feedback": "", "options": ["\u5173\u95ed\u68c0\u67e5\u540e sqlite3 \u4f1a\u81ea\u5df1\u52a0\u9501\uff0cLock \u53ea\u662f\u5197\u4f59\u5199\u6cd5", "\u5173\u95ed\u68c0\u67e5\u53ea\u662f\u89e3\u9664\u7ebf\u7a0b\u9650\u5236\uff0c\u7ebf\u7a0b\u5b89\u5168\u5fc5\u987b\u7531\u8c03\u7528\u65b9\u4fdd\u8bc1\uff0c\u6240\u4ee5\u914d\u9501", "check_same_thread=False \u4f1a\u8ba9\u6bcf\u4e2a\u7ebf\u7a0b\u81ea\u52a8\u521b\u5efa\u72ec\u7acb\u8fde\u63a5", "FastAPI \u540c\u6b65\u8def\u7531\u8dd1\u5728\u540c\u4e00\u7ebf\u7a0b\uff0c\u56e0\u6b64\u672c\u6765\u4e0d\u9700\u8981\u5173\u95ed\u8be5\u68c0\u67e5"], "points": 76, "solved": false, "statement": "\u4ee3\u7801\u7528 sqlite3.connect(db_path, check_same_thread=False)\uff0c\u5e76\u914d\u4e86\u4e00\u628a threading.Lock\u3002\n\u5173\u4e8e\u8fd9\u4e2a\u7ec4\u5408\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["\u8bb0\u5fc6\u7cfb\u7edf", "\u5e76\u53d1", "\u5e38\u89c1\u9519\u8bef"], "title": "\u5173\u95ed\u7ebf\u7a0b\u68c0\u67e5\u540e\u8c01\u4fdd\u8bc1\u5b89\u5168", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-03-03", "last_answer": "", "last_feedback": "", "options": ["DESC \u662f\u4e3a\u4e86\u8ba9 id \u66f4\u5927\u8005\u4f18\u5148\u88ab\u5220\u9664\uff0creversed \u7528\u4e8e\u6062\u590d\u63d2\u5165\u987a\u5e8f", "DESC \u5148\u53d6\u6700\u8fd1 N \u6761\uff0creversed \u8fd8\u539f\u4e3a\u65f6\u95f4\u6b63\u5e8f\uff0c\u524d\u63d0\u662f id \u5355\u8c03\u9012\u589e", "DESC \u7528\u4e8e\u907f\u5f00\u7d22\u5f15\uff0creversed \u662f\u4e3a\u4e86\u628a metadata \u89e3\u6790\u63d0\u524d", "DESC \u4e0e reversed \u76f8\u4e92\u62b5\u6d88\uff0c\u7b49\u4ef7\u4e8e\u76f4\u63a5 ORDER BY id ASC LIMIT ?"], "points": 76, "solved": false, "statement": "recent \u65b9\u6cd5\u7684 SQL \u662f ORDER BY id DESC LIMIT ?\uff0c\u8fd4\u56de\u524d\u53c8\u6267\u884c\u4e86 reversed(rows)\u3002\n\u8fd9\u6837\u5199\u7684\u76ee\u7684\u4e0e\u524d\u63d0\u662f\u4ec0\u4e48\uff1f", "tags": ["\u8bb0\u5fc6\u7cfb\u7edf", "SQL", "\u4e0a\u4e0b\u6587\u88c5\u914d"], "title": "recent \u67e5\u8be2\u4e3a\u4f55\u8981\u53cd\u8f6c", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u6309\u4fdd\u5b58\u5185\u5bb9\u3001\u751f\u547d\u5468\u671f\u3001\u98ce\u9669\u4e09\u5217\u5bf9\u7167", "\u60f3\u60f3\u6458\u8981\u51fa\u9519\u65f6\u8fd8\u80fd\u4e0d\u80fd\u8fd8\u539f\u771f\u76f8"], "id": "q04-03-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e\u5de5\u4f5c\u8bb0\u5fc6\u3001\u5bf9\u8bdd\u8bb0\u5fc6\u3001\u957f\u671f\u4e8b\u5b9e\u3001\u4e8b\u4ef6\u65e5\u5fd7\u56db\u7c7b\u8bb0\u5fc6\u5404\u81ea\u7684\u4fdd\u5b58\u5185\u5bb9\u3001\u751f\u547d\u5468\u671f\u4e0e\u4e3b\u8981\u98ce\u9669\u3002\n\u5e76\u89e3\u91ca\u4e3a\u4ec0\u4e48\u8bbe\u8ba1\u539f\u5219\u8981\u6c42\u300c\u539f\u59cb\u4e8b\u4ef6\u4e0e\u7ed9\u6a21\u578b\u7684\u6458\u8981\u5206\u5f00\u300d\u3002", "tags": ["\u8bb0\u5fc6\u7cfb\u7edf", "\u8bbe\u8ba1\u539f\u5219"], "title": "\u56db\u7c7b\u8bb0\u5fc6\u7684\u8fb9\u754c\u4e0e\u98ce\u9669", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 3, "hints": ["\u5148\u8bb2\u9002\u914d\u5668\u505a\u4ec0\u4e48\uff0c\u518d\u8bb2\u4e3a\u4ec0\u4e48\u63a8\u8fdf\u534f\u8bae\u7ec6\u8282", "\u6ce8\u610f inputSchema \u4e0e parameters \u7684\u5b57\u6bb5\u540d\u5dee\u5f02"], "id": "q04-03-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u65e0\u8bba\u5de5\u5177\u6765\u81ea\u672c\u5730 Python \u51fd\u6570\u3001HTTP \u670d\u52a1\u8fd8\u662f MCP Server\uff0cAgent \u63a7\u5236\u5668\u53ea\u63a5\u6536\u7edf\u4e00\u7684\u540d\u79f0\u3001Schema \u548c\u6267\u884c\u7ed3\u679c\u3002\n\u8bf7\u8bf4\u660e ExternalToolAdapter / MCPToolAdapter \u7684\u804c\u8d23\uff0c\u5e76\u89e3\u91ca\u4e3a\u4ec0\u4e48\u8bfe\u7a0b\u5728 Day19 \u53ea\u5efa\u7acb\u5185\u90e8\u5951\u7ea6\u3001\u628a MCP \u534f\u8bae\u7ec6\u8282\u653e\u5230 Day27\u3002", "tags": ["\u5de5\u5177\u9002\u914d", "MCP", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u9002\u914d\u5668\u5c42\u4e3a\u4f55\u9694\u79bb\u53d8\u5316", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u5224\u65ad\u6761\u4ef6\u91cc\u4e3a\u4ec0\u4e48\u8981\u5148\u5224\u65ad selected \u975e\u7a7a", "\u8fd4\u56de\u524d\u522b\u5fd8\u4e86\u518d\u53cd\u8f6c\u4e00\u6b21"], "id": "q04-03-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def build_working_memory(history: list[dict], max_chars: int = 8000) -\u003e list[dict[str, str]]:\n    # \u4ece\u6700\u65b0\u5f80\u524d\u53d6\uff0c\u8d85\u8fc7\u9884\u7b97\u505c\u6b62\uff0c\u6700\u540e\u53cd\u8f6c\u56de\u65f6\u95f4\u6b63\u5e8f\n    pass", "statement": "\u5b9e\u73b0 build_working_memory(history, max_chars=8000)\u3002\nhistory \u662f\u65f6\u95f4\u6b63\u5e8f\u7684\u6d88\u606f\u5217\u8868\uff0c\u6bcf\u9879\u542b role \u4e0e content\u3002\n\u8981\u6c42\uff1a\u4ece\u6700\u65b0\u6d88\u606f\u5f80\u524d\u7d2f\u52a0 content \u957f\u5ea6\uff0c\u8d85\u8fc7\u9884\u7b97\u5c31\u505c\u6b62\uff1b\u81f3\u5c11\u4fdd\u7559\u4e00\u6761\uff1b\u8fd4\u56de\u7ed3\u679c\u6309\u65f6\u95f4\u6b63\u5e8f\u3002", "tags": ["\u4e0a\u4e0b\u6587\u88c5\u914d", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u6309\u5b57\u7b26\u9884\u7b97\u7684\u4e0a\u4e0b\u6587\u88c5\u914d", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 3, "hints": ["OpenAI \u683c\u5f0f\u91cc parameters \u662f\u5916\u5c42\u952e\uff0cMCP \u91cc\u53eb inputSchema", "description \u7f3a\u5931\u65f6\u5e94\u7ed9\u9ed8\u8ba4\u7a7a\u4e32"], "id": "q04-03-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "class MCPToolAdapter:\n    \"\"\"\u628a MCP \u5de5\u5177\u9002\u914d\u6210\u5185\u90e8 Tool\u3002\"\"\"\n\n    def __init__(self, client, tool_spec: dict):\n        # \u8bfb\u53d6 name / description / inputSchema\n        pass\n\n    def schema(self) -\u003e dict:\n        # \u8f6c\u6210 OpenAI tools \u683c\u5f0f\n        pass\n\n    def __call__(self, **kwargs) -\u003e dict:\n        # \u8f6c\u53d1\u8c03\u7528\n        pass", "statement": "\u5b9e\u73b0 MCPToolAdapter\uff1a\u6784\u9020\u65f6\u63a5\u6536 client \u4e0e tool_spec\uff08\u542b name\u3001description\u3001inputSchema\uff09\u3002\n\u8981\u6c42\u63d0\u4f9b schema() \u8fd4\u56de OpenAI Function Calling \u7684 tools \u683c\u5f0f\uff0c\u5e76\u63d0\u4f9b __call__(**kwargs) \u8f6c\u53d1\u5230 client.call_tool\u3002\n\u6ce8\u610f MCP \u7684\u5b57\u6bb5\u540d\u662f inputSchema\uff08\u9a7c\u5cf0\uff09\u3002", "tags": ["\u5de5\u5177\u9002\u914d", "MCP", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u628a MCP \u5de5\u5177\u9002\u914d\u6210\u5185\u90e8 Tool", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="4" data-kp="2"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 19｜记忆系统与工具适配边界">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 19｜记忆系统与工具适配边界">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-4" data-kp-index="3"
+             data-kp-key="4_3" >
+      <div class="kp-head">
+        <span class="kp-no">D20</span>
+        <div class="kp-head-main">
+          <h3>Day 20｜章节实战：Enterprise Copilot Agent</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>4.5.1 最终需求</h4>
+<p>用户可以输入复合任务，例如：</p>
+<pre class="code lang-text"><code>查一下出差住宿标准。假设我去上海住 3 晚，每晚 520 元，计算是否超标以及总差额。</code></pre>
+<p>Agent 应完成：</p>
+<ol><li>调用 <code>search_knowledge</code> 获取住宿标准与引用。</li><li>调用 <code>calculator</code> 计算允许总额、实际总额或差额。</li><li>返回结论、计算过程和制度引用。</li><li>若知识库没有上海标准，明确说明缺少依据，不自行编造额度。</li></ol>
+<h4>4.5.2 服务层编排</h4>
+<pre class="code lang-python"><code>from uuid import uuid4
+
+
+class CopilotService:
+    def __init__(self, agent: ReactAgent, memory: MemoryStore):
+        self.agent = agent
+        self.memory = memory
+
+    def handle(self, session_id: str, user_text: str) -&gt; dict:
+        request_id = str(uuid4())
+        self.memory.append(session_id, "user", user_text, {"request_id": request_id})
+
+        history = self.memory.recent(session_id, limit=12)
+        task = self._compose_task(history, user_text)
+        result = self.agent.run(task)
+
+        self.memory.append(session_id, "assistant", result.answer, {
+            "request_id": request_id,
+            "stop_reason": result.stop_reason,
+            "steps": result.steps,
+        })
+        return {
+            "request_id": request_id,
+            "answer": result.answer,
+            "stop_reason": result.stop_reason,
+            "steps": result.steps,
+            "events": [event.__dict__ for event in result.events],
+        }
+
+    @staticmethod
+    def _compose_task(history: list[dict], current_text: str) -&gt; str:
+        context = "\n".join(f"{item['role']}: {item['content']}" for item in history[:-1])
+        return f"近期对话：\n{context}\n\n当前任务：{current_text}" if context else current_text</code></pre>
+<p>讲解重点：</p>
+<ul><li><code>request_id</code> 串联 API、Agent、工具和数据库日志。</li><li>用户消息先落库，即使后续模型失败也保留问题记录。</li><li>Agent 的 <code>stop_reason</code> 必须保存，便于统计超时和循环失控。</li><li>演示接口可以返回 events，生产环境要脱敏并按权限限制可见范围。</li></ul>
+<h4>4.5.3 测试一个确定性的假模型</h4>
+<p>测试 Agent 控制器时不应完全依赖真实模型。用脚本化假模型能稳定覆盖分支。</p>
+<pre class="code lang-python"><code>class ScriptedLLM:
+    def __init__(self, turns: list[ModelTurn]):
+        self.turns = iter(turns)
+
+    def decide(self, messages, tools) -&gt; ModelTurn:
+        return next(self.turns)
+
+    def assistant_message(self, turn: ModelTurn) -&gt; dict:
+        return {"role": "assistant", "content": turn.text or "", "tool_calls": [call.__dict__ for call in turn.tool_calls]}</code></pre>
+<pre class="code lang-python"><code>def test_agent_stops_after_final_answer():
+    fake = ScriptedLLM([
+        ModelTurn(None, [ToolCall("c1", "calculator", {"a": 3, "b": 4, "operator": "*"})]),
+        ModelTurn("结果是 12。", []),
+    ])
+    agent = ReactAgent(fake, [CALCULATOR_SCHEMA], max_steps=3)
+    result = agent.run("计算 3×4")
+    assert result.answer == "结果是 12。"
+    assert result.stop_reason == "completed"
+    assert result.steps == 2</code></pre>
+<p>还应增加：工具参数错误后修正、未知工具、模型异常、达到最大步数、重复副作用保护、会话隔离测试。</p>
+<h4>4.5.4 安全策略表</h4>
+<table><thead><tr><th style="text-align:left">风险</th><th style="text-align:left">具体护栏</th><th style="text-align:left">验收方式</th></tr></thead><tbody><tr><td style="text-align:left">未注册工具</td><td style="text-align:left">注册表白名单</td><td style="text-align:left">注入不存在的工具名</td></tr><tr><td style="text-align:left">非法参数</td><td style="text-align:left">JSON Schema + Pydantic</td><td style="text-align:left">缺字段、错类型、越界值</td></tr><tr><td style="text-align:left">提示词注入</td><td style="text-align:left">文档视为不可信数据；system 规则与证据分隔</td><td style="text-align:left">在文档中加入“忽略规则”文本</td></tr><tr><td style="text-align:left">无限循环</td><td style="text-align:left">最大步数、总超时、重复调用检测</td><td style="text-align:left">假模型持续请求工具</td></tr><tr><td style="text-align:left">重复副作用</td><td style="text-align:left">幂等键、调用记录、人工确认</td><td style="text-align:left">同一调用提交两次</td></tr><tr><td style="text-align:left">敏感数据泄露</td><td style="text-align:left">日志脱敏、会话隔离、最小权限</td><td style="text-align:left">搜索日志中的密钥模式</td></tr><tr><td style="text-align:left">错误记忆</td><td style="text-align:left">来源、时间、作用域、删除与过期</td><td style="text-align:left">写入过期偏好并验证不再使用</td></tr></tbody></table>
+<h4>4.5.5 答辩演示顺序</h4>
+<ol><li>画出 <code>用户 → 控制器 → 模型 → 工具 → 观察 → 控制器</code> 循环。</li><li>演示一个需要 RAG 与计算器协作的任务。</li><li>打开审计日志，按 <code>request_id</code> 解释每一步动作与结果。</li><li>重启服务，展示 SQLite 记忆恢复。</li><li>注入一次非法参数或未知工具，展示结构化恢复。</li><li>使用假模型制造无限调用，展示最大步数终止。</li></ol>
+<h4>4.5.6 评分量表</h4>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:right">分值</th><th style="text-align:left">满分标准</th></tr></thead><tbody><tr><td style="text-align:left">工具协议</td><td style="text-align:right">15</td><td style="text-align:left">Schema 清楚，call/result 关联正确</td></tr><tr><td style="text-align:left">工具执行安全</td><td style="text-align:right">15</td><td style="text-align:left">白名单、参数校验、错误结构化，不使用 <code>eval</code></td></tr><tr><td style="text-align:left">Agent 循环</td><td style="text-align:right">20</td><td style="text-align:left">多步可运行，停止原因完整，超时与最大步数有效</td></tr><tr><td style="text-align:left">RAG 工具集成</td><td style="text-align:right">15</td><td style="text-align:left">能复用第三章能力，保留引用与拒答</td></tr><tr><td style="text-align:left">记忆与隔离</td><td style="text-align:right">15</td><td style="text-align:left">SQLite 持久化，重启恢复，会话隔离</td></tr><tr><td style="text-align:left">测试与可观测</td><td style="text-align:right">10</td><td style="text-align:left">假模型覆盖关键分支，日志可关联</td></tr><tr><td style="text-align:left">演示与答辩</td><td style="text-align:right">10</td><td style="text-align:left">能解释控制权、边界、风险和失败案例</td></tr></tbody></table>
+<h3>4.6 三种 Agent 范式的最小对比</h3>
+<table><thead><tr><th style="text-align:left">范式</th><th style="text-align:left">控制方式</th><th style="text-align:left">适合任务</th><th style="text-align:left">主要风险</th></tr></thead><tbody><tr><td style="text-align:left">ReAct 风格</td><td style="text-align:left">每一步根据新观察选择下一动作</td><td style="text-align:left">信息不断变化、需要工具反馈</td><td style="text-align:left">步数多、可能循环</td></tr><tr><td style="text-align:left">Plan-and-Solve</td><td style="text-align:left">先生成计划，再逐步执行</td><td style="text-align:left">步骤相对稳定的复杂任务</td><td style="text-align:left">初始计划错误会传递</td></tr><tr><td style="text-align:left">Reflection</td><td style="text-align:left">生成结果后由评审步骤提出修正</td><td style="text-align:left">写作、代码和可迭代产物</td><td style="text-align:left">成本高，可能反复修改</td></tr></tbody></table>
+<p>本章完整实现 ReAct 风格控制器。另两种范式作为拓展练习：复用同一 <code>Tool</code>、<code>AgentEvent</code> 和 <code>MemoryStore</code>，只替换控制策略。</p></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 1, "id": "q04-04-01", "last_answer": "", "last_feedback": "", "options": ["\u660e\u786e\u8bf4\u660e\u7f3a\u5c11\u4e0a\u6d77\u6807\u51c6\u8fd9\u4e00\u4f9d\u636e\uff0c\u4e0d\u81ea\u884c\u7f16\u9020\u989d\u5ea6", "\u6309\u901a\u7528\u6807\u51c6 500 \u5143/\u665a\u5224\u65ad\u8d85\u6807\u5e76\u7ed9\u51fa\u5dee\u989d", "\u7528 calculator \u4f30\u7b97\u4e00\u4e2a\u5408\u7406\u989d\u5ea6\u518d\u4e0b\u7ed3\u8bba", "\u76f4\u63a5\u56de\u7b54\u300c\u4e0d\u8d85\u6807\u300d\uff0c\u56e0\u4e3a 520 \u5143\u63a5\u8fd1\u5e38\u89c1\u6807\u51c6"], "points": 27, "solved": false, "statement": "\u7528\u6237\u95ee\u300c\u4e0a\u6d77\u51fa\u5dee\u4f4f 3 \u665a\uff0c\u6bcf\u665a 520 \u5143\uff0c\u662f\u5426\u8d85\u6807\u300d\u3002Agent \u8c03\u7528 search_knowledge \u540e\uff0c\u77e5\u8bc6\u5e93\u4e2d\u5e76\u6ca1\u6709\u4e0a\u6d77\u4f4f\u5bbf\u6807\u51c6\u3002\n\u6b64\u65f6\u6b63\u786e\u7684\u5904\u7406\u662f\u4ec0\u4e48\uff1f", "tags": ["RAG", "\u62d2\u7b54", "\u5e7b\u89c9"], "title": "\u4f4f\u5bbf\u8d85\u6807\u4efb\u52a1\u7f3a\u5c11\u4f9d\u636e\u65f6", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-04-02", "last_answer": "", "last_feedback": "", "options": ["\u4e32\u8054 API\u3001Agent\u3001\u5de5\u5177\u548c\u6570\u636e\u5e93\u65e5\u5fd7\uff0c\u4fbf\u4e8e\u6309\u8bf7\u6c42\u8ffd\u6eaf\u6bcf\u4e00\u6b65", "\u4fdd\u8bc1\u540c\u4e00\u4f1a\u8bdd\u5185\u591a\u6761\u6d88\u606f\u6309\u65f6\u95f4\u987a\u5e8f\u6392\u5217", "\u8ba9\u6a21\u578b\u5728\u751f\u6210\u65f6\u80fd\u8bc6\u522b\u5f53\u524d\u8bf7\u6c42\u7684\u552f\u4e00\u6027", "\u51cf\u5c11 SQLite \u5199\u5165\u6b21\u6570\u4ee5\u63d0\u5347\u541e\u5410"], "points": 76, "solved": false, "statement": "CopilotService.handle \u4e2d\uff0c\u6bcf\u6b21\u8bf7\u6c42\u5148\u7531 uuid4 \u751f\u6210 request_id\uff0c\u5199\u5165\u7528\u6237\u6d88\u606f metadata\uff0c\u5e76\u968f assistant \u6d88\u606f\u548c\u8fd4\u56de\u4f53\u4e00\u8d77\u4fdd\u5b58\u3002\n\u8fd9\u6837\u8bbe\u8ba1\u6700\u6838\u5fc3\u7684\u76ee\u7684\u662f\u4ec0\u4e48\uff1f", "tags": ["\u53ef\u89c2\u6d4b", "request_id", "\u5ba1\u8ba1"], "title": "request_id \u7684\u4f5c\u7528", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "id": "q04-04-03", "last_answer": "", "last_feedback": "", "options": ["\u63a7\u5236\u5668\u6267\u884c\u4e86\u4e24\u8f6e\u300c\u6a21\u578b\u51b3\u7b56\u300d\uff0c\u7b2c 2 \u8f6e\u7ed9\u51fa\u6700\u7ec8\u7b54\u6848\u540e\u505c\u6b62", "\u5de5\u5177\u88ab\u8c03\u7528\u4e86\u4e24\u6b21", "\u6a21\u578b\u5171\u4ea7\u751f\u4e86 2 \u6761 tool_calls", "\u63a7\u5236\u5668\u56e0\u8fbe\u5230 max_steps \u800c\u7ec8\u6b62"], "points": 76, "solved": false, "statement": "\u6d4b\u8bd5\u7528 ScriptedLLM \u4f9d\u6b21\u8fd4\u56de\uff1a\u7b2c 1 \u8f6e\u8bf7\u6c42 calculator(a=3,b=4,operator=*)\uff0c\u7b2c 2 \u8f6e\u8fd4\u56de\u6587\u672c\u300c\u7ed3\u679c\u662f 12\u3002\u300d\u4e14\u65e0\u5de5\u5177\u8c03\u7528\u3002max_steps=3\u3002\n\u65ad\u8a00 result.steps == 2 \u8bf4\u660e\u4ec0\u4e48\uff1f", "tags": ["\u6d4b\u8bd5", "\u5047\u6a21\u578b", "Agent \u5faa\u73af"], "title": "\u5047\u6a21\u578b\u6d4b\u8bd5\u7684\u65ad\u8a00\u542b\u4e49", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u60f3\u60f3\u6a21\u578b\u8d85\u65f6\u6216\u629b\u5f02\u5e38\u65f6\u4f1a\u53d1\u751f\u4ec0\u4e48", "\u5ba1\u8ba1\u65e5\u5fd7\u9700\u8981\u8fd8\u539f\u7528\u6237\u539f\u59cb\u8f93\u5165"], "id": "q04-04-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "CopilotService.handle \u5728\u8c03\u7528 agent.run \u4e4b\u524d\uff0c\u5148\u628a\u7528\u6237\u6d88\u606f\u5199\u5165 memory\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u6837\u5b89\u6392\u7684\u7406\u7531\uff0c\u5e76\u5206\u6790\u5982\u679c\u6539\u6210\u300c\u7b49 Agent \u8fd4\u56de\u540e\u518d\u4e00\u8d77\u5199\u5165\u300d\u4f1a\u5e26\u6765\u54ea\u4e9b\u95ee\u9898\u3002", "tags": ["\u8bb0\u5fc6", "\u53ef\u89c2\u6d4b", "\u670d\u52a1\u5c42"], "title": "\u670d\u52a1\u5c42\u4e3a\u4f55\u5148\u843d\u5e93\u7528\u6237\u6d88\u606f", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 3, "hints": ["\u4ece\u63a7\u5236\u6743\u5728\u54ea\u4e00\u6b65\u5207\u5165", "\u6ce8\u610f\u300c\u521d\u59cb\u8ba1\u5212\u9519\u8bef\u4f1a\u4f20\u9012\u300d\u8fd9\u6761\u98ce\u9669"], "id": "q04-04-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "ReAct \u98ce\u683c\u3001Plan-and-Solve\u3001Reflection \u4e09\u79cd\u8303\u5f0f\u5728\u63a7\u5236\u65b9\u5f0f\u3001\u9002\u5408\u4efb\u52a1\u548c\u4e3b\u8981\u98ce\u9669\u4e0a\u5404\u4e0d\u76f8\u540c\u3002\n\u8bf7\u5bf9\u6bd4\u4e09\u8005\uff0c\u5e76\u8bf4\u660e\uff1a\u9762\u5bf9\u300c\u4fe1\u606f\u4e0d\u65ad\u53d8\u5316\u3001\u9700\u8981\u5de5\u5177\u53cd\u9988\u300d\u7684\u4efb\u52a1\u5e94\u9009\u54ea\u79cd\uff0c\u4e3a\u4ec0\u4e48\uff1b\u53e6\u5916\u4e24\u79cd\u5404\u81ea\u7684\u4ee3\u4ef7\u662f\u4ec0\u4e48\u3002", "tags": ["Agent \u8303\u5f0f", "\u5de5\u7a0b\u5224\u65ad", "\u5bf9\u6bd4"], "title": "\u4e09\u79cd Agent \u8303\u5f0f\u5982\u4f55\u9009", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 2, "hints": ["\u4e0d\u8981\u904d\u5386\u6240\u6709\u4f1a\u8bdd\u518d\u8fc7\u6ee4\uff0c\u76f4\u63a5\u6309 key \u53d6", "\u6ce8\u610f\u5207\u7247\u65b9\u5411\uff1a\u6700\u65b0\u5728\u672b\u5c3e"], "id": "q04-04-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "class MemoryStore:\n    def __init__(self):\n        self._data = {}  # session_id -\u003e list[dict]\n\n    def append(self, session_id, role, content, metadata=None):\n        self._data.setdefault(session_id, []).append(\n            {\"role\": role, \"content\": content, \"metadata\": metadata or {}}\n        )\n\n    def recent(self, session_id, limit=12):\n        # TODO: \u8fd4\u56de\u8be5\u4f1a\u8bdd\u6700\u8fd1 limit \u6761\u6d88\u606f\n        pass", "statement": "MemoryStore \u9700\u8981\u4fdd\u8bc1\u4f1a\u8bdd\u9694\u79bb\uff1a\u4e0d\u540c session_id \u7684\u5386\u53f2\u4e0d\u80fd\u4e92\u76f8\u6c61\u67d3\u3002\n\u8bf7\u5b9e\u73b0 recent(session_id, limit) \u65b9\u6cd5\uff0c\u8fd4\u56de\u8be5\u4f1a\u8bdd\u6700\u8fd1 limit \u6761\u6d88\u606f\uff08\u6309\u5199\u5165\u987a\u5e8f\uff0c\u6700\u65b0\u7684\u5728\u6700\u540e\uff09\uff0c\u4e14\u53ea\u8fd4\u56de\u8be5\u4f1a\u8bdd\u7684\u8bb0\u5f55\u3002\n\u6d88\u606f\u7ed3\u6784\u4e3a dict\uff1a{\"role\": str, \"content\": str, \"metadata\": dict}\u3002", "tags": ["\u8bb0\u5fc6", "\u4f1a\u8bdd\u9694\u79bb", "\u4ee3\u7801"], "title": "\u5b9e\u73b0\u4f1a\u8bdd\u9694\u79bb\u7684\u8bb0\u5fc6\u8bfb\u53d6", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 4, "chapter_title": "Agent \u6838\u5fc3\u673a\u5236\uff08\u4ece\u96f6\u81ea\u7814\uff09", "difficulty": 3, "hints": ["\u672a\u6ce8\u518c\u5de5\u5177\u5e94\u88ab\u767d\u540d\u5355\u62d2\u7edd\u5e76\u56de\u7ed3\u6784\u5316\u9519\u8bef", "\u65ad\u8a00\u5de5\u5177\u672a\u771f\u6b63\u6267\u884c\uff0c\u800c\u4e0d\u53ea\u662f\u6a21\u578b\u6ca1\u518d\u8c03\u7528"], "id": "q04-04-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "def test_unknown_tool_is_rejected():\n    fake = ScriptedLLM([\n        # TODO: \u7b2c 1 \u8f6e\u8bf7\u6c42\u672a\u6ce8\u518c\u5de5\u5177 not_exist\n        # TODO: \u7b2c 2 \u8f6e\u8fd4\u56de\u6700\u7ec8\u6587\u672c\n    ])\n    agent = ReactAgent(fake, [CALCULATOR_SCHEMA], max_steps=3)\n    result = agent.run(\"\u968f\u4fbf\u95ee\u70b9\u4ec0\u4e48\")\n    # TODO: \u65ad\u8a00", "statement": "\u8bf7\u7528 ScriptedLLM \u5199\u4e00\u4e2a\u6d4b\u8bd5\uff0c\u8986\u76d6\u300c\u6a21\u578b\u8bf7\u6c42\u4e00\u4e2a\u672a\u6ce8\u518c\u5de5\u5177\u300d\u7684\u5206\u652f\u3002\n\u8981\u6c42\uff1a\u5047\u6a21\u578b\u7b2c 1 \u8f6e\u8bf7\u6c42\u5de5\u5177 not_exist\uff0c\u7b2c 2 \u8f6e\u8fd4\u56de\u6700\u7ec8\u6587\u672c\uff1b\u65ad\u8a00 Agent \u672a\u6267\u884c\u8be5\u5de5\u5177\u3001\u5faa\u73af\u6b63\u5e38\u7ed3\u675f\u3001stop_reason \u4e3a completed\u3002\n\u5047\u8bbe ReactAgent \u53ea\u6ce8\u518c CALCULATOR_SCHEMA\uff0c\u672a\u6ce8\u518c\u5de5\u5177\u4f1a\u88ab\u62d2\u7edd\u5e76\u628a\u7ed3\u6784\u5316\u9519\u8bef\u4f5c\u4e3a\u89c2\u5bdf\u8fd4\u56de\u7ed9\u6a21\u578b\u3002", "tags": ["\u6d4b\u8bd5", "\u5047\u6a21\u578b", "\u5de5\u5177\u767d\u540d\u5355"], "title": "\u811a\u672c\u5316\u5047\u6a21\u578b\u8986\u76d6\u672a\u77e5\u5de5\u5177\u5206\u652f", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="4" data-kp="3"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 20｜章节实战：Enterprise Copilot Agent">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 20｜章节实战：Enterprise Copilot Agent">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson"><h3>4.7 常见错误与排查顺序</h3>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">优先检查</th><th style="text-align:left">修复原则</th></tr></thead><tbody><tr><td style="text-align:left">模型想调用工具但程序没执行</td><td style="text-align:left">归一化层是否读到 tool calls；字段是否匹配</td><td style="text-align:left">先打印脱敏后的原始响应</td></tr><tr><td style="text-align:left">工具执行了但模型不知道结果</td><td style="text-align:left"><code>call_id</code> 是否一致；tool result 是否加入消息</td><td style="text-align:left">严格按协议配对</td></tr><tr><td style="text-align:left">Agent 一直调用同一工具</td><td style="text-align:left">工具结果是否清楚；是否有重复检测与步数限制</td><td style="text-align:left">让程序强制停止并记录原因</td></tr><tr><td style="text-align:left">参数经常错误</td><td style="text-align:left">Schema 描述、枚举、required 是否明确</td><td style="text-align:left">缩小动作空间，不只改 Prompt</td></tr><tr><td style="text-align:left">重启后忘记历史</td><td style="text-align:left">是否提交事务；是否加载同一 session</td><td style="text-align:left">分离持久化故障与上下文装配故障</td></tr><tr><td style="text-align:left">不同用户看到彼此历史</td><td style="text-align:left">session/user 作用域是否进入所有查询条件</td><td style="text-align:left">默认隔离，显式授权共享</td></tr><tr><td style="text-align:left">答案没有制度引用</td><td style="text-align:left">RAG 工具是否返回 citations；最终提示是否保留</td><td style="text-align:left">引用作为结构化数据贯穿链路</td></tr></tbody></table>
+<h3>4.8 过程性作业</h3>
+<h4>基础任务</h4>
+<ol><li>为 <code>calculator</code>、<code>get_weather</code>、<code>search_knowledge</code> 各写 3 个测试。</li><li>在事件日志中增加耗时字段，但禁止记录密钥和完整敏感正文。</li><li>画出自己的 Agent 状态机，标出所有停止路径。</li></ol>
+<h4>提高任务</h4>
+<ol><li>实现重复工具调用检测：相同工具与相同参数连续出现两次时返回警告，三次时终止。</li><li>实现需要确认的工具包装器。工具声明 <code>risk="write"</code> 时，控制器先返回待确认状态，不立即执行。</li><li>实现对话摘要，但保留最近 4 轮原文；比较压缩前后的输入长度和任务成功率。</li></ol>
+<h3>4.9 本章小结</h3>
+<p>Agent 的核心不是“更会聊天”，而是一套受程序约束的闭环：</p>
+<pre class="code lang-text"><code>读取任务和状态
+模型选择最终回答或白名单动作
+程序校验参数与权限
+程序执行工具并返回结构化结果
+控制器更新状态并判断是否继续
+达到完成、超时、预算或最大步数条件后结束</code></pre>
+<p>学生如果能独立手写并测试这条循环，后续学习 LangGraph、CrewAI 或其他框架时，就能把框架概念映射到状态、节点、工具、记忆和终止条件，而不是只会复制示例代码。</p>
+<h3>4.10 教师参考资料</h3>
+<ul><li><a href="https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/server/tools.mdx" target="_blank" rel="noreferrer">MCP 2026-07-28 Tools 规范</a>：核对工具名称、Schema、调用结果与请求元数据要求。</li><li><a href="https://modelcontextprotocol.io/specification/draft/server/tools" target="_blank" rel="noreferrer">MCP Tools 当前草案</a>：用于授课前检查规范是否继续演进。</li><li><a href="https://pydantic.dev/docs/validation/2.11/api/pydantic/base_model/" target="_blank" rel="noreferrer">Pydantic BaseModel</a>：核对参数模型和运行时验证接口。</li></ul>
+<blockquote>链接与示例于 2026-09-15 核对。本章用内部 <code>Tool</code> 契约隔离协议变化；Day 27 再按课程当时锁定的 MCP SDK 完成 Server 与 Client 实战。</blockquote></div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    
+    <a class="ch-neighbor " href="chapter-1.html">
+      <span class="cn-rel">前 3 章</span>
+      <b>🧠 大模型认知与 Prompt 工程</b>
+      <em>阶段一 · 认知与工程地基</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-2.html">
+      <span class="cn-rel">前 2 章</span>
+      <b>🔌 LLM API 工程化与 AI 后端</b>
+      <em>阶段一 · 认知与工程地基</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-3.html">
+      <span class="cn-rel">上一章</span>
+      <b>📚 RAG 检索增强生成</b>
+      <em>阶段二 · 知识增强</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-5.html">
+      <span class="cn-rel">下一章</span>
+      <b>🔧 Agent 框架实战</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-6.html">
+      <span class="cn-rel">后 2 章</span>
+      <b>🕸️ 多智能体系统与 MCP</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-7.html">
+      <span class="cn-rel">后 3 章</span>
+      <b>🔍 开源 Agent 项目源码拆解</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-8.html">
+      <span class="cn-rel">后 4 章</span>
+      <b>🎛️ 模型微调与上下文工程</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="training.html?chapters=4">做本章专项练习</a>
+      <a class="btn agent" href="coach.html?chapter=4">让教练追问我</a>
+      
+      <a class="btn ghost" href="warp.html?to=/chapter/5&kicker=章节完成&next=正在跃迁到 Agent 框架实战">⚡ 跃迁到下一章</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/chapter.js"></script>
+
+</body>
+</html>

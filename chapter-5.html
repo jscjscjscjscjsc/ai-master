@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent 框架实战 · AI Master 星辰学习系统</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/chapter.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="chapter-page"
+      data-page="Agent 框架实战" data-chapter-id="5">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+
+<section class="ch-head fade-up" style="--accent:#7ee1ff">
+  
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="static/cg/agent_framework_cg.html">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>开场 · 把循环画成图</h2>
+      <p>5 幕：State/Node/Edge、断点续跑、人工审批</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    
+    <div class="ch-cg-rest">
+      
+      <a class="ch-cg-chip cine" href="static/cg/claude_cg/index.html" target="_blank" rel="noreferrer">
+        <b>对照 · Claude Code 实战</b><em>框架之外：一个真实编码智能体的全流程</em>
+      </a>
+      
+      <a class="ch-cg-chip cine" href="static/cg/revelation_cg.html" target="_blank" rel="noreferrer">
+        <b>收束 · 星辰启示</b><em>翻过这一章时，看一眼星图留言</em>
+      </a>
+      
+    </div>
+    
+  </div>
+  
+
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR 05 / 阶段三 · 智能体内核（主线）</p>
+    <h1>🔧 Agent 框架实战</h1>
+    <p class="lead">Day 21–25：LangGraph 入门：State、Node、Edge；条件路由、循环、Checkpoint 与人工审批；CrewAI 与 smolagents：两种不同抽象 等 5 天内容</p>
+    <div class="row">
+      
+      <span class="chip"><b style="color:var(--ink)">21–25</b> Day</span>
+      
+      <span class="chip"><b style="color:var(--ink)">5 节</b> 知识点</span>
+      
+      <span class="chip"><b style="color:var(--ink)">约 30 小时</b> 学时</span>
+      
+      <span class="chip"><b style="color:var(--ink)">35 道</b> 练习题</span>
+      
+      <span class="chip violet">平台主线</span>
+      <span class="chip">LangGraph</span><span class="chip">Checkpoint</span><span class="chip">人工审批</span><span class="chip">CrewAI</span><span class="chip">框架选型</span>
+    </div>
+  </div>
+
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / 5</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="training.html?chapters=5">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      <a class="ch-nav" href="chapter-4.html">← 上一章</a>
+      
+      <a class="ch-nav ch-nav-warp" href="warp.html?to=/chapter/6&kicker=SECTOR 06&next=正在跃迁到 多智能体系统与 MCP">
+        下一章 →<em>走星际跃迁</em>
+      </a>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson"><blockquote>建议学时：5 天，每天 6 学时 先修要求：已完成第 4 章，能手写工具注册表、ReAct 风格循环、最大步数和 SQLite 记忆 主线框架：LangGraph；对照框架：CrewAI、smolagents 章节交付：带条件路由、持久化、人工审批、流式事件和测试的流程 Agent</blockquote>
+<h3>5.0 由浅入深的学习路线</h3>
+<p>本章不重新学习“Agent 是什么”，而是把第四章手写组件逐项映射到框架。</p>
+<table><thead><tr><th style="text-align:left">第四章手写概念</th><th style="text-align:left">LangGraph 映射</th><th style="text-align:left">本章出现时间</th></tr></thead><tbody><tr><td style="text-align:left"><code>AgentResult</code> 中的运行数据</td><td style="text-align:left"><code>State</code></td><td style="text-align:left">Day 21</td></tr><tr><td style="text-align:left">一个处理函数</td><td style="text-align:left">Node</td><td style="text-align:left">Day 21</td></tr><tr><td style="text-align:left">函数调用顺序</td><td style="text-align:left">Edge</td><td style="text-align:left">Day 21</td></tr><tr><td style="text-align:left">if/else 与继续循环</td><td style="text-align:left">Conditional Edge / <code>Command</code></td><td style="text-align:left">Day 22</td></tr><tr><td style="text-align:left">SQLite 运行状态</td><td style="text-align:left">Checkpointer + <code>thread_id</code></td><td style="text-align:left">Day 22</td></tr><tr><td style="text-align:left">等待用户确认</td><td style="text-align:left"><code>interrupt()</code> + <code>Command(resume=...)</code></td><td style="text-align:left">Day 22</td></tr><tr><td style="text-align:left">多角色函数组合</td><td style="text-align:left">Crew / managed agent</td><td style="text-align:left">Day 23</td></tr><tr><td style="text-align:left">工具 JSON 调用或代码执行</td><td style="text-align:left">ToolCallingAgent / CodeAgent</td><td style="text-align:left">Day 23</td></tr><tr><td style="text-align:left">事件日志</td><td style="text-align:left">graph stream / tracing</td><td style="text-align:left">Day 25</td></tr></tbody></table>
+<pre class="code lang-mermaid"><code>flowchart LR
+    A[Day21 线性两节点图] --&gt; B[Day22 分支与循环]
+    B --&gt; C[Checkpoint]
+    C --&gt; D[人工审批与恢复]
+    D --&gt; E[Day23 多角色框架]
+    E --&gt; F[Day24 选型与消融]
+    F --&gt; G[Day25 生产级流程 Agent]</code></pre>
+<h4>环境与版本纪律</h4>
+<pre class="code lang-text"><code>Python &gt;= 3.11
+langgraph
+langgraph-checkpoint-sqlite
+crewai
+smolagents
+pytest</code></pre>
+<p>三个框架不要求放进同一个最小运行环境。建议为主线、CrewAI 对照、smolagents 对照分别建立虚拟环境，记录 Python 与依赖版本。代码示例围绕稳定概念编写；若当前版本字段变化，以本章末尾官方文档和锁定版本为准。</p>
+<hr></div>
+  </div>
+</section>
+
+
+<section class="section">
+  <header>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
+  </header>
+  <div class="route" id="route">
+    
+    <article class="kp" id="kp-1" data-kp-index="0"
+             data-kp-key="5_0" >
+      <div class="kp-head">
+        <span class="kp-no">D21</span>
+        <div class="kp-head-main">
+          <h3>Day 21｜LangGraph 入门：State、Node、Edge</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">收起</button>
+      </div>
+
+      
+      <div class="kp-body" >
+        <div class="lesson"><h4>5.1.1 当日目标</h4>
+<p>先用纯 Python 节点构建两节点 RAG 咨询图，不在第一段代码中接真实模型。学生必须先看懂状态怎样进入节点、节点返回什么更新、边怎样控制顺序。</p>
+<h4>5.1.2 第一个状态图</h4>
+<pre class="code lang-python"><code>from typing import TypedDict
+from langgraph.graph import END, START, StateGraph
+
+
+class RagState(TypedDict):
+    question: str
+    evidence: list[str]
+    answer: str
+
+
+def retrieve(state: RagState) -&gt; dict:
+    fake_knowledge = {
+        "年假": "员工转正后按制度获得相应年假。",
+        "报销": "报销申请需附有效票据。",
+    }
+    evidence = [text for keyword, text in fake_knowledge.items() if keyword in state["question"]]
+    return {"evidence": evidence}
+
+
+def generate(state: RagState) -&gt; dict:
+    if not state["evidence"]:
+        return {"answer": "当前知识库中没有足够依据。"}
+    return {"answer": f"依据知识库：{state['evidence'][0]}"}
+
+
+builder = StateGraph(RagState)
+builder.add_node("retrieve", retrieve)
+builder.add_node("generate", generate)
+builder.add_edge(START, "retrieve")
+builder.add_edge("retrieve", "generate")
+builder.add_edge("generate", END)
+graph = builder.compile()
+
+result = graph.invoke({"question": "报销需要什么？", "evidence": [], "answer": ""})
+print(result["answer"])</code></pre>
+<p>逐层解释：</p>
+<ol><li><code>RagState</code> 是整个图共享的数据契约。</li><li>节点读取完整 state，但只返回自己负责更新的字段。</li><li><code>START</code> 和 <code>END</code> 是特殊节点，标记输入和终止。</li><li><code>compile()</code> 在运行前检查图结构，并生成可调用对象。</li><li>线性图目前不比普通函数更简单，它的价值会在分支、恢复和观测加入后出现。</li></ol>
+<h4>5.1.3 接入第三章 RAG 与 LLM</h4>
+<pre class="code lang-python"><code>def retrieve_real(state: RagState) -&gt; dict:
+    rows = retriever.search(state["question"], top_k=5)
+    return {"evidence": [row["text"] for row in rows]}
+
+
+async def generate_real(state: RagState) -&gt; dict:
+    if not state["evidence"]:
+        return {"answer": "当前知识库中没有足够依据。"}
+    context = "\n\n".join(state["evidence"])
+    result = await llm.chat([
+        {"role": "system", "content": "只依据证据回答，依据不足时拒答。"},
+        {"role": "user", "content": f"证据：\n{context}\n\n问题：{state['question']}"},
+    ])
+    return {"answer": result.text}</code></pre>
+<p>第三章组件作为依赖注入，不要把解析、切块和向量库代码复制进节点。节点包含异步模型调用后，应使用 <code>await graph.ainvoke(...)</code> 或 <code>async for ... in graph.astream(...)</code> 驱动图。</p>
+<h4>5.1.4 状态更新流</h4>
+<pre class="code lang-python"><code>initial: RagState = {"question": "年假怎样规定？", "evidence": [], "answer": ""}
+
+for part in graph.stream(initial, stream_mode="updates", version="v2"):
+    if part["type"] == "updates":
+        print(part["data"])</code></pre>
+<p><code>updates</code> 只显示每个节点产生的变更，适合调试；<code>values</code> 显示每一步完整状态。课堂先观察状态更新，再接模型 token 流。</p>
+<h4>5.1.5 图结构输出</h4>
+<pre class="code lang-python"><code>print(graph.get_graph().draw_mermaid())</code></pre>
+<p>把 Mermaid 保存进答辩报告。学生需要用自己的语言标注每个节点的输入、输出和失败路径。</p>
+<h4>5.1.6 当日课堂与验收</h4>
+<table><thead><tr><th style="text-align:left">环节</th><th style="text-align:right">时间</th><th style="text-align:left">产物</th></tr></thead><tbody><tr><td style="text-align:left">手写循环到图的映射</td><td style="text-align:right">40 min</td><td style="text-align:left">概念对照表</td></tr><tr><td style="text-align:left">State 与部分更新</td><td style="text-align:right">50 min</td><td style="text-align:left">状态练习</td></tr><tr><td style="text-align:left">两节点最小图</td><td style="text-align:right">80 min</td><td style="text-align:left">可运行 Demo</td></tr><tr><td style="text-align:left">接入第三章 RAG</td><td style="text-align:right">80 min</td><td style="text-align:left">RAG 咨询图</td></tr><tr><td style="text-align:left">stream 与图输出</td><td style="text-align:right">50 min</td><td style="text-align:left">事件日志、Mermaid</td></tr><tr><td style="text-align:left">故障注入与抽讲</td><td style="text-align:right">60 min</td><td style="text-align:left">验收记录</td></tr></tbody></table>
+<p>验收：改变 <code>retrieve</code> 的输出时只影响下游状态；空检索能够拒答；学生能说明图为何必须 compile。</p>
+<p><strong>运行验证</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch05/10_langgraph_basic.py</code></pre>
+<p><img src="static/course-assets/ch05/01_langgraph_basic.webp" alt="LangGraph 最小状态图的真实输出：两节点线性图的运行轨迹、Mermaid 图结构自动导出、以及「没有 reducer 时返回字段是覆盖不是追加」的关键陷阱实验" loading="lazy"></p>
+<p><strong>这张图要看三件事</strong>：</p>
+<p><strong>（1）图结构输出可以直接进答辩报告。</strong> 图中打印了 <code>graph.get_graph().draw_mermaid()</code> 的真实输出：<code>__start__ → retrieve → generate → __end__</code>，并自动保存为 <code>code/ch05/outputs/10_langgraph_basic.mmd</code>。图上说明了为什么值得单独做这一步：</p>
+<blockquote>图结构是「你和同事/评审之间的接口契约」。文字描述容易有歧义，<strong>一张自动生成的图则不会说谎</strong> —— 它直接来自 compile() 后的真实拓扑，而不是你手画的理想版本。改完代码重新生成一遍，就能确认改的是不是你想改的。</blockquote>
+<p><strong>（2）一个关键陷阱实验：没有 reducer 时，返回字段是「覆盖」不是「追加」。</strong> 这是本节最有教学价值的部分。节点 b 返回 <code>{"logs": ["B 执行了"], "count": 2}</code>，结果是 <code>logs = ["B 执行了"]</code> —— <strong>只剩 B 的内容，A 的记录丢了</strong>。图上点明：<strong>这正是课件 5.6 疑难表里「state 字段突然丢失」的根因</strong>。</p>
+<p>两种正确做法：</p>
+<table><thead><tr><th style="text-align:left">做法</th><th style="text-align:left">写法</th><th style="text-align:left">适用</th></tr></thead><tbody><tr><td style="text-align:left">做法 1（最直观）</td><td style="text-align:left">节点自己合并：<code>return {"logs": [*state["logs"], "B 执行了"]}</code></td><td style="text-align:left">简单场景</td></tr><tr><td style="text-align:left">做法 2（推荐）</td><td style="text-align:left">给字段声明 <code>reducer</code>：<code>logs: Annotated[list[str], operator.add]</code></td><td style="text-align:left">框架自动合并</td></tr></tbody></table>
+<p>选择依据写在图上，值得逐字读：<strong>计数/列表累加这类「天然追加」的语义用 &lt;code&gt;reducer&lt;/code&gt;</strong>（写法简单、不容易忘），而<strong>「谁最后写谁说了算」的字段（如 &lt;code&gt;answer&lt;/code&gt;、&lt;code&gt;final_status&lt;/code&gt;）就保持覆盖语义</strong>——给它加 <code>reducer</code> 反而是错的，会得到多条答案拼在一起的怪结果。<strong>&lt;code&gt;reducer&lt;/code&gt; 与覆盖语义的选择，本质是「这个字段的业务语义是累加还是替换」。</strong></p>
+<p><strong>（3）stream 的两种模式。</strong> 验收表记录了 <code>stream updates</code>（每步只吐变更字段，用于调试）与 <code>stream values</code>（每步吐完整状态）的实际行为差异。</p>
+<p>当日结论：两节点线性图 3 次运行（含空检索拒答）全部正确；覆盖 vs reducer 实测覆盖语义会去数据，并给出两种正确写法。</p>
+<blockquote><strong>Day21 交付：能画出图结构、能观察状态更新流的纯 Python 状态图。</strong> 下一节加入条件路由、循环与 Checkpoint。</blockquote>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 1, "id": "q05-01-01", "last_answer": "", "last_feedback": "", "options": ["\u53ea\u66f4\u65b0 evidence \u5b57\u6bb5\uff0cquestion \u4e0e answer \u4fdd\u6301\u539f\u503c", "\u6574\u4e2a state \u88ab\u8fd4\u56de\u503c\u66ff\u6362\uff0cquestion \u4e0e answer \u4e22\u5931", "\u5fc5\u987b\u8fd4\u56de\u5b8c\u6574 state\uff0c\u5426\u5219 compile() \u4f1a\u62a5\u9519", "\u8fd4\u56de\u503c\u4f1a\u88ab\u8ffd\u52a0\u5230 evidence \u5217\u8868\u672b\u5c3e"], "points": 27, "solved": false, "statement": "\u5728 RagState \u72b6\u6001\u56fe\u4e2d\uff0cretrieve \u8282\u70b9\u53ea\u8fd4\u56de {\"evidence\": evidence}\u3002\n\u5173\u4e8e\u8fd9\u6b21\u8fd4\u56de\u5bf9\u6574\u4f53\u72b6\u6001\u7684\u5f71\u54cd\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["State", "Node", "\u90e8\u5206\u66f4\u65b0"], "title": "\u8282\u70b9\u8fd4\u56de\u503c\u5982\u4f55\u5f71\u54cd\u72b6\u6001", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-01-02", "last_answer": "", "last_feedback": "", "options": ["\u628a logs \u58f0\u660e\u4e3a Annotated[list[str], operator.add]\uff0c\u6216\u8282\u70b9\u5185\u81ea\u5df1\u62fc\u63a5\u65e7\u503c", "\u5728 add_edge \u4e2d\u4e3a\u8fd9\u6761\u8fb9\u58f0\u660e\u5408\u5e76\u7b56\u7565", "\u628a logs \u6539\u6210 str \u7c7b\u578b\uff0c\u6846\u67b6\u5c31\u4f1a\u81ea\u52a8\u8ffd\u52a0", "\u5728 compile() \u65f6\u4f20\u5165 merge=True \u53c2\u6570"], "points": 76, "solved": false, "statement": "\u8282\u70b9 a \u8fd4\u56de {\"logs\": [\"A \u6267\u884c\u4e86\"]}\uff0c\u968f\u540e\u8282\u70b9 b \u8fd4\u56de {\"logs\": [\"B \u6267\u884c\u4e86\"], \"count\": 2}\u3002\n\u6700\u7ec8 logs \u53ea\u5269 [\"B \u6267\u884c\u4e86\"]\u3002\u8981\u4fdd\u7559 A \u7684\u8bb0\u5f55\uff0c\u6b63\u786e\u505a\u6cd5\u662f\uff1f", "tags": ["reducer", "\u8986\u76d6\u8bed\u4e49", "\u5e38\u89c1\u9519\u8bef"], "title": "logs \u5b57\u6bb5\u4e22\u5931\u7684\u6839\u56e0", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "id": "q05-01-03", "last_answer": "", "last_feedback": "", "options": ["\u7d2f\u52a0\u8bed\u4e49\u5b57\u6bb5\u7528 reducer\uff0canswer \u8fd9\u7c7b\u66ff\u6362\u8bed\u4e49\u5b57\u6bb5\u4fdd\u6301\u8986\u76d6", "\u6240\u6709\u5b57\u6bb5\u90fd\u52a0 reducer \u6700\u5b89\u5168\uff0c\u80fd\u907f\u514d\u4efb\u4f55\u6570\u636e\u4e22\u5931", "\u6240\u6709\u5b57\u6bb5\u90fd\u4e0d\u52a0 reducer\uff0c\u7531\u8282\u70b9\u7edf\u4e00\u8d1f\u8d23\u5408\u5e76", "\u53ea\u7ed9 answer \u52a0 reducer\uff0c\u65e5\u5fd7\u7c7b\u5b57\u6bb5\u4fdd\u6301\u8986\u76d6"], "points": 189, "solved": false, "statement": "\u56fe\u4e2d\u65e2\u6709\u8ba1\u6570\u3001\u65e5\u5fd7\u8fd9\u7c7b\u5929\u7136\u7d2f\u52a0\u7684\u5b57\u6bb5\uff0c\u4e5f\u6709 answer\u3001final_status \u8fd9\u7c7b\u300c\u8c01\u6700\u540e\u5199\u8c01\u8bf4\u4e86\u7b97\u300d\u7684\u5b57\u6bb5\u3002\n\u5173\u4e8e reducer \u7684\u53d6\u820d\uff0c\u4e0b\u5217\u5224\u65ad\u6b63\u786e\u7684\u662f\uff1f", "tags": ["reducer", "\u5de5\u7a0b\u5224\u65ad", "\u72b6\u6001\u8bbe\u8ba1"], "title": "reducer \u8be5\u7ed9\u54ea\u4e9b\u5b57\u6bb5\u52a0", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u60f3\u60f3 compile() \u5728\u8fd0\u884c\u524d\u505a\u4e86\u4ec0\u4e48\u68c0\u67e5", "\u56fe\u7ed3\u6784\u5bf9\u540c\u4e8b\u548c\u8bc4\u5ba1\u610f\u5473\u7740\u4ec0\u4e48"], "id": "q05-01-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u4e24\u8282\u70b9\u7ebf\u6027\u56fe\u7528\u666e\u901a\u51fd\u6570\u4e5f\u80fd\u5199\uff0c\u4e3a\u4ec0\u4e48\u8fd8\u8981\u7528 StateGraph \u5e76\u8c03\u7528 compile()\uff1f\n\u8bf7\u7ed3\u5408\u56fe\u7ed3\u6784\u8f93\u51fa\u4e0e\u540e\u7eed\u6269\u5c55\u8bf4\u660e\u7406\u7531\u3002", "tags": ["compile", "\u56fe\u7ed3\u6784", "\u9a8c\u6536"], "title": "\u4e3a\u4ec0\u4e48\u7ebf\u6027\u56fe\u4ecd\u8981 compile", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u6bd4\u8f83\u6bcf\u6b65\u8f93\u51fa\u7684\u5185\u5bb9\u91cf", "\u8c03\u8bd5\u65f6\u4f60\u66f4\u5173\u5fc3\u53d8\u66f4\u8fd8\u662f\u5168\u91cf"], "id": "q05-01-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "graph.stream \u7684 stream_mode \u53ef\u53d6 updates \u4e0e values\u3002\n\u8bf7\u8bf4\u660e\u4e24\u8005\u8f93\u51fa\u7684\u5dee\u5f02\u3001\u5404\u81ea\u9002\u7528\u573a\u666f\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u8bfe\u5802\u5efa\u8bae\u5148\u89c2\u5bdf\u72b6\u6001\u66f4\u65b0\u518d\u63a5\u6a21\u578b token \u6d41\u3002", "tags": ["stream", "updates", "values"], "title": "updates \u4e0e values \u4e24\u79cd\u6d41\u6a21\u5f0f", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["reducer \u5199\u5728\u7c7b\u578b\u6ce8\u89e3\u91cc", "count \u4e0d\u8981\u52a0 reducer"], "id": "q05-01-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "from typing import TypedDict\nfrom langgraph.graph import END, START, StateGraph\n\nclass S(TypedDict):\n    logs: list[str]\n    count: int\n\ndef a(state: S) -\u003e dict:\n    return {\"logs\": [\"A \u6267\u884c\u4e86\"]}\n\ndef b(state: S) -\u003e dict:\n    return {\"logs\": [\"B \u6267\u884c\u4e86\"], \"count\": 2}\n\nbuilder = StateGraph(S)\nbuilder.add_node(\"a\", a)\nbuilder.add_node(\"b\", b)\nbuilder.add_edge(START, \"a\")\nbuilder.add_edge(\"a\", \"b\")\nbuilder.add_edge(\"b\", END)\ngraph = builder.compile()\nprint(graph.invoke({\"logs\": [], \"count\": 0}))", "statement": "\u4e0b\u9762\u9aa8\u67b6\u4e2d\u4e24\u4e2a\u8282\u70b9\u90fd\u5f80 logs \u8ffd\u52a0\u5185\u5bb9\uff0c\u4f46\u5f53\u524d\u662f\u8986\u76d6\u8bed\u4e49\uff0cA \u7684\u8bb0\u5f55\u4f1a\u4e22\u3002\n\u8bf7\u4fee\u6539\u4ee3\u7801\uff0c\u4f7f logs \u81ea\u52a8\u7d2f\u52a0\uff0c\u5e76\u4fdd\u7559 count \u7684\u8986\u76d6\u8bed\u4e49\u3002\u8fd0\u884c\u540e logs \u5e94\u4e3a [\"A \u6267\u884c\u4e86\", \"B \u6267\u884c\u4e86\"]\u3002", "tags": ["reducer", "Annotated", "\u4ee3\u7801"], "title": "\u7ed9 logs \u5b57\u6bb5\u52a0 reducer", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "hints": ["\u8282\u70b9\u53ea\u8fd4\u56de\u81ea\u5df1\u8d1f\u8d23\u7684\u5b57\u6bb5", "\u7a7a\u8bc1\u636e\u8d70\u62d2\u7b54\u5206\u652f"], "id": "q05-01-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "from typing import TypedDict\nfrom langgraph.graph import END, START, StateGraph\n\nclass RagState(TypedDict):\n    question: str\n    evidence: list[str]\n    answer: str\n\ndef retrieve(state: RagState) -\u003e dict:\n    # \u4f9d\u636e\u5173\u952e\u8bcd\u5339\u914d\u5185\u7f6e\u77e5\u8bc6\u5e93\n    ...\n\ndef generate(state: RagState) -\u003e dict:\n    # \u7a7a\u8bc1\u636e\u62d2\u7b54\uff0c\u5426\u5219\u5f15\u7528\u7b2c\u4e00\u6761\u8bc1\u636e\n    ...\n\n# \u6784\u5efa\u56fe\u5e76\u7f16\u8bd1\uff0c\u5206\u522b\u7528\u4e24\u4e2a\u95ee\u9898\u8c03\u7528", "statement": "\u7528 StateGraph \u6784\u5efa retrieve \u2192 generate \u4e24\u8282\u70b9\u56fe\uff0c\u4e0d\u63a5\u771f\u5b9e\u6a21\u578b\u3002\nretrieve \u4f9d\u636e question \u4e2d\u7684\u5173\u952e\u8bcd\u4ece\u5185\u7f6e\u77e5\u8bc6\u5e93\u53d6\u8bc1\u636e\uff1bgenerate \u5728 evidence \u4e3a\u7a7a\u65f6\u8fd4\u56de\u300c\u5f53\u524d\u77e5\u8bc6\u5e93\u4e2d\u6ca1\u6709\u8db3\u591f\u4f9d\u636e\u3002\u300d\uff0c\u5426\u5219\u8fd4\u56de\u300c\u4f9d\u636e\u77e5\u8bc6\u5e93\uff1a{\u7b2c\u4e00\u6761\u8bc1\u636e}\u300d\u3002\n\u8981\u6c42\uff1a\u4f20\u5165\u300c\u62a5\u9500\u9700\u8981\u4ec0\u4e48\uff1f\u300d\u80fd\u7ed9\u51fa\u4f9d\u636e\uff0c\u4f20\u5165\u300c\u5929\u6c14\u5982\u4f55\uff1f\u300d\u80fd\u62d2\u7b54\u3002", "tags": ["StateGraph", "RAG", "\u62d2\u7b54"], "title": "\u7a7a\u68c0\u7d22\u62d2\u7b54\u7684\u4e24\u8282\u70b9\u56fe", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="5" data-kp="0"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 21｜LangGraph 入门：State、Node、Edge">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 21｜LangGraph 入门：State、Node、Edge">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-2" data-kp-index="1"
+             data-kp-key="5_1" >
+      <div class="kp-head">
+        <span class="kp-no">D22</span>
+        <div class="kp-head-main">
+          <h3>Day 22｜条件路由、循环、Checkpoint 与人工审批</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>5.2.1 从线性图到条件图</h4>
+<p>先增加证据质量判断：足够则生成，不足则改写问题后再检索；最大重试次数写入 state。</p>
+<blockquote><strong>⚠️ 本节需要两个新节点函数</strong>。原课件 v1.0 在下面的图定义里调用了 <code>retrieve_retry</code> 和 <code>generate_retry</code>，<strong>但全章从未定义它们</strong> （5.1 节只有签名是 <code>RagState</code> 的 <code>retrieve</code> / <code>generate</code>）。 这是审校发现的阻断级缺陷 —— 学生照抄会在 <code>add_node</code> 处直接 <code>NameError</code>。 完整定义如下。</blockquote>
+<pre class="code lang-python"><code>from typing import Literal, TypedDict
+
+from langgraph.graph import END, START, StateGraph
+
+
+class RetryState(TypedDict):
+    question: str
+    rewritten_question: str
+    evidence: list[str]
+    answer: str
+    retries: int
+    max_retries: int
+
+
+# 复用第 3 章的检索器（依赖注入，不把解析/切块代码复制进来）
+def retrieve_retry(state: RetryState) -&gt; dict:
+    """检索节点。注意：要优先使用改写后的问题。"""
+    # 若已经改写过问题，就用改写版；否则用原问题
+    query = state.get("rewritten_question") or state["question"]
+    rows = retriever.search(query, top_k=5)
+    return {"evidence": [row["text"] for row in rows]}
+
+
+async def generate_retry(state: RetryState) -&gt; dict:
+    """生成节点：只依据证据回答，证据不足时明确拒答。"""
+    if not state["evidence"]:
+        return {"answer": "当前知识库中没有足够依据。"}
+    context = "\n\n".join(state["evidence"])
+    result = await llm.chat([
+        {"role": "system", "content": "只依据证据回答，依据不足时拒答。"},
+        {"role": "user", "content": f"证据：\n{context}\n\n问题：{state['question']}"},
+    ])
+    return {"answer": result.text}
+
+
+def route_after_retrieve(state: RetryState) -&gt; Literal["generate", "rewrite", "give_up"]:
+    if state["evidence"]:
+        return "generate"
+    if state["retries"] &lt; state["max_retries"]:
+        return "rewrite"
+    return "give_up"
+
+
+def rewrite(state: RetryState) -&gt; dict:
+    simplified = state["question"].replace("请问", "").strip()
+    return {"rewritten_question": simplified, "retries": state["retries"] + 1}
+
+
+def give_up(state: RetryState) -&gt; dict:
+    return {"answer": "多次检索仍没有足够依据。"}</code></pre>
+<blockquote><strong>注意 &lt;code&gt;generate_retry&lt;/code&gt; 是 &lt;code&gt;async&lt;/code&gt; 的</strong>（它调用异步 LLM 客户端）， 而其他节点是同步的。LangGraph 允许混用，但驱动方式有区别： 含异步节点的图要用 <code>await graph.ainvoke(...)</code> 或 <code>async for ... in graph.astream(...)</code>。 这一点在 5.5.4 节会再强调一次 —— 忘了加 <code>await</code> 是最常见的错误。</blockquote>
+<pre class="code lang-python"><code>builder = StateGraph(RetryState)
+builder.add_node("retrieve", retrieve_retry)
+builder.add_node("rewrite", rewrite)
+builder.add_node("generate", generate_retry)
+builder.add_node("give_up", give_up)
+builder.add_edge(START, "retrieve")
+builder.add_conditional_edges(
+    "retrieve",
+    route_after_retrieve,
+    {"generate": "generate", "rewrite": "rewrite", "give_up": "give_up"},
+)
+builder.add_edge("rewrite", "retrieve")
+builder.add_edge("generate", END)
+builder.add_edge("give_up", END)</code></pre>
+<p>循环的安全边界仍由程序控制。<code>max_retries</code> 不能只写在提示词里。</p>
+<p><strong>运行验证：条件路由与可控循环</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch05/20_conditional_loop.py</code></pre>
+<p><img src="static/course-assets/ch05/02_conditional_loop.webp" alt="条件路由、改写重试与循环控制的真实输出：首轮直命中只走 retrieve→generate（0 次改写）、口语化问题改写后命中（2 次改写）、重试耗尽走 give_up 安全退出，以及四条路由分支的执行轨迹" loading="lazy"></p>
+<p><strong>这张图要把 5.2.2 新增的 &lt;code&gt;retrieve_retry&lt;/code&gt; / &lt;code&gt;generate_retry&lt;/code&gt; 两个节点真正跑起来看</strong>：</p>
+<p><strong>（1）同一张图，四条路由分支全部实测通过。</strong> 截图里的验收表给出四种情形的结果：</p>
+<table><thead><tr><th style="text-align:left">情形</th><th style="text-align:left">行为</th><th style="text-align:left">结果</th></tr></thead><tbody><tr><td style="text-align:left">首轮直命中</td><td style="text-align:left">0 次改写，走 <code>retrieve → generate</code></td><td style="text-align:left">正确</td></tr><tr><td style="text-align:left">口语化问题</td><td style="text-align:left">改写后命中，标注「经问题改写后命中」</td><td style="text-align:left">正确</td></tr><tr><td style="text-align:left">重试耗尽</td><td style="text-align:left">走 <code>give_up</code>，<strong>不编造、不死循环</strong></td><td style="text-align:left">安全退出</td></tr><tr><td style="text-align:left">上限为 0</td><td style="text-align:left"><code>max_retries=0</code> 时立即放弃</td><td style="text-align:left">可控</td></tr></tbody></table>
+<p><strong>注意第 3 行</strong>：重试耗尽后不是硬撑，而是<strong>安全退出</strong>。这正是「循环的安全边界由程序控制」的意思——<code>max_retries</code> 是代码里的整数，不是提示词里的一句话。</p>
+<p><strong>（2）循环次数可以从节点执行次数反推。</strong> 图上指出：4 个节点执行，而节点数多于 <code>retrieve, generate</code> 两个，<strong>多出来的就是 &lt;code&gt;rewrite&lt;/code&gt; 与 &lt;code&gt;retrieve_retry&lt;/code&gt; 的循环轮次</strong>。这句话的用处是：答辩时这张逐步日志就是<strong>「循环可控」的证据</strong>，而不是一句「我加了重试」。</p>
+<p><strong>（3）Checkpoint 的行为也在这一段被验证。</strong> 图上打印了 checkpoint 里的状态快照（<code>question</code> / <code>rewritten_question</code> / <code>evidence</code> / <code>answer</code> / <code>retries</code> / <code>max_retries</code> / <code>route_taken</code>），以及 <code>next=()</code> 表示已结束。另外还比较了同一 <code>thread_id</code> 再次 <code>invoke</code> 时的行为——<strong>只传新输入会被当作新的一轮</strong>。</p>
+<p>图上有一条关于 <code>stream updates</code> 的实操建议：循环观察用 <code>stream(stream_mode="updates")</code> 逐步打印出循环轮次，这比只看最终 state 更能暴露"循环了几次、每次路由到哪里"。</p>
+<blockquote><strong>Day22 上半场交付：带条件路由与可控循环的状态图 + Checkpoint。</strong></blockquote>
+<blockquote><strong>关于内置 reducer（原课件缺失的讲解）</strong>： 你可能注意到 <code>RetryState</code> 用的是普通 <code>TypedDict</code>，节点返回的是<strong>部分字段</strong>， 而没返回的字段会<strong>保留原值</strong>——这是 LangGraph 的默认「覆盖」语义。  但有两个例外必须知道：  1. <strong>列表字段的累积</strong>：如果希望某字段<strong>追加</strong>而不是覆盖（例如记录所有步骤、 累积消息），需要用 <code>Annotated</code> 加 reducer。写法是给字段加类型标注：  ``<code>python from typing import Annotated from langgraph.graph.message import add_messages  class ChatState(TypedDict): messages: Annotated[list, add_messages]   # 追加而不是覆盖 </code>`<code>  2. <strong>忘记 reducer 的后果</strong>：如果你想让消息累积却忘了加 </code>add_messages<code>， 每个节点只返回自己的新消息，<strong>之前的历史会被整个替换掉</strong> —— 表现是"Agent 失忆"，而且很难从代码上看出问题。  <strong>判断方法</strong>：问自己「这个字段是<strong>替换</strong>语义还是<strong>累积</strong>语义」。 替换就用普通 </code>TypedDict<code> 字段，累积就用 </code>Annotated` + reducer。</blockquote>
+<h4>5.2.2 Checkpoint 与 thread_id</h4>
+<pre class="code lang-python"><code>from langgraph.checkpoint.memory import InMemorySaver
+
+
+# 注意命名：官方当前主推 InMemorySaver（同一模块里 MemorySaver 是它的旧名/别名，
+# 网上大量教程用的是 MemorySaver）。本课程统一用 InMemorySaver。
+checkpointer = InMemorySaver()
+graph = builder.compile(checkpointer=checkpointer)
+
+config = {"configurable": {"thread_id": "demo-001"}}
+result = graph.invoke({
+    "question": "请问报销要求",
+    "rewritten_question": "",
+    "evidence": [],
+    "answer": "",
+    "retries": 0,
+    "max_retries": 2,
+}, config=config)</code></pre>
+<p>Checkpoint 在每个步骤保存 state 快照，<code>thread_id</code> 指向一条运行历史。<code>InMemorySaver</code> 只适合课堂演示（进程退出即丢失）；生产系统应使用持久化 checkpointer（见 5.2.4），并设计 thread 的用户隔离、过期和清理策略。</p>
+<blockquote><strong>&lt;code&gt;InMemorySaver&lt;/code&gt; vs 持久化 checkpointer 的差别</strong>：  | | <code>InMemorySaver</code> | <code>SqliteSaver</code> 等持久化方案 | |---|---|---| | 存储位置 | 进程内存 | 磁盘 / 数据库 | | 进程重启后 | <strong>状态全部丢失</strong> | 可恢复 | | 适用 | 课堂演示、单元测试 | 生产、需要断点续跑的任务 |  <strong>课堂上的演示技巧</strong>：先用 <code>InMemorySaver</code> 演示中断/恢复（快、无依赖）， 再<strong>故意把进程关掉</strong>，重新启动后尝试恢复 —— 学生会看到恢复失败。 这个失败演示比直接讲"应该用持久化"有效得多。 5.2.4 节给出持久化版本。</blockquote>
+<h4>5.2.3 人工审批节点</h4>
+<pre class="code lang-python"><code>from langgraph.types import Command, interrupt
+
+
+class ApprovalState(TypedDict):
+    request: str
+    draft: str
+    approved: bool | None
+    status: str
+
+
+def make_draft(state: ApprovalState) -&gt; dict:
+    return {"draft": f"待执行方案：{state['request']}", "status": "waiting_approval"}
+
+
+def approval(state: ApprovalState) -&gt; Command[Literal["execute", "cancel"]]:
+    decision = interrupt({"question": "是否批准执行？", "draft": state["draft"]})
+    approved = bool(decision)
+    return Command(update={"approved": approved}, goto="execute" if approved else "cancel")
+
+
+def execute(state: ApprovalState) -&gt; dict:
+    return {"status": "executed"}
+
+
+def cancel(state: ApprovalState) -&gt; dict:
+    return {"status": "cancelled"}</code></pre>
+<pre class="code lang-python"><code>approval_builder = StateGraph(ApprovalState)
+approval_builder.add_node("make_draft", make_draft)
+approval_builder.add_node("approval", approval)
+approval_builder.add_node("execute", execute)
+approval_builder.add_node("cancel", cancel)
+approval_builder.add_edge(START, "make_draft")
+approval_builder.add_edge("make_draft", "approval")
+approval_builder.add_edge("execute", END)
+approval_builder.add_edge("cancel", END)
+approval_graph = approval_builder.compile(checkpointer=InMemorySaver())
+
+config = {"configurable": {"thread_id": "approval-001"}}
+paused = approval_graph.invoke(
+    {"request": "发布知识库更新", "draft": "", "approved": None, "status": "new"},
+    config=config,
+)
+resumed = approval_graph.invoke(Command(resume=True), config=config)</code></pre>
+<p>关键规则：</p>
+<ul><li><code>interrupt()</code> 需要 checkpointer 和 thread_id。</li><li>恢复时使用同一个 thread_id。</li><li>中断恢复后，包含 <code>interrupt()</code> 的节点会从头重新执行；中断前的副作用必须幂等。</li><li>不要用普通 <code>try/except</code> 吞掉框架用于中断的控制异常。</li><li>写操作应放在审批通过后的独立节点。</li></ul>
+<p><strong>运行验证：人工审批与幂等</strong></p>
+<pre class="code lang-powershell"><code>python code/ch05/21_human_approval.py</code></pre>
+<p><img src="static/course-assets/ch05/03_human_approval.webp" alt="人工审批的真实输出：批准路径走 Command(resume=True)→execute、拒绝路径走 cancel（execute 从未执行），同一 request_id 的重放幂等（外部只发布 1 次），以及「interrupt 之前的副作用会被重放」这一陷阱的实测（副作用被触发 2 次）" loading="lazy"></p>
+<p><strong>这张图里有本日最反直觉的一条实测结论，比验收通过更重要</strong>：</p>
+<p><strong>（1）两条路径都正确。</strong> 批准路径 <code>Command(resume=True) → execute</code>；拒绝路径 <code>Command(resume=False) → cancel</code>，而且<strong>拒绝时 &lt;code&gt;execute&lt;/code&gt; 节点一次都没执行</strong>——图上强调了证据：<strong>「拒绝时的新息是最后一行，从未出现在已发布列表里」</strong>。这说明 <code>execute</code> 节点真的从未被调度，而不是"执行了又被撤销"。</p>
+<p><strong>（2）幂等保护：同一 &lt;code&gt;request_id&lt;/code&gt; 重复恢复不重复执行副作用。</strong> 这里把「重复」分成两种，必须分开讨论：</p>
+<table><thead><tr><th style="text-align:left">情形</th><th style="text-align:left">场景</th><th style="text-align:left">结果</th></tr></thead><tbody><tr><td style="text-align:left">(a) 同一 thread 再次 <code>resume</code></td><td style="text-align:left">图已结束，再次 resume</td><td style="text-align:left"><code>status='executed:pub-1625d3513715'</code>，外部发布调用次数<strong>增量 0</strong>——框架层安全</td></tr><tr><td style="text-align:left">(b) 同一 <code>request_id</code> 换新 thread 重走审批</td><td style="text-align:left"><strong>用户重复提交 / 消息队列重复投递</strong></td><td style="text-align:left">重走审批两次，但外部只发布 1 次，<code>publication_id</code> 完全相同</td></tr></tbody></table>
+<p>图上的关键结论值得原样背下来：</p>
+<blockquote><strong>同一个 &lt;code&gt;request_id&lt;/code&gt; 走了两条不同的 thread、被批准了两次，但外部系统「只被真正发布了一次」</strong>（<code>publication_id</code> 完全相同，未产生第二条记录）。这就是幂等键的价值——它把「业务意图的唯一性」和「执行次数的唯一性」绑定在一起。<strong>单纯依赖框架的 checkpoint 是挡不住情况 (b) 的，因为那是两个独立 thread。</strong></blockquote>
+<p><strong>（3）一个必须亲眼看到的陷阱：&lt;code&gt;interrupt()&lt;/code&gt; 之前的副作用会被重放。</strong> 实测数据：挂起后外部副作用已被触发 1 次，<strong>恢复后累计被触发 2 次 → 变成 2 次</strong>。原因写在图上：</p>
+<blockquote><strong>恢复时包含 &lt;code&gt;interrupt()&lt;/code&gt; 的节点从头重新执行</strong>，<code>interrupt()</code> 之前那行代码又跑了一遍。课件 5.2.3 提醒的正是这件事，但<strong>只有亲手跑一遍才会真正记住</strong>。</blockquote>
+<p>正确做法三条，按可靠性排序：</p>
+<ol><li><strong>结构上隔离</strong>：把副作用放到 <code>interrupt()</code> 之后的独立节点（本项目的 <code>execute</code> 节点就是这样）；</li><li><strong>幂等键兜底</strong>：副作用函数自己用业务键去重（<code>simulated_publish_once</code>）；</li><li><strong>别用 &lt;code&gt;try/except&lt;/code&gt; 吞掉中断异常</strong>：<code>interrupt()</code> 靠抛异常实现挂起，被 <code>except Exception</code> 捕获后图就无法正确中断了（课件 5.2.3 最后一条规则）。</li></ol>
+<blockquote><strong>Day22 下半场交付：带人工审批、可恢复、副作用幂等的状态图。</strong></blockquote>
+<p>截图末尾的答辩题也值得提前准备：「<code>interrupt</code> 为什么可能导致节点前半段代码重新执行？」答案要点是——<code>interrupt()</code> 的实现方式是<strong>抛异常来中断当前节点执行</strong>，恢复时框架并不知道上次执行到哪一行（也不打算做行级恢复），它选择最简单可靠的策略：<strong>把整个节点重新跑一遍</strong>。所以节点必须设计成「重放安全」：纯计算放前面，副作用放后面或做成幂等。<strong>这不是框架的缺陷，而是分布式系统里「至少一次执行」语义的必然结果。</strong></p>
+<h4>5.2.4 持久化 checkpointer：跨进程恢复</h4>
+<blockquote><strong>为什么必须讲这一节</strong>：原课件 v1.0 在依赖清单里列了 <code>langgraph-checkpoint-sqlite</code>， 但<strong>正文没有任何持久化代码</strong>，只在讲解里写了句"生产系统应使用"。 而 5.2.4 的验收标准第 4 条恰好要求"进程重启后仍可恢复"—— 用 <code>InMemorySaver</code> 是<strong>不可能通过这条验收</strong>的。这一节补上实现。</blockquote>
+<p><strong>安装</strong>：</p>
+<pre class="code lang-powershell"><code>pip install langgraph-checkpoint-sqlite</code></pre>
+<p><strong>用法</strong>（与 <code>InMemorySaver</code> 的接口完全一致，只换构造方式）：</p>
+<pre class="code lang-python"><code>import sqlite3
+from pathlib import Path
+
+from langgraph.checkpoint.sqlite import SqliteSaver
+
+
+Path("storage").mkdir(parents=True, exist_ok=True)
+conn = sqlite3.connect("storage/checkpoints.db", check_same_thread=False)
+
+# SqliteSaver 与 InMemorySaver 是同一个 Checkpointer 接口的两个实现，
+# 所以下面的代码与 5.2.2 完全一样 —— 这就是抽象的价值。
+with SqliteSaver(conn) as checkpointer:
+    graph = approval_builder.compile(checkpointer=checkpointer)
+
+    config = {"configurable": {"thread_id": "approval-002"}}
+    # 停在中断点。（注意：字典字面量里不能写 "..." 占位符，
+    # 那会让它变成非法的 set/dict 混合语法 —— 这里必须给完整字段。）
+    graph.invoke(
+        {"request": "发布知识库更新", "draft": "", "approved": None, "status": "new"},
+        config=config,
+    )
+    # ← 此时把进程关掉，重新启动，checkpointer 换成同一个 db 文件
+    # graph.invoke(Command(resume=True), config=config)  ← 仍能恢复</code></pre>
+<p><strong>跨进程验证方法</strong>（这是本节的验收方式）：</p>
+<pre class="code lang-powershell"><code># 进程 1：跑到中断点，然后退出
+python code/ch05/22_persistence.py --start
+
+# 进程 2：全新进程，从同一个 db 恢复
+python code/ch05/22_persistence.py --resume</code></pre>
+<blockquote><strong>⚠️ 只在一个进程里验证恢复是无效的</strong>。 因为 <code>InMemorySaver</code> 在同一个进程里也能"恢复"——你无法证明它真的落盘了。 <strong>必须用两个独立进程</strong>，进程 2 启动时对进程 1 的内存一无所知。 这个原则和 Day19 的 SQLite 记忆验证是同一个：<strong>验证持久化，必须换进程。</strong></blockquote>
+<p><strong>运行验证：跨进程恢复</strong>：</p>
+<pre class="code lang-powershell"><code>python code/ch05/22_persistence.py --start    # 进程 1：跑到中断点后退出
+python code/ch05/22_persistence.py --resume   # 进程 2：从同一个 db 恢复</code></pre>
+<p><img src="static/course-assets/ch05/04_persistence.webp" alt="持久化的真实输出：两个独立进程接力（进程 1 跑到中断点退出，进程 2 从同一个 db 恢复并批准），checkpoint 表结构与父子指针，以及 thread 隔离验证" loading="lazy"></p>
+<p><strong>这张图是本日最硬的一条证据——恢复发生在另一个进程里</strong>：</p>
+<p><strong>（1）跨进程恢复真的发生了。</strong> 终端明确标注：<strong>「两个子进程都已退出，上面的中断来自进程 1，恢复来自进程 2」</strong>，恢复后 <code>approved=True</code>、<code>executed_count=1</code>、最终 <code>next=()</code>（空，已结束）。这才是 <code>SqliteSaver</code> 与 <code>MemorySaver</code> 的分水岭：</p>
+<blockquote>中断发生在<strong>上一个进程</strong>，恢复发生在<strong>这个进程</strong> —— 如果用的是 <code>MemorySaver</code>，这一步会找不到 thread（状态已随进程消失）。</blockquote>
+<p><strong>（2）checkpoint 表结构——「框架帮你存了状态」不是黑盒魔法。</strong> 图上直接打印了 SQLite 里的表结构：<code>checkpoints</code> 5 行、<code>writes</code> 18 行，并列出 <code>checkpoints</code> 表的实际列（<code>thread_id, checkpoint_ns, checkpoint_id, parent_checkpoint_id, type, checkpoint, metadata</code>）。最新一条记录显示 <code>parent_checkpoint_id</code> 指向父记录——<strong>形成链，所以能回潮历史</strong>。</p>
+<p>图上有一段话建议原样讲给学生：</p>
+<blockquote>学生第一次见到「框架帮我存了状态」时，往往把它当黑盒魔法。打开表看一眼就知道它无非是 <code>[thread_id + checkpoint_id + 父指针 + 序列化状态]</code> —— 和你自己写一张状态表没有本质区别，只是它把版本链和并发控制做对了。</blockquote>
+<p><strong>（3）thread 隔离是默认行为。</strong> 图里对比了 <code>workflow-persist-001</code>（有状态）与 <code>workflow-persist-OTHER</code>（无状态）的差异：<strong>&lt;code&gt;thread_id&lt;/code&gt; 是 checkpoint 的分区键</strong>。图上同时指出生产环境要补的三件事：<strong>权限</strong>（拿到 <code>thread_id</code> 就能读状态，接口层必须校验归属，不能只靠猜不到）、<strong>过期清理</strong>（按业务保留期删除，否则 SQLite 会无限增长）、<strong>换存储</strong>（多实例部署要换 <code>PostgresSaver</code>，否则两个实例各写各的文件，恢复行为会变得不可预测）。</p>
+<p>验收表对应 5.2.5 的第 4 条：「<code>SqliteSaver</code> 跨进程恢复——进程 1 中断退出，进程 2 恢复并批准成功」。</p>
+<p><strong>生产环境的 checkpointer 选型</strong>：</p>
+<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:left">适用</th></tr></thead><tbody><tr><td style="text-align:left"><code>InMemorySaver</code></td><td style="text-align:left">课堂演示、单元测试</td></tr><tr><td style="text-align:left"><code>SqliteSaver</code></td><td style="text-align:left">单机部署、中小规模</td></tr><tr><td style="text-align:left">Postgres / Redis checkpointer</td><td style="text-align:left">多实例部署（状态必须共享）</td></tr></tbody></table>
+<blockquote><strong>选型的关键问题</strong>：「我的服务会跑几个实例？」 多实例时，同一个 thread 的请求可能落到不同实例上， 所以状态<strong>必须存在所有实例都能访问的地方</strong>。 这和 MCP 无状态化（第 6 章 Day27）要解决的是同一类问题—— <strong>状态放在哪里，决定了你能怎么部署。</strong></blockquote>
+<h4>5.2.5 当日验收</h4>
+<ol><li>空检索最多改写两次，然后拒答。</li><li>同一 thread 能恢复，不同 thread 状态隔离。</li><li>批准后走 execute，拒绝后走 cancel。</li><li><strong>暂停期间进程重启后仍可恢复</strong>（用持久化 checkpointer，<strong>两个独立进程验证</strong>）。</li><li>重放审批流程不会重复产生外部副作用。</li></ol>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 1, "id": "q05-02-01", "last_answer": "", "last_feedback": "", "options": ["\u5199\u8fdb state \u5b57\u6bb5\uff0c\u7531\u8def\u7531\u51fd\u6570\u8bfb\u53d6\u5e76\u5224\u65ad", "\u5199\u8fdb\u7cfb\u7edf\u63d0\u793a\u8bcd\uff0c\u8ba9\u6a21\u578b\u81ea\u5df1\u6570\u91cd\u8bd5\u6b21\u6570", "\u5199\u8fdb add_edge \u7684\u5faa\u73af\u8fb9\u53c2\u6570\u91cc", "\u5199\u8fdb checkpointer \u7684\u914d\u7f6e\u9879\u91cc"], "points": 27, "solved": false, "statement": "\u4e3a\u4e86\u8ba9\u68c0\u7d22\u91cd\u8bd5\u5faa\u73af\u4e0d\u4f1a\u65e0\u9650\u8dd1\u4e0b\u53bb\uff0cmax_retries \u8fd9\u4e2a\u4e0a\u9650\u5e94\u8be5\u653e\u5728\u54ea\u91cc\uff1f", "tags": ["\u6761\u4ef6\u8def\u7531", "\u5faa\u73af\u63a7\u5236", "state"], "title": "\u5faa\u73af\u4e0a\u9650\u8be5\u5199\u5728\u54ea\u91cc", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-02-02", "last_answer": "", "last_feedback": "", "options": ["await graph.ainvoke(...) \u6216 async for ... in graph.astream(...)", "\u76f4\u63a5 graph.invoke(...) \u5373\u53ef\uff0cLangGraph \u4f1a\u81ea\u52a8\u7b49\u5f85\u534f\u7a0b", "\u5fc5\u987b\u628a\u6240\u6709\u8282\u70b9\u90fd\u6539\u6210 async \u624d\u80fd\u7f16\u8bd1\u901a\u8fc7", "\u7528 graph.stream(...) \u540c\u6b65\u8fed\u4ee3\uff0c\u534f\u7a0b\u4f1a\u88ab\u81ea\u52a8\u8c03\u5ea6"], "points": 76, "solved": false, "statement": "\u56fe\u91cc generate_retry \u662f async \u8282\u70b9\uff08\u5185\u90e8 await \u5f02\u6b65 LLM \u5ba2\u6237\u7aef\uff09\uff0c\u5176\u4f59\u8282\u70b9\u662f\u540c\u6b65\u7684\u3002\n\u8981\u6b63\u786e\u8fd0\u884c\u8fd9\u5f20\u56fe\uff0c\u5e94\u8be5\u600e\u4e48\u9a71\u52a8\uff1f", "tags": ["\u5f02\u6b65\u8282\u70b9", "ainvoke", "\u5e38\u89c1\u9519\u8bef"], "title": "\u5f02\u6b65\u8282\u70b9\u5982\u4f55\u9a71\u52a8", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-02-03", "last_answer": "", "last_feedback": "", "options": ["\u5386\u53f2\u6d88\u606f\u88ab\u6574\u4e2a\u66ff\u6362\uff0c\u8868\u73b0\u4e3a Agent \u5931\u5fc6\uff0c\u56e0\u4e3a\u9ed8\u8ba4\u662f\u8986\u76d6\u8bed\u4e49", "\u6d88\u606f\u6b63\u5e38\u7d2f\u79ef\uff0cLangGraph \u5bf9 list \u5b57\u6bb5\u9ed8\u8ba4\u5c31\u662f\u8ffd\u52a0", "\u76f4\u63a5\u629b\u7c7b\u578b\u9519\u8bef\uff0c\u7f16\u8bd1\u671f\u5c31\u4f1a\u5931\u8d25", "\u6d88\u606f\u4f1a\u91cd\u590d\u4e24\u904d\uff0c\u56e0\u4e3a\u8282\u70b9\u8fd4\u56de\u88ab\u5408\u5e76\u4e86\u4e24\u6b21"], "points": 76, "solved": false, "statement": "\u67d0\u8282\u70b9\u60f3\u8ba9 messages \u5b57\u6bb5\u4e0d\u65ad\u8ffd\u52a0\u65b0\u6d88\u606f\uff0c\u4f46\u5b57\u6bb5\u53ea\u5199\u6210\u666e\u901a TypedDict \u7684 list \u7c7b\u578b\u3002\n\u8fd0\u884c\u540e\u4f1a\u51fa\u73b0\u4ec0\u4e48\u73b0\u8c61\uff0c\u539f\u56e0\u662f\u4ec0\u4e48\uff1f", "tags": ["reducer", "add_messages", "state"], "title": "\u6d88\u606f\u7d2f\u79ef\u4e3a\u4f55\u8981 reducer", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u4ece\u5b58\u50a8\u4f4d\u7f6e\u548c\u8fdb\u7a0b\u91cd\u542f\u4e24\u4e2a\u7ef4\u5ea6\u6bd4", "\u5931\u8d25\u6f14\u793a\u7684\u76ee\u7684\u662f\u4ec0\u4e48"], "id": "q05-02-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u5bf9\u6bd4 InMemorySaver \u4e0e SqliteSaver \u7b49\u6301\u4e45\u5316 checkpointer \u7684\u5dee\u522b\uff0c\u5e76\u8bf4\u660e\u8bfe\u5802\u4e0a\u300c\u5148\u6f14\u793a\u6062\u590d\u3001\u518d\u6545\u610f\u5173\u8fdb\u7a0b\u300d\u8fd9\u4e2a\u5931\u8d25\u6f14\u793a\u60f3\u8ba9\u5b66\u751f\u770b\u5230\u4ec0\u4e48\u3002", "tags": ["Checkpoint", "InMemorySaver", "\u5de5\u7a0b\u5224\u65ad"], "title": "InMemorySaver \u4e0e\u6301\u4e45\u5316\u5bf9\u6bd4", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "hints": ["\u60f3\u60f3 updates \u6a21\u5f0f\u80fd\u66b4\u9732\u4ec0\u4e48", "\u8fb9\u754c\u60c5\u5f62\u4e5f\u8981\u6d4b"], "id": "q05-02-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u7b54\u8fa9\u65f6\u88ab\u95ee\u300c\u4f60\u600e\u4e48\u8bc1\u660e\u8fd9\u4e2a\u68c0\u7d22\u5faa\u73af\u662f\u53ef\u63a7\u7684\u300d\uff0c\u8bf7\u8bf4\u660e\u4f60\u4f1a\u7528\u54ea\u4e9b\u624b\u6bb5\u53d6\u8bc1\uff0c\u4ee5\u53ca\u4e3a\u4ec0\u4e48\u53ea\u770b\u6700\u7ec8 state \u4e0d\u591f\u3002", "tags": ["\u5faa\u73af\u53ef\u63a7", "stream updates", "\u9a8c\u6536"], "title": "\u5faa\u73af\u53ef\u63a7\u7684\u8bc1\u636e\u600e\u4e48\u62ff", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u5224\u65ad\u987a\u5e8f\u4f1a\u5f71\u54cd\u7ed3\u679c", "\u6ce8\u610f\u662f\u4e25\u683c\u5c0f\u4e8e"], "id": "q05-02-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "from typing import Literal, TypedDict\n\nclass RetryState(TypedDict):\n    evidence: list[str]\n    retries: int\n    max_retries: int\n\ndef route_after_retrieve(state: RetryState) -\u003e Literal[\"generate\", \"rewrite\", \"give_up\"]:\n    # TODO: \u6309\u8bc1\u636e\u4e0e\u91cd\u8bd5\u6b21\u6570\u51b3\u5b9a\u8def\u7531\n    ...", "statement": "\u8865\u5168 route_after_retrieve\uff1a\u6709\u8bc1\u636e\u65f6\u8d70 generate\uff1b\u65e0\u8bc1\u636e\u4e14 retries \u5c0f\u4e8e max_retries \u65f6\u8d70 rewrite\uff1b\u5426\u5219\u8d70 give_up\u3002\n\u51fd\u6570\u8fd4\u56de Literal[\"generate\", \"rewrite\", \"give_up\"]\u3002", "tags": ["\u6761\u4ef6\u8def\u7531", "\u7eaf\u51fd\u6570", "\u8fb9\u754c"], "title": "\u8865\u5168\u6761\u4ef6\u8def\u7531\u51fd\u6570", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 1, "hints": ["\u8fd4\u56de\u7684\u662f\u90e8\u5206\u5b57\u6bb5\u7684\u5b57\u5178", "\u8ba1\u6570\u8981\u57fa\u4e8e\u539f\u503c\u52a0\u4e00"], "id": "q05-02-07", "last_answer": "", "last_feedback": "", "points": 27, "solved": false, "starter_code": "class RetryState(TypedDict):\n    question: str\n    rewritten_question: str\n    retries: int\n\ndef rewrite(state: RetryState) -\u003e dict:\n    # TODO: \u6539\u5199\u95ee\u9898\u5e76\u9012\u589e\u91cd\u8bd5\u8ba1\u6570\n    ...", "statement": "\u5b9e\u73b0 rewrite \u8282\u70b9\uff1a\u53bb\u6389\u95ee\u9898\u4e2d\u7684\u300c\u8bf7\u95ee\u300d\u5e76 strip\uff0c\u628a\u7ed3\u679c\u5199\u5165 rewritten_question\uff0c\u540c\u65f6\u628a retries \u52a0\u4e00\u3002\u53ea\u8fd4\u56de\u9700\u8981\u66f4\u65b0\u7684\u5b57\u6bb5\u3002", "tags": ["\u8282\u70b9\u51fd\u6570", "state \u66f4\u65b0", "\u8986\u76d6\u8bed\u4e49"], "title": "\u6539\u5199\u8282\u70b9\u4e0e\u8ba1\u6570\u5668", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="5" data-kp="1"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 22｜条件路由、循环、Checkpoint 与人工审批">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 22｜条件路由、循环、Checkpoint 与人工审批">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-3" data-kp-index="2"
+             data-kp-key="5_2" >
+      <div class="kp-head">
+        <span class="kp-no">D23</span>
+        <div class="kp-head-main">
+          <h3>Day 23｜CrewAI 与 smolagents：两种不同抽象</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>5.3.1 为什么在主线之外学习对照框架</h4>
+<p>对照的目的不是记 API，而是识别抽象差异：LangGraph 强调显式状态与控制流，CrewAI 强调角色、任务和团队，smolagents 提供工具调用 Agent 与代码 Agent。</p>
+<h4>5.3.2 CrewAI 三角色写作流水线</h4>
+<blockquote><strong>⚠️ 必须先配置模型，否则一定失败</strong>（原课件 v1.0 的阻断级缺陷）： v1.0 的 <code>Agent(...)</code> 没有传 <code>llm=</code> 参数。CrewAI 在缺省情况下会<strong>默认去连 OpenAI</strong>， 也就是需要 <code>OPENAI_API_KEY</code> 环境变量。按本课程（靶场 / DeepSeek / 通义）配置的环境， 直接运行会报认证失败 —— 学生无法开课。  <strong>正确做法：显式构造 LLM 并传给每个 Agent。</strong></blockquote>
+<pre class="code lang-python"><code>import os
+
+# ⚠️ 必须在 import crewai 之前关闭遥测：CrewAI 首次运行会弹遥测提示并尝试外连，
+#    课堂网络受限时会卡住。（实测：CrewAI 1.15.22）
+os.environ["CREWAI_TRACING_ENABLED"] = "false"
+
+from crewai import LLM, Agent, Crew, Process, Task
+
+# CrewAI 的 LLM 类接受 OpenAI 兼容的参数，可以直接指向靶场或任意平台。
+llm = LLM(
+    # ⚠️ 实测坑：model 必须带 provider 前缀。
+    #    写 "mock-chat" 会报 "LLM Provider NOT provided"，必须写 "openai/mock-chat"。
+    #    前缀告诉 CrewAI 用哪个 provider 适配器。
+    model=f"openai/{os.getenv('LLM_CHAT_MODEL', 'mock-chat')}",
+    base_url=os.getenv("LLM_BASE_URL", "http://127.0.0.1:8100/v1"),
+    api_key=os.getenv("LLM_API_KEY", "mock-key"),
+    temperature=0.3,
+)
+
+researcher = Agent(
+    role="资料研究员",
+    goal="从给定资料中提取可核查事实",
+    backstory="你只使用允许的资料工具，并保留来源。",
+    llm=llm,                    # ← 三个 Agent 都要传
+    allow_delegation=False,
+    verbose=True,
+)
+
+writer = Agent(
+    role="技术写作者",
+    goal="把研究结果写成结构清晰的中文说明",
+    backstory="你区分事实、解释和建议，不添加无来源数字。",
+    llm=llm,
+    allow_delegation=False,
+    verbose=True,
+)
+
+editor = Agent(
+    role="审校员",
+    goal="检查逻辑、引用和格式，输出最终稿",
+    backstory="发现证据不足时退回，不自行补造事实。",
+    llm=llm,
+    allow_delegation=False,
+    verbose=True,
+)
+
+research_task = Task(description="研究主题：{topic}，输出事实清单与来源。", expected_output="Markdown 事实表", agent=researcher)
+writing_task = Task(description="依据研究结果撰写 800 字说明。", expected_output="包含标题、正文和引用的 Markdown", agent=writer, context=[research_task])
+review_task = Task(description="审查文章并输出修订后的最终稿。", expected_output="通过审校的 Markdown", agent=editor, context=[research_task, writing_task])
+
+crew = Crew(
+    agents=[researcher, writer, editor],
+    tasks=[research_task, writing_task, review_task],
+    process=Process.sequential,
+    verbose=True,
+)
+
+result = crew.kickoff(inputs={"topic": "企业知识库如何减少无依据回答"})</code></pre>
+<p>讲解重点：</p>
+<ul><li><strong>角色不等于三个不同模型</strong>：角色主要是不同目标、上下文和工具权限。三个 Agent 共用同一个</li></ul>
+<p><code>llm</code> 对象是完全正常的做法；</p>
+<ul><li><code>context</code> 明确任务依赖，<code>Process.sequential</code> 明确顺序；</li><li><strong>&lt;code&gt;Process&lt;/code&gt; 有两种取值</strong>：<code>sequential</code>（顺序）与 <code>hierarchical</code>（层级）。</li></ul>
+<p>用 <code>hierarchical</code> 时必须额外指定 <code>manager_llm</code> 或 <code>manager_agent</code> （此时<strong>任务不再预先分配</strong>，由 manager 按能力分派、审查产出、判断完成）。 这就是第 6 章 Day26「Manager 统筹」模式的框架实现；</p>
+<ul><li>应分别保存中间产物，才能判断错误来自研究、写作还是审校。</li></ul>
+<blockquote><strong>版本提示（实测版本，核实日期 2026-09-21）</strong>：  | 框架 | 实测版本 | 需要注意的 API 差异 | |---|---:|---| | <code>langgraph</code> | <strong>1.2.12</strong> | <code>stream(version="v2")</code> 可用（需 ≥1.1）；<code>Command</code> / <code>interrupt</code> 在 <code>langgraph.types</code> | | <code>langgraph-checkpoint</code> | 4.2.0 | — | | <code>langgraph-checkpoint-sqlite</code> | <strong>3.1.1</strong> | <strong>只有 &lt;code&gt;SqliteSaver&lt;/code&gt;，没有 &lt;code&gt;AsyncSqliteSaver&lt;/code&gt;</strong> | | <code>crewai</code> | <strong>1.15.22</strong> | <code>LLM(model=, base_url=, api_key=)</code>；<strong>model 必须带 provider 前缀</strong>（如 <code>openai/xxx</code>） | | <code>smolagents</code> | <strong>1.26.0</strong> | 参数名是 <code>api_base</code> / <code>model_id</code>（<strong>与 CrewAI 不同</strong>）；<code>@tool</code> 依赖 <code>inspect.getsource</code>，<strong>函数必须写在真实 .py 文件里</strong>；<code>max_steps</code> 超限<strong>不抛异常</strong>而是正常返回 |  <strong>一个容易踩的 LangGraph 差异</strong>：<code>graph.stream()</code> 的 chunk 是 <strong>dict</strong>， 而 <code>graph.astream()</code> 的 chunk 是 <strong>tuple</strong>。混用会 <code>AttributeError</code>。  课程代码里用 <code>.env</code> 读取配置，所以<strong>换版本只需改配置</strong>，业务逻辑不受影响。</blockquote>
+<h5>关于「用靶场跑框架」的诚实说明</h5>
+<p>本课程的对照组（CrewAI / smolagents）接的是<strong>离线靶场</strong>，而靶场是<strong>关键词驱动的确定性桩模型</strong>， 不具备真实模型的 ReAct 结构化输出能力。这会带来两个可观察的差异，<strong>授课时必须向学生说明</strong>：</p>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">原因</th><th style="text-align:left">怎么解读</th></tr></thead><tbody><tr><td style="text-align:left">CrewAI 三个 Task 的产出质量不高（都是桩模型的 JSON 抽取模板）</td><td style="text-align:left">桩模型不产出 <code>Thought</code> / <code>Final Answer</code> 结构化输出</td><td style="text-align:left"><strong>链路正确性已验证</strong>（无 401、不外连 OpenAI、3 个 Task 全部跑完）。产出质量取决于真实模型 —— 换成真实平台后质量会正常</td></tr><tr><td style="text-align:left">smolagents 会一直循环到 <code>max_steps</code></td><td style="text-align:left">桩模型把上一轮 Observation（含关键词）当作新输入，反复调用同一工具</td><td style="text-align:left">由框架的 <code>max_steps</code> 兜住，这恰好演示了「为什么必须有步数上限」</td></tr></tbody></table>
+<blockquote><strong>教学价值</strong>：这两个现象不是"缺陷"，而是<strong>很好的教学素材</strong>。 它们直观展示了「Agent 框架的行为高度依赖底层模型的能力」—— 换个模型，同一份代码的表现可以完全不同。 这也是第 5 章要讲「框架选型」而不是「框架崇拜」的原因。  <strong>验收方式</strong>：对照组实验验收<strong>看链路与日志</strong>（工具是否被调用、消息列表是否正确、 有没有触发步数上限），<strong>不要看桩模型的措辞质量</strong>。要评估产出质量请切到真实平台。</blockquote>
+<h4>5.3.3 smolagents 工具定义</h4>
+<blockquote><strong>⚠️ 原课件 v1.0 的缺陷</strong>：下面的例子用了 <code>model=configured_model</code>， 但<strong>&lt;code&gt;configured_model&lt;/code&gt; 是一个从未定义的占位符</strong>，运行会直接 <code>NameError</code>。 这里补上完整的模型构造方式。</blockquote>
+<pre class="code lang-python"><code>import os
+
+from smolagents import OpenAIServerModel, ToolCallingAgent, tool
+
+
+# smolagents 用 OpenAIServerModel 接任意 OpenAI 兼容端点
+configured_model = OpenAIServerModel(
+    model_id=os.getenv("LLM_CHAT_MODEL", "mock-chat"),
+    api_base=os.getenv("LLM_BASE_URL", "http://127.0.0.1:8100/v1"),
+    api_key=os.getenv("LLM_API_KEY", "mock-key"),
+)
+
+
+@tool
+def policy_search(question: str) -&gt; str:
+    """查询企业制度知识库。
+
+    Args:
+        question: 需要查询的完整制度问题。
+    """
+    result = rag_pipeline.answer(question)
+    return result.answer
+
+
+agent = ToolCallingAgent(
+    tools=[policy_search],
+    model=configured_model,      # ← 现在它是真实的对象了
+    max_steps=6,
+)
+
+answer = agent.run("查询差旅制度并概括住宿报销要求")</code></pre>
+<blockquote><strong>如果 &lt;code&gt;OpenAIServerModel&lt;/code&gt; 不可用</strong>：smolagents 也支持 <code>LiteLLMModel</code>（走 LiteLLM 网关） 和 <code>InferenceClientModel</code>（走 Hugging Face Inference）。 三者都是同一个 <code>Model</code> 接口的实现，换起来只改构造那几行。 <strong>具体可用的类名以你安装的版本为准</strong> —— 这个库迭代很快。</blockquote>
+<p>装饰器依赖函数类型标注和包含 <code>Args</code> 的 docstring 来生成工具描述 （与第 7 章我们要自研的 <code>@tool</code> 装饰器是同一个设计思路）。 <code>configured_model</code> 由配置模块按课堂所选供应商创建，不在业务代码中硬编码密钥。</p>
+<h4>5.3.4 ToolCallingAgent 与 CodeAgent</h4>
+<table><thead><tr><th style="text-align:left">方面</th><th style="text-align:left">ToolCallingAgent</th><th style="text-align:left">CodeAgent</th></tr></thead><tbody><tr><td style="text-align:left">动作形式</td><td style="text-align:left">结构化工具调用</td><td style="text-align:left">生成代码组织动作</td></tr><tr><td style="text-align:left">控制难度</td><td style="text-align:left">较容易做 Schema 校验</td><td style="text-align:left">需要代码沙箱和更强隔离</td></tr><tr><td style="text-align:left">适合</td><td style="text-align:left">企业工具、参数清楚的 API</td><td style="text-align:left">数据处理、计算、组合操作</td></tr><tr><td style="text-align:left">主要风险</td><td style="text-align:left">错参数、错工具</td><td style="text-align:left">任意代码执行、依赖与资源访问</td></tr></tbody></table>
+<p>课堂只在受限环境演示 CodeAgent。禁止让生成代码直接访问教师电脑文件、密钥或不受控网络；下载第三方工具前先检查源码并锁定版本。</p>
+<h4>5.3.5 同题横评</h4>
+<p>让 LangGraph、CrewAI、smolagents 完成同一“查资料、写摘要、人工确认”任务，记录：代码量、成功率、可控性、恢复能力、运行成本、调试难度。不要用不同任务为不同框架制造优势。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 1, "id": "q05-03-01", "last_answer": "", "last_feedback": "", "options": ["CrewAI \u9ed8\u8ba4\u53bb\u8fde OpenAI\uff0c\u9700\u8981 OPENAI_API_KEY\uff0c\u62a5\u8ba4\u8bc1\u5931\u8d25", "CrewAI \u81ea\u52a8\u8bfb\u53d6 LLM_BASE_URL \u73af\u5883\u53d8\u91cf\u5e76\u8fde\u4e0a\u9776\u573a", "CrewAI \u4f1a\u629b\u51fa NameError\uff0c\u56e0\u4e3a llm \u662f\u5fc5\u586b\u4f4d\u7f6e\u53c2\u6570", "CrewAI \u4f1a\u9000\u5316\u4e3a\u672c\u5730\u6869\u6a21\u578b\uff0c\u94fe\u8def\u4ecd\u80fd\u8dd1\u5b8c"], "points": 27, "solved": false, "statement": "\u5728 CrewAI \u4e2d\u6784\u9020 Agent \u65f6\u6ca1\u6709\u4f20 llm= \u53c2\u6570\uff0c\u6309\u672c\u8bfe\u7a0b\uff08\u9776\u573a/DeepSeek/\u901a\u4e49\uff09\u914d\u7f6e\u7684\u73af\u5883\u76f4\u63a5\u8fd0\u884c\uff0c\u6700\u53ef\u80fd\u53d1\u751f\u4ec0\u4e48\uff1f", "tags": ["CrewAI", "LLM\u914d\u7f6e", "\u5e38\u89c1\u9519\u8bef"], "title": "CrewAI \u7f3a\u7701 LLM \u884c\u4e3a", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-03-02", "last_answer": "", "last_feedback": "", "options": ["\u5199 \"openai/mock-chat\"\uff0c\u524d\u7f00\u544a\u8bc9 CrewAI \u7528\u54ea\u4e2a provider \u9002\u914d\u5668", "\u5199 \"mock-chat\"\uff0c\u53ea\u8981 base_url \u6307\u5411\u9776\u573a\u5373\u53ef\u81ea\u52a8\u8bc6\u522b", "\u5199 \"openai:mock-chat\"\uff0c\u5192\u53f7\u662f CrewAI \u89c4\u5b9a\u7684\u5206\u9694\u7b26", "\u5199 \"mock-chat\"\uff0c\u4f46\u5fc5\u987b\u540c\u65f6\u8bbe\u7f6e OPENAI_API_KEY \u73af\u5883\u53d8\u91cf"], "points": 76, "solved": false, "statement": "\u7528 CrewAI \u7684 LLM \u7c7b\u63a5 OpenAI \u517c\u5bb9\u7aef\u70b9\u65f6\uff0cmodel \u53c2\u6570\u5199\u6210 \"mock-chat\" \u4f1a\u62a5 \"LLM Provider NOT provided\"\u3002\u6b63\u786e\u7684\u5199\u6cd5\u662f\u4ec0\u4e48\uff0c\u4e3a\u4ec0\u4e48\uff1f", "tags": ["CrewAI", "LLM\u914d\u7f6e", "\u53c2\u6570"], "title": "CrewAI model \u524d\u7f00\u8981\u6c42", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-03-03", "last_answer": "", "last_feedback": "", "options": ["smolagents \u7528 api_base / model_id\uff0cCrewAI \u7528 base_url / model \u4e14\u9700 provider \u524d\u7f00", "\u4e24\u8005\u90fd\u7528 base_url / model\uff0c\u53ea\u662f\u7c7b\u540d\u4e0d\u540c", "smolagents \u7528 base_url / model\uff0cCrewAI \u7528 api_base / model_id", "\u4e24\u8005\u53c2\u6570\u540d\u5b8c\u5168\u4e00\u81f4\uff0c\u53ef\u4e92\u6362\u6784\u9020\u4ee3\u7801"], "points": 76, "solved": false, "statement": "\u5173\u4e8e smolagents \u4e0e CrewAI \u5728\u6a21\u578b\u6784\u9020\u4e0a\u7684\u5dee\u5f02\uff0c\u4e0b\u5217\u54ea\u9879\u63cf\u8ff0\u6b63\u786e\uff1f", "tags": ["smolagents", "CrewAI", "API\u5dee\u5f02"], "title": "smolagents \u4e0e CrewAI \u53c2\u6570\u5dee\u5f02", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u5148\u5206\u52a8\u4f5c\u5f62\u5f0f", "\u518d\u8c08\u63a7\u5236\u96be\u5ea6\u4e0e\u98ce\u9669", "\u6700\u540e\u8bf4\u8bfe\u5802\u7ea6\u675f"], "id": "q05-03-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u5bf9\u6bd4 smolagents \u7684 ToolCallingAgent \u4e0e CodeAgent\uff1a\u8bf4\u660e\u4e24\u8005\u7684\u52a8\u4f5c\u5f62\u5f0f\u3001\u63a7\u5236\u96be\u5ea6\u3001\u9002\u5408\u573a\u666f\u548c\u4e3b\u8981\u98ce\u9669\uff0c\u5e76\u7ed9\u51fa\u8bfe\u5802\u4f7f\u7528 CodeAgent \u65f6\u5fc5\u987b\u9075\u5b88\u7684\u7ea6\u675f\u3002", "tags": ["smolagents", "CodeAgent", "\u5de5\u7a0b\u5224\u65ad"], "title": "ToolCallingAgent \u4e0e CodeAgent \u9009\u578b", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "hints": ["\u533a\u5206\u94fe\u8def\u6b63\u786e\u6027\u4e0e\u4ea7\u51fa\u8d28\u91cf", "\u5faa\u73af\u539f\u56e0\u662f Observation \u88ab\u5f53\u65b0\u8f93\u5165", "\u9a8c\u6536\u770b\u65e5\u5fd7\u4e0d\u770b\u63aa\u8f9e"], "id": "q05-03-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u7528\u79bb\u7ebf\u9776\u573a\uff08\u5173\u952e\u8bcd\u9a71\u52a8\u7684\u786e\u5b9a\u6027\u6869\u6a21\u578b\uff09\u8dd1 CrewAI \u4e0e smolagents \u65f6\u4f1a\u51fa\u73b0\u4e24\u4e2a\u53ef\u89c2\u5bdf\u73b0\u8c61\uff1aCrewAI \u4e09\u4e2a Task \u4ea7\u51fa\u8d28\u91cf\u4e0d\u9ad8\uff1bsmolagents \u4e00\u76f4\u5faa\u73af\u5230 max_steps\u3002\u8bf7\u89e3\u91ca\u5404\u81ea\u539f\u56e0\u3001\u5982\u4f55\u89e3\u8bfb\uff0c\u5e76\u8bf4\u660e\u5bf9\u7167\u7ec4\u5b9e\u9a8c\u5e94\u5982\u4f55\u9a8c\u6536\u3002", "tags": ["\u9776\u573a", "\u9a8c\u6536", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u6869\u6a21\u578b\u73b0\u8c61\u4e0e\u9a8c\u6536\u65b9\u5f0f", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["os.environ \u90a3\u884c\u8981\u653e\u5728\u6700\u524d", "model \u5199\u6210 openai/ \u52a0\u6a21\u578b\u540d", "\u4e09\u4e2a Agent \u90fd\u8981 llm=llm"], "id": "q05-03-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import os\n# TODO: \u5728 import crewai \u4e4b\u524d\u5173\u95ed\u9065\u6d4b\n\nfrom crewai import LLM, Agent, Crew, Process, Task\n\n# TODO: \u6784\u9020 llm\uff0cmodel \u5e26 provider \u524d\u7f00\uff0c\u6307\u5411\u9776\u573a\n\n# TODO: \u5b9a\u4e49 researcher / writer / editor \u4e09\u4e2a Agent\uff0c\u90fd\u4f20 llm\uff0callow_delegation=False\n\n# TODO: \u5b9a\u4e49 research_task / writing_task / review_task\uff0c\u7528 context \u8868\u8fbe\u4f9d\u8d56\n\n# TODO: \u7ec4\u88c5 Crew\uff0cprocess=Process.sequential\n\n# result = crew.kickoff(inputs={\"topic\": \"\u4f01\u4e1a\u77e5\u8bc6\u5e93\u5982\u4f55\u51cf\u5c11\u65e0\u4f9d\u636e\u56de\u7b54\"})", "statement": "\u8865\u5168\u4e0b\u9762\u7684 CrewAI \u4e09\u89d2\u8272\u5199\u4f5c\u6d41\u6c34\u7ebf\uff1a\u663e\u5f0f\u6784\u9020 LLM \u5e76\u4f20\u7ed9\u6bcf\u4e2a Agent\uff0c\u5b9a\u4e49\u7814\u7a76\u3001\u5199\u4f5c\u3001\u5ba1\u6821\u4e09\u4e2a Task\uff08\u5199\u4f5c\u4f9d\u8d56\u7814\u7a76\uff0c\u5ba1\u6821\u4f9d\u8d56\u7814\u7a76\u4e0e\u5199\u4f5c\uff09\uff0c\u7528\u987a\u5e8f\u6d41\u7a0b\u7ec4\u88c5 Crew \u5e76\u4ee5 topic \u8f93\u5165\u542f\u52a8\u3002\u8981\u6c42 model \u5e26 provider \u524d\u7f00\uff0c\u5e76\u5728 import crewai \u4e4b\u524d\u5173\u95ed\u9065\u6d4b\u3002", "tags": ["CrewAI", "\u4ee3\u7801\u9898", "LLM\u914d\u7f6e"], "title": "\u8865\u5168 CrewAI \u4e09\u89d2\u8272\u6d41\u6c34\u7ebf", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u53c2\u6570\u540d\u662f model_id \u548c api_base", "docstring \u8981\u6709 Args:", "max_steps \u515c\u4f4f\u5faa\u73af"], "id": "q05-03-07", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import os\nfrom smolagents import OpenAIServerModel, ToolCallingAgent, tool\n\n# TODO: \u6784\u9020 configured_model\uff0c\u6ce8\u610f\u53c2\u6570\u540d\n\n# TODO: \u7528 @tool \u5b9a\u4e49 policy_search\uff0c\u5e26\u7c7b\u578b\u6807\u6ce8\u548c\u542b Args \u7684 docstring\n\n# TODO: \u7ec4\u88c5 ToolCallingAgent\uff0ctools=[policy_search]\uff0cmax_steps=6\n\n# answer = agent.run(\"\u67e5\u8be2\u5dee\u65c5\u5236\u5ea6\u5e76\u6982\u62ec\u4f4f\u5bbf\u62a5\u9500\u8981\u6c42\")", "statement": "\u8865\u5168\u4e0b\u9762\u7684 smolagents \u793a\u4f8b\uff1a\u7528 OpenAIServerModel \u6784\u9020\u6a21\u578b\uff08\u6ce8\u610f\u53c2\u6570\u540d\u4e0e CrewAI \u4e0d\u540c\uff09\uff0c\u7528 @tool \u88c5\u9970\u5668\u5b9a\u4e49\u4e00\u4e2a\u67e5\u8be2\u4f01\u4e1a\u5236\u5ea6\u77e5\u8bc6\u5e93\u7684\u5de5\u5177\uff08\u51fd\u6570\u5e26\u7c7b\u578b\u6807\u6ce8\u548c\u542b Args \u7684 docstring\uff09\uff0c\u518d\u7528 ToolCallingAgent \u7ec4\u88c5\u5e76\u8fd0\u884c\uff0c\u8bbe\u7f6e max_steps=6\u3002", "tags": ["smolagents", "\u4ee3\u7801\u9898", "@tool"], "title": "\u8865\u5168 smolagents \u5de5\u5177\u4e0e Agent", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="5" data-kp="2"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 23｜CrewAI 与 smolagents：两种不同抽象">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 23｜CrewAI 与 smolagents：两种不同抽象">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-4" data-kp-index="3"
+             data-kp-key="5_3" >
+      <div class="kp-head">
+        <span class="kp-no">D24</span>
+        <div class="kp-head-main">
+          <h3>Day 24｜框架选型：从偏好转向约束</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>5.4.1 六类方案对比</h4>
+<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:left">核心抽象</th><th style="text-align:left">优势场景</th><th style="text-align:left">需要重点验证</th></tr></thead><tbody><tr><td style="text-align:left">原生 Python</td><td style="text-align:left">函数、循环、状态对象</td><td style="text-align:left">简单流程、极致可控、低依赖</td><td style="text-align:left">自己承担持久化与观测</td></tr><tr><td style="text-align:left">LangGraph</td><td style="text-align:left">状态图、节点、边、checkpoint</td><td style="text-align:left">长任务、分支循环、审批恢复</td><td style="text-align:left">状态设计和图复杂度</td></tr><tr><td style="text-align:left">CrewAI</td><td style="text-align:left">角色、任务、Crew/Flow</td><td style="text-align:left">快速多角色原型</td><td style="text-align:left">角色边界、成本、中间产物</td></tr><tr><td style="text-align:left">smolagents</td><td style="text-align:left">工具调用与代码 Agent</td><td style="text-align:left">轻量实验、计算和数据任务</td><td style="text-align:left">代码执行安全</td></tr><tr><td style="text-align:left">LlamaIndex Workflows</td><td style="text-align:left">数据、事件、工作流</td><td style="text-align:left">RAG 与数据连接密集场景</td><td style="text-align:left">数据集成与运行时依赖</td></tr><tr><td style="text-align:left">厂商 Agents SDK</td><td style="text-align:left">官方模型、工具和追踪</td><td style="text-align:left">深度绑定特定生态</td><td style="text-align:left">可迁移性和平台能力边界</td></tr></tbody></table>
+<p>表格不提供永久排名。框架版本、生态和企业约束会变化，选型报告必须写明日期与版本。</p>
+<h4>5.4.2 决策顺序</h4>
+<pre class="code lang-mermaid"><code>flowchart TD
+    A[任务是否只有固定的少量步骤] --&gt;|是| B[优先原生 Python/普通工作流]
+    A --&gt;|否| C[是否需要分支、循环、暂停恢复]
+    C --&gt;|是| D[优先评估 LangGraph]
+    C --&gt;|否| E[是否以多角色协作为主要表达]
+    E --&gt;|是| F[评估 CrewAI]
+    E --&gt;|否| G[是否需要模型生成代码组合工具]
+    G --&gt;|是| H[在沙箱内评估 smolagents CodeAgent]
+    G --&gt;|否| I[比较轻量 SDK 与原生实现]</code></pre>
+<p>选型前先回答：任务是否真的需要 Agent；是否存在外部副作用；是否必须断点恢复；团队是否能维护该依赖；能否建立确定性测试；框架迁移成本是否可接受。</p>
+<h4>5.4.3 选型实验模板</h4>
+<pre class="code lang-text"><code>任务：
+业务约束：延迟 / 成本 / 数据边界 / 审批要求
+候选方案与版本：
+固定测试集：
+成功定义：
+成功率：
+平均与 P95 延迟：
+平均模型调用次数：
+失败分布：
+恢复与审计能力：
+代码与运维复杂度：
+结论及不选其他方案的具体原因：</code></pre>
+<h4>5.4.4 面试练习</h4>
+<p>学生不能只回答“LangGraph 更强”。合格回答需要把需求映射到状态、控制流、持久化、审批、工具安全和团队能力，并说明何时原生 Python 更合适。</p>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 1, "id": "q05-04-01", "last_answer": "", "last_feedback": "", "options": ["\u539f\u751f Python \u6216\u666e\u901a\u5de5\u4f5c\u6d41", "LangGraph \u72b6\u6001\u56fe", "CrewAI \u591a\u89d2\u8272 Crew", "\u5382\u5546 Agents SDK"], "points": 27, "solved": false, "statement": "\u4e00\u4e2a\u4efb\u52a1\u53ea\u6709\u56fa\u5b9a\u7684\u5c11\u91cf\u6b65\u9aa4\uff0c\u6ca1\u6709\u5206\u652f\u3001\u5faa\u73af\uff0c\u4e5f\u4e0d\u9700\u8981\u65ad\u70b9\u6062\u590d\u3002\n\u6309\u7167\u51b3\u7b56\u987a\u5e8f\uff0c\u5e94\u4f18\u5148\u8003\u8651\u54ea\u79cd\u65b9\u6848\uff1f", "tags": ["\u6846\u67b6\u9009\u578b", "\u51b3\u7b56\u987a\u5e8f"], "title": "\u56fa\u5b9a\u5c11\u91cf\u6b65\u9aa4\u8be5\u9009\u4ec0\u4e48", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-04-02", "last_answer": "", "last_feedback": "", "options": ["\u56e0\u4e3a\u8868\u683c\u4e0d\u63d0\u4f9b\u6c38\u4e45\u6392\u540d\uff0c\u6846\u67b6\u7248\u672c\u4e0e\u751f\u6001\u4f1a\u53d8\u5316", "\u56e0\u4e3a\u4e0d\u5199\u65e5\u671f\u4f1a\u88ab\u4ee3\u7801\u68c0\u67e5\u5de5\u5177\u62a5\u9519", "\u56e0\u4e3a\u6846\u67b6\u7248\u672c\u53f7\u51b3\u5b9a\u4e86 checkpoint \u7684\u5b58\u50a8\u683c\u5f0f", "\u56e0\u4e3a\u53ea\u6709\u5199\u660e\u7248\u672c\u624d\u80fd\u901a\u8fc7\u786e\u5b9a\u6027\u6d4b\u8bd5"], "points": 76, "solved": false, "statement": "\u6846\u67b6\u5bf9\u6bd4\u8868\u683c\u7ed9\u51fa\u4e86\u5404\u6846\u67b6\u7684\u4f18\u52bf\u573a\u666f\u4e0e\u9700\u91cd\u70b9\u9a8c\u8bc1\u9879\u3002\n\u4e3a\u4ec0\u4e48\u9009\u578b\u62a5\u544a\u5fc5\u987b\u5199\u660e\u65e5\u671f\u4e0e\u7248\u672c\uff1f", "tags": ["\u6846\u67b6\u9009\u578b", "\u5de5\u7a0b\u5224\u65ad"], "title": "\u9009\u578b\u62a5\u544a\u4e3a\u4f55\u8981\u5199\u7248\u672c\u65e5\u671f", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-04-03", "last_answer": "", "last_feedback": "", "options": ["\u4ee3\u7801\u6267\u884c\u5b89\u5168", "\u89d2\u8272\u8fb9\u754c\u4e0e\u6210\u672c", "\u72b6\u6001\u8bbe\u8ba1\u4e0e\u56fe\u590d\u6742\u5ea6", "\u6570\u636e\u96c6\u6210\u4e0e\u8fd0\u884c\u65f6\u4f9d\u8d56"], "points": 76, "solved": false, "statement": "\u56e2\u961f\u8981\u505a\u4e00\u4e2a\u8ba1\u7b97\u4e0e\u6570\u636e\u5904\u7406\u7684\u8f7b\u91cf\u5b9e\u9a8c\uff0c\u8003\u8651\u7528 smolagents \u7684 CodeAgent\u3002\n\u6309\u8868\u683c\uff0c\u8fd9\u4e2a\u65b9\u6848\u9700\u8981\u91cd\u70b9\u9a8c\u8bc1\u4ec0\u4e48\uff1f", "tags": ["smolagents", "\u4ee3\u7801\u6267\u884c\u5b89\u5168"], "title": "\u4ee3\u7801 Agent \u7684\u9996\u8981\u9a8c\u8bc1\u9879", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u4ece\u4efb\u52a1\u672c\u8eab\u3001\u526f\u4f5c\u7528\u3001\u6062\u590d\u3001\u56e2\u961f\u3001\u6d4b\u8bd5\u3001\u8fc1\u79fb\u516d\u4e2a\u89d2\u5ea6\u60f3", "\u6bcf\u4e2a\u95ee\u9898\u90fd\u8981\u843d\u5230\u300c\u9009\u6216\u4e0d\u9009\u67d0\u7c7b\u6846\u67b6\u300d\u7684\u7ed3\u8bba\u4e0a"], "id": "q05-04-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u5728\u6b63\u5f0f\u6bd4\u8f83\u6846\u67b6\u4e4b\u524d\uff0c\u9700\u8981\u5148\u56de\u7b54\u4e00\u7ec4\u524d\u7f6e\u95ee\u9898\u3002\n\u8bf7\u5217\u51fa\u8fd9\u4e9b\u95ee\u9898\uff0c\u5e76\u8bf4\u660e\u6bcf\u4e2a\u95ee\u9898\u5206\u522b\u4f1a\u600e\u6837\u5f71\u54cd\u9009\u578b\u7ed3\u8bba\u3002", "tags": ["\u6846\u67b6\u9009\u578b", "\u524d\u7f6e\u7ea6\u675f"], "title": "\u9009\u578b\u524d\u5fc5\u7b54\u7684\u516d\u4e2a\u95ee\u9898", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "hints": ["\u628a\u300c\u66f4\u5f3a\u300d\u62c6\u6210\u53ef\u9a8c\u8bc1\u7684\u9700\u6c42\u7ef4\u5ea6", "\u522b\u5fd8\u4e86\u53cd\u5411\u8bf4\u660e\u539f\u751f Python \u7684\u9002\u7528\u573a\u666f"], "id": "q05-04-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u9762\u8bd5\u4e2d\u6709\u4eba\u56de\u7b54\u300cLangGraph \u66f4\u5f3a\uff0c\u6240\u4ee5\u9009\u5b83\u300d\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u4e2a\u56de\u7b54\u4e3a\u4ec0\u4e48\u4e0d\u5408\u683c\uff0c\u5e76\u7ed9\u51fa\u4e00\u4e2a\u5408\u683c\u56de\u7b54\u5e94\u8986\u76d6\u7684\u7ef4\u5ea6\u3002", "tags": ["\u6846\u67b6\u9009\u578b", "\u5de5\u7a0b\u5224\u65ad", "\u9762\u8bd5"], "title": "\u4e3a\u4ec0\u4e48\u4e0d\u80fd\u53ea\u8bf4\u66f4\u5f3a", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u51b3\u7b56\u987a\u5e8f\u662f\u6709\u4f18\u5148\u7ea7\u7684\uff0c\u5148\u5224\u65ad\u7684\u5148\u8fd4\u56de", "\u7f3a\u952e\u65f6\u4e0d\u5e94\u629b\u5f02\u5e38"], "id": "q05-04-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def choose_framework(features):\n    \"\"\"\u6309\u51b3\u7b56\u987a\u5e8f\u8fd4\u56de\u63a8\u8350\u65b9\u6848\u540d\u79f0\u3002\"\"\"\n    # \u8bf7\u8865\u5168\u5b9e\u73b0\n    pass", "statement": "\u5b9e\u73b0\u51fd\u6570 choose_framework(features)\uff0c\u6309\u51b3\u7b56\u987a\u5e8f\u8fd4\u56de\u63a8\u8350\u65b9\u6848\u3002\nfeatures \u662f\u5b57\u5178\uff0c\u53ef\u80fd\u5305\u542b\u4ee5\u4e0b\u5e03\u5c14\u952e\uff1afixed_steps\u3001branch_loop\u3001multi_role\u3001code_gen\u3002\n\u8fd4\u56de\u503c\u4e3a\u5b57\u7b26\u4e32\uff0c\u53d6\u503c\uff1a\u0027native\u0027\u3001\u0027langgraph\u0027\u3001\u0027crewai\u0027\u3001\u0027smolagents\u0027\u3001\u0027lightweight_sdk\u0027\u3002\n\u89c4\u5219\uff1afixed_steps \u4e3a\u771f\u8fd4\u56de native\uff1b\u5426\u5219 branch_loop \u4e3a\u771f\u8fd4\u56de langgraph\uff1b\u5426\u5219 multi_role \u4e3a\u771f\u8fd4\u56de crewai\uff1b\u5426\u5219 code_gen \u4e3a\u771f\u8fd4\u56de smolagents\uff1b\u5426\u5219\u8fd4\u56de lightweight_sdk\u3002", "tags": ["\u6846\u67b6\u9009\u578b", "\u51b3\u7b56\u987a\u5e8f", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u9009\u578b\u51b3\u7b56\u51fd\u6570", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "hints": ["\u5148\u6392\u5e8f\u518d\u53d6\u5206\u4f4d\u6570\u4e0b\u6807", "\u7a7a\u8f93\u5165\u8981\u907f\u514d\u9664\u96f6"], "id": "q05-04-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import math\n\n\ndef build_report(meta, runs):\n    \"\"\"\u6309\u9009\u578b\u5b9e\u9a8c\u6a21\u677f\u751f\u6210\u62a5\u544a\u6587\u672c\u3002\"\"\"\n    # \u8bf7\u8865\u5168\u5b9e\u73b0\n    pass", "statement": "\u5b9e\u73b0\u51fd\u6570 build_report(meta, runs)\uff0c\u8f93\u51fa\u9009\u578b\u5b9e\u9a8c\u62a5\u544a\u6587\u672c\u3002\nmeta \u662f\u5b57\u5178\uff0c\u542b task\u3001constraints\u3001candidates\uff08\u5019\u9009\u65b9\u6848\u4e0e\u7248\u672c\u5217\u8868\uff09\u3002\nruns \u662f\u5217\u8868\uff0c\u6bcf\u9879\u4e3a\u5b57\u5178\uff0c\u542b success\uff08\u5e03\u5c14\uff09\u3001latency_ms\uff08\u6570\u503c\uff09\u3001model_calls\uff08\u6574\u6570\uff09\u3002\n\u8981\u6c42\uff1a\u8f93\u51fa\u5305\u542b\u4efb\u52a1\u3001\u4e1a\u52a1\u7ea6\u675f\u3001\u5019\u9009\u65b9\u6848\u4e0e\u7248\u672c\u3001\u56fa\u5b9a\u6d4b\u8bd5\u96c6\u8bf4\u660e\u3001\u6210\u529f\u5b9a\u4e49\u3001\u6210\u529f\u7387\uff08\u767e\u5206\u6bd4\uff0c\u4fdd\u7559\u4e00\u4f4d\u5c0f\u6570\uff09\u3001\u5e73\u5747\u5ef6\u8fdf\u3001P95 \u5ef6\u8fdf\u3001\u5e73\u5747\u6a21\u578b\u8c03\u7528\u6b21\u6570\u3001\u5931\u8d25\u5206\u5e03\u3001\u6062\u590d\u4e0e\u5ba1\u8ba1\u80fd\u529b\u3001\u4ee3\u7801\u4e0e\u8fd0\u7ef4\u590d\u6742\u5ea6\u3001\u7ed3\u8bba\u53ca\u4e0d\u9009\u5176\u4ed6\u65b9\u6848\u7684\u5177\u4f53\u539f\u56e0\u3002\nP95 \u5ef6\u8fdf\u7528\u6700\u8fd1\u79e9\u6cd5\uff1a\u5bf9\u5347\u5e8f\u5ef6\u8fdf\u53d6\u4e0b\u6807 ceil(0.95*n)-1\u3002", "tags": ["\u9009\u578b\u5b9e\u9a8c", "\u5ea6\u91cf\u6307\u6807", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u751f\u6210\u9009\u578b\u5b9e\u9a8c\u62a5\u544a", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="5" data-kp="3"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 24｜框架选型：从偏好转向约束">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 24｜框架选型：从偏好转向约束">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-5" data-kp-index="4"
+             data-kp-key="5_4" >
+      <div class="kp-head">
+        <span class="kp-no">D25</span>
+        <div class="kp-head-main">
+          <h3>Day 25｜章节实战：带审批的生产级流程 Agent</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>5.5.1 项目任务</h4>
+<p>实现“需求分析 → 检索资料 → 生成方案 → 自动审校 → 人工审批 → 执行或退回”的流程。执行节点先使用无副作用的模拟发布工具，避免课堂误触真实系统。</p>
+<pre class="code lang-mermaid"><code>flowchart TD
+    A[analyze] --&gt; B[research]
+    B --&gt; C[draft]
+    C --&gt; D[review]
+    D --&gt;|需修改且未超限| C
+    D --&gt;|达到修改上限| X[fail]
+    D --&gt;|通过| E[approval]
+    E --&gt;|批准| F[execute]
+    E --&gt;|拒绝| G[cancel]
+    F --&gt; H[END]
+    G --&gt; H
+    X --&gt; H</code></pre>
+<h4>5.5.2 状态设计</h4>
+<pre class="code lang-python"><code>from typing import Literal, TypedDict
+
+
+class WorkflowState(TypedDict):
+    request: str
+    requirements: list[str]
+    evidence: list[dict]
+    draft: str
+    review_status: Literal["pending", "revise", "pass", "fail"]
+    review_notes: list[str]
+    revision_count: int
+    max_revisions: int
+    approved: bool | None
+    final_status: str
+    request_id: str</code></pre>
+<p>状态只保存恢复流程所需的信息。大文件、密钥和连接对象放外部存储或运行时依赖，不写进 checkpoint。</p>
+<h4>5.5.3 核心节点</h4>
+<pre class="code lang-python"><code>def analyze(state: WorkflowState) -&gt; dict:
+    requirements = [item.strip() for item in state["request"].split("，") if item.strip()]
+    return {"requirements": requirements, "final_status": "analyzed"}
+
+
+def research(state: WorkflowState) -&gt; dict:
+    rows = retriever.search(state["request"], top_k=5)
+    return {"evidence": rows, "final_status": "researched"}
+
+
+async def draft(state: WorkflowState) -&gt; dict:
+    evidence_text = "\n".join(row["text"] for row in state["evidence"])
+    prompt = f"需求：{state['requirements']}\n证据：{evidence_text}\n请生成可执行方案并标注证据。"
+    result = await llm.chat([{"role": "user", "content": prompt}])
+    return {"draft": result.text, "final_status": "drafted"}
+
+
+def review(state: WorkflowState) -&gt; dict:
+    notes: list[str] = []
+    if not state["evidence"]:
+        notes.append("缺少检索证据")
+    if len(state["draft"].strip()) &lt; 100:
+        notes.append("方案内容过短")
+    next_count = state["revision_count"] + (1 if notes else 0)
+    if notes and next_count &gt; state["max_revisions"]:
+        status = "fail"
+    else:
+        status = "revise" if notes else "pass"
+    return {"review_notes": notes, "review_status": status, "revision_count": next_count}
+
+
+def approval(state: WorkflowState) -&gt; Command[Literal["execute", "cancel"]]:
+    decision = interrupt({
+        "request_id": state["request_id"],
+        "draft": state["draft"],
+        "review_notes": state["review_notes"],
+    })
+    approved = bool(decision)
+    return Command(update={"approved": approved}, goto="execute" if approved else "cancel")
+
+
+def execute(state: WorkflowState) -&gt; dict:
+    publication_id = simulated_publish_once(state["request_id"], state["draft"])
+    return {"final_status": f"executed:{publication_id}"}
+
+
+def cancel(state: WorkflowState) -&gt; dict:
+    return {"final_status": "cancelled"}
+
+
+def fail(state: WorkflowState) -&gt; dict:
+    return {"final_status": "review_failed"}</code></pre>
+<p>审校节点先使用确定性规则，方便测试。提高项再加入模型评审，但不能删除规则检查和修改次数上限。</p>
+<h5>幂等发布：<code>simulated_publish_once</code> 的实现</h5>
+<blockquote><strong>原课件 v1.0 的缺陷</strong>：<code>execute</code> 节点调用了 <code>simulated_publish_once</code>， 但<strong>全章没有定义这个函数</strong>（运行必 <code>NameError</code>）。 而它恰恰是"幂等测试"评分项的基础 —— 缺了它，这道评分项无法完成。 实现如下。</blockquote>
+<pre class="code lang-python"><code>import hashlib
+
+# 记录已发布的 request_id → publication_id。
+# 生产环境这个"记录"应该在数据库里（或直接依赖下游系统的幂等键），
+# 课堂用内存字典即可，但要理解：内存版在多实例部署下会失效。
+_PUBLISHED: dict[str, str] = {}
+
+
+def simulated_publish_once(request_id: str, draft: str) -&gt; str:
+    """幂等的模拟发布：同一 request_id 重复调用只产生一个 publication_id。
+
+    为什么需要幂等：审批恢复时，包含 interrupt() 的节点会从头重新执行，
+    而且用户可能重复点击"批准"。如果没有幂等保护，
+    同一次发布会被执行多次（真实场景里就是重复发邮件、重复扣款）。
+    """
+    if request_id in _PUBLISHED:
+        # 已发布过，直接返回原来的 id —— 这就是幂等
+        return _PUBLISHED[request_id]
+
+    publication_id = "pub_" + hashlib.md5(
+        f"{request_id}:{draft}".encode("utf-8")
+    ).hexdigest()[:12]
+    _PUBLISHED[request_id] = publication_id
+    print(f"    [已发布] request_id={request_id} → {publication_id}")
+    return publication_id</code></pre>
+<blockquote><strong>幂等的三种实现层次</strong>（答辩会被追问）：  | 层次 | 做法 | 适用 | |---|---|---| | 应用层去重 | 像上面这样用 <code>request_id</code> 记表 | 课堂、单实例 | | 数据库唯一约束 | 给 <code>request_id</code> 加 unique 索引，重复插入直接失败 | 生产主流做法 | | 下游系统幂等键 | 把幂等键透传给支付/消息系统，由它保证 | 调用第三方 API 时唯一可靠的做法 |  <strong>越靠下游越可靠</strong>。如果下游支持幂等键，优先用它 —— 因为应用层崩溃时你的记录可能丢， 但下游的记录不会。</blockquote>
+<h4>5.5.4 路由与编译</h4>
+<pre class="code lang-python"><code>def route_review(state: WorkflowState) -&gt; Literal["draft", "approval", "fail"]:
+    return {"revise": "draft", "pass": "approval", "fail": "fail"}[state["review_status"]]
+
+
+builder = StateGraph(WorkflowState)
+for name, node in {
+    "analyze": analyze,
+    "research": research,
+    "draft": draft,
+    "review": review,
+    "approval": approval,
+    "execute": execute,
+    "cancel": cancel,
+    "fail": fail,
+}.items():
+    builder.add_node(name, node)
+
+builder.add_edge(START, "analyze")
+builder.add_edge("analyze", "research")
+builder.add_edge("research", "draft")
+builder.add_edge("draft", "review")
+builder.add_conditional_edges("review", route_review, {"draft": "draft", "approval": "approval", "fail": "fail"})
+builder.add_edge("execute", END)
+builder.add_edge("cancel", END)
+builder.add_edge("fail", END)
+workflow = builder.compile(checkpointer=InMemorySaver())</code></pre>
+<p><code>approval</code> 使用 <code>Command(goto=...)</code> 动态路由，因此不要再为该节点添加会重复执行的静态出边。</p>
+<h5>完整初值字典（<strong>必填，缺一个字段就会 KeyError</strong>）</h5>
+<blockquote><strong>原课件 v1.0 的缺陷</strong>：下面这行调用里用了 <code>initial_state</code>， 但<strong>全章从未给出它的定义</strong>。<code>WorkflowState</code> 有 11 个字段， 而 LangGraph 的 TypedDict state 没有默认值 —— 访问未初始化的键会直接 <code>KeyError</code>。 这是一个"看起来只差一行、实际完全跑不起来"的缺口。</blockquote>
+<pre class="code lang-python"><code>import uuid
+
+initial_state: WorkflowState = {
+    "request": "为知识库问答系统增加引用溯源能力，并控制单次回答的成本",
+    "requirements": [],
+    "evidence": [],
+    "draft": "",
+    "review_status": "pending",
+    "review_notes": [],
+    "revision_count": 0,
+    "max_revisions": 2,          # 关键：修改上限，防止 review↔draft 无限循环
+    "approved": None,
+    "final_status": "new",
+    "request_id": uuid.uuid4().hex,   # 幂等键，execute 节点靠它去重
+}</code></pre>
+<p><strong>初始化 state 的三条经验</strong>：</p>
+<ol><li><strong>所有字段都要给初值</strong>，包括空列表与 <code>None</code>。不要指望"节点会填"——</li></ol>
+<p>节点访问的是同一份 state，缺字段就是 <code>KeyError</code>；</p>
+<ol><li><strong>安全边界类的字段（如 &lt;code&gt;max_revisions&lt;/code&gt;）必须在初始状态里定死</strong>，</li></ol>
+<p>不要在节点内部硬编码或让模型决定。这是程序掌握的安全边界；</p>
+<ol><li><strong>&lt;code&gt;request_id&lt;/code&gt; 在进入图之前生成</strong>，而不是在 <code>execute</code> 节点里生成 ——</li></ol>
+<p>因为在节点里生成的话，每次恢复都会得到新 id，幂等就失效了。</p>
+<p><strong>运行与恢复</strong>：由于 <code>draft</code> 是异步节点，运行流程时使用 <code>await workflow.ainvoke(initial_state, config=config)</code>，恢复时使用 <code>await workflow.ainvoke(Command(resume=True), config=config)</code>。</p>
+<blockquote><strong>⚠️ 最容易犯的错误</strong>：忘了 <code>await</code>。 <code>async def</code> 节点必须用 <code>ainvoke</code> / <code>astream</code> 驱动，用同步的 <code>invoke</code> 会报错 （或者拿到一个未被 await 的协程对象，表现为"什么都没发生"）。 <strong>排查技巧</strong>：如果图"跑了但没有输出"，第一件事就是检查 <code>await</code> 和 <code>invoke</code>/<code>ainvoke</code> 是否配对。</blockquote>
+<h4>5.5.5 测试策略</h4>
+<table><thead><tr><th style="text-align:left">测试层</th><th style="text-align:left">替身</th><th style="text-align:left">必测内容</th></tr></thead><tbody><tr><td style="text-align:left">节点单测</td><td style="text-align:left">固定 state</td><td style="text-align:left">部分更新是否正确</td></tr><tr><td style="text-align:left">路由单测</td><td style="text-align:left">手工 review_status</td><td style="text-align:left">revise/pass/fail 三路</td></tr><tr><td style="text-align:left">图集成测试</td><td style="text-align:left">假 retriever、假 LLM</td><td style="text-align:left">成功、空证据、修改超限</td></tr><tr><td style="text-align:left">恢复测试</td><td style="text-align:left">持久化 checkpointer</td><td style="text-align:left">暂停后重启与恢复</td></tr><tr><td style="text-align:left">幂等测试</td><td style="text-align:left">重复 request_id</td><td style="text-align:left">execute 不重复发布</td></tr><tr><td style="text-align:left">安全测试</td><td style="text-align:left">恶意文档和输入</td><td style="text-align:left">不绕过审批、不泄露状态</td></tr></tbody></table>
+<h4>5.5.6 最终演示顺序</h4>
+<ol><li>正常请求运行到审批中断，展示 checkpoint 和 thread_id。</li><li>批准后恢复并模拟发布，展示最终状态。</li><li>拒绝另一请求，确认 execute 节点没有运行。</li><li>注入空证据，展示审校退回和修改上限。</li><li>对同一 request_id 重复恢复，展示幂等保护。</li><li>输出 <code>updates</code>、<code>checkpoints</code> 或任务事件，按节点解释耗时和失败。</li></ol>
+<p><strong>运行验证：生产级流程 Agent 的六条路径</strong></p>
+<pre class="code lang-powershell"><code>python code/ch05/40_workflow_agent.py</code></pre>
+<p><img src="static/course-assets/ch05/05_workflow_agent.webp" alt="生产级流程 Agent 的真实输出：事件流按节点顺序展示 analyze→research→draft→review→(interrupt) 的执行轨迹、六条路径的验收结论表、以及对应课件评分量表的答辩要点" loading="lazy"></p>
+<p><strong>这张图是 Day25 的交付证明——把 5.5.6 的六条演示顺序一次跑完</strong>：</p>
+<p><strong>（1）事件流就是任务执行轨迹。</strong> 图里用 <code>stream(stream_mode='updates')</code> 观察一次完整流程的节点序列：</p>
+<pre class="code lang-text"><code>analyze → research → draft → review → (interrupt)</code></pre>
+<p>每个节点后面还标出它更新的字段（<code>analyze</code> 更新 <code>requirements, final_status</code>；<code>review</code> 更新 <code>review_notes, review_status, revision_count</code>）。图上建议：<strong>生产环境把每个节点的耗时、输入摘要、输出摘要落库，就能回答「这次流程为什么慢 / 为什么失败」——而不是只能看最终状态。</strong></p>
+<p><strong>（2）一个必须讲清的边界：&lt;code&gt;checkpoint&lt;/code&gt; 是状态快照，不是业务数据库。</strong> 业务数据（方案正文、审批记录）应该同时写进业务库，因为 <strong>&lt;code&gt;checkpoint&lt;/code&gt; 会随 &lt;code&gt;thread&lt;/code&gt; 清理策略被删除，不能当作长期存储</strong>。这句话在 5.2.4 的「过期清理」里已经埋过伏笔。</p>
+<p><strong>（3）六条路径全部实测走到 END。</strong> 验收表逐条记录了结果：</p>
+<table><thead><tr><th style="text-align:left">路径</th><th style="text-align:left">实测结果</th></tr></thead><tbody><tr><td style="text-align:left">正常流程</td><td style="text-align:left"><code>analyze→research→draft→review→approve</code></td></tr><tr><td style="text-align:left">空证据退回</td><td style="text-align:left">review 规则命中「缺少检索证据」，<code>review_status=re...</code></td></tr><tr><td style="text-align:left">修改超限失败</td><td style="text-align:left"><code>max_revisions=2</code> 与 5 两种配置都正确走到 <code>fail</code></td></tr><tr><td style="text-align:left">批准走 execute</td><td style="text-align:left"><code>final_status=executed:pub-xxxx</code></td></tr><tr><td style="text-align:left">拒绝走 cancel</td><td style="text-align:left"><code>final_status=cancelled</code>，<strong>execute 从未执行</strong></td></tr><tr><td style="text-align:left">幂等（同 request_id 两次提交）</td><td style="text-align:left">函数调用 2 次，外部只写入 1 次</td></tr></tbody></table>
+<p>图上特别标出评分的硬要求：<strong>「正常 / 修改 / 失败 / 批准 / 拒绝五条路径全部实测通过，且每条都能到达 END（不存在「图无法结束」的风险）」</strong>。</p>
+<p><strong>（4）答辩要点直接对应 5.5.7 的评分量表。</strong> 图里把评分表的六个维度逐条给出了自证材料，其中最容易被追问的是「State 设计（15 分）」：<strong>11 个字段职责单一、没有把密钥或连接对象放进 &lt;code&gt;state&lt;/code&gt;</strong>，大文件放外部存储、需要时靠 <code>request_id</code> 去业务库取。另一条高频问题是<strong>选型答辩</strong>：「为什么用 LangGraph 而不是手写 for 循环」——因为这个流程有<strong>回边</strong>（<code>review→draft</code>）、有<strong>中断恢复</strong>、有<strong>多终止路径</strong>，还要<strong>跨进程恢复</strong>。手写当然也能实现，但状态序列化、版本链、中断点的可恢复性这些正是 LangGraph 已经做对的部分。</p>
+<p>图上同时给出了<strong>代价的诚实陈述</strong>——这一点比优点更重要：</p>
+<blockquote>代价是多了一层框架抽象，排错时要懂 checkpoint 与 reducer 的语义。如果只是「顺序做三件事」，用手写函数就够了，不需要引入框架（课件 5.4.2）。</blockquote>
+<p><strong>（5）测试与事件（10 分）的做法</strong>：用假 retriever 做确定性规则测试，用 <code>astream</code> 输出节点序列，checkpoint 与业务库的职责分清楚。</p>
+<blockquote><strong>Day25 交付：带条件路由、修改循环、人工审批、幂等执行与完整测试的生产级流程 Agent。</strong></blockquote>
+<p>Mermaid 图已导出到 <code>code/ch05/outputs/40_workflow_agent.mmd</code>，可直接放进答辩报告。</p>
+<h4>5.5.7 评分量表</h4>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:right">分值</th><th style="text-align:left">满分标准</th></tr></thead><tbody><tr><td style="text-align:left">State 设计</td><td style="text-align:right">15</td><td style="text-align:left">字段职责清楚，无密钥和连接对象</td></tr><tr><td style="text-align:left">图与路由</td><td style="text-align:right">20</td><td style="text-align:left">正常、修改、失败、批准、拒绝路径完整</td></tr><tr><td style="text-align:left">持久化恢复</td><td style="text-align:right">15</td><td style="text-align:left">thread 隔离，暂停与重启恢复成功</td></tr><tr><td style="text-align:left">人工审批</td><td style="text-align:right">15</td><td style="text-align:left">中断位置正确，写操作只在批准后发生</td></tr><tr><td style="text-align:left">幂等与安全</td><td style="text-align:right">15</td><td style="text-align:left">重复恢复无重复副作用，有权限边界</td></tr><tr><td style="text-align:left">测试与事件</td><td style="text-align:right">10</td><td style="text-align:left">分层测试，运行轨迹可解释</td></tr><tr><td style="text-align:left">选型答辩</td><td style="text-align:right">10</td><td style="text-align:left">能说明为何选 LangGraph 及其代价</td></tr></tbody></table></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-05-01", "last_answer": "", "last_feedback": "", "options": ["\u9759\u6001\u51fa\u8fb9\u4f1a\u8986\u76d6 Command \u7684 goto\uff0c\u6c38\u8fdc\u8d70 execute", "\u9759\u6001\u51fa\u8fb9\u4e0e Command \u7684 goto \u91cd\u590d\u6267\u884c\uff0c\u5bfc\u81f4\u8282\u70b9\u88ab\u89e6\u53d1\u4e24\u6b21", "\u7f16\u8bd1\u76f4\u63a5\u62a5\u9519\uff0c\u65e0\u6cd5\u751f\u6210\u56fe", "\u6ca1\u6709\u4efb\u4f55\u5f71\u54cd\uff0c\u4e24\u8005\u7b49\u4ef7"], "points": 76, "solved": false, "statement": "approval \u8282\u70b9\u8fd4\u56de Command(goto=\"execute\" \u6216 \"cancel\")\uff0c\u6839\u636e\u7528\u6237\u51b3\u5b9a\u52a8\u6001\u8df3\u8f6c\u3002\n\u5982\u679c\u540c\u65f6\u7ed9 approval \u8282\u70b9\u518d\u6dfb\u52a0\u4e00\u6761\u9759\u6001\u51fa\u8fb9\uff08\u5982 builder.add_edge(\"approval\", \"execute\")\uff09\uff0c\u4f1a\u51fa\u73b0\u4ec0\u4e48\u95ee\u9898\uff1f", "tags": ["LangGraph", "Command", "\u8def\u7531"], "title": "\u5ba1\u6279\u8282\u70b9\u4e3a\u4f55\u7528 Command \u52a8\u6001\u8def\u7531", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "id": "q05-05-02", "last_answer": "", "last_feedback": "", "options": ["\u4e3a\u4e86\u52a0\u5feb\u53d1\u5e03\u901f\u5ea6\uff0c\u51cf\u5c11\u91cd\u590d\u8ba1\u7b97", "\u56e0\u4e3a\u5305\u542b interrupt() \u7684\u8282\u70b9\u6062\u590d\u65f6\u4f1a\u4ece\u5934\u91cd\u65b0\u6267\u884c\uff0c\u4e14\u7528\u6237\u53ef\u80fd\u91cd\u590d\u70b9\u51fb\u6279\u51c6", "\u56e0\u4e3a LangGraph \u8981\u6c42\u6240\u6709\u8282\u70b9\u5fc5\u987b\u5e42\u7b49\u624d\u80fd\u7f16\u8bd1", "\u4e3a\u4e86\u8ba9 publication_id \u66f4\u77ed\uff0c\u4fbf\u4e8e\u5b58\u50a8"], "points": 76, "solved": false, "statement": "simulated_publish_once \u7528 request_id \u505a\u53bb\u91cd\uff0c\u4fdd\u8bc1\u540c\u4e00 request_id \u53ea\u4ea7\u751f\u4e00\u4e2a publication_id\u3002\n\u4e3a\u4ec0\u4e48\u8fd9\u4e2a\u5e42\u7b49\u4fdd\u62a4\u5728\u5ba1\u6279\u6d41\u7a0b\u91cc\u662f\u5fc5\u9700\u7684\uff1f", "tags": ["\u5e42\u7b49", "interrupt", "\u5ba1\u6279"], "title": "\u5e42\u7b49\u53d1\u5e03\u4e3a\u4f55\u5fc5\u987b\u5b58\u5728", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "id": "q05-05-03", "last_answer": "", "last_feedback": "", "options": ["\u5e94\u7528\u5c42\u53bb\u91cd\uff0c\u56e0\u4e3a\u5b9e\u73b0\u6700\u7b80\u5355\u3001\u4ee3\u7801\u6700\u5c11", "\u6570\u636e\u5e93\u552f\u4e00\u7ea6\u675f\uff0c\u56e0\u4e3a\u6570\u636e\u5e93\u4e0d\u4f1a\u5b95\u673a", "\u4e0b\u6e38\u7cfb\u7edf\u5e42\u7b49\u952e\uff0c\u56e0\u4e3a\u5e94\u7528\u5c42\u5d29\u6e83\u65f6\u672c\u5730\u8bb0\u5f55\u53ef\u80fd\u4e22\uff0c\u4e0b\u6e38\u8bb0\u5f55\u4e0d\u4f1a", "\u4e09\u8005\u7b49\u4ef7\uff0c\u9009\u54ea\u4e2a\u90fd\u884c"], "points": 189, "solved": false, "statement": "\u5e42\u7b49\u6709\u4e09\u79cd\u5b9e\u73b0\u5c42\u6b21\uff1a\u5e94\u7528\u5c42\u53bb\u91cd\u3001\u6570\u636e\u5e93\u552f\u4e00\u7ea6\u675f\u3001\u4e0b\u6e38\u7cfb\u7edf\u5e42\u7b49\u952e\u3002\n\u5728\u8c03\u7528\u7b2c\u4e09\u65b9\u652f\u4ed8 API \u7684\u751f\u4ea7\u573a\u666f\u4e2d\uff0c\u54ea\u79cd\u505a\u6cd5\u6700\u53ef\u9760\uff0c\u4e3a\u4ec0\u4e48\uff1f", "tags": ["\u5e42\u7b49", "\u751f\u4ea7\u5b9e\u8df5", "\u7b2c\u4e09\u65b9API"], "title": "\u5e42\u7b49\u5b9e\u73b0\u5c42\u6b21\u54ea\u4e2a\u6700\u53ef\u9760", "track": "agent", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u60f3\u60f3 checkpoint \u4f1a\u88ab\u5199\u5230\u54ea\u91cc", "\u8fde\u63a5\u5bf9\u8c61\u80fd\u5e8f\u5217\u5316\u5417"], "id": "q05-05-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "WorkflowState \u53ea\u4fdd\u5b58\u6062\u590d\u6d41\u7a0b\u6240\u9700\u7684\u4fe1\u606f\uff0c\u5927\u6587\u4ef6\u3001\u5bc6\u94a5\u548c\u8fde\u63a5\u5bf9\u8c61\u653e\u5916\u90e8\u5b58\u50a8\u6216\u8fd0\u884c\u65f6\u4f9d\u8d56\uff0c\u4e0d\u5199\u8fdb checkpoint\u3002\n\u8bf7\u8bf4\u660e\u8fd9\u6837\u8bbe\u8ba1\u7684\u539f\u56e0\uff0c\u4ee5\u53ca\u5982\u679c\u8fdd\u53cd\u4f1a\u5e26\u6765\u54ea\u4e9b\u5177\u4f53\u95ee\u9898\u3002", "tags": ["\u72b6\u6001\u8bbe\u8ba1", "checkpoint", "\u5b89\u5168"], "title": "\u72b6\u6001\u8bbe\u8ba1\u4e3a\u4f55\u4e0d\u653e\u5bc6\u94a5\u5927\u6587\u4ef6", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u89c4\u5219\u7684\u7ed3\u679c\u662f\u5426\u53ef\u590d\u73b0", "\u53bb\u6389\u4e0a\u9650\u4f1a\u600e\u6837"], "id": "q05-05-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u5ba1\u6821\u8282\u70b9\u5148\u4f7f\u7528\u786e\u5b9a\u6027\u89c4\u5219\uff08\u5982\u68c0\u67e5\u8bc1\u636e\u662f\u5426\u4e3a\u7a7a\u3001\u8349\u7a3f\u662f\u5426\u8fc7\u77ed\uff09\uff0c\u63d0\u9ad8\u9879\u518d\u52a0\u5165\u6a21\u578b\u8bc4\u5ba1\u3002\n\u8bf7\u5bf9\u6bd4\u786e\u5b9a\u6027\u89c4\u5219\u4e0e\u6a21\u578b\u8bc4\u5ba1\u7684\u4f18\u52a3\uff0c\u5e76\u8bf4\u660e\u4e3a\u4ec0\u4e48\u52a0\u5165\u6a21\u578b\u8bc4\u5ba1\u540e\u4e0d\u80fd\u5220\u9664\u89c4\u5219\u68c0\u67e5\u548c\u4fee\u6539\u6b21\u6570\u4e0a\u9650\u3002", "tags": ["\u5ba1\u6821", "\u786e\u5b9a\u6027\u89c4\u5219", "\u5faa\u73af\u63a7\u5236"], "title": "\u5ba1\u6821\u4e3a\u4f55\u5148\u7528\u786e\u5b9a\u6027\u89c4\u5219", "track": "agent", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 2, "hints": ["\u5148\u5224\u65ad\u662f\u5426\u5df2\u53d1\u5e03", "md5 \u7528 f-string \u62fc\u63a5\u540e encode"], "id": "q05-05-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import hashlib\n\n_PUBLISHED: dict[str, str] = {}\n\ndef simulated_publish_once(request_id: str, draft: str) -\u003e str:\n    # \u5728\u6b64\u5b9e\u73b0\n    pass", "statement": "\u5b9e\u73b0 simulated_publish_once(request_id, draft)\uff0c\u8981\u6c42\uff1a\n1. \u540c\u4e00 request_id \u91cd\u590d\u8c03\u7528\u53ea\u8fd4\u56de\u540c\u4e00\u4e2a publication_id\uff1b\n2. publication_id \u7531 request_id \u548c draft \u7684 md5 \u524d 12 \u4f4d\u751f\u6210\uff0c\u524d\u7f00 pub_\uff1b\n3. \u9996\u6b21\u53d1\u5e03\u65f6\u6253\u5370 [\u5df2\u53d1\u5e03] \u65e5\u5fd7\u3002\n\u8bf7\u8865\u5168\u51fd\u6570\u3002", "tags": ["\u5e42\u7b49", "\u54c8\u5e0c", "\u4ee3\u7801\u5b9e\u73b0"], "title": "\u5b9e\u73b0\u5e42\u7b49\u7684\u6a21\u62df\u53d1\u5e03\u51fd\u6570", "track": "agent", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 5, "chapter_title": "Agent \u6846\u67b6\u5b9e\u6218", "difficulty": 3, "hints": ["\u5148\u6536\u96c6 notes \u518d\u51b3\u5b9a\u72b6\u6001", "\u81ea\u589e\u53ea\u5728\u6709 notes \u65f6\u53d1\u751f"], "id": "q05-05-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "def review(state: WorkflowState) -\u003e dict:\n    notes: list[str] = []\n    # \u5728\u6b64\u5b9e\u73b0\n    return {\"review_notes\": notes, \"review_status\": status, \"revision_count\": next_count}", "statement": "\u8865\u5168 review \u8282\u70b9\uff1a\n1. \u8bc1\u636e\u4e3a\u7a7a\u5219\u8bb0\u5f55\u201c\u7f3a\u5c11\u68c0\u7d22\u8bc1\u636e\u201d\uff1b\n2. \u8349\u7a3f\u53bb\u7a7a\u683c\u540e\u957f\u5ea6\u5c0f\u4e8e 100 \u5219\u8bb0\u5f55\u201c\u65b9\u6848\u5185\u5bb9\u8fc7\u77ed\u201d\uff1b\n3. \u6709 notes \u65f6 revision_count \u52a0 1\uff1b\n4. \u82e5 notes \u975e\u7a7a\u4e14 next_count \u8d85\u8fc7 max_revisions\uff0c\u72b6\u6001\u4e3a fail\uff0c\u5426\u5219 notes \u975e\u7a7a\u4e3a revise\uff0c\u65e0 notes \u4e3a pass\u3002\n\u8fd4\u56de review_notes\u3001review_status\u3001revision_count\u3002", "tags": ["\u5ba1\u6821", "\u72b6\u6001\u66f4\u65b0", "\u5faa\u73af\u63a7\u5236"], "title": "\u8865\u5168\u5ba1\u6821\u8282\u70b9\u7684\u72b6\u6001\u66f4\u65b0", "track": "agent", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="5" data-kp="4"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 25｜章节实战：带审批的生产级流程 Agent">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 25｜章节实战：带审批的生产级流程 Agent">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson"><h3>5.6 常见错误与排查顺序</h3>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">优先检查</th><th style="text-align:left">修复原则</th></tr></thead><tbody><tr><td style="text-align:left">state 字段突然丢失</td><td style="text-align:left">节点返回的是部分更新还是错误地重建全 state</td><td style="text-align:left">明确 reducer 与覆盖语义</td></tr><tr><td style="text-align:left">图无法结束</td><td style="text-align:left">是否存在无退出条件的回边</td><td style="text-align:left">计数器、预算和 END 路径写进图</td></tr><tr><td style="text-align:left">中断后不能恢复</td><td style="text-align:left">是否配置 checkpointer；thread_id 是否一致</td><td style="text-align:left">将恢复标识视为数据契约</td></tr><tr><td style="text-align:left">恢复后副作用执行两次</td><td style="text-align:left">副作用是否放在 interrupt 前；是否有幂等键</td><td style="text-align:left">审批与执行拆节点</td></tr><tr><td style="text-align:left">CrewAI 中间错误难定位</td><td style="text-align:left">是否保留每个 Task 产物</td><td style="text-align:left">分阶段评测，不只看最终稿</td></tr><tr><td style="text-align:left">CodeAgent 越权</td><td style="text-align:left">执行器是否能访问主机文件与网络</td><td style="text-align:left">使用最小权限沙箱</td></tr><tr><td style="text-align:left">框架升级后示例报错</td><td style="text-align:left">是否混用不同版本文档</td><td style="text-align:left">查锁定版本 API，不盲目改业务逻辑</td></tr></tbody></table>
+<h3>5.7 过程性作业与答辩题</h3>
+<h4>作业</h4>
+<ol><li>把 Day21 线性图改成带空检索拒答的条件图。</li><li>使用持久化 checkpointer 完成一次进程重启后的审批恢复。</li><li>用同一固定任务比较 LangGraph、CrewAI、smolagents，提交量化表。</li><li>给 Day25 项目增加 <code>request_id</code> 幂等测试和恶意输入测试。</li></ol>
+<h4>答辩题</h4>
+<ol><li>LangGraph 的 State 与普通全局变量有什么本质差别？</li><li>节点为什么应该返回部分更新？</li><li>checkpoint 与业务数据库各保存什么？</li><li><code>interrupt</code> 为什么可能导致节点前半段代码重新执行？</li><li>什么情况下原生 Python 比框架更合适？</li><li>CrewAI 的角色与真正独立部署的多个 Agent 有什么差别？</li><li>CodeAgent 为什么必须配合沙箱？</li></ol>
+<h3>5.8 本章小结与第六章衔接</h3>
+<p>第五章完成了从手写循环到可恢复状态图的迁移。学生已经能在单个系统中组织节点、工具、审批和持久化。第六章将进一步研究多个 Agent 的协作拓扑、标准化工具连接和全链路可观测性。</p>
+<h3>5.9 教师参考资料</h3>
+<ul><li><a href="https://docs.langchain.com/oss/python/langgraph/overview" target="_blank" rel="noreferrer">LangGraph Overview</a>：StateGraph、节点、边与编译。</li><li><a href="https://docs.langchain.com/oss/python/langgraph/use-graph-api" target="_blank" rel="noreferrer">LangGraph Graph API</a>：状态更新、分支、循环和 Command。</li><li><a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank" rel="noreferrer">LangGraph Persistence</a>：checkpoint 与 thread_id。</li><li><a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noreferrer">LangGraph Interrupts</a>：暂停、恢复和副作用规则。</li><li><a href="https://docs.langchain.com/oss/python/langgraph/streaming" target="_blank" rel="noreferrer">LangGraph Streaming</a>：<code>updates</code>、<code>values</code>、<code>messages</code>、<code>checkpoints</code> 等事件模式。</li><li><a href="https://docs.crewai.com/core-concepts/Agents" target="_blank" rel="noreferrer">CrewAI Agents</a>：Agent、Task、Crew 与 Process 的关系。</li><li><a href="https://huggingface.co/docs/smolagents/reference/agents" target="_blank" rel="noreferrer">smolagents Agents</a> 与 <a href="https://huggingface.co/docs/smolagents/reference/tools" target="_blank" rel="noreferrer">Tools</a>：ToolCallingAgent、CodeAgent 和工具定义。</li></ul>
+<blockquote>链接于 2026-09-15 核对。框架 API 变化频繁，教师需使用与 <code>requirements.txt</code> 精确版本对应的文档。</blockquote></div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    
+    <a class="ch-neighbor " href="chapter-1.html">
+      <span class="cn-rel">前 4 章</span>
+      <b>🧠 大模型认知与 Prompt 工程</b>
+      <em>阶段一 · 认知与工程地基</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-2.html">
+      <span class="cn-rel">前 3 章</span>
+      <b>🔌 LLM API 工程化与 AI 后端</b>
+      <em>阶段一 · 认知与工程地基</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-3.html">
+      <span class="cn-rel">前 2 章</span>
+      <b>📚 RAG 检索增强生成</b>
+      <em>阶段二 · 知识增强</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-4.html">
+      <span class="cn-rel">上一章</span>
+      <b>🛰️ Agent 核心机制（从零自研）</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-6.html">
+      <span class="cn-rel">下一章</span>
+      <b>🕸️ 多智能体系统与 MCP</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-7.html">
+      <span class="cn-rel">后 2 章</span>
+      <b>🔍 开源 Agent 项目源码拆解</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-8.html">
+      <span class="cn-rel">后 3 章</span>
+      <b>🎛️ 模型微调与上下文工程</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-9.html">
+      <span class="cn-rel">后 4 章</span>
+      <b>🏗️ 全栈落地与毕业项目</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="training.html?chapters=5">做本章专项练习</a>
+      <a class="btn agent" href="coach.html?chapter=5">让教练追问我</a>
+      
+      <a class="btn ghost" href="warp.html?to=/chapter/6&kicker=章节完成&next=正在跃迁到 多智能体系统与 MCP">⚡ 跃迁到下一章</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/chapter.js"></script>
+
+</body>
+</html>

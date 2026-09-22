@@ -1,0 +1,66 @@
+/* 逐日学习路线 */
+
+.roadmap-page .hero { padding: 46px 0 10px; }
+.roadmap-page h1 { margin: 12px 0 18px; font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px); line-height: 1.32; }
+.roadmap-page h1 em { color: var(--gold); font-style: normal; }
+.roadmap-page .lead { max-width: 720px; margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.9; }
+
+.rm-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 18px; }
+.rm-kpi span { display: block; color: var(--muted); font-size: 11.5px; }
+.rm-kpi b { display: block; margin-top: 3px; font-family: var(--mono); font-size: 25px; letter-spacing: -.02em; }
+.rm-kpi b.hl { color: var(--cyan); }
+.rm-now { grid-column: 1 / -1; padding-top: 15px; border-top: 1px solid var(--line); }
+.rm-now p { margin: 0; color: var(--ink-2); font-size: 13px; }
+.rm-now b { color: var(--gold); }
+
+.rm-controls { display: flex; gap: 26px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.rm-controls h3 { margin: 0 0 6px; font-size: 15px; }
+.rm-controls p { margin: 0; max-width: 460px; color: var(--muted); font-size: 12.5px; line-height: 1.8; }
+.rm-picks { display: flex; gap: 8px; flex-wrap: wrap; }
+.rm-pick {
+  display: grid; gap: 2px; min-width: 96px; padding: 10px 13px;
+  border: 1px solid var(--line); border-radius: 9px;
+  background: rgba(255, 255, 255, .02); color: var(--ink-2);
+  font: 600 13px var(--sans); text-align: left; cursor: pointer;
+  transition: border-color .18s, background .18s, transform .18s;
+}
+.rm-pick em { color: var(--muted); font-size: 10.5px; font-style: normal; font-weight: 400; }
+.rm-pick:hover { transform: translateY(-2px); border-color: rgba(114, 246, 228, .45); }
+.rm-pick.on { border-color: var(--cyan); background: rgba(114, 246, 228, .12); color: #eafffb; }
+
+.rm-days { display: grid; gap: 11px; }
+.rm-day { border: 1px solid var(--line); border-radius: var(--radius-lg); background: linear-gradient(165deg, rgba(11, 16, 32, .9), rgba(6, 10, 22, .86)); }
+.rm-day[data-done] { border-color: rgba(125, 232, 168, .35); }
+.rm-day[data-current] { border-color: var(--cyan); box-shadow: 0 0 0 1px rgba(114, 246, 228, .2), 0 16px 38px rgba(114, 246, 228, .1); }
+.rm-day-head { display: flex; gap: 12px; align-items: center; padding: 14px 17px; cursor: pointer; transition: background .18s; }
+.rm-day-head:hover { background: rgba(114, 246, 228, .04); }
+.rm-day-no { flex-shrink: 0; width: 62px; color: var(--cyan); font: 700 12px var(--mono); letter-spacing: .06em; }
+.rm-day-date { flex-shrink: 0; width: 96px; color: var(--muted); font-size: 11.5px; }
+.rm-day-stage { flex-shrink: 0; max-width: 152px; overflow: hidden; color: #a8b6d6; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
+.rm-day-peek { flex: 1; min-width: 0; overflow: hidden; color: var(--ink-2); font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
+.rm-day-min { flex-shrink: 0; color: #c2cde6; font: 11px var(--mono); }
+.rm-day-mark { flex-shrink: 0; width: 14px; color: var(--cyan); font-size: 13px; text-align: center; }
+
+.rm-items { padding: 0 17px 15px; border-top: 1px solid var(--line); }
+.rm-item {
+  display: flex; gap: 12px; align-items: center;
+  padding: 11px 0; border-bottom: 1px dashed var(--line);
+  font-size: 13px; transition: color .18s;
+}
+.rm-item:last-child { border: 0; }
+.rm-item:hover { color: var(--cyan); }
+.rm-item .ri-icon { flex-shrink: 0; font-size: 15px; }
+.rm-item .ri-main { flex: 1; min-width: 0; }
+.rm-item .ri-main b { display: block; font-weight: 600; }
+.rm-item .ri-main em { color: var(--muted); font-size: 11px; font-style: normal; }
+.rm-item .ri-min { flex-shrink: 0; color: var(--muted); font: 10.5px var(--mono); }
+.rm-item .ri-done { flex-shrink: 0; color: var(--green); }
+.rm-item.done b { color: var(--muted); text-decoration: line-through; }
+.rm-item.review .ri-icon { color: var(--gold); }
+.rm-item.exam .ri-icon, .rm-item.interview .ri-icon { color: var(--violet); }
+.rm-item.hot b { color: #ded7ff; }
+
+@media (max-width: 760px) {
+  .rm-day-head { flex-wrap: wrap; gap: 8px; }
+  .rm-day-stage { order: 5; width: 100%; }
+}

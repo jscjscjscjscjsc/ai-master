@@ -1,0 +1,21 @@
+/* 登录 / 注册 */
+
+.auth { display: grid; grid-template-columns: 1.25fr 1fr; gap: 44px; align-items: center; padding: 72px 0 40px; }
+.auth-copy h1 { margin: 12px 0 18px; font-family: var(--serif); font-size: clamp(26px, 3.2vw, 38px); line-height: 1.32; }
+.auth-copy > p { max-width: 560px; margin: 0 0 22px; color: var(--ink-2); font-size: 14px; line-height: 1.9; }
+.auth-copy code { padding: 2px 6px; border-radius: 4px; background: rgba(114, 246, 228, .1); color: #b9fff5; font: 12px var(--mono); }
+.auth-points { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+.auth-points li { padding-left: 17px; border-left: 2px solid rgba(114, 246, 228, .3); color: var(--muted); font-size: 12.5px; line-height: 1.75; }
+.auth-points b { color: var(--cyan); }
+
+.auth-card { padding: 26px; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 9px; background: rgba(4, 8, 20, .6); }
+.auth-tabs button { padding: 9px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font: 600 13px var(--sans); cursor: pointer; transition: .18s; }
+.auth-tabs button.on { background: rgba(114, 246, 228, .16); color: #eafffb; }
+.auth-error { margin-bottom: 15px; padding: 10px 13px; border-left: 2px solid var(--rose); border-radius: 0 7px 7px 0; background: rgba(255, 157, 179, .09); color: #ffd6e0; font-size: 12.5px; }
+.auth-foot { margin: 15px 0 0; color: var(--muted); font-size: 11.5px; text-align: center; }
+.auth-foot a { color: var(--cyan); }
+
+@media (max-width: 900px) {
+  .auth { grid-template-columns: 1fr; gap: 26px; padding-top: 40px; }
+}

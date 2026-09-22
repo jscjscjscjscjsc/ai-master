@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGENT FRAMEWORKS · CG · 把循环画成图</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./engine/star-cinema.css">
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="brand" id="brand">AI MASTER / AGENT FRAMEWORKS</div>
+
+<div class="scene-info">
+  <p class="scene-num" id="sceneNum">01</p>
+  <h1 class="scene-title" id="sceneTitle">PROLOGUE</h1>
+  <p class="scene-sub" id="sceneSub"></p>
+</div>
+<p class="caption" id="caption"></p>
+
+<div class="cta-wrap" id="ctaWrap">
+  <a class="cta" id="ctaBtn" href="../../chapter-5.html">开始学习 Agent 框架 <span class="arrow">→</span></a>
+  <p class="cta-sub" id="ctaSub">DAY 21 – 25 · LangGraph 状态图 · Checkpoint · 人工审批 · 选型</p>
+</div>
+
+<div class="bottom-bar">
+  <div class="progress-track" id="progressTrack">
+    <div class="progress-fill" id="progressFill"></div>
+    <div class="chapter-marks" id="chapterMarks"></div>
+  </div>
+  <div class="bar-row">
+    <span class="time-label" id="timeLabel">00:00 / 00:00</span>
+    <div class="controls">
+      <button class="ctrl-btn" id="ctrlPrev">◀◀</button>
+      <button class="ctrl-btn" id="ctrlPlay">暂停</button>
+      <button class="ctrl-btn" id="ctrlNext">▶▶</button>
+      <button class="ctrl-btn" id="ctrlSkip">跳过</button>
+      <button class="ctrl-btn" id="ctrlFull">全屏</button>
+    </div>
+  </div>
+</div>
+
+<script src="./engine/star-cinema.js"></script>
+<script>
+/* ===========================================================
+   第 5 章开场 CG：把循环画成图（Day 21–25）
+   -----------------------------------------------------------
+   这一章的转折点是「框架不是魔法，是把你第 4 章手写的东西命名化」。
+   所以第一幕就把两边的对应关系摆出来：
+       AgentResult → State，处理函数 → Node，调用顺序 → Edge …
+   命名之后才可能出现后面三件事：条件路由、断点续跑、人工审批。
+   每一幕对应教材里真实做出来的一步。
+   =========================================================== */
+const S = StarCinema;
+const { C, TAU, lerp, clamp, easeOut, easeIn, easeInOut, rand, pick } = S;
+
+const SCENES = [
+
+/* ---------- 01 手写 vs 框架 ---------- */
+{
+  id: 'mapping', num: '01', title: 'NAMING',
+  sub: '序章 · 框架做的事，是给你写过的代码起个名字',
+  caption: '第 4 章你手写过一个循环。这一章，那个循环有了名字。',
+  duration: 11000,
+  init() { this.t = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const pairs = [
+      ['你手写的 AgentResult', 'State'],
+      ['你手写的处理函数', 'Node'],
+      ['你手写的调用顺序', 'Edge'],
+      ['你手写的 if / else', 'Conditional Edge'],
+      ['你手写存进 SQLite 的运行状态', 'Checkpointer + thread_id'],
+      ['你手写等用户确认', 'interrupt() + Command(resume)'],
+    ];
+    const rowH = Math.min(H * 0.098, 62);
+    const leftX = W * 0.10;
+    const rightX = W * 0.56;
+    const startY = (H - pairs.length * rowH) / 2 - 10;
+
+    S.drawLabel('第一遍：手写', leftX, startY - 30, C.muted, 0.85, 13);
+    S.drawLabel('第二遍：给它一个名字', rightX, startY - 30, C.cyan, 0.9, 13);
+
+    pairs.forEach((pair, i) => {
+      const k = clamp((p - i * 0.11) / 0.22, 0, 1);
+      if (k <= 0) return;
+      const y = startY + i * rowH + rowH * 0.5;
+
+      // 左边：灰的、旧的写法
+      S.roundRect(leftX, y - rowH * 0.34, W * 0.36, rowH * 0.66, 7, {
+        fill: 'rgba(255,255,255,.03)', stroke: S.hexA(C.muted, 0.28 * k), lw: 1, alpha: k,
+      });
+      S.drawLabel(pair[0], leftX + 16, y, C.muted, k * 0.9, 12.5);
+
+      // 右边：亮的、命名后的概念
+      S.roundRect(rightX, y - rowH * 0.34, W * 0.34, rowH * 0.66, 7, {
+        fill: S.hexA(C.cyan, 0.10 * k), stroke: S.hexA(C.cyan, 0.5 * k), lw: 1.2, alpha: k,
+        shadow: S.hexA(C.cyan, 0.22 * k), blur: 14,
+      });
+      S.drawLabel(pair[1], rightX + 16, y, C.cyan, k, 13);
+
+      // 中间一支箭头，表示这是同一个东西换了说法
+      S.arrow(leftX + W * 0.36 + 10, y, rightX - 12, y, S.hexA(C.purple, 0.45), k * 0.8, 1.3);
+    });
+
+    if (p > 0.86) {
+      S.gradText('不是新东西，是新视角', W / 2, H * 0.90, Math.min(30, W / 34),
+        easeOut((p - 0.86) / 0.14), 700);
+    }
+  },
+},
+
+/* ---------- 02 状态图 ---------- */
+{
+  id: 'graph', num: '02', title: 'STATE / NODE / EDGE',
+  sub: '第 21 天 · 三个词，一张图',
+  caption: 'State 是流动的数据，Node 是干活的地方，Edge 决定下一个是谁。',
+  duration: 10000,
+  init() { this.t = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const nodes = [
+      { id: 'start', name: 'START', x: W * 0.16, y: H * 0.44, color: C.muted },
+      { id: 'retrieve', name: '检索', x: W * 0.38, y: H * 0.34, color: C.cyan },
+      { id: 'grade', name: '判相关', x: W * 0.60, y: H * 0.44, color: C.amber },
+      { id: 'answer', name: '生成', x: W * 0.82, y: H * 0.34, color: C.green },
+      { id: 'end', name: 'END', x: W * 0.82, y: H * 0.66, color: C.muted },
+    ];
+    const edges = [
+      ['start', 'retrieve'], ['retrieve', 'grade'],
+      ['grade', 'answer'], ['answer', 'end'],
+    ];
+
+    // 节点逐个亮起
+    nodes.forEach((node, i) => {
+      const k = clamp((p - 0.06 - i * 0.07) / 0.16, 0, 1);
+      if (k <= 0) return;
+      const scale = easeOut(k);
+      S.roundRect(node.x - 52 * scale, node.y - 22 * scale, 104 * scale, 44 * scale, 9, {
+        fill: S.hexA(node.color, 0.13 * k), stroke: S.hexA(node.color, 0.55 * k), lw: 1.3,
+        alpha: k, shadow: S.hexA(node.color, 0.3 * k), blur: 18,
+      });
+      if (k > 0.5) S.drawLabel(node.name, node.x, node.y, node.color, (k - 0.5) * 2, 14, 'center');
+    });
+
+    // 边：一条条画出来，上面跑着 State
+    edges.forEach((edge, i) => {
+      const from = nodes.find((n) => n.id === edge[0]);
+      const to = nodes.find((n) => n.id === edge[1]);
+      const k = clamp((p - 0.26 - i * 0.06) / 0.16, 0, 1);
+      if (k <= 0) return;
+      S.arrow(from.x + 52, from.y, to.x - 52, to.y, S.hexA(C.purple, 0.5 * k), k * 0.85, 1.5);
+      S.flowDot(from.x + 52, from.y, to.x - 52, to.y, p * 4 + i * 0.4, C.white, k * 0.85);
+    });
+
+    // State 的示意：一个跟着光点走的盒子
+    if (p > 0.42) {
+      const k = clamp((p - 0.42) / 0.12, 0, 1);
+      const moved = easeInOut(clamp((p - 0.44) / 0.34, 0, 1));
+      const x = lerp(W * 0.16, W * 0.60, moved);
+      const y = H * 0.44 - Math.sin(moved * Math.PI) * 30;
+      S.roundRect(x - 76, y + 42, 152, 34, 6, {
+        fill: S.hexA(C.purple, 0.16 * k), stroke: S.hexA(C.purple, 0.6 * k), lw: 1.2, alpha: k,
+      });
+      S.drawLabel('State（一路带着走）', x, y + 59, C.purple, k, 12, 'center');
+    }
+
+    if (p > 0.84) {
+      S.gradText('图的好处：能画出来', W / 2, H * 0.86, Math.min(30, W / 34),
+        easeOut((p - 0.84) / 0.16), 700);
+    }
+  },
+},
+
+/* ---------- 03 条件路由与循环 ---------- */
+{
+  id: 'loop', num: '03', title: 'CONDITIONAL',
+  sub: '第 22 天 · 加了判断，图才会绕回来',
+  caption: '「不相关就换个问法再检索」—— 一个 if 就把直线变成了循环。',
+  duration: 11000,
+  init() { this.t = 0; this.attempts = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const retrieve = { x: W * 0.34, y: H * 0.40 };
+    const grade = { x: W * 0.62, y: H * 0.40 };
+    const answer = { x: W * 0.80, y: H * 0.66 };
+
+    [[retrieve, '检索', C.cyan], [grade, '判相关', C.amber], [answer, '生成', C.green]]
+      .forEach(([node, name, color], i) => {
+        const k = clamp((p - 0.06 - i * 0.06) / 0.14, 0, 1);
+        if (k <= 0) return;
+        S.roundRect(node.x - 54, node.y - 23, 108, 46, 9, {
+          fill: S.hexA(color, 0.13), stroke: S.hexA(color, 0.55), lw: 1.3, alpha: k,
+          shadow: S.hexA(color, 0.26 * k), blur: 16,
+        });
+        S.drawLabel(name, node.x, node.y, color, k, 14, 'center');
+      });
+
+    // 主干：检索 → 判相关
+    S.arrow(retrieve.x + 54, retrieve.y, grade.x - 54, grade.y, S.hexA(C.purple, 0.5), 0.9, 1.5);
+
+    // 判定分支：不相关 → 绕回检索（这就是循环）
+    const loopK = clamp((p - 0.34) / 0.16, 0, 1);
+    if (loopK > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.6 * loopK;
+      ctx.strokeStyle = C.pink;
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([7, 6]);
+      ctx.beginPath();
+      ctx.moveTo(grade.x, grade.y + 24);
+      ctx.bezierCurveTo(grade.x, grade.y + 110, retrieve.x, retrieve.y + 110, retrieve.x, retrieve.y + 24);
+      ctx.stroke();
+      ctx.restore();
+      S.drawLabel('不相关 → 换问法重来', (retrieve.x + grade.x) / 2, (retrieve.y + grade.y) / 2 + 118,
+        C.pink, loopK * 0.9, 12, 'center');
+      // 循环上的光点
+      const k2 = (p * 1.6) % 1;
+      const bx = (1 - k2) * (1 - k2) * grade.x + 2 * (1 - k2) * k2 * ((grade.x + retrieve.x) / 2)
+        + k2 * k2 * retrieve.x;
+      const by = (1 - k2) * (1 - k2) * (grade.y + 24) + 2 * (1 - k2) * k2 * (grade.y + 110)
+        + k2 * k2 * (retrieve.y + 24);
+      S.glowDot(bx, by, 4, C.pink, loopK * 0.95);
+    }
+
+    // 相关 → 生成
+    const okK = clamp((p - 0.46) / 0.16, 0, 1);
+    if (okK > 0) {
+      S.arrow(grade.x + 54, grade.y, answer.x - 54, answer.y, S.hexA(C.green, 0.55), okK * 0.9, 1.5);
+      S.drawLabel('相关', (grade.x + answer.x) / 2 + 24, (grade.y + answer.y) / 2 - 6, C.green, okK * 0.9, 11.5);
+      S.flowDot(grade.x + 54, grade.y, answer.x - 54, answer.y, p * 4, C.white, okK * 0.85);
+    }
+
+    if (p > 0.82) {
+      S.gradText('循环有上界，才不会卡死', W / 2, H * 0.90, Math.min(29, W / 35),
+        easeOut((p - 0.82) / 0.18), 700);
+    }
+  },
+},
+
+/* ---------- 04 Checkpoint ---------- */
+{
+  id: 'checkpoint', num: '04', title: 'CHECKPOINT',
+  sub: '第 22 天 · 断在哪里，就从哪里接上',
+  caption: 'thread_id 是恢复现场的钥匙：进程重启也不丢进度。',
+  duration: 10000,
+  init() { this.t = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const steps = ['读取需求', '检索资料', '拟定方案', '执行修改', '复核输出'];
+    const rowY = H * 0.42;
+    const dotGap = Math.min(W * 0.16, 150);
+    const startX = (W - dotGap * (steps.length - 1)) / 2;
+
+    // 关键：中途「进程重启」—— 后面几步被清空，然后从存档恢复
+    const crashed = p > 0.40 && p < 0.56;
+    const restored = p >= 0.56;
+    const progress = crashed ? 0.36 : clamp((p - 0.06) / (restored ? 0.30 : 0.42) * (restored ? 1.02 : 1), 0, 1);
+
+    // 进度基线
+    ctx.save();
+    ctx.globalAlpha = 0.16;
+    ctx.strokeStyle = C.white;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(startX, rowY);
+    ctx.lineTo(startX + dotGap * (steps.length - 1), rowY);
+    ctx.stroke();
+    ctx.restore();
+
+    steps.forEach((name, i) => {
+      const x = startX + i * dotGap;
+      const done = i / (steps.length - 1) < progress;
+      const color = done ? C.cyan : (crashed && i > 1 ? C.pink : C.muted);
+      if (!crashed || i <= 1) {
+        S.glowDot(x, rowY, done ? 8 : 5, color, done ? 1 : 0.5);
+      }
+      S.drawLabel(name, x, rowY + 34, color, done ? 0.95 : 0.6, 12, 'center');
+    });
+
+    // Checkpoint 存档点：每一步都写一份
+    if (p > 0.24) {
+      const k = clamp((p - 0.24) / 0.14, 0, 1);
+      steps.forEach((name, i) => {
+        if (i / (steps.length - 1) >= progress) return;
+        const x = startX + i * dotGap;
+        S.arrow(x, rowY + 12, x, rowY + 58, S.hexA(C.purple, 0.45), k * 0.7, 1.1);
+        S.roundRect(x - 26, rowY + 60, 52, 22, 5, {
+          fill: S.hexA(C.purple, 0.14 * k), stroke: S.hexA(C.purple, 0.5 * k), lw: 1, alpha: k,
+        });
+        S.drawLabel('存档', x, rowY + 71, C.purple, k * 0.9, 10.5, 'center');
+      });
+    }
+
+    // 崩溃提示
+    if (crashed) {
+      const k = clamp((p - 0.40) / 0.06, 0, 1);
+      S.drawLabel('⚠ 进程重启', W / 2, H * 0.24, C.pink, k, 20, 'center');
+    }
+    if (restored) {
+      const k = clamp((p - 0.56) / 0.14, 0, 1);
+      S.drawLabel('thread_id 找到上次的现场，从「拟定方案」继续', W / 2, H * 0.24, C.green, k, 15, 'center');
+      // 恢复的瞬间：一道扫描线扫过
+      if (k < 0.7) {
+        ctx.save();
+        ctx.globalAlpha = (1 - k / 0.7) * 0.5;
+        ctx.strokeStyle = C.green;
+        ctx.lineWidth = 2;
+        const sx = startX - 60 + (W - startX + 60) * (k / 0.7);
+        ctx.beginPath();
+        ctx.moveTo(sx, H * 0.28);
+        ctx.lineTo(sx, H * 0.62);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    if (p > 0.86) {
+      S.gradText('能恢复，才敢跑长任务', W / 2, H * 0.84, Math.min(30, W / 34),
+        easeOut((p - 0.86) / 0.14), 700);
+    }
+  },
+},
+
+/* ---------- 05 人工审批 + FINALE ---------- */
+{
+  id: 'approval', num: '05', title: 'HUMAN IN THE LOOP',
+  sub: '第 22 天 · 该停下来等人，就停下来',
+  caption: 'interrupt() 把图挂起，Command(resume) 带着人的决定继续。',
+  duration: 11000,
+  init() { this.t = 0; },
+  update(ctx, p) {
+    const W = S.W, H = S.H;
+    const plan = { x: W * 0.24, y: H * 0.38 };
+    const gate = { x: W * 0.52, y: H * 0.38 };
+    const execute = { x: W * 0.80, y: H * 0.38 };
+
+    // 三个节点
+    [[plan, '拟定方案', C.cyan], [gate, '审批', C.amber], [execute, '执行修改', C.green]]
+      .forEach(([node, name, color], i) => {
+        const k = clamp((p - 0.05 - i * 0.06) / 0.14, 0, 1);
+        if (k <= 0) return;
+        S.roundRect(node.x - 58, node.y - 24, 116, 48, 9, {
+          fill: S.hexA(color, 0.13), stroke: S.hexA(color, 0.55), lw: 1.3, alpha: k,
+          shadow: S.hexA(color, 0.26 * k), blur: 16,
+        });
+        S.drawLabel(name, node.x, node.y, color, k, 14, 'center');
+      });
+
+    S.arrow(plan.x + 58, plan.y, gate.x - 58, gate.y, S.hexA(C.purple, 0.5), 0.9, 1.5);
+    S.flowDot(plan.x + 58, plan.y, gate.x - 58, gate.y, p * 4, C.white, 0.8);
+
+    // 审批节点挂起：画一个「暂停」符号 + 等了几秒的计时
+    const waiting = p > 0.34 && p < 0.62;
+    if (p > 0.34) {
+      const k = clamp((p - 0.34) / 0.10, 0, 1);
+      const pulse = waiting ? 0.5 + 0.5 * Math.sin(p * 22) : 1;
+      ctx.save();
+      ctx.globalAlpha = 0.7 * k * pulse;
+      ctx.strokeStyle = C.amber;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(gate.x, gate.y, 42, 0, TAU);
+      ctx.stroke();
+      ctx.restore();
+      if (waiting) {
+        S.drawLabel('⏸ 图在这里挂起，等人', gate.x, gate.y + 66, C.amber, k * 0.95, 12.5, 'center');
+        S.drawLabel('状态已存档，进程可以退出', gate.x, gate.y + 88, C.muted, k * 0.8, 11.5, 'center');
+      }
+    }
+
+    // 人做决定：批准 / 驳回
+    if (p > 0.44) {
+      const k = clamp((p - 0.44) / 0.12, 0, 1);
+      const y = gate.y + 118;
+      S.roundRect(gate.x - 128, y - 16, 116, 32, 6, {
+        fill: S.hexA(C.green, 0.16 * k), stroke: S.hexA(C.green, 0.55 * k), lw: 1.1, alpha: k,
+      });
+      S.drawLabel('批准 → 继续', gate.x - 70, y, C.green, k, 12, 'center');
+      S.roundRect(gate.x + 12, y - 16, 116, 32, 6, {
+        fill: S.hexA(C.pink, 0.14 * k), stroke: S.hexA(C.pink, 0.5 * k), lw: 1.1, alpha: k,
+      });
+      S.drawLabel('驳回 → 回到方案', gate.x + 70, y, C.pink, k, 12, 'center');
+    }
+
+    // 批准之后：继续往下走；并且强调幂等保护（别重复执行）
+    if (p > 0.64) {
+      const k = clamp((p - 0.64) / 0.16, 0, 1);
+      S.arrow(gate.x + 58, gate.y, execute.x - 58, execute.y, S.hexA(C.green, 0.6), k * 0.95, 1.6);
+      S.flowDot(gate.x + 58, gate.y, execute.x - 58, execute.y, p * 4, C.white, k * 0.9);
+      S.drawLabel('Command(resume=...)', (gate.x + execute.x) / 2, gate.y - 34, C.cyan, k * 0.9, 11.5, 'center');
+      if (p > 0.78) {
+        const k2 = easeOut((p - 0.78) / 0.22);
+        S.gradText('审批过的事，只能执行一次', W / 2, H * 0.80, Math.min(29, W / 35), k2, 700);
+        S.drawLabel('重复执行 = 重复副作用', W / 2, H * 0.86, C.muted, k2 * 0.9, 12, 'center');
+      }
+    }
+  },
+},
+];
+
+S.start({
+  title: 'AI MASTER / AGENT FRAMEWORKS',
+  learnUrl: '../../chapter-5.html',
+  learnLabel: '开始学习 Agent 框架',
+  learnSub: 'DAY 21 – 25 · LangGraph 状态图 · Checkpoint · 人工审批 · 选型',
+  scenes: SCENES,
+});
+</script>
+</body>
+</html>

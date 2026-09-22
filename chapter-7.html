@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>开源 Agent 项目源码拆解 · AI Master 星辰学习系统</title>
+<link rel="stylesheet" href="static/css/core.css">
+<link rel="stylesheet" href="static/css/questions.css">
+<link rel="stylesheet" href="static/css/agent.css">
+<link rel="stylesheet" href="static/css/atmosphere.css">
+<link rel="stylesheet" href="static/css/cultivation.css">
+
+<link rel="stylesheet" href="static/css/chapter.css">
+
+<script>window.STARLAB_STATIC = true;</script>
+<script src="static/js/starlab_static.js"></script>
+<script src="static/js/static_mode_bridge.js"></script>
+</head>
+<body class="chapter-page"
+      data-page="开源 Agent 项目源码拆解" data-chapter-id="7">
+
+<nav class="nav">
+  <a class="brand" href="/"><i></i><span>AI MASTER <em>/ 星辰学习系统</em></span></a>
+  <div class="nav-links">
+    <a href="/" class="">指挥舱</a>
+    <a href="roadmap.html" class="">学习路线</a>
+    <a href="agent.html" class="hot ">智能体</a>
+    <a href="training.html" class="">刷题</a>
+    <a href="coach.html" class="">星辰教练</a>
+    <a href="constellation.html" class="">星空修为</a>
+    <a href="stars.html" class="">知识星海</a>
+    <a href="static/atlas/ai_odyssey.html" class="hide-sm" target="_blank" rel="noreferrer">沉浸远征</a>
+    <a href="progress.html" class="hide-sm ">学习档案</a>
+  </div>
+  <div class="nav-user">
+    <span data-username>guest</span>
+    
+      <span class="chip green" style="cursor:default">进度存在本机</span>
+    
+  </div>
+</nav>
+
+<main class="page ">
+
+
+<section class="ch-head fade-up" style="--accent:#8ff0c8">
+  
+  <div class="ch-cg" id="ch-cg">
+    <div class="ch-cg-main" data-url="static/cg/trae_tutorial/index.html">
+      <span class="ch-cg-badge">开场 CG</span>
+      <h2>实战 · Trae 智能体教程</h2>
+      <p>用真实 IDE 智能体读一遍别人的项目</p>
+      <div class="row">
+        <button class="btn primary" id="cg-play">▶ 播放这一章的开场</button>
+        <button class="btn ghost" id="cg-embed">在页面里预览</button>
+      </div>
+    </div>
+    
+    <div class="ch-cg-rest">
+      
+      <a class="ch-cg-chip cine" href="static/cg/revelation_cg.html" target="_blank" rel="noreferrer">
+        <b>收束 · 星辰启示</b><em>翻过这一章时，看一眼星图留言</em>
+      </a>
+      
+    </div>
+    
+  </div>
+  
+
+  <div class="ch-head-copy">
+    <p class="kicker">SECTOR 07 / 阶段四 · 源码、调优与落地</p>
+    <h1>🔍 开源 Agent 项目源码拆解</h1>
+    <p class="lead">Day 31–34：MetaGPT：SOP 流水线式多角色协作；Dify：可视化工作流与插件引擎；OpenHands 与 deer-flow：执行循环与长任务管理 等 4 天内容</p>
+    <div class="row">
+      
+      <span class="chip"><b style="color:var(--ink)">31–34</b> Day</span>
+      
+      <span class="chip"><b style="color:var(--ink)">4 节</b> 知识点</span>
+      
+      <span class="chip"><b style="color:var(--ink)">约 24 小时</b> 学时</span>
+      
+      <span class="chip"><b style="color:var(--ink)">27 道</b> 练习题</span>
+      
+      
+      <span class="chip">MetaGPT</span><span class="chip">Dify</span><span class="chip">OpenHands</span><span class="chip">自研框架</span>
+    </div>
+  </div>
+
+  <div class="ch-head-side">
+    <div class="card">
+      <div class="progress-row">
+        <span>本章进度</span><b id="ch-progress-text">0 / 4</b>
+      </div>
+      <div class="bar"><i id="ch-progress-bar" style="width:0%"></i></div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn sm" href="training.html?chapters=7">专项刷题</a>
+        <button class="btn sm agent" id="btn-ask-chapter">问这一章</button>
+      </div>
+      <a class="ch-nav" href="chapter-6.html">← 上一章</a>
+      
+      <a class="ch-nav ch-nav-warp" href="warp.html?to=/chapter/8&kicker=SECTOR 08&next=正在跃迁到 模型微调与上下文工程">
+        下一章 →<em>走星际跃迁</em>
+      </a>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-overview">
+    <h2>这一章要解决什么</h2>
+    <div class="lesson"><blockquote><strong>版本</strong>：v1.0（2026-09-21 编写） <strong>建议学时</strong>：4 天 × 6 学时 <strong>先修要求</strong>：完成第 4–6 章（能手写 ReAct 循环、MCP Server、多 Agent 协作） <strong>章节交付物</strong>：四个开源项目的架构拆解报告 + <strong>一个百行级自研迷你 Agent 框架</strong> <strong>核实说明</strong>：开源项目的版本与结构变化很快。本章涉及具体项目状态的内容均标注核实日期， 授课前请以各项目官方仓库为准。</blockquote>
+<hr>
+<h3>7.0 为什么要读别人的代码</h3>
+<p>前六章你一直在<strong>写</strong>：手写 httpx 调用、手写 ReAct 循环、手写 MCP Server。 从本章开始要<strong>读</strong>——读生产级开源项目的代码。</p>
+<p><strong>这不是为了抄，而是为了三件事：</strong></p>
+<table><thead><tr><th style="text-align:left">目的</th><th style="text-align:left">具体收获</th></tr></thead><tbody><tr><td style="text-align:left"><strong>校准抽象判断力</strong></td><td style="text-align:left">你手写的 <code>ToolRegistry</code> 和 MetaGPT 的 <code>Action</code> 是同一个问题吗？它们为什么这样切分？</td></tr><tr><td style="text-align:left"><strong>看见工程规模的真实约束</strong></td><td style="text-align:left">你的 ReAct 循环 80 行；OpenHands 的执行循环要处理沙箱隔离、恢复、超时、资源限制。差距在哪？</td></tr><tr><td style="text-align:left"><strong>建立选型与排障的底气</strong></td><td style="text-align:left">遇到框架 bug 时，你知道从哪个文件开始看</td></tr></tbody></table>
+<blockquote><strong>给学生的提醒</strong>：读源码最忌讳「从头读到尾」。 一个几万行的项目，逐行读会在第二天放弃。 <strong>正确做法是带着问题读</strong>：先跑起来 → 找到主流程入口 → 只读主流程 → 遇到不懂的抽象再跳过去看。 本章每个项目都给了「建议精读顺序」，就是按这个方法设计的。</blockquote>
+<blockquote><strong>⚠️ 开始前先读这份精读指南</strong>：<code>code/ch07/40_project_reading.md</code>  它包含四个项目的<strong>已核实状态</strong>（核实日期 2026-09-21）：仓库是否改名、当前 star 数、 <strong>入口文件的真实路径</strong>（都已用 HTTP 请求逐个验证存在）、建议的精读顺序、 以及「读完后应该能回答的问题」清单。  <strong>为什么这份指南是必需的</strong>：本章涉及的项目在 2026 年都发生了结构性变化， 而网上大量中文教程仍在讲旧结构。已核实的关键变化：  | 项目 | 变化 | 对精读的影响 | |---|---|---| | <strong>MetaGPT</strong> | 仓库从 <code>geekan/MetaGPT</code> 改名为 <strong>&lt;code&gt;FoundationAgents/MetaGPT&lt;/code&gt;</strong> | 旧链接会 301 跳转；本指南列出的路径已逐个验证过 | | <strong>Dify</strong> | <strong>工作流引擎已抽成独立的 pip 包 &lt;code&gt;graphon&lt;/code&gt;</strong>（<code>api/pyproject.toml</code> 声明 <code>graphon==0.7.0</code>） | <code>api/core/workflow/nodes/__init__.py</code> 里明说自己是 "legacy core.workflow namespace" —— <strong>按旧教程找引擎实现会找不到</strong>，真正实现在 <code>graphon</code> 包里 | | <strong>OpenHands</strong> | 仓库改名 + <strong>主语言变成 TypeScript</strong>，Python 全部搬到 <strong>&lt;code&gt;OpenHands/software-agent-sdk&lt;/code&gt;</strong> | 旧教程里所有 <code>openhands/controller/*</code> 路径都 404 | | <strong>deer-flow</strong> | v2 是<strong>彻底重写</strong>，与 v1 不共享代码 | 读之前先确认自己在读哪一代（v1 保留在 <code>1.x</code> 分支） |  <strong>这份指南本身也是「如何核实信息」的示范</strong>： 它明确标注了哪些项核实过、哪些项<strong>没核实</strong>（例如 Dify 的 <code>graphon</code> 内部结构只从 import 语句推断、 Dify 的 License 在 GitHub API 里返回 <code>NOASSERTION</code>、deer-flow 部分中间件文件名 404）。 <strong>能说清「我知道什么、不知道什么」，比假装什么都知道更专业</strong> —— 这是答辩时的加分项。</blockquote>
+<hr></div>
+  </div>
+</section>
+
+
+<section class="section">
+  <header>
+    <h2>逐日航线</h2>
+    <small>教材按天编排，每一天就是这一节 —— 与「学习路线」里的安排一一对应</small>
+  </header>
+  <div class="route" id="route">
+    
+    <article class="kp" id="kp-1" data-kp-index="0"
+             data-kp-key="7_0" >
+      <div class="kp-head">
+        <span class="kp-no">D31</span>
+        <div class="kp-head-main">
+          <h3>Day 31｜MetaGPT：SOP 流水线式多角色协作</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">收起</button>
+      </div>
+
+      
+      <div class="kp-body" >
+        <div class="lesson"><h4>一、教学目标</h4>
+<ol><li>说清 MetaGPT 的核心设计思路：<strong>把软件公司的 SOP 编码成 Agent 协作流程</strong>；</li><li>理解 <code>Role</code> / <code>Action</code> / <code>Environment</code> / <code>Message</code> 四个核心抽象的分工；</li><li>能对照第 6 章的三种协作模式，判断 MetaGPT 属于哪一类。</li></ol>
+<h4>二、核心设计思路</h4>
+<p>MetaGPT 的出发点是一个观察：<strong>软件团队之所以能协作，是因为有 SOP（标准作业程序）</strong>—— 产品经理写 PRD，架构师据此设计，工程师实现，测试验证。每一步的<strong>输入输出格式是约定的</strong>。</p>
+<p>所以 MetaGPT 做的事情是：</p>
+<pre class="code lang-text"><code>把「岗位职责 + 交付物格式」编码成 Agent 的 Role 和 Action
+    ↓
+用一个共享的消息池（Environment）让各角色按 SOP 顺序消费和产出
+    ↓
+于是「多智能体协作」变成了「消息驱动的流水线」</code></pre>
+<p><strong>这个设计的关键洞察</strong>：多 Agent 协作的难点不是「让模型扮演角色」（那只是改 system prompt）， 而是<strong>「保证角色之间的接口稳定」</strong>——PRD 的结构必须让架构师能读懂，架构图必须让工程师能实现。 MetaGPT 用<strong>结构化的交付物 Schema</strong> 解决了这个问题。</p>
+<blockquote><strong>对照第 6 章</strong>：MetaGPT 本质上是<strong>流水线模式</strong>（Day26 的模式一）， 但它比我们课堂上的版本严格得多——它给每个环节定义了强制的输出结构。</blockquote>
+<h4>三、四个核心抽象</h4>
+<table><thead><tr><th style="text-align:left">抽象</th><th style="text-align:left">职责</th><th style="text-align:left">对应你手写过的什么</th></tr></thead><tbody><tr><td style="text-align:left"><strong>&lt;code&gt;Role&lt;/code&gt;</strong></td><td style="text-align:left">一个岗位。持有 goal、约束、可执行的 Action 列表</td><td style="text-align:left">第 4 章的 <code>Agent</code> + system prompt</td></tr><tr><td style="text-align:left"><strong>&lt;code&gt;Action&lt;/code&gt;</strong></td><td style="text-align:left">一个可执行的原子动作（写 PRD、画图、写代码）</td><td style="text-align:left">第 4 章的 <code>Tool</code>，但更重：它有自己的 prompt 模板和输出解析</td></tr><tr><td style="text-align:left"><strong>&lt;code&gt;Environment&lt;/code&gt;</strong></td><td style="text-align:left">共享的消息空间与调度器</td><td style="text-align:left">第 6 章 Manager 的「任务分派」部分</td></tr><tr><td style="text-align:left"><strong>&lt;code&gt;Message&lt;/code&gt;</strong></td><td style="text-align:left">结构化消息（带角色、内容、元数据）</td><td style="text-align:left">第 4 章的 messages 数组，但结构化程度高得多</td></tr></tbody></table>
+<p><strong>&lt;code&gt;Role&lt;/code&gt; 与 &lt;code&gt;Action&lt;/code&gt; 的分离是设计要点</strong>：</p>
+<pre class="code lang-python"><code># 简化示意（不是真实源码，用于说明结构）
+class Role:
+    goal: str                    # 这个岗位的目标
+    actions: list[Action]        # 它能做哪些动作
+    watch: set[MessageType]      # 它关心哪些消息
+
+class Action:
+    name: str
+    prompt_template: str         # 这个动作的提示词（含 Few-shot 示例）
+    output_schema: type          # 输出的结构（Pydantic 模型）
+    async def run(self, context) -&gt; Message: ...</code></pre>
+<p><strong>为什么这样切分</strong>：</p>
+<ul><li>一个 <code>Role</code> 可以有多个 <code>Action</code>（架构师既能设计模块，也能评审）；</li><li>一个 <code>Action</code> 可以被多个 <code>Role</code> 复用（「写文档」这个动作产品经理和架构师都要做）；</li><li><code>output_schema</code> 是<strong>接口契约</strong>——这是让流水线能自动串起来的关键。</li></ul>
+<h4>四、精读建议</h4>
+<blockquote><strong>⚠️ 项目状态必读</strong>（核实日期 2026-09-21）： - <strong>仓库已改名</strong>：<code>geekan/MetaGPT</code> → <strong>&lt;code&gt;FoundationAgents/MetaGPT&lt;/code&gt;</strong>（旧地址会 301 跳转）； - <strong>版本号有陷阱</strong>：PyPI 上 <code>pip install metagpt</code> 装到的是 <strong>0.8.2</strong>（2025-03-09）， GitHub Releases 最新是 <code>v0.8.1</code>，但 <code>main</code> 分支的 <code>setup.py</code> 里自称 <code>1.0.0</code>（未发布到 PyPI）。 <strong>讲义和答辩中不要写「MetaGPT 1.0 已发布」</strong> —— 环境以 PyPI 的 0.8.2 为准； - README 要求 Python <strong>≥3.9 且 &lt;3.12</strong>（注意上界，3.12 会装不上）。</blockquote>
+<p><strong>已核实的核心源码路径</strong>（照着找，不用满仓库搜）：</p>
+<table><thead><tr><th style="text-align:left">抽象</th><th style="text-align:left">文件路径</th><th style="text-align:left">关键定义</th></tr></thead><tbody><tr><td style="text-align:left"><code>Role</code></td><td style="text-align:left"><code>metagpt/roles/role.py</code></td><td style="text-align:left"><code>class Role(BaseRole, ...)</code>；配套 <code>RoleReactMode</code>(Enum)、<code>RoleContext</code></td></tr><tr><td style="text-align:left"><code>Action</code></td><td style="text-align:left"><code>metagpt/actions/action.py</code></td><td style="text-align:left">基类；具体动作在 <code>metagpt/actions/__init__.py</code> 导出（<code>WriteDesign</code>、<code>WriteCode</code>、<code>RunCode</code>、<code>DesignReview</code> 等）</td></tr><tr><td style="text-align:left"><code>Team</code></td><td style="text-align:left"><code>metagpt/team.py</code></td><td style="text-align:left"><code>class Team(BaseModel)</code>；方法 <code>hire()</code>、<code>invest(v)</code>、<code>run_project(idea)</code>、<code>async run(n_round=3, ...)</code>；字段 <code>investment: float = 10.0</code></td></tr><tr><td style="text-align:left"><code>Environment</code></td><td style="text-align:left"><code>metagpt/environment/</code></td><td style="text-align:left">包，含 <code>base_env.py</code>；子目录按场景分：<code>software</code>、<code>mgx</code>、<code>android</code>、<code>minecraft</code>、<code>stanford_town</code>、<code>werewolf</code></td></tr><tr><td style="text-align:left">软件公司入口</td><td style="text-align:left"><code>metagpt/software_company.py</code></td><td style="text-align:left">模块级函数 <code>generate_repo()</code>、<code>startup()</code></td></tr></tbody></table>
+<p><strong>核心设计理念原文</strong>：<code>Code = SOP(Team)</code></p>
+<table><thead><tr><th style="text-align:right">顺序</th><th style="text-align:left">看什么</th><th style="text-align:left">带着什么问题</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:left">README 的示例代码</td><td style="text-align:left">跑一个最小例子，观察输出的目录结构（生成的文件长什么样）</td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">最小可运行示例（如「做一个贪吃蛇游戏」）</td><td style="text-align:left">从用户输入到最终产出，中间经过几个 Role？顺序是什么？</td></tr><tr><td style="text-align:right">3</td><td style="text-align:left"><code>Role</code> 类定义（<code>roles/role.py</code>）</td><td style="text-align:left"><code>_observe</code> / <code>_think</code> / <code>_act</code> 三段式是怎么组织的？（注意它与 ReAct 的对应关系）</td></tr><tr><td style="text-align:right">4</td><td style="text-align:left"><code>Action</code> 基类定义</td><td style="text-align:left"><code>run()</code> 方法怎么把 prompt 模板 + 输出解析串起来？</td></tr><tr><td style="text-align:right">5</td><td style="text-align:left"><code>Environment</code> 的调度逻辑（<code>environment/base_env.py</code>）</td><td style="text-align:left">消息怎么路由到关心它的 Role？有没有优先级或依赖排序？</td></tr><tr><td style="text-align:right">6</td><td style="text-align:left">一个具体 Action 的实现（如 <code>WriteDesign</code>）</td><td style="text-align:left">输出结构是怎么定义的？解析失败怎么处理？</td></tr></tbody></table>
+<blockquote><strong>读完后应该能回答</strong>： 1. 如果我要新增一个「安全评审员」岗位，需要改哪几个文件？ 2. 输出结构校验失败时，MetaGPT 会重试还是直接失败？ 3. 这套架构<strong>不适合</strong>做什么类型的任务？为什么？  <strong>注意</strong>：<code>Team</code>、<code>Environment</code> 是源码里的真实抽象，但 README 并未把它们列为「核心概念」。 也就是说，这是<strong>读源码才能发现的架构</strong>——这正是本章要训练的能力。</blockquote>
+<h4>五、动手：对照实验</h4>
+<pre class="code lang-powershell"><code>python code/ch07/30_architecture_report.py</code></pre>
+<p>这个脚本会生成一份架构拆解报告。<strong>你需要做的是</strong>：用第 7 章的迷你框架（见 Day34） 实现一个简化版的「三角色流水线」，然后对比：</p>
+<table><thead><tr><th style="text-align:left">对比项</th><th style="text-align:left">你的迷你框架</th><th style="text-align:left">MetaGPT</th></tr></thead><tbody><tr><td style="text-align:left">Role 的定义方式</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">交付物如何约束结构</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">角色间如何传递数据</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">出错如何处理</td><td style="text-align:left"></td><td style="text-align:left"></td></tr></tbody></table>
+<blockquote><strong>这个对比表是 Day31 的验收依据。</strong> 不要抄文档，要写你自己读代码和数据结构的真实感受。</blockquote>
+<h4>六、当日验收</h4>
+<ul><li>[ ] 能说出 MetaGPT 用 SOP 解决的核心问题（角色间的接口稳定性）</li><li>[ ] 能说出 Role / Action / Environment / Message 各自职责</li><li>[ ] 能解释 Role 与 Action 为什么要分开</li><li>[ ] 完成与迷你框架的对比表</li><li>[ ] 能回答：MetaGPT 属于第 6 章三种模式中的哪一种？为什么？</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 1, "id": "q07-01-01", "last_answer": "", "last_feedback": "", "options": ["\u8ba9\u6a21\u578b\u626e\u6f14\u597d\u4e0d\u540c\u5c97\u4f4d\u7684\u89d2\u8272", "\u4fdd\u8bc1\u89d2\u8272\u4e4b\u95f4\u7684\u63a5\u53e3\u7a33\u5b9a\uff0c\u5373\u4ea4\u4ed8\u7269\u7ed3\u6784\u80fd\u88ab\u4e0b\u6e38\u8bfb\u61c2", "\u8ba9\u591a\u4e2a\u6a21\u578b\u540c\u65f6\u5e76\u53d1\u63a8\u7406\u4ee5\u63d0\u5347\u901f\u5ea6", "\u964d\u4f4e token \u6d88\u8017\u4ee5\u63a7\u5236\u6210\u672c"], "points": 27, "solved": false, "statement": "MetaGPT \u628a\u8f6f\u4ef6\u516c\u53f8\u7684 SOP \u7f16\u7801\u6210 Agent \u534f\u4f5c\u6d41\u7a0b\u3002\n\u5b83\u8ba4\u4e3a\u591a Agent \u534f\u4f5c\u7684\u771f\u6b63\u96be\u70b9\u662f\u4ec0\u4e48\uff1f", "tags": ["MetaGPT", "SOP", "\u591a\u667a\u80fd\u4f53\u534f\u4f5c"], "title": "MetaGPT \u89e3\u51b3\u7684\u6838\u5fc3\u95ee\u9898", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "id": "q07-01-02", "last_answer": "", "last_feedback": "", "options": ["Action \u53ef\u4ee5\u7ed5\u8fc7 Environment \u76f4\u63a5\u8c03\u7528\u5176\u4ed6 Role", "\u4e00\u4e2a Role \u53ef\u6301\u6709\u591a\u4e2a Action\uff0c\u4e00\u4e2a Action \u4e5f\u53ef\u88ab\u591a\u4e2a Role \u590d\u7528", "Role \u4e0d\u518d\u9700\u8981 goal \u548c watch \u5b57\u6bb5", "Action \u7684\u8f93\u51fa\u4e0d\u518d\u9700\u8981 output_schema \u7ea6\u675f"], "points": 76, "solved": false, "statement": "MetaGPT \u628a Role \u548c Action \u62c6\u6210\u4e24\u4e2a\u62bd\u8c61\u3002\n\u4e0b\u5217\u54ea\u4e00\u9879\u662f\u8fd9\u79cd\u62c6\u5206\u7684\u76f4\u63a5\u6536\u76ca\uff1f", "tags": ["Role", "Action", "\u62bd\u8c61\u8bbe\u8ba1"], "title": "Role \u4e0e Action \u4e3a\u4f55\u5206\u79bb", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "id": "q07-01-03", "last_answer": "", "last_feedback": "", "options": ["pip install metagpt \u88c5\u5230\u7684\u662f 1.0.0\uff0c\u4e0e main \u5206\u652f\u4e00\u81f4", "\u4ed3\u5e93\u5df2\u6539\u540d\u4e3a FoundationAgents/MetaGPT\uff0c\u65e7\u5730\u5740 301 \u8df3\u8f6c", "README \u8981\u6c42 Python \u22653.9\uff0c\u4e14\u6ca1\u6709\u4e0a\u754c\u9650\u5236", "GitHub Releases \u6700\u65b0\u7248\u672c\u9ad8\u4e8e PyPI \u4e0a\u7684 0.8.2"], "points": 76, "solved": false, "statement": "\u5173\u4e8e MetaGPT \u7684\u9879\u76ee\u72b6\u6001\uff0c\u4e0b\u5217\u54ea\u4e00\u9879\u63cf\u8ff0\u6b63\u786e\uff1f", "tags": ["MetaGPT", "\u7248\u672c", "\u73af\u5883"], "title": "MetaGPT \u7248\u672c\u4e0e\u73af\u5883\u4e8b\u5b9e", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u5148\u6309\u300c\u5c97\u4f4d\u2014\u52a8\u4f5c\u2014\u6d88\u606f\u6c60\u2014\u6d88\u606f\u300d\u56db\u5c42\u8bf4\u6e05\u5206\u5de5", "\u5bf9\u7167\u7b2c 6 \u7ae0\u4e09\u79cd\u6a21\u5f0f\uff0c\u770b\u6570\u636e\u662f\u5426\u5355\u5411\u6309\u5e8f\u6d41\u52a8"], "id": "q07-01-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e MetaGPT \u4e2d Role\u3001Action\u3001Environment\u3001Message \u56db\u4e2a\u62bd\u8c61\u5404\u81ea\u7684\u804c\u8d23\uff0c\n\u5e76\u5224\u65ad MetaGPT \u5c5e\u4e8e\u7b2c 6 \u7ae0\u4e09\u79cd\u534f\u4f5c\u6a21\u5f0f\u4e2d\u7684\u54ea\u4e00\u79cd\uff0c\u8bf4\u660e\u7406\u7531\u3002", "tags": ["Role", "Environment", "\u534f\u4f5c\u6a21\u5f0f"], "title": "\u56db\u62bd\u8c61\u804c\u8d23\u4e0e\u534f\u4f5c\u6a21\u5f0f\u5224\u65ad", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 3, "hints": ["\u4ece Role \u7684 goal / actions / watch \u4e09\u4e2a\u5b57\u6bb5\u5165\u624b", "\u60f3\u6e05\u695a\u5b83\u7684\u8f93\u5165\u6765\u81ea\u8c01\u3001\u8f93\u51fa\u7ed9\u8c01"], "id": "q07-01-05", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "", "statement": "\u5982\u679c\u8981\u5728 MetaGPT \u4e2d\u65b0\u589e\u4e00\u4e2a\u300c\u5b89\u5168\u8bc4\u5ba1\u5458\u300d\u5c97\u4f4d\uff0c\n\u4f60\u9884\u8ba1\u9700\u8981\u6539\u52a8\u6216\u65b0\u589e\u54ea\u4e9b\u90e8\u5206\uff1f\u8bf7\u7ed3\u5408 Role \u4e0e Action \u7684\u5206\u79bb\u3001\u4ee5\u53ca Environment \u7684\u6d88\u606f\u8def\u7531\u6765\u8bf4\u660e\u3002", "tags": ["Role", "Action", "\u6269\u5c55\u8bbe\u8ba1"], "title": "\u65b0\u589e\u5b89\u5168\u8bc4\u5ba1\u5458\u5c97\u4f4d\u7684\u6539\u52a8", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 3, "hints": ["ctx \u53d6\u6d88\u606f\u6c60\u6700\u540e\u4e00\u6761\u7684 content", "\u7528 for \u5faa\u73af\u5305 try/except \u5b9e\u73b0\u91cd\u8bd5\u4e00\u6b21"], "id": "q07-01-06", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "class Message:\n    def __init__(self, role, content):\n        self.role = role\n        self.content = content\n\nclass Action:\n    def __init__(self, name, schema, fn):\n        self.name = name\n        self.schema = schema\n        self.fn = fn\n\n    def run(self, ctx):\n        out = self.fn(ctx)\n        for k in self.schema:\n            if k not in out:\n                raise ValueError(f\"missing {k}\")\n        return out\n\nclass Pipeline:\n    def __init__(self, roles, env):\n        self.roles = roles\n        self.env = env\n\n    def run(self, idea):\n        # TODO: \u6309\u987a\u5e8f\u6267\u884c\u6bcf\u4e2a\u89d2\u8272\u7684 action\uff0c\u5199\u5165 env\uff0c\u6821\u9a8c\u5931\u8d25\u91cd\u8bd5\u4e00\u6b21\n        pass", "statement": "\u7528\u7b80\u5316\u6846\u67b6\u5b9e\u73b0\u4e00\u4e2a\u4e09\u89d2\u8272\u6d41\u6c34\u7ebf\uff1a\u4ea7\u54c1\u7ecf\u7406 \u2192 \u67b6\u6784\u5e08 \u2192 \u5de5\u7a0b\u5e08\u3002\n\u8981\u6c42\uff1a\n1. \u6bcf\u4e2a\u89d2\u8272\u6709 goal \u548c\u53ef\u6267\u884c\u7684 action\uff1b\n2. \u6bcf\u4e2a action \u6709 prompt \u6a21\u677f\u548c output_schema\uff08\u7528 dict \u63cf\u8ff0\u5b57\u6bb5\uff09\uff1b\n3. \u7528\u5171\u4eab\u6d88\u606f\u6c60\u4f20\u9012\u7ed3\u6784\u5316\u6d88\u606f\uff0c\u6309\u987a\u5e8f\u6d88\u8d39\uff1b\n4. \u8f93\u51fa\u6821\u9a8c\u5931\u8d25\u65f6\u91cd\u8bd5\u4e00\u6b21\uff0c\u4ecd\u5931\u8d25\u5219\u629b\u51fa\u5f02\u5e38\u3002\n\u8bf7\u8865\u5168 Pipeline \u7684 run \u65b9\u6cd5\u3002", "tags": ["\u6d41\u6c34\u7ebf", "\u6d88\u606f\u6c60", "Schema \u6821\u9a8c"], "title": "\u5b9e\u73b0\u4e09\u89d2\u8272\u6d41\u6c34\u7ebf\u8ff7\u4f60\u6846\u67b6", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u5148\u5224\u65ad\u5b57\u6bb5\u662f\u5426\u5b58\u5728\uff0c\u518d\u5224\u65ad\u7c7b\u578b", "\u7f3a\u5931\u5b57\u6bb5\u4e0d\u5e94\u518d\u62a5\u7c7b\u578b\u9519\u8bef"], "id": "q07-01-07", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def validate(payload, schema):\n    \"\"\"\u8fd4\u56de (missing, type_errors) \u4e24\u4e2a\u5217\u8868\"\"\"\n    # TODO\n    pass", "statement": "MetaGPT \u7528 output_schema \u4f5c\u4e3a\u63a5\u53e3\u5951\u7ea6\u3002\n\u8bf7\u5b9e\u73b0 validate(payload, schema)\uff1aschema \u662f {\u5b57\u6bb5\u540d: \u7c7b\u578b} \u7684 dict\uff0c\n\u68c0\u67e5 payload \u662f\u5426\u5305\u542b\u6240\u6709\u5b57\u6bb5\u4e14\u7c7b\u578b\u5339\u914d\uff0c\u8fd4\u56de\u7f3a\u5931\u5b57\u6bb5\u4e0e\u7c7b\u578b\u9519\u8bef\u5b57\u6bb5\u4e24\u4e2a\u5217\u8868\u3002\n\u7c7b\u578b\u5339\u914d\u9700\u652f\u6301 int/str/list/dict \u7b49\u57fa\u672c\u7c7b\u578b\u3002", "tags": ["output_schema", "\u6821\u9a8c", "\u63a5\u53e3\u5951\u7ea6"], "title": "\u7ed3\u6784\u5316\u4ea4\u4ed8\u7269\u6821\u9a8c\u51fd\u6570", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="7" data-kp="0"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 31｜MetaGPT：SOP 流水线式多角色协作">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 31｜MetaGPT：SOP 流水线式多角色协作">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-2" data-kp-index="1"
+             data-kp-key="7_1" >
+      <div class="kp-head">
+        <span class="kp-no">D32</span>
+        <div class="kp-head-main">
+          <h3>Day 32｜Dify：可视化工作流与插件引擎</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>6 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>一、教学目标</h4>
+<ol><li>理解「低代码编排」与「代码编排」各自的适用边界；</li><li>说清 Dify 工作流引擎的节点模型；</li><li>理解插件机制如何解决「工具生态」问题。</li></ol>
+<h4>二、定位对比：Dify 与前面章节的关系</h4>
+<table><thead><tr><th style="text-align:left">项目</th><th style="text-align:left">定位</th><th style="text-align:left">谁在用</th></tr></thead><tbody><tr><td style="text-align:left">MetaGPT</td><td style="text-align:left">用 SOP 生成软件工程交付物</td><td style="text-align:left">研究者、自动化内容生产</td></tr><tr><td style="text-align:left"><strong>Dify</strong></td><td style="text-align:left"><strong>可视化搭建 LLM 应用与工作流</strong></td><td style="text-align:left"><strong>业务团队、非专业开发者、快速交付</strong></td></tr><tr><td style="text-align:left">LangGraph</td><td style="text-align:left">代码化的状态图编排</td><td style="text-align:left">工程团队、需要精细控制</td></tr><tr><td style="text-align:left">你的迷你框架</td><td style="text-align:left">理解原理的教学工具</td><td style="text-align:left">你自己</td></tr></tbody></table>
+<p><strong>Dify 的核心价值主张</strong>：把「编排」这件事从代码里搬到画布上。 不写代码也能搭出一个带知识库、工具调用、条件分支的应用。</p>
+<h4>三、工作流引擎的节点模型</h4>
+<p>Dify 的工作流是<strong>有向图</strong>，与 LangGraph 的 State/Node/Edge 是同构的——只是表达方式不同：</p>
+<table><thead><tr><th style="text-align:left">LangGraph（代码）</th><th style="text-align:left">Dify（画布）</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left"><code>State</code></td><td style="text-align:left">变量池 / 会话变量</td><td style="text-align:left">流转的数据</td></tr><tr><td style="text-align:left"><code>Node</code></td><td style="text-align:left">节点</td><td style="text-align:left">一个处理单元</td></tr><tr><td style="text-align:left"><code>Edge</code></td><td style="text-align:left">连线</td><td style="text-align:left">执行顺序</td></tr><tr><td style="text-align:left"><code>Conditional Edge</code></td><td style="text-align:left"><code>If-Else</code> 节点</td><td style="text-align:left">按条件路由</td></tr><tr><td style="text-align:left">Checkpoint</td><td style="text-align:left">运行记录</td><td style="text-align:left">可回看每次执行的中间结果</td></tr></tbody></table>
+<p><strong>为什么要在这里讲 Dify</strong>：让学生看到「同样的图结构，有两种表达方式」。 理解了这层同构关系，你就能：</p>
+<ul><li>用 Dify 快速做原型验证，再决定是否值得用代码重写；</li><li>看懂任何可视化编排工具（因为它们的概念几乎都是这一套）。</li></ul>
+<p><strong>节点类型</strong>（已核实的官方枚举，核实日期 2026-09-21，Dify <strong>v1.17.1</strong>）：</p>
+<table><thead><tr><th style="text-align:left">类别</th><th style="text-align:left">节点名</th></tr></thead><tbody><tr><td style="text-align:left">流程控制</td><td style="text-align:left"><code>Start Node</code> / <code>User Input</code> / <code>Answer</code> / <code>Output</code> / <code>If-Else</code> / <code>Iteration</code> / <code>Loop</code> / <code>Human Input</code> / <code>Variable Aggregator</code> / <code>Variable Assigner</code> / <code>List Operator</code></td></tr><tr><td style="text-align:left">AI 能力</td><td style="text-align:left"><code>LLM</code> / <code>Agent</code> / <code>Question Classifier</code> / <code>Parameter Extractor</code></td></tr><tr><td style="text-align:left">数据</td><td style="text-align:left"><code>Knowledge Retrieval</code> / <code>Document Extractor</code> / <code>Template</code> / <code>Code</code></td></tr><tr><td style="text-align:left">集成</td><td style="text-align:left"><code>Tool Node</code> / <code>HTTP Request</code></td></tr><tr><td style="text-align:left">触发</td><td style="text-align:left"><code>Trigger</code>（下分 <code>Schedule Trigger</code> / <code>Integration Trigger</code> / <code>Webhook Trigger</code>）</td></tr></tbody></table>
+<blockquote><strong>教学提示</strong>：让学生对照这张表找「哪些是第 3 章的 RAG 环节」 （<code>Knowledge Retrieval</code> + <code>Document Extractor</code>）， 「哪些是第 2 章的后端能力」（<code>HTTP Request</code>）， 「哪些是第 5 章的图控制流」（<code>If-Else</code> / <code>Iteration</code> / <code>Loop</code>）。 <strong>同一个概念在不同工具里的名字不同，但本质相同</strong>——这是抽象能力的训练。</blockquote>
+<blockquote><strong>注意</strong>：Dify 官方文档<strong>没有公开</strong>工作流引擎的内部类名（如 <code>WorkflowEngine</code> 之类）。 如果你的报告里要写引擎的内部实现，需要自己读源码，不要凭猜测写。</blockquote>
+<h4>四、插件机制</h4>
+<blockquote><strong>⚠️ 术语已变</strong>（核实日期 2026-09-21，Dify v1.17.1）： Dify 官方现在把扩展机制称为 <strong>Integrations（集成）</strong>，不再叫 "plugins"。 搜索资料时用新词能查到更准的文档。</blockquote>
+<p>Dify 的集成体系解决的是<strong>生态问题</strong>：让第三方能给平台贡献能力，而不用改平台代码。</p>
+<p><strong>集成类型</strong>（官方枚举）：<strong>Model Provider</strong>、<strong>Tool</strong>、<strong>Data Source</strong>、<strong>Trigger</strong>、 <strong>Agent Strategy</strong>、<strong>Custom Endpoint</strong>、<strong>Extension</strong>。安装自 <strong>Marketplace</strong>。</p>
+<p><strong>开发者工具链</strong>：<strong>Dify Plugin CLI</strong>（PyPI 包 <code>dify-plugin</code>）、<strong>Manifest</strong>（YAML 清单）、 <strong>remote debugging</strong>（本地跑开发中的插件并挂到线上的 workspace）、插件 daemon 容器。</p>
+<p><strong>集成机制要解决的四个问题</strong>（这四个问题是通用的，不只是 Dify）：</p>
+<table><thead><tr><th style="text-align:left">问题</th><th style="text-align:left">解法</th></tr></thead><tbody><tr><td style="text-align:left">集成如何声明自己能做什么</td><td style="text-align:left">Manifest（YAML）+ 能力声明</td></tr><tr><td style="text-align:left">权限边界如何界定</td><td style="text-align:left">声明所需权限，安装时由用户确认</td></tr><tr><td style="text-align:left">版本兼容如何保证</td><td style="text-align:left">平台定义接口版本，集成声明兼容范围</td></tr><tr><td style="text-align:left">恶意集成如何防范</td><td style="text-align:left">签名校验、权限最小化、沙箱执行</td></tr></tbody></table>
+<blockquote><strong>与 MCP 的关系</strong>：Dify 的 Integration 是<strong>平台内</strong>的能力扩展机制， MCP 是<strong>跨平台</strong>的工具协议。两者解决的问题层次不同，也常一起用 （Dify 可以作为 MCP Client 去调用 MCP Server）。 <strong>不要把它们当成竞争关系</strong> —— 这是面试时容易被问到的一个辨析点。</blockquote>
+<h4>五、动手：用 Dify 复刻一个上章项目</h4>
+<p><strong>任务</strong>：用 Dify 复刻你在第 6 章做的系统（多 Agent 流水线 + 工具调用）。</p>
+<p>然后填写这个对比表：</p>
+<table><thead><tr><th style="text-align:left">对比项</th><th style="text-align:left">代码实现（第 6 章）</th><th style="text-align:left">Dify 实现（今天）</th></tr></thead><tbody><tr><td style="text-align:left">搭建耗时</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">修改一个环节的成本</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">能表达的最复杂控制流</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">调试手段</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">版本管理与 Code Review</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">能否接入自定义工具</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left"><strong>什么情况下你更愿意用它</strong></td><td style="text-align:left"></td><td style="text-align:left"></td></tr></tbody></table>
+<blockquote><strong>低代码与代码不是替代关系，而是权衡关系。</strong> 这个表的作用不是评判哪个更好，而是让你在真实项目里能做出有依据的选择。 提示：注意「版本管理」和「Code Review」这两行——这是低代码方案在团队协作中的典型短板。</blockquote>
+<h4>六、当日验收</h4>
+<ul><li>[ ] 能说出 Dify 的节点模型与 LangGraph 的 State/Node/Edge 如何对应</li><li>[ ] 能说出插件机制要解决的四个通用问题</li><li>[ ] 能辨析 Dify 插件与 MCP 的区别与联系</li><li>[ ] 完成复刻对比表，且能说明「什么场景选哪个」</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "id": "q07-02-02", "last_answer": "", "last_feedback": "", "options": ["\u80fd\u529b\u58f0\u660e \u2014\u2014 Manifest\uff08YAML\uff09+ \u80fd\u529b\u58f0\u660e", "\u6743\u9650\u8fb9\u754c \u2014\u2014 \u58f0\u660e\u6240\u9700\u6743\u9650\uff0c\u5b89\u88c5\u65f6\u7531\u7528\u6237\u786e\u8ba4", "\u7248\u672c\u517c\u5bb9 \u2014\u2014 \u5e73\u53f0\u5b9a\u4e49\u63a5\u53e3\u7248\u672c\uff0c\u96c6\u6210\u58f0\u660e\u517c\u5bb9\u8303\u56f4", "\u6076\u610f\u9632\u8303 \u2014\u2014 \u7531 Marketplace \u4eba\u5de5\u5ba1\u6838\u540e\u5373\u53ef\u653e\u884c"], "points": 76, "solved": false, "statement": "\u96c6\u6210\u673a\u5236\u8981\u89e3\u51b3\u56db\u4e2a\u901a\u7528\u95ee\u9898\uff1a\u80fd\u529b\u58f0\u660e\u3001\u6743\u9650\u8fb9\u754c\u3001\u7248\u672c\u517c\u5bb9\u3001\u6076\u610f\u9632\u8303\u3002\n\u4e0b\u5217\u89e3\u6cd5\u4e0e\u95ee\u9898\u7684\u5bf9\u5e94\uff0c\u54ea\u4e00\u9879\u4e0d\u5339\u914d\uff1f", "tags": ["\u63d2\u4ef6\u673a\u5236", "\u96c6\u6210", "\u5b89\u5168"], "title": "\u63d2\u4ef6\u673a\u5236\u8981\u89e3\u51b3\u7684\u56db\u4e2a\u95ee\u9898", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "id": "q07-02-03", "last_answer": "", "last_feedback": "", "options": ["\u4e24\u8005\u662f\u7ade\u4e89\u5173\u7cfb\uff0c\u9009\u4e86 Dify \u5c31\u4e0d\u80fd\u7528 MCP", "Integration \u662f\u5e73\u53f0\u5185\u7684\u80fd\u529b\u6269\u5c55\u673a\u5236\uff0cMCP \u662f\u8de8\u5e73\u53f0\u7684\u5de5\u5177\u534f\u8bae\uff0c\u4e24\u8005\u5c42\u6b21\u4e0d\u540c\u4e14\u5e38\u4e00\u8d77\u7528", "MCP \u662f Dify \u72ec\u6709\u7684\u63d2\u4ef6\u683c\u5f0f\uff0c\u53ea\u80fd\u88ab Dify \u8c03\u7528", "Integration \u662f\u8de8\u5e73\u53f0\u534f\u8bae\uff0cMCP \u662f Dify \u5e73\u53f0\u5185\u7684\u6269\u5c55\u673a\u5236"], "points": 76, "solved": false, "statement": "\u5173\u4e8e Dify \u7684 Integration \u4e0e MCP \u7684\u5173\u7cfb\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["MCP", "\u96c6\u6210", "\u8fa8\u6790"], "title": "Dify \u96c6\u6210\u4e0e MCP \u7684\u5173\u7cfb\u8fa8\u6790", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u6ce8\u610f\u7248\u672c\u7ba1\u7406\u4e0e Code Review \u4e24\u884c", "\u4ece\u56e2\u961f\u534f\u4f5c\u4e0e\u5de5\u7a0b\u53ef\u63a7\u6027\u89d2\u5ea6\u5207\u5165"], "id": "q07-02-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u7528 Dify \u590d\u523b\u7b2c 6 \u7ae0\u7684\u591a Agent \u6d41\u6c34\u7ebf\u540e\uff0c\u9700\u8981\u586b\u5199\u5bf9\u6bd4\u8868\uff0c\u5305\u542b\u642d\u5efa\u8017\u65f6\u3001\u4fee\u6539\u6210\u672c\u3001\u6700\u590d\u6742\u63a7\u5236\u6d41\u3001\u8c03\u8bd5\u624b\u6bb5\u3001\u7248\u672c\u7ba1\u7406\u4e0e Code Review\u3001\u80fd\u5426\u63a5\u5165\u81ea\u5b9a\u4e49\u5de5\u5177\u7b49\u7ef4\u5ea6\u3002\n\u8bf7\u8bf4\u660e\uff1a\u5728\u56e2\u961f\u534f\u4f5c\u573a\u666f\u4e0b\uff0c\u4f4e\u4ee3\u7801\u65b9\u6848\u76f8\u6bd4\u4ee3\u7801\u5b9e\u73b0\u6709\u54ea\u4e9b\u5178\u578b\u77ed\u677f\uff1f\u5e76\u7ed9\u51fa\u300c\u4ec0\u4e48\u573a\u666f\u9009\u54ea\u4e2a\u300d\u7684\u5224\u65ad\u4f9d\u636e\u3002", "tags": ["\u4f4e\u4ee3\u7801", "\u5de5\u7a0b\u5224\u65ad", "\u534f\u4f5c"], "title": "\u4f4e\u4ee3\u7801\u4e0e\u4ee3\u7801\u7684\u6743\u8861\u5206\u6790", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u5148\u56de\u5fc6\u7b2c 3 \u7ae0 RAG \u7684\u5173\u952e\u73af\u8282", "\u7b2c 5 \u7ae0\u8bb2\u7684\u662f\u56fe\u63a7\u5236\u6d41"], "id": "q07-02-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "Dify \u7684\u8282\u70b9\u7c7b\u578b\u5206\u4e3a\u6d41\u7a0b\u63a7\u5236\u3001AI \u80fd\u529b\u3001\u6570\u636e\u3001\u96c6\u6210\u3001\u89e6\u53d1\u4e94\u7c7b\u3002\n\u8bf7\u4ece\u8282\u70b9\u8868\u4e2d\u5206\u522b\u627e\u51fa\u5bf9\u5e94\u7b2c 3 \u7ae0 RAG \u73af\u8282\u3001\u7b2c 2 \u7ae0\u540e\u7aef\u80fd\u529b\u3001\u7b2c 5 \u7ae0\u56fe\u63a7\u5236\u6d41\u7684\u8282\u70b9\uff0c\u5e76\u8bf4\u660e\u8fd9\u79cd\u300c\u540c\u4e00\u6982\u5ff5\u4e0d\u540c\u540d\u5b57\u300d\u7684\u5bf9\u7167\u5bf9\u62bd\u8c61\u80fd\u529b\u8bad\u7ec3\u7684\u610f\u4e49\u3002", "tags": ["\u8282\u70b9\u7c7b\u578b", "RAG", "\u62bd\u8c61\u80fd\u529b"], "title": "\u8282\u70b9\u7c7b\u578b\u4e0e\u524d\u9762\u7ae0\u8282\u7684\u5bf9\u5e94", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u5148\u505a\u7aef\u70b9\u5b58\u5728\u6027\u6821\u9a8c", "\u5224\u73af\u53ef\u7528 DFS \u4e09\u8272\u6807\u8bb0"], "id": "q07-02-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "def validate_workflow(wf):\n    \"\"\"\u8fd4\u56de (ok, errors)\"\"\"\n    nodes = wf.get(\"nodes\", [])\n    edges = wf.get(\"edges\", [])\n    errors = []\n    # TODO: \u6821\u9a8c\u8fb9\u7aef\u70b9\u4e0e\u73af\n    return (len(errors) == 0, errors)", "statement": "\u7ed9\u5b9a\u4e00\u4e2a\u7528 Python \u5b57\u5178\u63cf\u8ff0\u7684\u5de5\u4f5c\u6d41\u5b9a\u4e49\uff0c\u7ed3\u6784\u4e3a {\"nodes\": [...], \"edges\": [...]}\u3002\n\u6bcf\u4e2a node \u542b id \u4e0e type\uff0c\u6bcf\u6761 edge \u542b source \u4e0e target\u3002\n\u8bf7\u5b9e\u73b0 validate_workflow(wf) \u51fd\u6570\uff0c\u8fd4\u56de (ok, errors)\uff1a\n1. \u68c0\u67e5\u6240\u6709 edge \u7684 source/target \u90fd\u6307\u5411\u5df2\u5b58\u5728\u7684\u8282\u70b9 id\uff0c\u5426\u5219\u8bb0\u9519\u8bef\uff1b\n2. \u68c0\u67e5\u662f\u5426\u5b58\u5728\u73af\uff0c\u82e5\u5b58\u5728\u5219\u8bb0\u9519\u8bef\uff1b\n3. \u65e0\u9519\u8bef\u65f6 ok \u4e3a True\uff0cerrors \u4e3a\u7a7a\u5217\u8868\u3002", "tags": ["\u5de5\u4f5c\u6d41", "\u56fe\u6821\u9a8c", "DFS"], "title": "\u7528\u914d\u7f6e\u63cf\u8ff0 Dify \u5de5\u4f5c\u6d41\u56fe", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 3, "hints": ["version \u7528\u6b63\u5219 ^\\d+\\.\\d+\\.\\d+$", "permissions \u8981\u540c\u65f6\u6821\u9a8c\u7c7b\u578b\u4e0e\u5143\u7d20"], "id": "q07-02-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import re\n\nSUPPORTED_API = {\"1.0\", \"1.1\"}\n\ndef check_manifest(m):\n    \"\"\"\u8fd4\u56de (ok, errors)\"\"\"\n    errors = []\n    # TODO: \u9010\u9879\u6821\u9a8c\n    return (len(errors) == 0, errors)", "statement": "\u96c6\u6210\u901a\u8fc7 Manifest\uff08YAML\uff09\u58f0\u660e\u81ea\u5df1\u7684\u80fd\u529b\u4e0e\u6743\u9650\u3002\n\u5047\u8bbe Manifest \u89e3\u6790\u540e\u662f Python \u5b57\u5178\uff0c\u5b57\u6bb5\u5305\u62ec name\u3001version\u3001permissions\uff08\u5217\u8868\uff09\u3001api_version\u3002\n\u8bf7\u5b9e\u73b0 check_manifest(m) \u51fd\u6570\uff0c\u8fd4\u56de (ok, errors)\uff1a\n1. name \u975e\u7a7a\u5b57\u7b26\u4e32\uff1b\n2. version \u5f62\u5982 \"1.2.3\"\uff1b\n3. permissions \u662f\u5217\u8868\u4e14\u6bcf\u9879\u4e3a\u5b57\u7b26\u4e32\uff1b\n4. api_version \u5fc5\u987b\u843d\u5728\u5e73\u53f0\u652f\u6301\u7684\u96c6\u5408 {\"1.0\", \"1.1\"} \u5185\uff1b\n5. \u4efb\u4e00\u4e0d\u6ee1\u8db3\u5219\u8bb0\u5165 errors\uff0cok \u4e3a errors \u4e3a\u7a7a\u3002", "tags": ["Manifest", "\u6821\u9a8c", "\u63d2\u4ef6"], "title": "\u63d2\u4ef6 Manifest \u6821\u9a8c\u5668", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="7" data-kp="1"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 32｜Dify：可视化工作流与插件引擎">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 32｜Dify：可视化工作流与插件引擎">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-3" data-kp-index="2"
+             data-kp-key="7_2" >
+      <div class="kp-head">
+        <span class="kp-no">D33</span>
+        <div class="kp-head-main">
+          <h3>Day 33｜OpenHands 与 deer-flow：执行循环与长任务管理</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><h4>一、教学目标</h4>
+<ol><li>理解「Agent 真的去执行代码」需要额外解决哪些工程问题；</li><li>说清沙箱隔离的必要性与实现层次；</li><li>理解长任务管理器的设计要点。</li></ol>
+<h4>二、从「调用工具」到「执行代码」的跳跃</h4>
+<p>第 4 章的工具调用是这样的：模型输出 <code>{"name": "get_weather", "arguments": {...}}</code>， 你的程序校验参数、执行函数、返回结果。<strong>风险是可控的</strong>——因为可执行的函数是你预先注册的。</p>
+<p><strong>Code Agent 是另一回事</strong>：模型生成一段代码，你去执行它。</p>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:left">工具调用（第 4 章）</th><th style="text-align:left">代码执行（Code Agent）</th></tr></thead><tbody><tr><td style="text-align:left">可执行范围</td><td style="text-align:left">预注册的函数（白名单）</td><td style="text-align:left">任意代码</td></tr><tr><td style="text-align:left">风险</td><td style="text-align:left">参数错误、越权调用</td><td style="text-align:left"><strong>任意代码执行、文件读写、网络访问、资源耗尽</strong></td></tr><tr><td style="text-align:left">参数校验</td><td style="text-align:left">Pydantic 严格校验</td><td style="text-align:left">无法穷举，只能靠沙箱</td></tr><tr><td style="text-align:left">出错恢复</td><td style="text-align:left">返回结构化错误</td><td style="text-align:left">可能把环境搞坏（删文件、装错包）</td></tr></tbody></table>
+<p><strong>所以 Code Agent 的核心工程问题是沙箱，不是提示词。</strong></p>
+<h4>三、沙箱的层次</h4>
+<table><thead><tr><th style="text-align:left">层次</th><th style="text-align:left">手段</th><th style="text-align:left">隔离强度</th><th style="text-align:left">代价</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">限制可导入模块（import 白名单）</td><td style="text-align:left">弱</td><td style="text-align:left">低（容易被绕过）</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">子进程 + 超时 + 资源限制</td><td style="text-align:left">中</td><td style="text-align:left">中</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left">容器（Docker）+ 无网络 + 只读挂载</td><td style="text-align:left">较强</td><td style="text-align:left">中高</td></tr><tr><td style="text-align:left">4</td><td style="text-align:left">虚拟机 / 微虚拟机</td><td style="text-align:left">强</td><td style="text-align:left">高</td></tr><tr><td style="text-align:left">5</td><td style="text-align:left">独立机器 / 云沙箱服务</td><td style="text-align:left">最强</td><td style="text-align:left">最高</td></tr></tbody></table>
+<p><strong>必须记住的一条</strong>：<strong>任何依赖「在同一个进程里跑 Python 并拦截危险操作」的方案都不是安全边界。</strong> Python 的动态特性决定了这类拦截可以被绕过。真正的边界必须是<strong>操作系统级或进程级</strong>的。</p>
+<p><strong>沙箱除了安全，还要解决</strong>：</p>
+<ol><li><strong>状态隔离</strong>：多次执行之间是否共享文件系统？不隔离会互相污染；</li><li><strong>依赖管理</strong>：模型装的包会不会破坏宿主环境？</li><li><strong>超时与资源</strong>：一个死循环会占满 CPU；</li><li><strong>可复现</strong>：同样的任务两次执行，环境是否一致。</li></ol>
+<h4>四、长任务管理器</h4>
+<p>一个跑几分钟到几十分钟的任务，需要额外的机制：</p>
+<table><thead><tr><th style="text-align:left">机制</th><th style="text-align:left">作用</th></tr></thead><tbody><tr><td style="text-align:left"><strong>持久化会话</strong></td><td style="text-align:left">进程重启后任务能继续</td></tr><tr><td style="text-align:left"><strong>状态快照</strong></td><td style="text-align:left">中途失败能从最近的检查点恢复，而不是从头再来</td></tr><tr><td style="text-align:left"><strong>进度可见</strong></td><td style="text-align:left">用户能看到「现在在第几步、在做什么」</td></tr><tr><td style="text-align:left"><strong>中断与取消</strong></td><td style="text-align:left">用户能叫停</td></tr><tr><td style="text-align:left"><strong>产出归档</strong></td><td style="text-align:left">长任务的中间产物要落盘（否则进程没了就全丢了）</td></tr><tr><td style="text-align:left"><strong>并发控制</strong></td><td style="text-align:left">多个长任务同时跑时，资源如何分配</td></tr></tbody></table>
+<blockquote><strong>对照你自己的实现</strong>：第 6 章 Day29 的 <code>61_long_task.py</code> 其实就是一个极简的长任务管理器。 你实现了任务拆解、进度查询、上下文压缩。OpenHands 在生产环境要处理的是同样的问题， 只是多了沙箱隔离、崩溃恢复、并发调度、资源配额。 <strong>这就是「从课堂到生产」的差距所在——不是算法更难，而是边界情况多得超出想象。</strong></blockquote>
+<h4>五、精读建议</h4>
+<blockquote><strong>⚠️ 项目已重构拆仓（核实日期 2026-09-21）——这是本章最需要注意的状态变化</strong>：  OpenHands <strong>不再是单一仓库</strong>，架构已整体改变：  | 组件 | 仓库 | 当前版本 | 职责（官方原文） | |---|---|---:|---| | <strong>Agent Canvas</strong> | <code>OpenHands/OpenHands</code> | v1.20.0 | "the open-source browser client and control center for agent conversations and automations" | | <strong>Software Agent SDK</strong> | <code>OpenHands/software-agent-sdk</code> | v1.49.2 | "a composable Python library for building agents that work with code" | | <strong>Agent Server</strong> | 同上 | — | "exposes agent execution, conversations, tools, and workspaces through REST and WebSocket APIs" | | <strong>Sandbox Server</strong> | 同上 | — | "creates and manages sandboxed environments that host Agent Server" | | <strong>Automation Server</strong> | 同上 | — | 定时与事件驱动的自动化生命周期 | | <strong>CLI</strong> | 同上 | — | 终端界面，基于 Software Agent SDK |  <strong>旧架构已归档到 &lt;code&gt;OpenHands/legacy&lt;/code&gt;</strong>：之前教程里常提到的 Docker Runtime、Action Execution Server、ActionExecutor、EventStream、 <code>docker_runtime.py</code> / <code>local_runtime.py</code> 等都属<strong>旧架构</strong>，现在在 legacy 仓库里。 <strong>网上大量中文教程仍在讲旧架构</strong> —— 读之前先确认讲的是哪一代。  文档域名也从 <code>docs.all-hands.dev</code> 迁到 <strong>&lt;code&gt;docs.openhands.dev&lt;/code&gt;</strong>。</blockquote>
+<p><strong>新架构的核心设计原则（官方原文）</strong>：</p>
+<ul><li>Agent "<strong>Implements the reasoning-action loop</strong>"（实现推理-行动循环）；</li><li><code>Conversation</code> "Manages conversation state and lifecycle"（管理对话状态与生命周期）；</li><li><strong>"Stateless, immutable components with type-safe Pydantic models"</strong>（无状态、不可变组件 + 类型安全的 Pydantic 模型）；</li><li><strong>"same agent code works in both modes—just swap the workspace type"</strong>（同一份 Agent 代码在两种模式下都能跑，只需替换 workspace 类型）。</li></ul>
+<p><strong>核心类</strong>：<code>Agent</code>、<code>Conversation</code>、<code>LLM</code>、<code>Tool System</code>（"Typed base class definitions for action, observation, tool, and executor"）、<code>Events</code>、<code>Workspace</code> / <code>LocalWorkspace</code> / <code>RemoteWorkspace</code>。</p>
+<p><strong>SDK 入口（官方 Quick Start）</strong>：</p>
+<pre class="code lang-python"><code>from openhands.sdk import LLM, Agent, Conversation, Tool
+
+conversation = Conversation(agent=agent, workspace=cwd)</code></pre>
+<blockquote><code>Conversation.run()</code> / <code>Conversation.step()</code> 这种具体方法名<strong>未核实</strong>， 需要查 SDK API reference，不要凭记忆写。</blockquote>
+<table><thead><tr><th style="text-align:right">顺序</th><th style="text-align:left">看什么</th><th style="text-align:left">带着什么问题</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:left"><code>docs.openhands.dev</code> 的架构总览</td><td style="text-align:left">一次任务从提交到产出，经过哪些组件？</td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">Software Agent SDK 的 Agent 定义</td><td style="text-align:left">它和你的 ReAct 循环有什么结构上的相同与不同？</td></tr><tr><td style="text-align:right">3</td><td style="text-align:left">Sandbox Server 的接口</td><td style="text-align:left">沙箱是<strong>可插拔</strong>的（本地/远程可换）吗？为什么这么设计？</td></tr><tr><td style="text-align:right">4</td><td style="text-align:left"><code>Conversation</code> 的状态管理</td><td style="text-align:left">保存了什么？（全部对话？还是摘要 + 产物引用？）</td></tr><tr><td style="text-align:right">5</td><td style="text-align:left">错误处理路径</td><td style="text-align:left">代码执行失败时，是重试、换方案、还是终止？</td></tr></tbody></table>
+<blockquote><strong>读完后应该能回答</strong>： 1. 如果去掉沙箱，这个项目还能用吗？会有什么后果？ 2. 它的 Workspace 抽象（本地/远程可换）与你的实现有何异同？这个抽象的好处是什么？ 3. 为什么它把 "stateless, immutable components" 作为设计原则？这和 Agent 需要维护对话状态矛盾吗？</blockquote>
+<h4>六、当日验收</h4>
+<ul><li>[ ] 能说出「工具调用」与「代码执行」在风险上的本质区别</li><li>[ ] 能说出沙箱的五个层次，并解释为什么进程内拦截不算安全边界</li><li>[ ] 能列出长任务管理器需要处理的六个机制</li><li>[ ] 完成精读笔记，包含「读完后应该能回答」的三个问题</li></ul>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 1, "id": "q07-03-01", "last_answer": "", "last_feedback": "", "options": ["\u5de5\u5177\u8c03\u7528\u53ef\u6267\u884c\u8303\u56f4\u662f\u9884\u6ce8\u518c\u767d\u540d\u5355\u51fd\u6570\uff0c\u4ee3\u7801\u6267\u884c\u662f\u4efb\u610f\u4ee3\u7801\uff0c\u65e0\u6cd5\u7a77\u4e3e\u6821\u9a8c", "\u5de5\u5177\u8c03\u7528\u53c2\u6570\u6821\u9a8c\u66f4\u677e\uff0c\u4ee3\u7801\u6267\u884c\u53cd\u800c\u6709 Pydantic \u4e25\u683c\u6821\u9a8c", "\u4e24\u8005\u98ce\u9669\u76f8\u540c\uff0c\u53ea\u662f\u4ee3\u7801\u6267\u884c\u5199\u8d77\u6765\u66f4\u7b80\u5355", "\u5de5\u5177\u8c03\u7528\u4f1a\u7834\u574f\u73af\u5883\uff0c\u4ee3\u7801\u6267\u884c\u53ea\u8fd4\u56de\u7ed3\u6784\u5316\u9519\u8bef"], "points": 27, "solved": false, "statement": "\u7b2c 4 \u7ae0\u7684\u5de5\u5177\u8c03\u7528\u4e0e Code Agent \u7684\u4ee3\u7801\u6267\u884c\uff0c\u5728\u98ce\u9669\u4e0a\u7684\u672c\u8d28\u533a\u522b\u662f\u4ec0\u4e48\uff1f", "tags": ["Code Agent", "\u6c99\u7bb1", "\u5de5\u5177\u8c03\u7528"], "title": "\u5de5\u5177\u8c03\u7528\u4e0e\u4ee3\u7801\u6267\u884c\u7684\u98ce\u9669\u5dee\u5f02", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "id": "q07-03-02", "last_answer": "", "last_feedback": "", "options": ["\u9650\u5236\u53ef\u5bfc\u5165\u6a21\u5757\u5c5e\u4e8e\u5f3a\u9694\u79bb\uff0c\u4ee3\u4ef7\u4e5f\u6700\u9ad8", "\u5b50\u8fdb\u7a0b\u52a0\u8d85\u65f6\u4e0e\u8d44\u6e90\u9650\u5236\u5c5e\u4e8e\u6700\u5f3a\u9694\u79bb", "\u5bb9\u5668\u52a0\u65e0\u7f51\u7edc\u4e0e\u53ea\u8bfb\u6302\u8f7d\u5c5e\u4e8e\u8f83\u5f3a\u9694\u79bb\uff0c\u4ee3\u4ef7\u4e2d\u9ad8", "\u4f9d\u8d56\u5728\u540c\u4e00\u8fdb\u7a0b\u5185\u62e6\u622a\u5371\u9669\u64cd\u4f5c\u5373\u53ef\u6784\u6210\u5b89\u5168\u8fb9\u754c"], "points": 76, "solved": false, "statement": "\u5173\u4e8e\u6c99\u7bb1\u7684\u4e94\u4e2a\u5c42\u6b21\uff0c\u4e0b\u5217\u8bf4\u6cd5\u6b63\u786e\u7684\u662f\uff1f", "tags": ["\u6c99\u7bb1", "\u9694\u79bb\u5c42\u6b21"], "title": "\u6c99\u7bb1\u5c42\u6b21\u4e0e\u5b89\u5168\u8fb9\u754c", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "id": "q07-03-03", "last_answer": "", "last_feedback": "", "options": ["\u53ea\u9700\u8981\u63d0\u793a\u8bcd\u4f18\u5316\u548c\u66f4\u5feb\u7684\u6a21\u578b", "\u6301\u4e45\u5316\u4f1a\u8bdd\u3001\u72b6\u6001\u5feb\u7167\u3001\u8fdb\u5ea6\u53ef\u89c1\u3001\u4e2d\u65ad\u53d6\u6d88\u3001\u4ea7\u51fa\u5f52\u6863\u3001\u5e76\u53d1\u63a7\u5236", "\u53ea\u9700\u8981\u628a\u8d85\u65f6\u65f6\u95f4\u8c03\u5927\u5373\u53ef", "\u53ea\u9700\u8981\u628a\u4e2d\u95f4\u4ea7\u7269\u653e\u5728\u5185\u5b58\u91cc\u52a0\u5feb\u901f\u5ea6"], "points": 76, "solved": false, "statement": "\u4e00\u4e2a\u8dd1\u51e0\u5206\u949f\u5230\u51e0\u5341\u5206\u949f\u7684\u957f\u4efb\u52a1\uff0c\u9700\u8981\u54ea\u4e9b\u989d\u5916\u673a\u5236\uff1f", "tags": ["\u957f\u4efb\u52a1\u7ba1\u7406", "\u6301\u4e45\u5316"], "title": "\u957f\u4efb\u52a1\u7ba1\u7406\u5668\u673a\u5236", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u60f3\u60f3 Python \u6709\u54ea\u4e9b\u52a8\u6001\u80fd\u529b", "\u5bf9\u6bd4\u8fdb\u7a0b\u5185\u4e0e\u8fdb\u7a0b\u5916\u7684\u9694\u79bb"], "id": "q07-03-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u89e3\u91ca\u4e3a\u4ec0\u4e48\u300c\u5728\u540c\u4e00\u4e2a\u8fdb\u7a0b\u91cc\u8dd1 Python \u5e76\u62e6\u622a\u5371\u9669\u64cd\u4f5c\u300d\u7684\u65b9\u6848\u4e0d\u80fd\u4f5c\u4e3a\u5b89\u5168\u8fb9\u754c\uff0c\u5e76\u8bf4\u660e\u771f\u6b63\u7684\u8fb9\u754c\u5e94\u8be5\u5efa\u5728\u54ea\u4e00\u5c42\u3002", "tags": ["\u6c99\u7bb1", "\u5b89\u5168\u8fb9\u754c"], "title": "\u4e3a\u4ec0\u4e48\u8fdb\u7a0b\u5185\u62e6\u622a\u4e0d\u7b97\u5b89\u5168\u8fb9\u754c", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u60f3\u60f3\u591a\u6b21\u6267\u884c\u4e4b\u95f4\u7684\u76f8\u4e92\u5f71\u54cd", "\u60f3\u60f3\u6a21\u578b\u88c5\u5305\u4f1a\u5e26\u6765\u4ec0\u4e48"], "id": "q07-03-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u6c99\u7bb1\u9664\u4e86\u63d0\u4f9b\u5b89\u5168\u9694\u79bb\uff0c\u8fd8\u8981\u89e3\u51b3\u54ea\u4e9b\u5de5\u7a0b\u95ee\u9898\uff1f\u8bf7\u9010\u6761\u8bf4\u660e\u5176\u542b\u4e49\u3002", "tags": ["\u6c99\u7bb1", "\u5de5\u7a0b\u95ee\u9898"], "title": "\u6c99\u7bb1\u9664\u5b89\u5168\u5916\u8981\u89e3\u51b3\u7684\u95ee\u9898", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u8fdb\u5ea6\u4e0e\u4ea7\u7269\u90fd\u8981\u843d\u76d8", "\u53d6\u6d88\u7528\u6807\u5fd7\u4f4d\u800c\u975e\u5f3a\u6740"], "id": "q07-03-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "import json, os\n\nclass LongTask:\n    def __init__(self, workdir):\n        self.workdir = workdir\n        self.steps = []\n        self.done = 0\n        self.cancelled = False\n\n    def add_step(self, name):\n        # TODO: \u6dfb\u52a0\u6b65\u9aa4\n        pass\n\n    def run(self):\n        # TODO: \u4f9d\u6b21\u6267\u884c\u5e76\u843d\u76d8\n        pass\n\n    def cancel(self):\n        # TODO: \u4e2d\u65ad\n        pass\n\n    def load(self):\n        # TODO: \u4ece\u78c1\u76d8\u6062\u590d\n        pass", "statement": "\u5b9e\u73b0\u4e00\u4e2a\u6781\u7b80\u957f\u4efb\u52a1\u7ba1\u7406\u5668 LongTask\uff0c\u652f\u6301\uff1a\u628a\u4efb\u52a1\u62c6\u89e3\u4e3a\u82e5\u5e72\u6b65\u9aa4\uff1b\u8bb0\u5f55\u5f53\u524d\u8fdb\u5ea6\uff1b\u652f\u6301\u4e2d\u65ad\u53d6\u6d88\uff1b\u628a\u4e2d\u95f4\u4ea7\u7269\u843d\u76d8\u5230\u6307\u5b9a\u76ee\u5f55\u4ee5\u4fbf\u8fdb\u7a0b\u91cd\u542f\u540e\u6062\u590d\u3002\n\n\u8981\u6c42\uff1a\n1. \u63d0\u4f9b add_step(name) \u6dfb\u52a0\u6b65\u9aa4\uff1b\n2. \u63d0\u4f9b run() \u4f9d\u6b21\u6267\u884c\u6b65\u9aa4\uff0c\u6bcf\u6b65\u6267\u884c\u540e\u628a\u8fdb\u5ea6\u4e0e\u4ea7\u7269\u5199\u5165\u78c1\u76d8\uff1b\n3. \u63d0\u4f9b cancel() \u4e2d\u65ad\uff1b\n4. \u63d0\u4f9b load() \u4ece\u78c1\u76d8\u6062\u590d\u8fdb\u5ea6\u3002\n\n\u8f93\u5165\u8f93\u51fa\u81ea\u884c\u8bbe\u8ba1\uff0c\u4fdd\u8bc1\u53ef\u8fd0\u884c\u3002", "tags": ["\u957f\u4efb\u52a1\u7ba1\u7406", "\u6301\u4e45\u5316", "\u4ee3\u7801\u9898"], "title": "\u5b9e\u73b0\u6781\u7b80\u957f\u4efb\u52a1\u7ba1\u7406\u5668", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 3, "hints": ["\u7528 subprocess.run \u7684 timeout \u53c2\u6570", "\u6355\u83b7 TimeoutExpired \u5f02\u5e38"], "id": "q07-03-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import subprocess, sys\n\ndef run_code(code, timeout=5):\n    # TODO: \u5728\u5b50\u8fdb\u7a0b\u4e2d\u6267\u884c code\uff0c\u5e26\u8d85\u65f6\n    pass", "statement": "\u5b9e\u73b0\u4e00\u4e2a run_code(code, timeout) \u51fd\u6570\uff0c\u5728\u5b50\u8fdb\u7a0b\u4e2d\u6267\u884c\u7ed9\u5b9a Python \u4ee3\u7801\u5b57\u7b26\u4e32\uff0c\u8981\u6c42\uff1a\n\n1. \u8bbe\u7f6e\u8d85\u65f6\uff0c\u8d85\u65f6\u5219\u7ec8\u6b62\u5b50\u8fdb\u7a0b\u5e76\u8fd4\u56de\u8d85\u65f6\u6807\u8bb0\uff1b\n2. \u6355\u83b7\u6807\u51c6\u8f93\u51fa\u4e0e\u9519\u8bef\u8f93\u51fa\uff1b\n3. \u8fd4\u56de\u7ed3\u6784\u5316\u7ed3\u679c\uff0c\u5305\u542b\u662f\u5426\u8d85\u65f6\u3001\u8fd4\u56de\u7801\u3001stdout\u3001stderr\uff1b\n4. \u8bf4\u660e\u4e3a\u4ec0\u4e48\u8fd9\u79cd\u5b50\u8fdb\u7a0b\u65b9\u6848\u6bd4\u8fdb\u7a0b\u5185\u62e6\u622a\u66f4\u63a5\u8fd1\u5b89\u5168\u8fb9\u754c\u3002\n\n\u4fdd\u8bc1\u4ee3\u7801\u53ef\u8fd0\u884c\u3002", "tags": ["\u6c99\u7bb1", "\u5b50\u8fdb\u7a0b", "\u8d85\u65f6", "\u4ee3\u7801\u9898"], "title": "\u5e26\u8d85\u65f6\u4e0e\u8d44\u6e90\u9650\u5236\u7684\u4ee3\u7801\u6267\u884c", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="7" data-kp="2"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 33｜OpenHands 与 deer-flow：执行循环与长任务管理">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 33｜OpenHands 与 deer-flow：执行循环与长任务管理">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+    <article class="kp" id="kp-4" data-kp-index="3"
+             data-kp-key="7_3" >
+      <div class="kp-head">
+        <span class="kp-no">D34</span>
+        <div class="kp-head-main">
+          <h3>Day 34｜从零自研迷你 Agent 框架</h3>
+          <div class="kp-meta">
+            <span>≈120 分钟</span>
+            <span>7 道练习</span>
+            
+          </div>
+        </div>
+        <button class="btn sm" data-act="toggle">展开</button>
+      </div>
+
+      
+      <div class="kp-body" hidden>
+        <div class="lesson"><blockquote><strong>这是本课程最有成就感的一天。</strong> 你要把前面 33 天学到的一切， 抽象成一个<strong>自己能讲清楚每一行</strong>的框架。</blockquote>
+<h4>一、教学目标</h4>
+<ol><li>综合运用前 33 天的知识，自研一个百行级 Agent 框架；</li><li>用分层设计解决「可替换」与「可测试」两个工程问题；</li><li>写出一份能作为作品集的架构文档。</li></ol>
+<h4>二、框架的分层设计</h4>
+<pre class="code lang-mermaid"><code>flowchart TD
+    A[用户代码] --&gt; B[Runner 执行器]
+    B --&gt; C[Agent 智能体]
+    C --&gt; D[LLM 抽象]
+    C --&gt; E[Tool 系统]
+    C --&gt; F[Memory 记忆]
+    D --&gt; G[OpenAICompatibleLLM]
+    G --&gt; H[LLMClient&lt;br/&gt;第1章交付物]
+    E --&gt; I[ToolRegistry]
+    E --&gt; J["@tool 装饰器"]
+    F --&gt; K[BufferMemory]
+    F --&gt; L[SummaryMemory]
+    C --&gt; M[Message 消息抽象]</code></pre>
+<p><strong>每一层解决一个问题</strong>：</p>
+<table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">解决什么问题</th><th style="text-align:left">为什么必须独立成层</th></tr></thead><tbody><tr><td style="text-align:left"><code>LLM</code></td><td style="text-align:left">屏蔽不同平台的差异</td><td style="text-align:left">换模型不改业务代码；测试可以用假模型</td></tr><tr><td style="text-align:left"><code>Tool</code> + <code>Registry</code></td><td style="text-align:left">工具的注册、Schema 生成、调用、校验</td><td style="text-align:left">加工具不改 Agent 逻辑</td></tr><tr><td style="text-align:left"><code>Memory</code></td><td style="text-align:left">上下文的管理策略</td><td style="text-align:left">换策略（缓冲/摘要）不改 Agent 循环</td></tr><tr><td style="text-align:left"><code>Message</code></td><td style="text-align:left">消息的结构化表示</td><td style="text-align:left">保证与 OpenAI 格式的转换只有一处实现</td></tr><tr><td style="text-align:left"><code>Agent</code></td><td style="text-align:left">决策逻辑（调不调工具、何时结束）</td><td style="text-align:left">换决策范式（单次/ReAct）不动其他层</td></tr><tr><td style="text-align:left"><code>Runner</code></td><td style="text-align:left">循环控制、步数限制、步骤记录</td><td style="text-align:left">执行策略（如加重试、加追踪）集中在一处</td></tr></tbody></table>
+<p><strong>这个分层不是抄来的，是从你在第 4 章踩过的坑里长出来的</strong>：</p>
+<table><thead><tr><th style="text-align:left">第 4 章的坑</th><th style="text-align:left">抽象出什么层</th></tr></thead><tbody><tr><td style="text-align:left">tool 消息 content 传了 dict 导致 400</td><td style="text-align:left"><code>Message</code> 层统一处理格式转换</td></tr><tr><td style="text-align:left"><code>llm.decide()</code> 到处手写解析逻辑</td><td style="text-align:left"><code>LLM</code> 层归一化响应</td></tr><tr><td style="text-align:left">参数校验散落在各处</td><td style="text-align:left"><code>Tool</code> 层用 Pydantic 统一校验</td></tr><tr><td style="text-align:left">加一个新的记忆策略就要改 Agent 循环</td><td style="text-align:left"><code>Memory</code> 层定义接口</td></tr><tr><td style="text-align:left">步数、超时、追踪逻辑和决策逻辑混在一起</td><td style="text-align:left"><code>Runner</code> 层独立</td></tr></tbody></table>
+<blockquote><strong>这就是「封装」的正确理解方式</strong>：不是为了「看起来专业」而分层， 而是<strong>每一层都对应一个你真实遇到过的变化点</strong>。</blockquote>
+<h4>三、关键实现要点</h4>
+<h5><code>@tool</code> 装饰器：从函数签名自动生成 Schema</h5>
+<pre class="code lang-python"><code>@tool
+def calculator(expression: str, precision: int = 2) -&gt; str:
+    """计算一个数学表达式。
+
+    Args:
+        expression: 要计算的表达式，如 "1+2*3"
+        precision: 结果保留的小数位数
+    """
+    ...</code></pre>
+<p>装饰器要做四件事：</p>
+<ol><li><strong>读类型标注</strong> → 生成 JSON Schema 的 <code>type</code>；</li><li><strong>读 docstring 的 &lt;code&gt;Args&lt;/code&gt; 段</strong> → 生成每个参数的 <code>description</code>（<strong>这个描述直接影响模型能否正确调用工具</strong>）；</li><li><strong>读默认值</strong> → 决定哪些参数是必需的；</li><li><strong>保留原函数</strong> → 调用时直接执行。</li></ol>
+<blockquote><strong>教学要点</strong>：为什么用装饰器而不是让用户手写 JSON Schema？ 因为手写 Schema 有<strong>双重维护</strong>问题——改了函数签名忘了改 Schema， 就会得到「模型按 Schema 传参，但函数不认」的诡异 bug。 装饰器让签名成为唯一事实源。</blockquote>
+<h5><code>Memory</code> 抽象：策略模式</h5>
+<pre class="code lang-python"><code>class Memory(ABC):
+    @abstractmethod
+    def add(self, message: Message) -&gt; None: ...
+
+    @abstractmethod
+    def get_context(self) -&gt; list[Message]: ...</code></pre>
+<p>两个实现：</p>
+<table><thead><tr><th style="text-align:left">实现</th><th style="text-align:left">策略</th><th style="text-align:left">代价</th></tr></thead><tbody><tr><td style="text-align:left"><code>BufferMemory</code></td><td style="text-align:left">保留最近 N 条</td><td style="text-align:left">简单，但会丢失早期信息</td></tr><tr><td style="text-align:left"><code>SummaryMemory</code></td><td style="text-align:left">早期内容摘要成一条</td><td style="text-align:left">省 token，但有损，且摘要本身要花钱</td></tr></tbody></table>
+<blockquote>呼应第 6 章：这就是「上下文治理」的框架级抽象。</blockquote>
+<h5><code>Runner</code>：把控制流集中</h5>
+<p><code>Runner</code> 负责「循环怎么转、什么时候停、每一步记什么」。它的<strong>职责边界</strong>如下 （骨架示意，完整实现见 <code>code/ch07/miniagent/runner.py</code>）：</p>
+<pre class="code lang-python"><code>class Runner:
+    """执行器：驱动 Agent 循环，控制终止条件，记录每一步。
+
+    为什么把它从 Agent 里分出来：
+      Agent 只回答「下一步做什么」，Runner 回答「循环怎么转」。
+      加追踪、加预算护栏、加人工确认 —— 全都是改 Runner 一处。
+    """
+
+    def run(self, agent, task, max_steps: int = 10, timeout: float = 60) -&gt; RunResult:
+        # 循环体：agent.step() → 检查终止条件 → 记录步骤
+        # 四个终止条件：任务完成 / 达到步数 / 超时 / 出错
+        ...</code></pre>
+<p><strong>把它独立出来的价值</strong>：想加追踪（第 6 章）？改 <code>Runner</code> 一处。 想加预算护栏？改 <code>Runner</code> 一处。想加中途人工确认？还是改 <code>Runner</code> 一处。</p>
+<blockquote><strong>抽象自检问题</strong>：如果你发现「加一个新功能需要改三个文件」， 说明分层划错了 —— 变化点没有被隔离在单层里。 这是判断抽象是否合理的<strong>最实用标准</strong>，比任何设计原则都直接。</blockquote>
+<h4>四、动手：使用并解读你的框架</h4>
+<pre class="code lang-powershell"><code># 用迷你框架完成一个带工具调用的任务
+python code/ch07/10_use_miniagent.py
+
+# 打印迷你框架与 LangChain / LangGraph 的抽象对照
+python code/ch07/20_framework_anatomy.py
+
+# 生成架构文档（可作为作品集材料）
+python code/ch07/30_architecture_report.py</code></pre>
+<p><strong>运行验证：用迷你框架跑一个带工具调用的任务</strong></p>
+<p><img src="static/course-assets/ch07/01_use_miniagent.webp" alt="自研迷你框架的真实运行轨迹：ToolCallingAgent 的执行步骤表（llm 与 tool 交替、含耗时与内容摘要）、模型调用与工具调用次数统计，以及「换一个参数就换一套记忆」的四种记忆策略对比表" loading="lazy"></p>
+<p><strong>这张图要证明一件事：两百多行的框架能完成带工具调用的任务，所以「框架的本质就是分层 + 职责分离」不是一句空话。</strong></p>
+<p><strong>（1）执行轨迹把「框架做了什么」摊开给你看。</strong> 表格逐行给出步骤号、类型（<code>llm</code> 还是 <code>tool</code>）、耗时（ms）和内容摘要：</p>
+<table><thead><tr><th style="text-align:right">步骤</th><th style="text-align:left">类型</th><th style="text-align:right">耗时(ms)</th><th style="text-align:left">内容摘要</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:left">llm</td><td style="text-align:right">1.0</td><td style="text-align:left">请求调用 <code>calculator</code></td></tr><tr><td style="text-align:right">1</td><td style="text-align:left">tool</td><td style="text-align:right">0.1</td><td style="text-align:left"><code>23 * 17 + 8 = 399</code></td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">llm</td><td style="text-align:right">1.1</td><td style="text-align:left">请求调用 <code>calculator</code></td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">tool</td><td style="text-align:right">0.0</td><td style="text-align:left">×重复调用被拦截（loop detected）</td></tr><tr><td style="text-align:right">3</td><td style="text-align:left">llm</td><td style="text-align:right">3.1</td><td style="text-align:left">一般来说，公司都会按照劳动法和行业惯例来处理这类事项…</td></tr></tbody></table>
+<p>停止原因 <code>done</code>、总步数 5、模型调用次数 3、工具调用次数 2、总耗时 5.5ms。</p>
+<p><strong>（2）图上标注的「轨迹要点」有一段极重要的诚实说明</strong>，必须讲给学生：</p>
+<blockquote>第 1 步模型请求 <code>calculator</code>，工具<strong>真的被执行了</strong>并返回 399；第 2 步靶场又请求同一个工具，<strong>被环检测拦下并决策，循环随即收敛</strong>；<strong>真实平台上的第 2 步应该是「模型读完工具结果，输出最终答案」</strong>。这段轨迹因此同时演示了两件事：<strong>工具链路是通的，护栏是必要的。</strong></blockquote>
+<p>也就是说：<strong>这条轨迹里有靶场造成的偏差（第 2、3 步的形态不是真实模型的行为），但「工具真的被执行」和「环检测真的拦住了重复调用」这两点都是真实的。</strong> 读真实输出时必须能区分「哪些是框架的能力、哪些是靶场的局限」。</p>
+<p><strong>（3）「换一个参数就换一套记忆」——这正是 7.2 说的「判断抽象是否合理的最实用标准」。</strong> 图上用同一个 Agent 做 6 轮对话，对比不同记忆策略下的上下文规模：</p>
+<table><thead><tr><th style="text-align:left">记忆策略</th><th style="text-align:right">轮次</th><th style="text-align:right">上下文条数</th><th style="text-align:right">估算 token</th><th style="text-align:right">摘要次数</th><th style="text-align:right">丢弃条数</th></tr></thead><tbody><tr><td style="text-align:left"><code>BufferMemory(20)</code></td><td style="text-align:right">6</td><td style="text-align:right">20</td><td style="text-align:right">440</td><td style="text-align:right">0</td><td style="text-align:right">8</td></tr><tr><td style="text-align:left"><code>BufferMemory(4)</code></td><td style="text-align:right">6</td><td style="text-align:right">3</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">25</td></tr></tbody></table>
+<p>读法（图上原话）：<strong>&lt;code&gt;BufferMemory(4)&lt;/code&gt; 上下文永远只有 4 条，但「丢掉了『我叫张伟』」；&lt;code&gt;SummaryMemory&lt;/code&gt; 上下文更少（靠摘要压缩），却能把早期信息带到最后一轮。这就是「记忆策略」与「上下文预算」之间的真实取舍。</strong></p>
+<p>注意代码上的对比：换记忆策略<strong>只改一个参数</strong>（<code>memory=factory()</code>），Agent 和 Runner 一行都不用动。<strong>能这样换的抽象才是好抽象</strong>——如果换记忆策略要改 Agent 内部逻辑，那说明记忆的职责切错了地方。</p>
+<blockquote><strong>截图末尾同样有一个真实报错（&lt;code&gt;HTTP 500&lt;/code&gt; / &lt;code&gt;LLMError&lt;/code&gt;）</strong>，出现在「记忆策略」段落之后的一次模型调用上，以 <code>[退出码 1]</code> 结束。这是<strong>离线靶场侧的错误</strong>，不是框架缺陷：它发生在框架已经完整跑通工具调用链路（前面步骤表与记忆对比表均已正常输出）之后。课堂上正好用它对比 Day29 那个 <code>NameError</code>：<strong>两者都要先判断「错误出在哪一层」</strong>——这个错误出在 LLM 客户端与靶场之间，属于<strong>外部依赖失效</strong>，框架侧的异常处理路径（把 <code>LLMError</code> 抛出并带着建议信息）正是 7.3 要求的「异常处理明确」。</blockquote>
+<h4>五、抽象对照表（答辩核心）</h4>
+<table><thead><tr><th style="text-align:left">你的迷你框架</th><th style="text-align:left">LangChain</th><th style="text-align:left">LangGraph</th><th style="text-align:left">职责</th></tr></thead><tbody><tr><td style="text-align:left"><code>LLM</code></td><td style="text-align:left"><code>BaseChatModel</code></td><td style="text-align:left">复用 LangChain</td><td style="text-align:left">模型接入</td></tr><tr><td style="text-align:left"><code>Tool</code> + <code>ToolRegistry</code></td><td style="text-align:left"><code>BaseTool</code> + <code>Toolkit</code></td><td style="text-align:left">复用</td><td style="text-align:left">工具注册与调用</td></tr><tr><td style="text-align:left"><code>Message</code></td><td style="text-align:left"><code>BaseMessage</code> 系列</td><td style="text-align:left">复用</td><td style="text-align:left">消息表示</td></tr><tr><td style="text-align:left"><code>Memory</code></td><td style="text-align:left"><code>BaseMemory</code> / <code>ChatHistory</code></td><td style="text-align:left"><code>Checkpointer</code></td><td style="text-align:left">上下文管理</td></tr><tr><td style="text-align:left"><code>Agent</code></td><td style="text-align:left"><code>AgentExecutor</code> / <code>Agent</code></td><td style="text-align:left"><code>StateGraph</code> 的节点</td><td style="text-align:left">决策</td></tr><tr><td style="text-align:left"><code>Runner</code></td><td style="text-align:left"><code>AgentExecutor</code> 的循环</td><td style="text-align:left"><code>compile()</code> 出的图执行器</td><td style="text-align:left">控制流与生命周期</td></tr></tbody></table>
+<blockquote><strong>答辩要求</strong>：随机抽一个抽象，你要能回答： 1. 它解决什么问题？如果去掉它会怎样？ 2. LangChain 在同一个位置是怎么做的？多了什么、少了什么？ 3. 如果让你给这个抽象加一个功能（比如重试），你会改哪里？</blockquote>
+<p><strong>运行验证：与 LangChain / LangGraph 的逐层对照</strong></p>
+<pre class="code lang-powershell"><code>python code/ch07/20_framework_anatomy.py</code></pre>
+<p><img src="static/course-assets/ch07/02_framework_anatomy.webp" alt="迷你框架与 LangChain / LangGraph 的抽象对照实测：同一位置三方各做了什么、框架无法解决而真实框架必须解决的六类问题，以及第 7 节「对已安装框架做一次真实性核对」逐条打印候选导入路径是否存在" loading="lazy"></p>
+<p><strong>这张图是「抽象同构，差别在护栏」这个结论的数据来源。它把 7.5 的对照表从"我写的"变成了"逐条核验过的"。</strong></p>
+<p><strong>（1）同一个位置，三方各做了什么——差异一目了然。</strong> 图上逐层对比了迷你框架、LangChain 与 LangGraph 在<strong>持久化、并行执行、流式事件、可观测性、生态适配器、状态校验、结构化输出</strong>七个位置上的做法。例如：持久化一栏，迷你框架是「无（进程重启即丢）」，而 LangGraph 是 <code>checkpointer</code>：每步存 <code>state</code>，可回放到任意历史点。图上把整张表压缩成一句必须记住的话：</p>
+<blockquote><strong>「抽象骨架很便宜（约 1000 行），工程护栏很贵（数万行）。」</strong></blockquote>
+<p>因此图上纠正了一个常见的错误提问方式：</p>
+<blockquote>所以「我能不能自己写个框架替代 LangChain」这个问题问错了；<strong>该问的是「我的场景需要哪些护栏」，再决定用现成的还是自己补。</strong></blockquote>
+<p><strong>（2）框架能解决什么、不能解决什么，必须能分类说清。</strong> 图上的表格把「框架无法解决、但真实框架必须解决」的问题逐条列出（含各自的关键设计），这正是交付要求里「必须包含一节『我的框架不适合做什么』」的素材来源。</p>
+<p><strong>（3）决策树：这个项目该不该上框架。</strong> 图上给出了按场景判断的建议表：</p>
+<table><thead><tr><th style="text-align:left">场景特征</th><th style="text-align:left">建议</th><th style="text-align:left">理由</th></tr></thead><tbody><tr><td style="text-align:left">只有 1 个模型调用，没有循环</td><td style="text-align:left">直接调 <code>code/common/llm.py</code></td><td style="text-align:left">框架带来的抽象成本 > 收益</td></tr><tr><td style="text-align:left">纯 RAG 问答，单轮</td><td style="text-align:left">自己拼 <code>prompt</code> + 检索，不用 Agent 框架</td><td style="text-align:left">没有「循环」就没有 Agent 的必要</td></tr><tr><td style="text-align:left">需要工具调用、步骤 2-5 步可枚举</td><td style="text-align:left">先用本迷你框架（约 1000 行）</td><td style="text-align:left">可控、可读、改起来快</td></tr><tr><td style="text-align:left">步骤数不定，需要多轮自主决策</td><td style="text-align:left">LangGraph / <code>create_agent</code> + 检查点</td><td style="text-align:left">限步与持久化是刚需</td></tr><tr><td style="text-align:left">要断点续跑、人在回路、多分支并行</td><td style="text-align:left">LangGraph（图 + Checkpointer）</td><td style="text-align:left">这些能力自研成本极高</td></tr><tr><td style="text-align:left">要接非 OpenAI 协议的多家模型 / SaaS 工具</td><td style="text-align:left">成熟框架的生态适配器</td><td style="text-align:left">适配器维护是长期负担</td></tr><tr><td style="text-align:left">团队已熟悉框架，项目要长期演进</td><td style="text-align:left">直接用框架，别自研</td><td style="text-align:left">维护一套自研框架的人和文档成本被低估</td></tr></tbody></table>
+<p>图上给出的一句话总结值得原样写进答辩 PPT：<strong>「框架是『别人已经踩过的坑』的集合。自研的价值不是省依赖，而是让你知道『坑在哪、护栏该加在哪一层』——这正是第 7 章花四天做迷你框架的原因。」</strong></p>
+<p><strong>（4）第 7 节是本节最硬核的一段：对已安装框架做一次真实性核对。</strong> 图上打印了对本地实际安装的 <code>langchain</code> / <code>langgraph</code> 的<strong>候选导入路径逐条核验结果</strong>：<code>langchain_core.messages.SystemMessage</code>、<code>HumanMessage</code>、<code>AIMessage</code>、<code>ToolMessage</code>、<code>BaseMessage</code>、<code>langchain_core.tools.BaseTool</code>、<code>StructuredTool</code>、<code>tool</code>、<code>BaseChatModel</code>、<code>langgraph.graph.StateGraph</code>、<code>langgraph.checkpoint.memory.InMemorySaver</code> —— <strong>每一条都标了「存在 ✅」并附上真实签名</strong>（例如 <code>InMemorySaver.__init__(self, *, serde, factory=...)</code>），只有 <code>langchain.agents.create_agent</code> 一条显示「（模块未安装，无法核对）」。</p>
+<p>图上把这条做法讲得很清楚，这是本课程的方法论示范：</p>
+<blockquote><strong>如果你本地装了 LangChain / LangGraph，下面会打印真实的类是否存在。没装的话会明确标注——我们不凭记忆编造 API。</strong></blockquote>
+<p>并且明确标注了能力边界：<strong>如果这一列大面积显示「模块未安装」，说明本节只做了「文档级」对照</strong>，要升级为「代码级」对照需 <code>pip install langchain langgraph</code> 后重跑脚本。图上还给了一条<strong>「版本纪律」的现场案例</strong>：注意框架的导入路径在 <code>0.x → 1.x</code> 之间发生过迁移（例如 <code>create_agent</code> 从 <code>langgraph.prebuilt</code> 迁到 <code>langchain.agents</code>），本脚本的候选路径按 <strong>1.x</strong> 排列，旧版本会显示「不在这个模块下」——<strong>这本身就是「版本纪律」的现场案例</strong>。</p>
+<p><strong>（5）三句话回答「自研 vs 框架」</strong>（图上总结，可直接背）：</p>
+<ol><li><strong>抽象是同构的</strong>：消息 / 工具 / 模型 / 记忆 / Agent / 执行器，六层一一对应。<strong>你能在迷你框架里讲清每层「为什么存在」，读任何框架源码都会快很多。</strong></li><li><strong>差异在护栏</strong>：持久化、并行、流式事件、可观测性、生态适配器、状态校验——<strong>这些是「产品化」投入，抽象骨架本身很便宜。</strong></li><li><strong>决策依据是场景，不是信仰</strong>：步骤可枚举就自己写（甚至不用框架），需要断点续跑与人在回路就上 LangGraph。<strong>混合使用是常态而非妥协。</strong></li></ol>
+<h4>六、交付要求</h4>
+<table><thead><tr><th style="text-align:left">交付物</th><th style="text-align:left">要求</th></tr></thead><tbody><tr><td style="text-align:left">框架代码</td><td style="text-align:left">核心（不含注释与空行）200–350 行；能跑通</td></tr><tr><td style="text-align:left"><code>README.md</code></td><td style="text-align:left">快速开始、分层说明、设计取舍（为什么这样切分）</td></tr><tr><td style="text-align:left">架构图</td><td style="text-align:left">mermaid 或图片，标注每层职责与依赖方向</td></tr><tr><td style="text-align:left">架构文档</td><td style="text-align:left"><code>reports/ch07_architecture.md</code>，含类职责表与扩展点说明</td></tr><tr><td style="text-align:left"><strong>对比报告（3000 字）</strong></td><td style="text-align:left">自研框架 vs MetaGPT vs LangGraph 的设计差异与取舍</td></tr></tbody></table>
+<p><strong>对比报告的写作要求</strong>（这是评分重点）：</p>
+<ol><li>不要写「XX 更强大」这类结论，要写<strong>具体的设计取舍</strong>；</li><li>每个对比点都要有<strong>代码或数据结构作为证据</strong>；</li><li>必须包含一节「我的框架不适合做什么」，<strong>能说出边界的才是真懂</strong>；</li><li>必须有一节「如果继续演进，下一步加什么」，并说明优先级理由。</li></ol>
+<h4>七、评分量表</h4>
+<table><thead><tr><th style="text-align:left">维度</th><th style="text-align:right">分值</th><th style="text-align:left">满分标准</th></tr></thead><tbody><tr><td style="text-align:left">框架可运行</td><td style="text-align:right">25</td><td style="text-align:left">演示任务能跑通，工具有真实调用</td></tr><tr><td style="text-align:left">分层设计</td><td style="text-align:right">25</td><td style="text-align:left">每层职责单一、依赖单向、有明确的扩展点</td></tr><tr><td style="text-align:left">代码质量</td><td style="text-align:right">15</td><td style="text-align:left">类型标注完整、异常处理明确、无硬编码</td></tr><tr><td style="text-align:left">文档</td><td style="text-align:right">20</td><td style="text-align:left">架构清晰、取舍有依据、边界说明诚实</td></tr><tr><td style="text-align:left">答辩</td><td style="text-align:right">15</td><td style="text-align:left">能回答「去掉某层会怎样」这类设计问题</td></tr></tbody></table>
+<hr></div>
+
+        
+        <div class="practice">
+          <div class="practice-head">
+            <h4>本节练习</h4>
+            <small>选择题即时判；简答与代码题由 AI 对照答案要点逐条评分，并说明依据</small>
+          </div>
+          <div class="q-slots" data-questions='[{"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 1, "id": "q07-04-01", "last_answer": "", "last_feedback": "", "options": ["\u52a0\u4e00\u4e2a\u65b0\u529f\u80fd\u9700\u8981\u6539\u52a8\u7684\u6587\u4ef6\u6570\u91cf\u662f\u5426\u96c6\u4e2d\u5728\u4e00\u5c42", "\u6846\u67b6\u603b\u4ee3\u7801\u884c\u6570\u662f\u5426\u63a7\u5236\u5728\u767e\u884c\u7ea7\u522b", "\u6bcf\u4e00\u5c42\u662f\u5426\u90fd\u4f7f\u7528\u4e86\u62bd\u8c61\u57fa\u7c7b", "\u5206\u5c42\u6570\u91cf\u662f\u5426\u4e0e LangChain \u4fdd\u6301\u4e00\u81f4"], "points": 27, "solved": false, "statement": "\u5728\u8ff7\u4f60 Agent \u6846\u67b6\u4e2d\uff0c\u5224\u65ad\u62bd\u8c61\u662f\u5426\u5408\u7406\u7684\u300c\u6700\u5b9e\u7528\u6807\u51c6\u300d\u662f\u4ec0\u4e48\uff1f", "tags": ["\u5206\u5c42\u8bbe\u8ba1", "\u62bd\u8c61\u81ea\u68c0"], "title": "\u5206\u5c42\u8bbe\u8ba1\u7684\u5224\u65ad\u6807\u51c6", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "id": "q07-04-02", "last_answer": "", "last_feedback": "", "options": ["\u624b\u5199 Schema \u65e0\u6cd5\u8868\u8fbe\u5d4c\u5957\u5bf9\u8c61\u7c7b\u578b", "\u907f\u514d\u51fd\u6570\u7b7e\u540d\u4e0e Schema \u53cc\u91cd\u7ef4\u62a4\u5bfc\u81f4\u7684\u4e0d\u4e00\u81f4", "\u88c5\u9970\u5668\u751f\u6210\u7684 Schema \u4f53\u79ef\u66f4\u5c0f\u3001\u4f20\u8f93\u66f4\u5feb", "\u53ea\u6709\u88c5\u9970\u5668\u624d\u80fd\u8bfb\u53d6 docstring \u7684 Args \u6bb5"], "points": 76, "solved": false, "statement": "@tool \u88c5\u9970\u5668\u4ece\u51fd\u6570\u7b7e\u540d\u81ea\u52a8\u751f\u6210 JSON Schema\uff0c\u800c\u4e0d\u662f\u8ba9\u7528\u6237\u624b\u5199 Schema\u3002\n\u8fd9\u6837\u505a\u7684\u6839\u672c\u539f\u56e0\u662f\u4ec0\u4e48\uff1f", "tags": ["Tool\u7cfb\u7edf", "@tool\u88c5\u9970\u5668"], "title": "@tool \u88c5\u9970\u5668\u7684\u6838\u5fc3\u4ef7\u503c", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 3, "id": "q07-04-03", "last_answer": "", "last_feedback": "", "options": ["\u7b2c 3 \u6b65\u7684\u901a\u7528\u56de\u7b54\u8bc1\u660e\u6a21\u578b\u5177\u5907\u771f\u5b9e\u63a8\u7406\u80fd\u529b", "\u7b2c 2 \u6b65\u7684\u91cd\u590d\u8c03\u7528\u662f\u771f\u5b9e\u6a21\u578b\u7684\u6807\u51c6\u884c\u4e3a", "\u5de5\u5177\u771f\u7684\u88ab\u6267\u884c\u3001\u73af\u68c0\u6d4b\u771f\u7684\u62e6\u4f4f\u91cd\u590d\u8c03\u7528\uff0c\u8fd9\u4e24\u70b9\u771f\u5b9e", "\u6574\u6761\u8f68\u8ff9\u90fd\u662f\u9776\u573a\u504f\u5dee\uff0c\u4e0d\u80fd\u4f5c\u4e3a\u6846\u67b6\u80fd\u529b\u7684\u8bc1\u636e"], "points": 189, "solved": false, "statement": "\u6267\u884c\u8f68\u8ff9\u663e\u793a\uff1a\u7b2c 1 \u6b65\u6a21\u578b\u8bf7\u6c42 calculator \u5e76\u8fd4\u56de 399\uff1b\u7b2c 2 \u6b65\u53c8\u8bf7\u6c42\u540c\u4e00\u5de5\u5177\uff0c\u88ab\u73af\u68c0\u6d4b\u62e6\u4e0b\uff1b\u7b2c 3 \u6b65\u8f93\u51fa\u4e00\u6bb5\u901a\u7528\u56de\u7b54\u3002\n\u5173\u4e8e\u8fd9\u6761\u8f68\u8ff9\uff0c\u4e0b\u5217\u5224\u65ad\u6b63\u786e\u7684\u662f\uff1f", "tags": ["\u6267\u884c\u8f68\u8ff9", "\u9776\u573a\u5c40\u9650"], "title": "\u8f68\u8ff9\u4e2d\u54ea\u4e9b\u662f\u771f\u5b9e\u80fd\u529b", "track": "course", "type": "choice", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u5148\u5206\u6e05\u300c\u51b3\u7b56\u300d\u4e0e\u300c\u63a7\u5236\u6d41\u300d", "\u60f3\u60f3\u52a0\u529f\u80fd\u8981\u6539\u51e0\u4e2a\u6587\u4ef6"], "id": "q07-04-04", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u8bf7\u8bf4\u660e Runner \u5c42\u4e0e Agent \u5c42\u7684\u804c\u8d23\u8fb9\u754c\u5206\u522b\u662f\u4ec0\u4e48\u3002\n\u5e76\u89e3\u91ca\uff1a\u628a Runner \u72ec\u7acb\u51fa\u6765\u540e\uff0c\u52a0\u8ffd\u8e2a\u3001\u52a0\u9884\u7b97\u62a4\u680f\u3001\u52a0\u4e2d\u9014\u4eba\u5de5\u786e\u8ba4\u8fd9\u4e09\u4ef6\u4e8b\u5404\u81ea\u6539\u5728\u54ea\u91cc\uff0c\u4e3a\u4ec0\u4e48\u8fd9\u6837\u5212\u5206\u66f4\u5408\u7406\u3002", "tags": ["Runner", "\u804c\u8d23\u8fb9\u754c"], "title": "Runner \u4e3a\u4f55\u72ec\u7acb\u6210\u5c42", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u5bf9\u6bd4\u6761\u6570\u3001token\u3001\u4fe1\u606f\u4fdd\u7559\u4e09\u65b9\u9762", "\u6ce8\u610f\u6458\u8981\u4e0d\u662f\u514d\u8d39\u7684"], "id": "q07-04-05", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "", "statement": "\u540c\u4e00\u4e2a Agent \u505a 6 \u8f6e\u5bf9\u8bdd\uff0cBufferMemory(20) \u4e0a\u4e0b\u6587 20 \u6761\u3001\u4f30\u7b97 440 token\uff1bBufferMemory(4) \u4e0a\u4e0b\u6587 3 \u6761\u3001\u4f30\u7b97 100 token\uff1bSummaryMemory \u4e0a\u4e0b\u6587\u66f4\u5c11\u5374\u80fd\u628a\u65e9\u671f\u4fe1\u606f\u5e26\u5230\u6700\u540e\u4e00\u8f6e\u3002\n\u8bf7\u5206\u6790\u8fd9\u4e09\u79cd\u7b56\u7565\u5404\u81ea\u7684\u4ee3\u4ef7\uff0c\u5e76\u8bf4\u660e\u300c\u6362\u8bb0\u5fc6\u7b56\u7565\u53ea\u6539\u4e00\u4e2a\u53c2\u6570\u300d\u4e3a\u4ec0\u4e48\u662f\u597d\u62bd\u8c61\u7684\u4f53\u73b0\u3002", "tags": ["Memory", "\u4e0a\u4e0b\u6587\u6cbb\u7406"], "title": "\u8bb0\u5fc6\u7b56\u7565\u7684\u53d6\u820d\u4e0e\u53ef\u66ff\u6362\u6027", "track": "course", "type": "short", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 2, "hints": ["\u622a\u65ad\u7528\u5207\u7247\u4fdd\u7559\u5c3e\u90e8", "\u6458\u8981\u4f5c\u4e3a\u4e00\u6761 system \u6d88\u606f\u653e\u6700\u524d"], "id": "q07-04-06", "last_answer": "", "last_feedback": "", "points": 76, "solved": false, "starter_code": "from abc import ABC, abstractmethod\n\nclass Message:\n    def __init__(self, role, content):\n        self.role = role\n        self.content = content\n\nclass Memory(ABC):\n    @abstractmethod\n    def add(self, message: Message) -\u003e None:\n        ...\n\n    @abstractmethod\n    def get_context(self) -\u003e list:\n        ...\n\n# TODO: \u5b9e\u73b0 BufferMemory \u4e0e SummaryMemory", "statement": "\u5b9e\u73b0 Memory \u62bd\u8c61\u57fa\u7c7b\u4e0e\u4e24\u79cd\u7b56\u7565\u3002\n\u8981\u6c42\uff1a\n1. Memory \u5b9a\u4e49 add(message) \u4e0e get_context() \u4e24\u4e2a\u62bd\u8c61\u65b9\u6cd5\uff1b\n2. BufferMemory(max_size) \u4fdd\u7559\u6700\u8fd1 max_size \u6761\uff1b\n3. SummaryMemory \u5728\u8d85\u51fa\u9608\u503c\u65f6\u628a\u65e9\u671f\u6d88\u606f\u538b\u7f29\u6210\u4e00\u6761\u6458\u8981\uff08\u53ef\u7528\u5360\u4f4d\u51fd\u6570\u6a21\u62df\uff09\uff1b\n4. \u6362\u7b56\u7565\u65f6\u8c03\u7528\u65b9\u53ea\u6539\u6784\u9020\u53c2\u6570\uff0c\u4e0d\u6539\u5176\u4ed6\u4ee3\u7801\u3002", "tags": ["Memory", "\u7b56\u7565\u6a21\u5f0f"], "title": "\u5b9e\u73b0 Memory \u62bd\u8c61\u4e0e\u4e24\u79cd\u7b56\u7565", "track": "course", "type": "code", "wrong": false}, {"best_stars": 0, "chapter_id": 7, "chapter_title": "\u5f00\u6e90 Agent \u9879\u76ee\u6e90\u7801\u62c6\u89e3", "difficulty": 3, "hints": ["for-else \u53ef\u5904\u7406\u6b65\u6570\u8017\u5c3d", "\u8d85\u65f6\u68c0\u67e5\u653e\u5728\u6bcf\u8f6e\u5f00\u5934"], "id": "q07-04-07", "last_answer": "", "last_feedback": "", "points": 189, "solved": false, "starter_code": "import time\n\nclass RunResult:\n    def __init__(self):\n        self.steps = []\n        self.stop_reason = None\n        self.llm_calls = 0\n        self.tool_calls = 0\n        self.elapsed_ms = 0.0\n\nclass Runner:\n    def run(self, agent, task, max_steps: int = 10, timeout: float = 60) -\u003e RunResult:\n        # TODO: \u5faa\u73af\u4f53 agent.step() -\u003e \u68c0\u67e5\u7ec8\u6b62\u6761\u4ef6 -\u003e \u8bb0\u5f55\u6b65\u9aa4\n        pass", "statement": "\u5b9e\u73b0 Runner.run\uff0c\u9a71\u52a8 Agent \u5faa\u73af\u5e76\u8bb0\u5f55\u6bcf\u4e00\u6b65\u3002\n\u8981\u6c42\uff1a\n1. \u5faa\u73af\u8c03\u7528 agent.step(task)\uff0c\u76f4\u5230\u6ee1\u8db3\u7ec8\u6b62\u6761\u4ef6\uff1b\n2. \u56db\u4e2a\u7ec8\u6b62\u6761\u4ef6\uff1a\u4efb\u52a1\u5b8c\u6210\u3001\u8fbe\u5230 max_steps\u3001\u8d85\u65f6\u3001\u51fa\u9519\uff1b\n3. \u6bcf\u6b65\u8bb0\u5f55\u6b65\u9aa4\u53f7\u3001\u7c7b\u578b\u3001\u8017\u65f6(ms)\u3001\u5185\u5bb9\u6458\u8981\uff1b\n4. \u8fd4\u56de RunResult\uff0c\u5305\u542b steps\u3001stop_reason\u3001llm_calls\u3001tool_calls\u3001elapsed_ms\u3002", "tags": ["Runner", "\u63a7\u5236\u6d41", "\u7ec8\u6b62\u6761\u4ef6"], "title": "Runner \u7684\u5faa\u73af\u4e0e\u7ec8\u6b62\u6761\u4ef6", "track": "course", "type": "code", "wrong": false}]'></div>
+        </div>
+        
+
+        <div class="kp-actions">
+          <button class="btn primary" data-act="complete"
+                  data-chapter="7" data-kp="3"
+                  >
+            标记为已掌握（+12 修为）
+          </button>
+          <button class="btn agent" data-act="kp-ask" data-title="Day 34｜从零自研迷你 Agent 框架">
+            这一节没看懂，问星语
+          </button>
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 34｜从零自研迷你 Agent 框架">
+            🔊 朗读这一节
+          </button>
+        </div>
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <header><h2>复习材料</h2><small>常见错误、作业与答辩题、参考资料 —— 考前回来看这一块</small></header>
+  <div class="card pad-lg">
+    <div class="lesson"><h3>7.11 常见错误与排查</h3>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">原因</th><th style="text-align:left">修复</th></tr></thead><tbody><tr><td style="text-align:left"><code>@tool</code> 生成的 Schema 模型看不懂</td><td style="text-align:left">docstring 里没有 <code>Args</code> 段，或没写类型标注</td><td style="text-align:left">补类型标注与参数描述</td></tr><tr><td style="text-align:left">工具被调用但参数总是错的</td><td style="text-align:left">参数 description 太模糊（如「表达式」）</td><td style="text-align:left">描述要含<strong>格式与例子</strong>，如「如 <code>1+2<em>3&lt;/code&gt;，支持 + - </em> / 和括号」</td></tr><tr><td style="text-align:left">换模型后框架报错</td><td style="text-align:left"><code>LLM</code> 层有平台特定假设</td><td style="text-align:left">检查响应解析是否只依赖 OpenAI 兼容字段</td></tr><tr><td style="text-align:left"><code>SummaryMemory</code> 比 <code>BufferMemory</code> 更贵</td><td style="text-align:left">短对话下摘要开销 > 节省</td><td style="text-align:left">用真实 token 数据找「不划算区间」（呼应第 6 章）</td></tr><tr><td style="text-align:left">读源码读不下去</td><td style="text-align:left">从头逐行读</td><td style="text-align:left">改成「跑起来 → 找主流程 → 只读主流程」</td></tr></tbody></table>
+<hr>
+<h3>7.12 参考资料</h3>
+<blockquote>各项目的状态核实日期：<strong>2026-09-21</strong>。开源项目变化很快，授课前请复核。</blockquote>
+<table><thead><tr><th style="text-align:left">资源</th><th style="text-align:left">用途</th><th style="text-align:left">核实时状态</th></tr></thead><tbody><tr><td style="text-align:left"><a href="https://github.com/datawhalechina/hello-agents" target="_blank" rel="noreferrer">Hello-Agents</a></td><td style="text-align:left">本阶段主教材（自研框架的思想来源）</td><td style="text-align:left">V1.0.3（2026-07-17），16 章 5 部分，<strong>第七章即《构建你的 Agent 框架》</strong></td></tr><tr><td style="text-align:left"><a href="https://github.com/FoundationAgents/MetaGPT" target="_blank" rel="noreferrer">MetaGPT</a></td><td style="text-align:left">SOP 流水线架构</td><td style="text-align:left">仓库已改名；PyPI 0.8.2；<code>main</code> 分支自称 1.0.0（未发布）；需 Python <3.12</td></tr><tr><td style="text-align:left"><a href="https://github.com/langgenius/dify" target="_blank" rel="noreferrer">Dify</a></td><td style="text-align:left">可视化工作流与集成机制</td><td style="text-align:left">v1.17.1（2026-09-10）；扩展机制现称 <strong>Integrations</strong></td></tr><tr><td style="text-align:left"><a href="https://github.com/OpenHands/OpenHands" target="_blank" rel="noreferrer">OpenHands</a></td><td style="text-align:left">Agent Canvas（浏览器客户端）</td><td style="text-align:left">v1.20.0（2026-09-17）；<strong>架构已拆仓重构</strong></td></tr><tr><td style="text-align:left"><a href="https://github.com/OpenHands/software-agent-sdk" target="_blank" rel="noreferrer">OpenHands Software Agent SDK</a></td><td style="text-align:left">Software Agent SDK + Agent Server</td><td style="text-align:left">v1.49.2（2026-09-17）</td></tr><tr><td style="text-align:left"><a href="https://github.com/bytedance/deer-flow" target="_blank" rel="noreferrer">deer-flow</a></td><td style="text-align:left">长任务管理器设计</td><td style="text-align:left">v2.0.0（2026-06-25），<strong>v2 为彻底重写，与 v1 不共享代码</strong>；v1 保留在 <code>1.x</code> 分支；要求 Python 3.12+</td></tr></tbody></table>
+<h4>deer-flow 补充说明（它的定位很独特）</h4>
+<p>DeerFlow 自我描述为 <strong>"an open-source long-horizon SuperAgent harness that orchestrates sub-agents, memory, and sandboxes"</strong>（长程超级智能体编排框架，调度子智能体、记忆与沙箱）。名字来源是 <em>Deep Exploration and Efficient Research Flow</em>。</p>
+<p><strong>它值得单独看的原因</strong>——它把本章的关键工程点全部集成在一起了：</p>
+<table><thead><tr><th style="text-align:left">工程点</th><th style="text-align:left">DeerFlow 的做法</th></tr></thead><tbody><tr><td style="text-align:left">沙箱可替换</td><td style="text-align:left">提供 <code>LocalSandboxProvider</code> / <code>AioSandboxProvider</code> / E2B / Kubernetes provisioner 多种 provider</td></tr><tr><td style="text-align:left">模型可替换</td><td style="text-align:left"><code>langchain_openai:ChatOpenAI</code> / <code>deerflow.models.vllm_provider:VllmChatModel</code> / Claude provider 等</td></tr><tr><td style="text-align:left">上下文管理</td><td style="text-align:left"><strong>Manual Context Compaction</strong>（手动上下文压缩）+ <strong>Long-Term Memory</strong></td></tr><tr><td style="text-align:left">可观测</td><td style="text-align:left">Tracing 支持 LangSmith / Langfuse / Monocle</td></tr><tr><td style="text-align:left">工具生态</td><td style="text-align:left">Skills & Tools、Plugins/<strong>MCP</strong>、IM Channels（Telegram/Slack/飞书/微信/企微/钉钉）</td></tr></tbody></table>
+<blockquote><strong>教学用法</strong>：把 DeerFlow 当作「<strong>第 6 章所有工程点的工业级参考答案</strong>」。 你在第 6 章 Day29 手写的预算护栏与上下文压缩，在这里是 <code>Manual Context Compaction</code>； 你手写的 MCP 接入，这里是 <code>Plugins/MCP</code>。 <strong>对照它，你能看到自己的实现在生产环境要补哪些部分。</strong></blockquote>
+<p>Hello-Agents 的章节结构（对自学很有用，<strong>第九章正是本课程第 8 章 Day37 的内容</strong>）：</p>
+<table><thead><tr><th style="text-align:left">部分</th><th style="text-align:left">章节</th></tr></thead><tbody><tr><td style="text-align:left">一、智能体与语言模型基础</td><td style="text-align:left">初识智能体 / 智能体发展史 / 大语言模型基础</td></tr><tr><td style="text-align:left">二、构建你的大语言模型智能体</td><td style="text-align:left">经典范式构建 / 低代码平台搭建 / 框架开发实践 / <strong>构建你的 Agent 框架</strong></td></tr><tr><td style="text-align:left">三、高级知识扩展</td><td style="text-align:left">记忆与检索 / <strong>上下文工程</strong> / <strong>智能体通信协议</strong> / Agentic-RL / 智能体性能评估</td></tr><tr><td style="text-align:left">四、综合案例进阶</td><td style="text-align:left">智能旅行助手 / 自动化深度研究智能体 / 构建赛博小镇</td></tr><tr><td style="text-align:left">五、毕业设计</td><td style="text-align:left">毕业设计</td></tr></tbody></table>
+<hr>
+<h3>下一章预告</h3>
+<p>第 8 章（Day35–37）转向模型的<strong>内部</strong>：Transformer 与 LoRA 原理、QLoRA 微调实战、 上下文工程与成本优化。你会第一次<strong>真的训练一个模型</strong>（哪怕只是小模型）， 从而理解「微调」与「RAG / Prompt 工程」各自解决什么问题的边界。</p></div>
+  </div>
+</section>
+
+
+
+
+
+<section class="section">
+  <header><h2>接下来去哪</h2><small>顺路看看相邻的章节</small></header>
+  <div class="ch-neighbors">
+    
+    <a class="ch-neighbor " href="chapter-3.html">
+      <span class="cn-rel">前 4 章</span>
+      <b>📚 RAG 检索增强生成</b>
+      <em>阶段二 · 知识增强</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-4.html">
+      <span class="cn-rel">前 3 章</span>
+      <b>🛰️ Agent 核心机制（从零自研）</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-5.html">
+      <span class="cn-rel">前 2 章</span>
+      <b>🔧 Agent 框架实战</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor hot" href="chapter-6.html">
+      <span class="cn-rel">上一章</span>
+      <b>🕸️ 多智能体系统与 MCP</b>
+      <em>阶段三 · 智能体内核（主线）</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-8.html">
+      <span class="cn-rel">下一章</span>
+      <b>🎛️ 模型微调与上下文工程</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+    <a class="ch-neighbor " href="chapter-9.html">
+      <span class="cn-rel">后 2 章</span>
+      <b>🏗️ 全栈落地与毕业项目</b>
+      <em>阶段四 · 源码、调优与落地</em>
+    </a>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="card pad-lg ch-foot-card">
+    <div>
+      <h3>这一章学完了吗</h3>
+      <p>走一遍综合自测，再让星辰教练追问你三个问题 —— 能讲清楚才算真懂。</p>
+    </div>
+    <div class="row">
+      <a class="btn primary" href="training.html?chapters=7">做本章专项练习</a>
+      <a class="btn agent" href="coach.html?chapter=7">让教练追问我</a>
+      
+      <a class="btn ghost" href="warp.html?to=/chapter/8&kicker=章节完成&next=正在跃迁到 模型微调与上下文工程">⚡ 跃迁到下一章</a>
+      
+    </div>
+  </div>
+</section>
+
+
+<div class="cg-overlay" id="cg-overlay" hidden>
+  <div class="cg-overlay-bar">
+    <span id="cg-overlay-title">开场 CG</span>
+    <span class="row">
+      <a class="btn sm ghost" id="cg-overlay-open" target="_blank" rel="noreferrer">全屏打开</a>
+      <button class="btn sm" id="cg-overlay-close">关闭</button>
+    </span>
+  </div>
+  <iframe id="cg-frame" allow="autoplay; fullscreen" title="章节开场 CG"></iframe>
+</div>
+
+</main>
+
+<script src="static/js/portrait.js"></script>
+<script src="static/js/cultivation.js"></script>
+<script src="static/js/md_lite.js"></script>
+<script src="static/js/star.js"></script>
+<script src="static/js/qcards.js"></script>
+<script src="static/js/atmosphere.js"></script>
+
+<script src="static/js/chapter.js"></script>
+
+</body>
+</html>
