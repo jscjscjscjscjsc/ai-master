@@ -47,7 +47,11 @@ def _seed_state():
         ('q03-01-01', 3, 3, 0, 0, 5), ('q03-02-02', 3, 3, 0, 0, 5),
         ('q04-01-01', 4, 3, 0, 0, 4), ('q04-02-01', 4, 3, 0, 0, 4),
         ('q04-02-03', 4, 2, 1, 1, 3), ('q04-03-01', 4, 3, 0, 0, 3),
-        ('q04-04-02', 4, 2, 2, 1, 2), ('q04-05-01', 4, 3, 0, 0, 2),
+        # 这里的 id 必须是题库里真实存在的：种子里曾引用一道不存在的题
+        # （q04-05-01，第 4 章实际只到 q04-04-xx），导致按作答记录推导修为时
+        # 拿到空题目对象、/api/cultivation/profile 直接 500 ——
+        # 表现是"评委登录演示账号后档案页白屏"。改题库后要回头核对这一列表。
+        ('q04-04-02', 4, 2, 2, 1, 2), ('q04-04-05', 4, 3, 0, 0, 2),
         ('q05-01-01', 5, 3, 0, 0, 1), ('q07-01-01', 7, 3, 0, 0, 1),
     ]
     for qid, chapter_id, stars, wrong, ai_help, day in plan:
@@ -77,6 +81,41 @@ def _seed_state():
     # 战役记录：一次组卷，分不高也不低，像真实的一次尝试
     rewards['exam:exdemo0001'] = 1
 
+    # 学习记忆：知识图谱与"该补哪里"读的是这份数据（learning_memory 模块）。
+    # 不写它的表现是**图谱全灰**——评审点开学习档案只看到一张没有颜色的图，
+    # 恰好看不出这个功能的价值。所以这里造一份**有层次**的痕迹：
+    # 前面几个知识点学扎实（绿）、中间半会（黄）、后面没吃透（红），
+    # 好让"哪里会 / 哪里半会 / 哪里没吃透"一眼就能分辨。
+    # (章节, 知识点序号, 听课次数, 做题次数, [各次得分], 求助次数)
+    memory_plan = [
+        (1, 0, 1, 4, [100, 100, 100, 100], 0),   # 绿：多次满分
+        (1, 1, 1, 3, [100, 90, 100], 0),          # 绿
+        (1, 2, 1, 3, [80, 90, 85], 0),            # 绿
+        (1, 3, 2, 2, [70, 80], 1),                # 黄：两次中等
+        (2, 0, 1, 2, [60, 70], 1),                # 黄
+        (2, 1, 1, 1, [50], 2),                    # 黄偏红：一次不及格还求助
+        (2, 2, 1, 1, [30], 3),                    # 红：做过但没吃透
+        (3, 0, 1, 2, [100, 100], 0),              # 绿
+        (3, 1, 1, 1, [40], 2),                    # 红
+        (4, 0, 1, 2, [100, 90], 0),               # 绿
+        (4, 1, 1, 1, [60], 1),                    # 黄
+        (4, 2, 1, 0, [], 1),                      # 只听过课、还没做题
+    ]
+    memory = {}
+    for chapter_id, kp_index, lessons, questions, scores, helps in memory_plan:
+        ident = '%d_%d' % (chapter_id, kp_index)
+        row = {'lesson': lessons, 'questions': questions, 'help': helps,
+               'outcomes': [1 if s >= 60 else 0 for s in scores],
+               'score_ema': None, 'evidence': [], 'learner_claim': False,
+               'last_at': _ago(max(1, 12 - kp_index)), 'first_at': _ago(12)}
+        for s in scores:
+            row['score_ema'] = (s if row['score_ema'] is None
+                                else row['score_ema'] * .65 + s * .35)
+        if row['score_ema'] is not None:
+            row['score_ema'] = round(row['score_ema'], 1)
+        row['evidence'].append({'kind': 'lesson', 'ref': 'demo:lesson', 'at': _ago(12)})
+        memory[ident] = row
+
     # 修为点给一个「认真学了十来天」的量级 —— 刚好越过观星者、进入拾光者。
     # 太低像坏掉，太高不像人。
     return {
@@ -84,6 +123,7 @@ def _seed_state():
         'rewards': rewards,
         'log': log[-60:],
         'attempts': attempts,
+        'learning_memory': memory,
         'drafts': {},
         'exams': [{
             'id': 'exdemo0001', 'created_at': _ago(3, 20, 10),

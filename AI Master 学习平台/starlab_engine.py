@@ -133,7 +133,15 @@ def chapter_of_question(question_id):
 
 
 def difficulty_of_question(question_id):
-    item = bank_index().get(question_id)
+    """题目难度。题目不在题库里时按 1（最简单）算，**不能抛异常**。
+
+    为什么必须容错：调用方是"按作答记录推导修为"这类整体计算，
+    历史里只要有一条记录指向已下架/改名的题，整个页面就会 500 ——
+    而缺一道题的难度值只影响一个数字，不该让整份档案打不开。
+    （实测踩过：演示账号的种子数据引用了题库里不存在的题 id，
+    `/api/cultivation/profile` 直接 500，表现是"评委登录后档案页白屏"。）
+    """
+    item = bank_index().get(question_id) or {}
     try:
         return int(item.get('difficulty') or 1)
     except (TypeError, ValueError):

@@ -28,6 +28,7 @@ import sys
 import threading
 import time
 import urllib.request
+from copy import deepcopy
 from datetime import datetime, timedelta
 from urllib.parse import quote
 
@@ -251,32 +252,122 @@ def load_json(path, default):
         return default
 
 
+def _atomic_write(path, data, retries=12):
+    """先写临时文件再 replace：读的人永远看不到写了一半的文件。
+
+    Windows 上有个必须绕开的坎：`os.replace` 在**目标文件正被别的句柄打开**
+    时会失败（PermissionError / WinError 5），哪怕对方只是只读打开。
+    多人同时用时"我在写、他在读"是常态，一次失败就让学生看到 500。
+    所以：临时文件名带线程号（多个写者不争同一个 tmp）+ 拒绝访问时退避重试。
+    """
+    tmp = f'{path}.{os.getpid()}.{threading.get_ident()}.{time.time_ns()}.tmp'
+    try:
+        with open(tmp, 'w', encoding='utf-8') as fh:
+            json.dump(data, fh, ensure_ascii=False, indent=1)
+            fh.flush()
+            os.fsync(fh.fileno())
+        last = None
+        for attempt in range(retries):
+            try:
+                os.replace(tmp, path)
+                return
+            except PermissionError as exc:
+                last = exc
+                time.sleep(0.02 * (attempt + 1))
+        raise last
+    except Exception:
+        try:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+        except OSError:
+            pass
+        raise
+
+
 def save_json(path, data):
-    tmp = path + '.tmp'
-    with open(tmp, 'w', encoding='utf-8') as fh:
-        json.dump(data, fh, ensure_ascii=False, indent=1)
-    os.replace(tmp, path)
+    _atomic_write(path, data)
+
+
+# ── 多用户并发写盘 ────────────────────────────────────────
+# 本地单机版一次只有一个人点，"读整个 json → 改一处 → 写回整个 json" 就够了。
+# 一旦挂到公网让多人同时注册/答题，这个写法会互相覆盖：A 和 B 同时读到同一份
+# users.json，各改各的，后写的人把先写的人的账号整个抹掉。
+#
+# 处理办法与 PyMaster 服务器版一致：写盘加锁 + 按"读到时的那一版"做增量合并。
+# 基线绑在快照对象自己身上（不是线程变量）—— 同一请求里再读一次文件不会
+# 把基线刷掉，别人刚注册的账号也就不会被当成"自己删的"给合并掉。
+_USERS_LOCK = threading.RLock()
+
+
+class _UsersSnapshot(dict):
+    """从 users.json 读出来的用户表，附带"读到时的版本"。
+
+    写回时要知道"哪些条目是我这一个请求改过的"，才能只覆盖那几条、
+    不碰别人同时在改的其它账号。
+    """
+
+    def __init__(self, data=None):
+        super().__init__(data or {})
+        self.baseline = {}
+
+
+def _read_users_raw():
+    if not os.path.exists(USERS_FILE):
+        return {}
+    try:
+        with open(USERS_FILE, encoding='utf-8') as fh:
+            data = json.load(fh)
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _merge_users_to_disk(incoming, baseline=None):
+    """把改动过的条目合并进磁盘最新版本，返回合并后的结果。
+
+    刻意**没有删除逻辑**：平台不提供删账号的功能，而靠差集猜"谁删了"
+    会在并发下误伤别人刚注册的账号（少了一个账号、而我这份里没有，
+    并不等于是我删的）。真要加删除就走显式接口。
+    """
+    with _USERS_LOCK:
+        if baseline is None:
+            merged = dict(incoming)
+        else:
+            merged = dict(_read_users_raw())
+            for name, entry in incoming.items():
+                if name in baseline and baseline[name] == entry:
+                    continue          # 这条我没动，保留磁盘上的版本
+                merged[name] = entry  # 新增或我改过 → 采用我这份
+        _atomic_write(USERS_FILE, merged)
+        return merged
 
 
 def users():
-    data = load_json(USERS_FILE, {})
-    if not isinstance(data, dict):
-        data = {}
+    # 账号表的读也进锁：Windows 上"我在写、他在读"会让 os.replace 失败，
+    # 读与写互斥能从源头避免那次失败（重试只是兜底）。
+    with _USERS_LOCK:
+        raw = load_json(USERS_FILE, {})
+        data = raw if isinstance(raw, dict) else {}
+        snapshot = _UsersSnapshot(data)
+        snapshot.baseline = deepcopy(dict(data))
     # 评审演示账号的档案不在磁盘上，在这里注入 ——
     # app.py 里所有 `users().get(...)` 就都不用改。
     if demo_mode.is_enabled():
         account = demo_account()
         if account:
-            data.setdefault(account[0], account[1])
-    return data
+            snapshot.setdefault(account[0], account[1])
+    return snapshot
 
 
 def save_users(data):
+    # 先取基线：下面剥离演示账号时会把 snapshot 变成普通 dict，
+    # 基线一旦丢失就退化成"整体覆盖"，会把别人同时注册的账号一起抹掉。
+    baseline = getattr(data, 'baseline', None)
     # 演示账号的改动只留在内存：写盘前先剥离，评审怎么点都不污染真实数据
     if demo_mode.is_enabled() and isinstance(data, dict) and demo_mode.demo_user() in data:
         demo_mode.set_profile(data[demo_mode.demo_user()])
         data = {k: v for k, v in data.items() if k != demo_mode.demo_user()}
-    save_json(USERS_FILE, data)
+    _merge_users_to_disk(data, baseline)
 
 
 def demo_account():
@@ -2462,6 +2553,17 @@ def _free_port(port):
     return True
 
 
+def server_mode():
+    """是否以"服务器模式"运行：同一份程序挂在公网给多人用。
+
+    打开后有几处行为必须不同，都是本地版想当然、公网版会出事的：
+      · 换成多线程 Web 服务器（Flask 自带的单线程服务器会被一个人
+        等 AI 回答时把所有人挡在门外）；
+      · 注册与游客策略按演示/公开场景调整。
+    """
+    return os.environ.get('STARLAB_SERVER_MODE', '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
 def main():
     port = int(os.environ.get('PORT') or 5178)
     if _port_busy(port):
@@ -2474,6 +2576,8 @@ def main():
     print('  ║   已启动：http://127.0.0.1:%d            ║' % port)
     print('  ╚══════════════════════════════════════════════╝')
     print('')
+    mode_text = '服务器模式（多人公网）' if server_mode() else '本地模式'
+    print('  运行模式：%s' % mode_text)
     print('  学习路线 / 智能体 / 星辰教练 / 星空修为 全部在浏览器里')
     print('  按 Ctrl+C 或关闭本窗口即停止服务')
     print('')
@@ -2484,7 +2588,25 @@ def main():
     if os.environ.get('STARLAB_OPEN_BROWSER') == '1':
         import webbrowser
         threading.Timer(1.2, lambda: webbrowser.open('http://127.0.0.1:%d' % port)).start()
-    app.run(debug=False, host='0.0.0.0', port=port)
+
+    if server_mode():
+        # 多人公网必须用多线程服务器：Flask 自带的服务器是单线程的，
+        # 一个人点开一个慢页面（等 AI 回答最长几十秒）会把所有人卡在门外。
+        # waitress 是纯 Python 的多线程 WSGI 服务器，随包一起分发。
+        try:
+            from waitress import serve
+        except ImportError:
+            print('  [提示] 没找到 waitress（服务器模式的多线程服务器），')
+            print('         暂时退回单线程模式。请重新运行一键部署脚本补齐依赖。')
+            app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+        else:
+            print('  并发线程：%s' % os.environ.get('STARLAB_THREADS', '16'))
+            print('')
+            serve(app, host='0.0.0.0', port=port,
+                  threads=int(os.environ.get('STARLAB_THREADS', '16')),
+                  channel_timeout=180)
+    else:
+        app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
 
 
 if __name__ == '__main__':

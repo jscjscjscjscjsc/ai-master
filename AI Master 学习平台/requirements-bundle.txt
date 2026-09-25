@@ -1,5 +1,9 @@
 # 离线分发包按这份清单安装依赖（由 tools/make_release.py 生成/校验）。
-# 只列 flask 与 edge-tts 及其传递依赖 —— 平台不依赖数值计算或绘图库。
+# 只列 flask、edge-tts、waitress 及其传递依赖 —— 平台运行不需要数值计算或绘图库。
+# （vendor/wheels 里另有一批 pandas/openai 等是给学生课程练习用的，
+#   由 make_release.py 按需安装，不属于平台启动依赖。）
+# waitress 是服务器模式的多线程服务器：本地版用不到，但漏了它
+# 服务器上会静默退回单线程，多人同时访问就互相卡。
 aiohappyeyeballs==2.7.1
 aiohttp==3.14.3
 aiosignal==1.4.0
@@ -20,5 +24,6 @@ multidict==6.8.0
 propcache==0.5.4
 tabulate==0.10.0
 typing-extensions==4.16.0
+waitress==3.0.2
 werkzeug==3.1.8
 yarl==1.25.1

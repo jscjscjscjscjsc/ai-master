@@ -199,6 +199,16 @@ def mastery(row):
     cap = _CONFIDENCE_CAP.get(questions, 1.0) * 100
     score = max(0, min(score, cap))
 
+    # 做过题但整体很弱时，保一个底（不是 0）。
+    # 为什么要有这个底：**0 分在图谱上专门表示"完全没有证据"（灰）**，
+    # 如果"做过但没吃透"也算出 0，两种状态就分不开了，学生看到一片 0
+    # 会以为系统没记录到他的努力。
+    # 另一个更实际的原因：求助折减（最多 -18）会盖过听课加成（+8），
+    # 算出"多听了一遍课反而分数更低"这种倒挂 —— 这对学习者不公平，
+    # 因为求助本身是"在努力"的证据，只该轻折、不该抵消掉学习行为。
+    if questions:
+        score = max(4, score)
+
     status = ('strong' if score >= STRONG_AT
               else 'developing' if score >= DEVELOPING_AT else 'weak')
     return {'score': round(score), 'status': status, 'evidence': evidence,
