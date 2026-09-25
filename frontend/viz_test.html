@@ -1,0 +1,31 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+body{background:#030611;color:#eef4ff;font-family:"Segoe UI","Microsoft YaHei",sans-serif;padding:24px;margin:0}
+.box{background:#0a1024;border:1px solid rgba(177,195,255,.2);border-radius:12px;padding:18px;margin-bottom:22px}
+h3{font-size:13px;color:#8794b4;margin:0 0 12px;font-weight:500}
+.viz-svg{display:block}
+</style></head><body>
+<div class="box"><h3>1 思维导图</h3><div id="a"></div></div>
+<div class="box"><h3>2 流程图</h3><div id="b"></div></div>
+<div class="box"><h3>3 数组示意图</h3><div id="c"></div></div>
+<script src="static/js/agent_viz.js"></script>
+<script>
+const mm={kind:'mindmap',title:'二分查找',colors:['#72f6e4','#a99bff','#f0cc74','#7de8a8'],
+branches:[
+ {text:'核心思想',children:[{text:'有序数组才可用'},{text:'每次取中间元素比较'},{text:'排除一半区间'},{text:'时间复杂度 O(log n)'}]},
+ {text:'执行步骤',children:[{text:'确定 low 和 high'},{text:'算 mid = (low+high)/2'},{text:'比较目标与 mid'},{text:'收缩区间继续'}]},
+ {text:'边界条件',children:[{text:'循环条件 low <= high'},{text:'low = mid + 1'},{text:'high = mid - 1'}]},
+ {text:'常见易错',children:[{text:'mid 溢出问题'},{text:'死循环'},{text:'漏掉边界元素'}]}]};
+const fc={kind:'flowchart',title:'二分查找执行流程',colors:['#72f6e4','#a99bff','#f0cc74'],
+steps:[{text:'确定 low=0, high=n-1',kind:'start'},
+ {text:'low <= high ？',kind:'decide',yes:'算 mid',no:'返回 -1'},
+ {text:'计算 mid = (low+high)/2',kind:'step'},
+ {text:'arr[mid] == target ？',kind:'decide',yes:'返回 mid',no:'收缩区间'},
+ {text:'找到目标，返回下标',kind:'end'}]};
+const ar={kind:'array',title:'二分查找 · 第 1 轮',values:['1','3','5','7','9','11','13'],
+ highlight:[3],pointers:[{label:'low',index:0},{label:'mid',index:3},{label:'high',index:6}],
+ note:'mid=7 比目标大，下一轮把 high 移到 mid-1'};
+document.getElementById('a').innerHTML=AgentViz.render(mm);
+document.getElementById('b').innerHTML=AgentViz.render(fc);
+document.getElementById('c').innerHTML=AgentViz.render(ar);
+</script></body></html>

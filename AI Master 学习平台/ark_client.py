@@ -125,8 +125,13 @@ class ArkClient:
             '稍后再试；若长期如此，可在配置页换用备用模型。' % attempts) from last_error
 
     # ── 流式接口 ────────────────────────────────────────
-    def events(self, messages, max_tokens=800, temperature=0.35):
-        """产出事件流：model / delta / finish / usage / switch。失败抛 ArkError。"""
+    def events(self, messages, max_tokens=800, temperature=0.35, tools=None):
+        """产出事件流：model / delta / finish / usage / switch / tool_calls。失败抛 ArkError。
+
+        tools 传入 OpenAI 格式的函数定义列表时启用工具调用。工具调用的
+        arguments 是**分片下发**的（实测每个字符一个 chunk），必须按 index
+        累积拼接，最后一次性以 tool_calls 事件吐出。
+        """
         if not self.key:
             raise ArkError(
                 '还没配置大模型，AI 功能暂时用不了。'
@@ -139,6 +144,9 @@ class ArkClient:
             payload = {'model': model, 'messages': messages, 'stream': True,
                        'max_tokens': max_tokens, 'temperature': temperature,
                        'stream_options': {'include_usage': True}}
+            if tools:
+                payload['tools'] = tools
+                payload['tool_choice'] = 'auto'
             if self.thinking_disabled or model.startswith('doubao-seed'):
                 payload['thinking'] = {'type': 'disabled'}
             try:
@@ -146,6 +154,8 @@ class ArkClient:
                     self.active_model = model
                     yield {'type': 'model', 'model': model}
                     ended = False
+                    # 工具调用分片累积：index → {id, name, arguments}
+                    pending = {}
                     for raw in response:
                         if time.monotonic() > deadline:
                             raise ArkError('回答超时，请缩短问题后重试。')
@@ -161,15 +171,29 @@ class ArkClient:
                             raise ArkError('模型返回错误，请稍后重试。')
                         choices = event.get('choices') or []
                         if choices:
-                            delta = choices[0].get('delta', {}).get('content')
-                            if delta:
-                                yield {'type': 'delta', 'text': delta}
+                            delta = choices[0].get('delta', {})
+                            if delta.get('content'):
+                                yield {'type': 'delta', 'text': delta['content']}
+                            for piece in (delta.get('tool_calls') or []):
+                                slot = pending.setdefault(
+                                    piece.get('index', 0),
+                                    {'id': '', 'name': '', 'arguments': ''})
+                                if piece.get('id'):
+                                    slot['id'] = piece['id']
+                                fn = piece.get('function') or {}
+                                if fn.get('name'):
+                                    slot['name'] += fn['name']
+                                if fn.get('arguments'):
+                                    slot['arguments'] += fn['arguments']
                             if choices[0].get('finish_reason'):
                                 yield {'type': 'finish', 'reason': choices[0]['finish_reason']}
                         if event.get('usage'):
                             yield {'type': 'usage', 'usage': event['usage']}
                     if not ended:
                         raise ArkError('连接中断，回答可能不完整，请重试。')
+                    if pending:
+                        yield {'type': 'tool_calls',
+                               'calls': [pending[k] for k in sorted(pending)]}
                     return
             except urllib.error.HTTPError as exc:
                 try:
