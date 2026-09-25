@@ -4,6 +4,7 @@
 {% block bodydata %}data-page="{{ chapter.title }}" data-chapter-id="{{ chapter.id }}"{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/chapter.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/selection_note.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -123,7 +124,7 @@
             这一节没看懂，问星语
           </button>
           <button class="btn ghost" data-act="kp-tts" data-title="{{ kp.title | e }}">
-            🔊 朗读这一节
+            朗读这一节
           </button>
         </div>
       </div>
@@ -177,7 +178,7 @@
       <a class="btn primary" href="/training?chapters={{ chapter.id }}">做本章专项练习</a>
       <a class="btn agent" href="/coach?chapter={{ chapter.id }}">让教练追问我</a>
       {% if next_chapter %}
-      <a class="btn ghost" href="/transition?to=/chapter/{{ next_chapter }}&kicker=章节完成&next=正在跃迁到 {{ next_title }}">⚡ 跃迁到下一章</a>
+      <a class="btn ghost" href="/transition?to=/chapter/{{ next_chapter }}&kicker=章节完成&next=正在跃迁到 {{ next_title }}">跃迁到下一章</a>
       {% endif %}
     </div>
   </div>
@@ -200,4 +201,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chapter.js') }}"></script>
+<script src="{{ url_for('static', filename='js/selection_note.js') }}"></script>
 {% endblock %}

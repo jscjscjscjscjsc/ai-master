@@ -11,6 +11,9 @@ const ProgressPage = {
       this.paintWrong(data);
       this.paintExams(data);
       this.paintLog(data);
+      const graph = await Star.api('/api/learning-graph');
+      this.paintGraph(graph);
+      this.paintWeak(graph.weak_spots || []);
       if (data.is_guest) {
         document.getElementById('pg-kpis').insertAdjacentHTML('beforeend',
           `<div class="pg-kpi" style="grid-column:1/-1">
@@ -22,6 +25,75 @@ const ProgressPage = {
     } catch (error) {
       Star.toast(error.message, 'bad');
     }
+  },
+
+  paintGraph(data) {
+    const box = document.getElementById('pg-graph');
+    const nodes = data.nodes || [];
+    const edges = data.edges || [];
+    const chapters = [...new Set(nodes.map(node => node.chapter_id))];
+    const positions = new Map();
+    const counts = new Map();
+    nodes.forEach(node => {
+      const col = chapters.indexOf(node.chapter_id);
+      const row = counts.get(node.chapter_id) || 0;
+      counts.set(node.chapter_id, row + 1);
+      positions.set(node.id, { x: 30 + col * 205, y: 52 + row * 74 });
+    });
+    const height = Math.max(470, ...[...counts.values()].map(n => 65 + n * 74));
+    const width = 60 + chapters.length * 205;
+    const lines = edges.map(edge => {
+      const a = positions.get(edge.from), b = positions.get(edge.to);
+      if (!a || !b) return '';
+      const sameColumn = a.x === b.x;
+      const x1 = sameColumn ? a.x + 82 : a.x + 165;
+      const y1 = sameColumn ? a.y + 47 : a.y + 23;
+      const x2 = sameColumn ? b.x + 82 : b.x;
+      const y2 = sameColumn ? b.y : b.y + 23;
+      return `<path d="M ${x1} ${y1} C ${sameColumn ? x1 : x1 + 19} ${sameColumn ? y1 + 13 : y1}, ${sameColumn ? x2 : x2 - 19} ${sameColumn ? y2 - 13 : y2}, ${x2} ${y2}" />`;
+    }).join('');
+    const blocks = nodes.map(node => {
+      const { x, y } = positions.get(node.id);
+      const label = Star.esc(node.title.length > 13 ? node.title.slice(0, 12) + '…' : node.title);
+      return `<a href="${node.url}" class="pg-graph-node ${node.status}" aria-label="${Star.esc(node.title)} 掌握度 ${node.score} 分">
+        <title>${Star.esc(node.title)} · 掌握度 ${node.score}/100 · 证据 ${node.evidence} 条</title>
+        <rect x="${x}" y="${y}" width="165" height="47" rx="7" />
+        <text x="${x + 11}" y="${y + 20}">${label}</text>
+        <text class="sub" x="${x + 11}" y="${y + 37}">${node.evidence ? `掌握度 ${node.score} / 100` : '尚未学习'}</text>
+      </a>`;
+    }).join('');
+    const headers = chapters.map((id, index) => `<text class="pg-graph-heading" x="${30 + index * 205}" y="29">第 ${id} 章</text>`).join('');
+    box.innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="个人知识图谱">
+      <defs><marker id="graph-arrow" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 8 4 L 0 8 Z" fill="#719ca0" /></marker></defs>
+      <g class="pg-graph-edges">${lines}</g>${headers}${blocks}</svg>`;
+  },
+
+  /* 该补哪里：把"图上的红黄点"变成可执行的清单。
+     学生看图能知道"我哪里弱"，但下一步该点哪里往往还是懵的 ——
+     这里直接给可点的链接，并标出它依赖的前一个知识点
+     （补的时候从那个点往回看，通常比硬啃当前这个更有效）。 */
+  paintWeak(spots) {
+    const section = document.getElementById('pg-weak-section');
+    const box = document.getElementById('pg-weak');
+    if (!section || !box) return;
+    if (!spots.length) {
+      section.hidden = true;
+      return;
+    }
+    section.hidden = false;
+    box.innerHTML = spots.map((spot) => {
+      const needs = spot.needs
+        ? `<span class="pg-weak-needs ${spot.needs.status}">依赖：${Star.esc(spot.needs.title)}（${spot.needs.score} 分）</span>`
+        : '';
+      return `<div class="pg-weak-row ${spot.status}">
+        <span class="pg-weak-dot" aria-hidden="true"></span>
+        <div class="pg-weak-body">
+          <a href="${spot.url}">${Star.esc(spot.title)}</a>
+          <div class="pg-weak-meta">${Star.esc(spot.chapter)}${needs}</div>
+        </div>
+        <span class="pg-weak-score">${spot.score} / 100</span>
+      </div>`;
+    }).join('');
   },
 
   paintKpis(data) {

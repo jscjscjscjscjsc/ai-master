@@ -92,7 +92,7 @@ const Chapter = {
       if (window.speechSynthesis) window.speechSynthesis.cancel();
       if (this.audio) { this.audio.pause(); this.audio = null; }
       this.speaking = false;
-      button.textContent = '🔊 朗读这一节';
+      button.textContent = '朗读这一节';
       return;
     }
     const lesson = node.querySelector('.lesson');
@@ -108,7 +108,7 @@ const Chapter = {
       if (response.ok && (response.headers.get('content-type') || '').includes('audio')) {
         const blob = await response.blob();
         this.audio = new Audio(URL.createObjectURL(blob));
-        this.audio.onended = () => { this.speaking = false; button.textContent = '🔊 朗读这一节'; };
+        this.audio.onended = () => { this.speaking = false; button.textContent = '朗读这一节'; };
         await this.audio.play();
         button.textContent = '⏹ 停止朗读';
         return;
@@ -120,14 +120,14 @@ const Chapter = {
   speakBrowser(text, button) {
     if (!window.speechSynthesis) {
       this.speaking = false;
-      button.textContent = '🔊 朗读这一节';
+      button.textContent = '朗读这一节';
       Star.toast('这个浏览器不支持语音朗读', 'bad');
       return;
     }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-CN';
     utterance.rate = 1.06;
-    utterance.onend = () => { this.speaking = false; button.textContent = '🔊 朗读这一节'; };
+    utterance.onend = () => { this.speaking = false; button.textContent = '朗读这一节'; };
     window.speechSynthesis.speak(utterance);
     button.textContent = '⏹ 停止朗读';
   },

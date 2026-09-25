@@ -249,8 +249,8 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
 
   <!-- 模型状态条 -->
   <div class="model-bar">
-    <div class="mb-item"><span class="ic">🧠</span><div><div class="t">PARAMS</div><div class="v cyan" id="mb-params">125M</div></div></div>
-    <div class="mb-item"><span class="ic">📉</span><div><div class="t">LOSS</div><div class="v" id="mb-loss">—</div></div></div>
+    <div class="mb-item"><span class="ic"></span><div><div class="t">PARAMS</div><div class="v cyan" id="mb-params">125M</div></div></div>
+    <div class="mb-item"><span class="ic"></span><div><div class="t">LOSS</div><div class="v" id="mb-loss">—</div></div></div>
     <div class="mb-item"><span class="ic">⭐</span><div><div class="t">QUALITY</div><div class="v" id="mb-quality">0%</div></div></div>
     <div class="stage-pill s0" id="mb-stage">PRE-TRAINING</div>
   </div>
@@ -262,28 +262,28 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
       <div class="st-name">预训练</div>
       <div class="st-en">PRE-TRAINING · 猜下一个词</div>
       <div class="st-prog" id="prog-0"></div>
-      <span class="check">✓</span>
+      <span class="check"></span>
     </div>
     <div class="stage-tab s1 locked" data-stage="1">
       <div class="st-num">02</div>
       <div class="st-name">监督微调</div>
       <div class="st-en">SFT · 学会当助手</div>
       <div class="st-prog" id="prog-1"></div>
-      <span class="lock">🔒</span><span class="check">✓</span>
+      <span class="lock"></span><span class="check"></span>
     </div>
     <div class="stage-tab s2 locked" data-stage="2">
       <div class="st-num">03</div>
       <div class="st-name">人类对齐</div>
       <div class="st-en">RLHF · 有用·诚实·无害</div>
       <div class="st-prog" id="prog-2"></div>
-      <span class="lock">🔒</span><span class="check">✓</span>
+      <span class="lock"></span><span class="check"></span>
     </div>
   </div>
 
   <!-- ===== 阶段 1 面板 ===== -->
   <div class="panel" id="panel-0">
     <div class="panel-title">
-      <h2><span class="ic">🔮</span> 预训练 · 猜下一个 Token</h2>
+      <h2><span class="ic"></span> 预训练 · 猜下一个 Token</h2>
       <div class="sub">大模型在预训练阶段只做一件事：<b style="color:var(--cyan)">预测下一个词</b>。猜对了 loss 下降，模型逐渐学会语言规律。</div>
     </div>
 
@@ -305,21 +305,21 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
       </div>
       <div class="pre-right">
         <div class="info-card">
-          <h4>🎯 你的训练统计</h4>
+          <h4> 你的训练统计</h4>
           <div class="score-row"><span class="k">已训练样本</span><span class="v" id="pre-count">0 / 8</span></div>
           <div class="score-row"><span class="k">正确预测</span><span class="v" id="pre-correct">0</span></div>
           <div class="score-row"><span class="k">准确率</span><span class="v" id="pre-acc">—</span></div>
           <div class="score-row"><span class="k">当前 Loss</span><span class="v" id="pre-loss">4.20</span></div>
         </div>
         <div class="info-card" style="background:linear-gradient(120deg,rgba(0,217,255,.06),rgba(168,85,247,.04))">
-          <h4>💡 知识点</h4>
+          <h4> 知识点</h4>
           <p>预训练的目标是<b style="color:var(--cyan)">最大化 P(下一个词 | 前文)</b>。模型在海量文本上反复做这道题，逐渐掌握语法、事实和常识。loss 用<b>交叉熵</b>衡量，越低说明预测越准。</p>
         </div>
       </div>
     </div>
 
     <div class="stage-done" id="done-0">
-      <h3>✓ 预训练阶段完成！</h3>
+      <h3> 预训练阶段完成！</h3>
       <p>基座模型已学会语言规律。但它现在只会"续写"，还不会"听话"。点击上方 <b style="color:var(--purple)">02 监督微调</b> 进入下一阶段。</p>
     </div>
   </div>
@@ -327,7 +327,7 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
   <!-- ===== 阶段 2 面板 ===== -->
   <div class="panel" id="panel-1" style="display:none">
     <div class="panel-title">
-      <h2><span class="ic" style="background:rgba(168,85,247,.12)">🎓</span> 监督微调 · 学会当助手</h2>
+      <h2><span class="ic" style="background:rgba(168,85,247,.12)"></span> 监督微调 · 学会当助手</h2>
       <div class="sub">用人类编写的"指令-回答"对，教模型<b style="color:var(--purple)">听懂并遵循指令</b>。你来当标注员，为每个问题选出"好回答"。</div>
     </div>
 
@@ -339,7 +339,7 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
 
     <div class="sft-game">
       <div class="sft-prompt">
-        <div class="u-ic">👤</div>
+        <div class="u-ic"></div>
         <div class="u-txt"><span class="role">USER INSTRUCTION</span><span id="sft-question">问题加载中...</span></div>
       </div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px">// 作为标注员，选出"好回答"（符合指令、格式正确、信息有用）</div>
@@ -348,12 +348,12 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
     </div>
 
     <div class="info-card" style="margin-top:18px;background:linear-gradient(120deg,rgba(168,85,247,.06),rgba(236,72,153,.04))">
-      <h4 style="color:var(--purple)">💡 知识点</h4>
+      <h4 style="color:var(--purple)"> 知识点</h4>
       <p>预训练模型只会"续写"——给它"中国首都"它可能续写出"是亚洲国家"。SFT 让它学会"问什么答什么"：用数千到数万条高质量 <b style="color:var(--purple)">(指令, 回答)</b> 对做监督学习，模型就变成了"助手"。这一步的数据质量决定模型的下限。</p>
     </div>
 
     <div class="stage-done" id="done-1">
-      <h3>✓ 监督微调完成！</h3>
+      <h3> 监督微调完成！</h3>
       <p>模型已经会按指令回答了。但它可能啰嗦、有偏见、甚至不安全。点击 <b style="color:var(--pink)">03 人类对齐</b> 进入最后阶段。</p>
     </div>
   </div>
@@ -361,7 +361,7 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
   <!-- ===== 阶段 3 面板 ===== -->
   <div class="panel" id="panel-2" style="display:none">
     <div class="panel-title">
-      <h2><span class="ic" style="background:rgba(236,72,153,.12)">⚖️</span> 人类对齐 · RLHF 偏好优化</h2>
+      <h2><span class="ic" style="background:rgba(236,72,153,.12)"></span> 人类对齐 · RLHF 偏好优化</h2>
       <div class="sub">比较两个回答，选出<b style="color:var(--pink)">人类更偏好</b>的那个。你的选择会训练奖励模型，再通过强化学习优化策略——这就是 ChatGPT 的核心。</div>
     </div>
 
@@ -387,12 +387,12 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
     </div>
 
     <div class="info-card" style="margin-top:18px;background:linear-gradient(120deg,rgba(236,72,153,.06),rgba(0,217,255,.04))">
-      <h4 style="color:var(--pink)">💡 知识点 · RLHF 三步</h4>
+      <h4 style="color:var(--pink)"> 知识点 · RLHF 三步</h4>
       <p><b>① 训练奖励模型：</b>用人类对多个回答的排序数据训练一个"打分器"。<b>② 强化学习优化：</b>用 PPO 算法让大模型生成得分更高的回答。<b>③ 准则：</b>Helpful（有用）、Honest（诚实）、Harmless（无害）—— 合称 <b style="color:var(--pink)">HHH</b>。现代方法也用 DPO 直接偏好优化，跳过奖励模型。</p>
     </div>
 
     <div class="stage-done" id="done-2">
-      <h3>✓ 人类对齐完成！</h3>
+      <h3> 人类对齐完成！</h3>
       <p>恭喜！你的模型已经从一个"胡言乱语"的基座，成长为一个流畅、安全、有用的 AI 助手！</p>
     </div>
   </div>
@@ -407,7 +407,7 @@ footer{text-align:center;padding:40px 0 0;color:var(--muted);font-size:13px;bord
   <canvas id="finale-canvas"></canvas>
   <div class="finale-inner">
     <div class="pre">// TRAINING COMPLETE</div>
-    <h2>🎉 模型已毕业！</h2>
+    <h2> 模型已毕业！</h2>
     <div class="en">YOUR LLM IS READY</div>
     <p>你亲手完成了大模型的完整训练流程——从预测下一个词，到学会当助手，再到与人类价值观对齐。这就是 ChatGPT、GPT-4、Claude 背后的同一套方法论。</p>
     <div class="cert">
@@ -594,7 +594,7 @@ function renderPreQuestion(){
     document.querySelector('[data-stage="0"]').classList.add('done');
     document.querySelector('[data-stage="1"]').classList.remove('locked');
     document.querySelector('[data-stage="1"] .lock').style.display='none';
-    toast('预训练完成！解锁监督微调 🎓', 'ok');
+    toast('预训练完成！解锁监督微调 ', 'ok');
     G.quality=33;updateModelBar();
     return;
   }
@@ -627,14 +627,14 @@ function handlePreAnswer(btn,opt,q){
     G.preCorrect++;
     // loss 下降更多
     G.preLoss=Math.max(0.5,G.preLoss-0.45+Math.random()*0.15);
-    toast('✓ 猜对了！loss 下降','ok');
+    toast(' 猜对了！loss 下降','ok');
   } else {
     btn.classList.add('wrong');
     // 标出正确答案
     btns.forEach(b=>{if(b.textContent.replace(/\sP=.*$/,'').trim()===q.answer)b.classList.add('reveal');});
     // loss 微降（模型仍在学）
     G.preLoss=Math.max(0.5,G.preLoss-0.1+Math.random()*0.1);
-    toast(`✗ 正确答案是 "${q.answer}"`,'err');
+    toast(` 正确答案是 "${q.answer}"`,'err');
   }
   G.preLossHist.push(G.preLoss);
   if(G.preLossHist.length>30)G.preLossHist.shift();
@@ -690,7 +690,7 @@ function renderSftQuestion(){
     document.querySelector('[data-stage="1"]').classList.add('done');
     document.querySelector('[data-stage="2"]').classList.remove('locked');
     document.querySelector('[data-stage="2"] .lock').style.display='none';
-    toast('监督微调完成！解锁人类对齐 ⚖️','ok');
+    toast('监督微调完成！解锁人类对齐 ','ok');
     G.quality=66;updateModelBar();
     return;
   }
@@ -719,7 +719,7 @@ function handleSftAnswer(card,a,all){
     if(match){
       const v=document.createElement('div');
       v.className='verdict '+(match.good?'good':'bad');
-      v.textContent=match.good?'✓ 好回答 · 应该学习':'✗ 差回答 · 不应学习';
+      v.textContent=match.good?' 好回答 · 应该学习':' 差回答 · 不应学习';
       c.appendChild(v);
       const why=document.createElement('div');
       why.className='why';why.textContent='评价：'+match.why;
@@ -731,11 +731,11 @@ function handleSftAnswer(card,a,all){
     card.classList.add('picked-good');
     G.sftGood++;
     G.sftLoss=Math.max(0.3,G.sftLoss-0.42+Math.random()*0.1);
-    toast('✓ 你标注的是好回答，模型学到正确行为','ok');
+    toast(' 你标注的是好回答，模型学到正确行为','ok');
   } else {
     card.classList.add('picked-bad');
     G.sftLoss=Math.max(0.3,G.sftLoss-0.05);
-    toast('✗ 你选了差回答——幸好这只是模拟，真实标注要谨慎','err');
+    toast(' 你选了差回答——幸好这只是模拟，真实标注要谨慎','err');
   }
   G.sftLossHist.push(G.sftLoss);
   if(G.sftLossHist.length>30)G.sftLossHist.shift();
@@ -778,7 +778,7 @@ function renderAlignQuestion(){
     document.getElementById('done-2').classList.add('show');
     document.getElementById('prog-2').style.width='100%';
     document.querySelector('[data-stage="2"]').classList.add('done');
-    toast('🎉 全部训练完成！','ok');
+    toast(' 全部训练完成！','ok');
     G.quality=100;updateModelBar();
     setTimeout(showFinale, 1500);
     return;
@@ -822,10 +822,10 @@ function handleAlignAnswer(card,kind,order,q){
   if(kind==='good'){
     G.alignGood++;
     G.reward+=1.2;
-    toast('✓ 你选择了更好的回答，奖励模型','ok');
+    toast(' 你选择了更好的回答，奖励模型','ok');
   } else {
     G.reward-=0.6;
-    toast('✗ 这个回答不够好（参考维度评分）','err');
+    toast(' 这个回答不够好（参考维度评分）','err');
   }
   G.rewardHist.push(G.reward);
   if(G.rewardHist.length>30)G.rewardHist.shift();

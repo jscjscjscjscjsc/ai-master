@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Master · 启动</title>
+<style>
+/* ── 主题表：改风格只改这里 ───────────────────────────── */
+:root{
+  --bg:#03070d;            /* 近黑带蓝，不用纯黑 */
+  --ink:#eaf6f7;
+  --dim:#7d97a3;
+  --cyan:#5eead4;          /* 主色 */
+  --violet:#a78bfa;        /* 辅色 */
+  --amber:#fcd34d;
+  --line:rgba(148,196,205,.16);
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:Inter,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;overflow:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+/* 渐晕：贵与廉价的分界线常常就在这一层 */
+.veil{position:fixed;inset:0;pointer-events:none;z-index:2;
+  background:
+    radial-gradient(ellipse 78% 62% at 62% 46%,transparent 30%,rgba(3,7,13,.72) 100%),
+    linear-gradient(90deg,rgba(3,7,13,.94) 0%,rgba(3,7,13,.62) 38%,transparent 68%)}
+/* 胶片噪点：SVG feTurbulence 平铺，不占帧时间 */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.055;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+  animation:grainShift .9s steps(3) infinite}
+@keyframes grainShift{0%{transform:translate(0,0)}33%{transform:translate(-2%,1%)}66%{transform:translate(1%,-2%)}}
+
+.frame{position:relative;z-index:4;min-height:100svh;display:flex;flex-direction:column;
+  justify-content:space-between;padding:clamp(20px,3.4vw,52px)}
+
+.top{display:flex;justify-content:space-between;align-items:center;gap:18px;
+  font:11px/1.4 Consolas,ui-monospace,monospace;letter-spacing:.18em;color:var(--dim)}
+.brand{color:var(--ink);font-weight:700;letter-spacing:.14em}
+.brand i{font-style:normal;color:var(--dim);margin-left:10px;letter-spacing:.2em}
+.sig{display:flex;align-items:center;gap:9px}
+.sig::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 12px var(--cyan);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+.main{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:min(880px,86vw)}
+.eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 26px;
+  font:11px Consolas,ui-monospace,monospace;letter-spacing:.3em;color:var(--cyan)}
+.eyebrow::before{content:'';width:34px;height:1px;background:currentColor;opacity:.6}
+h1{margin:0 0 24px;font-size:clamp(40px,6.6vw,104px);font-weight:800;
+  letter-spacing:-.035em;line-height:1.06;text-shadow:0 0 70px rgba(94,234,212,.16)}
+h1 em{font-style:normal;color:var(--cyan)}
+.rule{width:min(560px,72vw);height:1px;margin-bottom:26px;
+  background:linear-gradient(90deg,var(--cyan),transparent)}
+.lede{margin:0;max-width:640px;font-size:clamp(14px,1.55vw,19px);
+  font-weight:300;line-height:2;color:#b9ced4;min-height:3.9em}
+.route{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+.route span{font:10.5px Consolas,ui-monospace,monospace;letter-spacing:.16em;color:var(--dim);
+  border:1px solid var(--line);padding:6px 11px;border-radius:2px;transition:.4s}
+.route span.on{color:var(--cyan);border-color:rgba(94,234,212,.45);background:rgba(94,234,212,.06)}
+
+.foot{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.nav{display:flex;gap:20px;align-items:flex-end}
+.nav button{position:relative;background:none;border:0;padding:12px 0;cursor:pointer;
+  color:var(--dim);font:11px Consolas,ui-monospace,monospace;letter-spacing:.1em;
+  min-width:60px;text-align:left;font-family:inherit}
+.nav button small{display:block;font-size:9px;opacity:.6;margin-bottom:7px}
+.nav button i{position:absolute;left:0;bottom:2px;width:0;height:1px;background:var(--cyan);
+  transition:width .55s cubic-bezier(.22,.61,.36,1)}
+.nav button.on{color:var(--ink)}
+.nav button.on i{width:100%}
+.nav button:hover{color:var(--cyan)}
+
+.skip{border:1px solid rgba(94,234,212,.42);background:rgba(94,234,212,.05);color:var(--ink);
+  padding:12px 20px;font:11.5px Consolas,ui-monospace,monospace;letter-spacing:.12em;
+  cursor:pointer;border-radius:2px;transition:.3s;white-space:nowrap}
+.skip:hover{background:rgba(94,234,212,.14);box-shadow:0 0 26px rgba(94,234,212,.18)}
+.hint{font:10.5px Consolas,ui-monospace,monospace;color:#4d626c;letter-spacing:.1em}
+
+/* 进度细线 */
+.bar{position:fixed;left:0;bottom:0;width:100%;height:1.5px;background:var(--cyan);z-index:5;
+  box-shadow:0 0 12px var(--cyan);transform-origin:0 50%;transform:scaleX(0)}
+
+@media(max-width:760px){
+  .sig,.nav button small,.hint{display:none}
+  .nav{gap:10px;flex-wrap:wrap}.nav button{min-width:24px;font-size:10px;padding:8px 0}
+  .lede{min-height:5.4em;font-size:13.5px}
+  /* 底部改纵向堆叠：6 个分幕按钮加"跳过开场"横排会超出屏宽，
+     实测按钮被右视口裁掉、只露出半个字。堆叠后两者都完整可见。 */
+  .foot{flex-direction:column;align-items:stretch;gap:14px}
+  .skip{width:100%;text-align:center}
+  /* 正文压到场景之上：窄屏场景已上移，这里再给正文一层深色垫底，
+     保证任何屏幕比例下文字都清晰。 */
+  .main{position:relative;z-index:1;text-shadow:0 2px 14px rgba(3,7,13,.92),0 0 30px rgba(3,7,13,.8)}
+  /* 窄屏 3D 是衬托不是主角：压低存在感，保证任何配色下文字都优先可读 */
+  #c3d{opacity:.72}
+}
+@media(prefers-reduced-motion:reduce){
+  .grain{animation:none}.sig::before{animation:none}
+}
+</style>
+</head>
+<body>
+<canvas id="c3d" aria-hidden="true"></canvas>
+<div class="veil"></div><div class="grain"></div>
+<div class="bar" id="bar"></div>
+
+<div class="frame">
+  <header class="top">
+    <span class="brand">AI MASTER<i>/ LEARNING SYSTEM</i></span>
+    <span class="sig" id="sig">ENGINE ONLINE</span>
+  </header>
+
+  <main class="main">
+    <p class="eyebrow" id="eyebrow">AWAKEN</p>
+    <h1 id="title">让知识<br><em>连成一张网。</em></h1>
+    <div class="rule"></div>
+    <p class="lede" id="lede">正在唤醒你的学习引擎…</p>
+    <div class="route" id="route"></div>
+  </main>
+
+  <footer class="foot">
+    <nav class="nav" id="nav" aria-label="开场章节"></nav>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span class="hint" id="hint">滚轮 / 拖拽 / 方向键 翻阅 · 空格继续</span>
+      <button class="skip" id="skip" type="button">跳过开场 <span aria-hidden="true">→</span></button>
+    </div>
+  </footer>
+</div>
+
+<script src="{{ url_for('static', filename='vendor/three.min.js') }}"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   AI Master 开场：六幕 3D 叙事
+   每一幕是 3D 空间里的一个「场景区」，相机依次飞过去看 ——
+   比平面推拉多的是真三维纵深：转场时能感觉到「绕过去」而不是「换张图」。
+   ══════════════════════════════════════════════════════════════ */
+(() => {
+  'use strict';
+
+  /* ── 分幕剧本：紧扣课程主线（认知 → 知识 → 内核 → 协作 → 落地）── */
+  const ACTS = [
+    { key:'wake', cn:'唤醒', en:'AWAKEN',
+      title:'从一束信号<br><em>开始生长。</em>',
+      lede:'这里没有「看完就忘」的课程。你写的每一行、问的每一句、卡住的每一处，都会被记住，成为下一步的路标。',
+      route:['大模型认知','Prompt 工程','LLM API'] },
+    { key:'mind', cn:'认知', en:'COGNITION',
+      title:'让词语<br><em>彼此靠近。</em>',
+      lede:'模型看不见文字，它看见的是意义之间的距离。理解了向量，你就理解了今天所有 AI 应用的地基。',
+      route:['Embedding','注意力','上下文'] },
+    { key:'recall', cn:'知识', en:'KNOWLEDGE',
+      title:'把外部世界<br><em>接进模型。</em>',
+      lede:'模型会遗忘，检索不会。RAG 让回答落在真实资料上——这是让 AI 可靠的第一课。',
+      route:['向量检索','切片与召回','引用溯源'] },
+    { key:'core', cn:'内核', en:'AGENT CORE',
+      title:'让它自己<br><em>往前走一步。</em>',
+      lede:'会调用工具、会看结果、会决定下一步——这就是 Agent。你将亲手从零实现这个循环，而不是只会调 API。',
+      route:['工具调用','推理循环','记忆与规划'] },
+    { key:'swarm', cn:'协作', en:'COLLECTIVE',
+      title:'一个不够，<br><em>就组成系统。</em>',
+      lede:'单智能体解决任务，多智能体解决复杂性。分工、通信、仲裁——这是工程能力的真正分水岭。',
+      route:['多智能体','MCP 协议','框架实战'] },
+    { key:'launch', cn:'启程', en:'LAUNCH',
+      title:'接下来，<br><em>交给你了。</em>',
+      lede:'课程、练习、图谱与反馈都已就绪。不必一次学完，但请每次只走一步——进度会自己攒起来。',
+      route:['源码拆解','微调与落地','毕业项目'] },
+  ];
+  const LAST = ACTS.length - 1;
+
+  /* 深链：/intro?ch=3 直接落到某一幕。
+     既给「重看某一幕」用，也是视觉验收的唯一可靠入口 ——
+     无头截图抓不到连续动画的中间帧，必须能直接给最终态。 */
+  const params = new URLSearchParams(location.search);
+  const q = params.get('ch');
+  const START = q === null ? 0 : Math.max(0, Math.min(LAST, parseInt(q, 10) || 0));
+  // 出口：把来源页带过去（默认回看板）。只接受站内相对路径。
+  const rawNext = params.get('next') || '/';
+  const NEXT = (rawNext.startsWith('/') && !rawNext.startsWith('//')) ? rawNext : '/';
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const COARSE = matchMedia('(pointer: coarse)').matches;
+
+  const $ = (s) => document.querySelector(s);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  // 比 smoothstep 更平缓的进出：没有它，相机在关键帧附近会有可见的「一顿」
+  const smoother = (t) => (t = clamp(t, 0, 1), t * t * t * (t * (t * 6 - 15) + 10));
+
+  const S = {
+    target: START, pos: START,
+    auto: !REDUCED, autoTimer: null,
+    dragging: false, dragStart: 0, dragPos: 0,
+    pointer: { x: .5, y: .5, tx: .5, ty: .5 },
+    done: false,
+  };
+
+  /* ── 文字层 ───────────────────────────────────────────── */
+  const navEl = $('#nav');
+  navEl.innerHTML = ACTS.map((a, i) =>
+    `<button data-i="${i}" type="button"><small>0${i + 1}</small>${a.cn}<i></i></button>`).join('');
+  const navBtns = [...navEl.querySelectorAll('button')];
+
+  let shownAct = -1;
+  function paintAct(i) {
+    if (i === shownAct) return;
+    shownAct = i;
+    const a = ACTS[i];
+    $('#eyebrow').textContent = a.en;
+    $('#title').innerHTML = a.title;
+    $('#lede').textContent = a.lede;
+    $('#route').innerHTML = a.route.map((t) => `<span>${t}</span>`).join('');
+    navBtns.forEach((b, k) => b.classList.toggle('on', k === i));
+    $('#sig').textContent = `${a.cn.toUpperCase()} / ${String(i + 1).padStart(2, '0')}`;
+    // 逐个点亮标签，做出「正在装载」的节奏（比一次性全亮更像系统在工作）
+    [...$('#route').children].forEach((el, k) =>
+      setTimeout(() => el.classList.add('on'), 200 + k * 250));
+  }
+
+  /* ── 3D 场景 ──────────────────────────────────────────── */
+  const canvas = $('#c3d');
+  let G = null;
+
+  /* 每一幕的「场景区」在 3D 空间里的坐标。
+     相机必须**对准**各自那一幕，否则场景会偏到画面外 ——
+     这是实测截图发现的：只把机位挪开、lookAt 却固定指原点，
+     偏移量大的那几幕（比如第 3 幕 x=-34）会整个跑出视野，
+     画面看起来像"这幕没做"。 */
+  const PLACES = [
+    [0, 0, 0],        // 0 唤醒
+    [34, 0, -36],     // 1 认知
+    [-34, 0, -36],    // 2 知识
+    [0, -2, -74],     // 3 内核
+    [36, 0, -74],     // 4 协作
+    [0, 0, -112],     // 5 启程
+  ];
+
+  function makeGlow() {
+    const s = 256, c = document.createElement('canvas'); c.width = c.height = s;
+    const x = c.getContext('2d');
+    const g = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,.95)');
+    g.addColorStop(.25, 'rgba(255,255,255,.42)');
+    g.addColorStop(.55, 'rgba(255,255,255,.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  function makeStar() {
+    const s = 64, c = document.createElement('canvas'); c.width = c.height = s;
+    const x = c.getContext('2d');
+    const g = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(.35, 'rgba(255,255,255,.55)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); x.fill();
+    return new THREE.CanvasTexture(c);
+  }
+
+  function buildScene() {
+    if (typeof THREE === 'undefined') return null;
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true,
+        powerPreference: 'high-performance' });
+    } catch (e) { return null; }
+    // DPR 封顶 1.35：背景不需要视网膜级清晰，省下的算力留给交互
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.35));
+    renderer.setClearColor(0x000000, 0);   // 必须透明，否则会盖住渐晕层
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x03070d, 0.011);
+    const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 400);
+
+    scene.add(new THREE.AmbientLight(0x93b4c4, 1.1));
+    const key = new THREE.PointLight(0x5eead4, 2.4, 90); key.position.set(6, 8, 14); scene.add(key);
+    const fill = new THREE.PointLight(0xa78bfa, 1.7, 80); fill.position.set(-9, -5, 6); scene.add(fill);
+
+    const glowTex = makeGlow(), starTex = makeStar();
+    const CYAN = 0x5eead4, VIOLET = 0xa78bfa, AMBER = 0xfcd34d;
+
+    const lin = (c, o) => new THREE.LineBasicMaterial({ color: c, transparent: true,
+      opacity: o, blending: THREE.AdditiveBlending, depthWrite: false });
+    const dots = (c, sz, o) => new THREE.PointsMaterial({ color: c, size: sz, map: starTex,
+      transparent: true, opacity: o, blending: THREE.AdditiveBlending,
+      depthWrite: false, sizeAttenuation: true });
+
+    const groups = [];
+
+    /* 幕 0｜唤醒：一颗核心 + 从球壳外汇聚的粒子 */
+    {
+      const g = new THREE.Group(); g.position.fromArray(PLACES[0]);
+      const core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 2),
+        new THREE.MeshStandardMaterial({ color: CYAN, emissive: CYAN, emissiveIntensity: .55,
+          metalness: .8, roughness: .2, flatShading: true }));
+      g.add(core);
+      g.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(2.4, 1)),
+        lin(CYAN, .3)));
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: CYAN,
+        transparent: true, opacity: .75, blending: THREE.AdditiveBlending, depthWrite: false }));
+      halo.scale.set(14, 14, 1); g.add(halo);
+      const N = 420, pg = new THREE.BufferGeometry(), pp = new Float32Array(N * 3);
+      for (let i = 0; i < N; i++) {
+        const r = 7 + Math.random() * 13, th = Math.random() * Math.PI * 2,
+              ph = Math.acos(2 * Math.random() - 1);
+        pp[i * 3] = r * Math.sin(ph) * Math.cos(th);
+        pp[i * 3 + 1] = r * Math.sin(ph) * Math.sin(th);
+        pp[i * 3 + 2] = r * Math.cos(ph);
+      }
+      pg.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+      g.add(new THREE.Points(pg, dots(CYAN, .34, .8)));
+      groups.push({ g, core, breathe: .045 });
+    }
+
+    /* 幕 1｜认知：高维词向量空间（簇 + 语义邻近连线） */
+    {
+      const g = new THREE.Group(); g.position.fromArray(PLACES[1]);
+      const N = 700, pg = new THREE.BufferGeometry(), pp = new Float32Array(N * 3);
+      const anchors = [];
+      for (let c = 0; c < 9; c++) anchors.push(new THREE.Vector3(
+        (Math.random() - .5) * 15, (Math.random() - .5) * 10, (Math.random() - .5) * 15));
+      for (let i = 0; i < N; i++) {
+        const a = anchors[i % anchors.length];
+        pp[i * 3] = a.x + (Math.random() - .5) * 3.4;
+        pp[i * 3 + 1] = a.y + (Math.random() - .5) * 3.4;
+        pp[i * 3 + 2] = a.z + (Math.random() - .5) * 3.4;
+      }
+      pg.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+      g.add(new THREE.Points(pg, dots(0x9ff5e8, .3, .85)));
+      const segs = [];
+      for (let i = 0; i < anchors.length - 1; i++) segs.push(anchors[i], anchors[i + 1]);
+      g.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(segs), lin(VIOLET, .26)));
+      groups.push({ g });
+    }
+
+    /* 幕 2｜知识：文档墙 + 检索流 */
+    {
+      const g = new THREE.Group(); g.position.fromArray(PLACES[2]);
+      const sheets = [];
+      for (let i = 0; i < 22; i++) {
+        const w = 1.6 + Math.random() * 1.1, h = w * 1.3;
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
+          new THREE.MeshBasicMaterial({ color: CYAN, transparent: true, opacity: .1,
+            side: THREE.DoubleSide, depthWrite: false }));
+        // 收窄到 ±8 并整体右移 2：铺太宽会盖到左侧标题上
+        m.position.set((Math.random() - .5) * 16 + 2, (Math.random() - .5) * 12, (Math.random() - .5) * 14);
+        m.rotation.set((Math.random() - .5) * .5, (Math.random() - .5) * 1.2, 0);
+        g.add(m); sheets.push(m);
+        const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(w, h)),
+          lin(CYAN, .32));
+        e.position.copy(m.position); e.rotation.copy(m.rotation);
+        g.add(e);
+      }
+      // 检索流：光点持续从文档侧飞向另一侧，被挡住就回到起点
+      const FN = 260, fg = new THREE.BufferGeometry();
+      const fp = new Float32Array(FN * 3);
+      for (let i = 0; i < FN; i++) {
+        fp[i * 3] = (Math.random() - .5) * 34;
+        fp[i * 3 + 1] = (Math.random() - .5) * 12;
+        fp[i * 3 + 2] = (Math.random() - .5) * 12;
+      }
+      fg.setAttribute('position', new THREE.BufferAttribute(fp, 3));
+      const flow = new THREE.Points(fg, dots(AMBER, .34, .9));
+      g.add(flow);
+      groups.push({ g, sheets, flow, FN });
+    }
+
+    /* 幕 3｜内核：Agent 的工具循环 */
+    {
+      const g = new THREE.Group(); g.position.fromArray(PLACES[3]);
+      const rings = [];
+      [3.4, 4.5, 5.6].forEach((r, i) => {
+        const m = new THREE.Mesh(new THREE.TorusGeometry(r, .05, 10, 96),
+          new THREE.MeshStandardMaterial({ color: CYAN, emissive: CYAN, emissiveIntensity: .7,
+            metalness: .7, roughness: .3, transparent: true, opacity: .85 }));
+        // 管半径 .05 在这个尺寸下约 4px 宽，不会再出现「细线断成虚线」的问题
+        m.rotation.x = 1.25 + i * .22; m.rotation.y = i * .5;
+        g.add(m); rings.push(m);
+      });
+      const tools = [];
+      for (let i = 0; i < 6; i++) {
+        const t = new THREE.Mesh(new THREE.BoxGeometry(.62, .62, .62),
+          new THREE.MeshStandardMaterial({ color: i % 2 ? VIOLET : AMBER,
+            emissive: i % 2 ? VIOLET : AMBER, emissiveIntensity: .5,
+            metalness: .75, roughness: .25 }));
+        g.add(t); tools.push(t);
+      }
+      const core = new THREE.Mesh(new THREE.SphereGeometry(.9, 32, 24),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: CYAN, emissiveIntensity: 1.1,
+          metalness: .4, roughness: .16 }));
+      g.add(core);
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: CYAN,
+        transparent: true, opacity: .6, blending: THREE.AdditiveBlending, depthWrite: false }));
+      halo.scale.set(11, 11, 1); g.add(halo);
+      groups.push({ g, rings, tools, core, breathe: .03 });
+    }
+
+    /* 幕 4｜协作：多智能体通信网络 */
+    {
+      const g = new THREE.Group(); g.position.fromArray(PLACES[4]);
+      const agents = [], nodes = [];
+      for (let i = 0; i < 12; i++) {
+        const r = 6 + Math.random() * 6, th = Math.random() * Math.PI * 2,
+              ph = Math.acos(2 * Math.random() - 1);
+        const p = new THREE.Vector3(r * Math.sin(ph) * Math.cos(th),
+                                    r * Math.sin(ph) * Math.sin(th) * .6,
+                                    r * Math.cos(ph));
+        const m = new THREE.Mesh(new THREE.IcosahedronGeometry(.42 + Math.random() * .3, 1),
+          new THREE.MeshStandardMaterial({ color: CYAN, emissive: CYAN, emissiveIntensity: .45,
+            metalness: .8, roughness: .22 }));
+        m.position.copy(p); g.add(m); agents.push(m); nodes.push(p);
+      }
+      // 只连「足够近」的节点，看起来才像通信拓扑而不是一团毛线
+      const segs = [];
+      for (let i = 0; i < nodes.length; i++)
+        for (let j = i + 1; j < nodes.length; j++)
+          if (nodes[i].distanceTo(nodes[j]) < 10) segs.push(nodes[i], nodes[j]);
+      g.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(segs), lin(VIOLET, .2)));
+      groups.push({ g, agents });
+    }
+
+    /* 幕 5｜启程：光通道 */
+    {
+      const g = new THREE.Group(); g.position.fromArray(PLACES[5]);
+      const rings = [];
+      for (let i = 0; i < 14; i++) {
+        const m = new THREE.Mesh(new THREE.TorusGeometry(2.2 + i * .48, .04, 8, 80),
+          new THREE.MeshBasicMaterial({ color: i % 3 ? CYAN : VIOLET, transparent: true,
+            opacity: .5 - i * .022, blending: THREE.AdditiveBlending, depthWrite: false }));
+        m.position.z = -i * 2.1;
+        g.add(m); rings.push(m);
+      }
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xbff7ee,
+        transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false }));
+      halo.scale.set(22, 22, 1); halo.position.z = -30; g.add(halo);
+      groups.push({ g, rings });
+    }
+
+    /* 星野：三层深度，指针移动时按深度偏移（视差感来自这里） */
+    const layers = [];
+    for (let L = 0; L < 3; L++) {
+      const N = 260 - L * 60, bg = new THREE.BufferGeometry(), bp = new Float32Array(N * 3);
+      for (let i = 0; i < N; i++) {
+        bp[i * 3] = (Math.random() - .5) * 320;
+        bp[i * 3 + 1] = (Math.random() - .5) * 210;
+        bp[i * 3 + 2] = -Math.random() * 280 + 40;
+      }
+      bg.setAttribute('position', new THREE.BufferAttribute(bp, 3));
+      const p = new THREE.Points(bg, dots(L === 0 ? 0xffffff : 0xa8d8e0, .3 + L * .12, .5 - L * .13));
+      scene.add(p); layers.push({ p, depth: .5 + L * .9 });
+    }
+
+    groups.forEach((e) => { e.g.visible = false; scene.add(e.g); });
+    return { renderer, scene, camera, groups, layers, CYAN, VIOLET };
+  }
+
+  /* ── 相机关键帧：沿一条缓弧布置机位 ───────────────────── */
+  const CAMS = ACTS.map((a, i) => {
+    const P = PLACES[i], t = i / LAST;
+    // 机位停在该幕场景前方，看向场景本身（不是原点）。
+    // 侧向摆动 + fov 呼吸让转场有"绕过去"的感觉。
+    // 每幕单独决定要不要把场景往右推。铺得宽的幕（文档墙、词向量云）
+    // 必须右移，否则会压到左侧大标题；而第 1 幕（居中一颗核心）和第 6 幕
+    // （对称的圆环通道）本来就居中，硬推会把它推出画面 —— 实测踩过：
+    // 统一偏移 4 个单位后，第 1 幕右侧整块空黑，看起来像"这幕没做"。
+    const SHIFT = [0, -4, -4, -4, -4, 0];
+    // 窄屏要单独调：手机水平视野窄，按桌面的机位会把场景切掉一半，
+    // 而且它会正好压在正文上（实测截图里正文行尾被核心的青色高光盖住）。
+    // 后退 14 个单位让场景变小、视线压低让场景整体上移，下方留给正文。
+    const narrow = innerWidth < 760;
+    const back = narrow ? 34 : 20;
+    const lift = narrow ? 4.4 : 0;   // 再抬高一点，让核心与标题分层、不叠字
+    return {
+      p: [P[0] + Math.sin(t * Math.PI * 1.15) * 5, P[1] + 1.6 - t * 1.6, P[2] + back],
+      l: [P[0] + SHIFT[i], P[1] - lift, P[2]],
+      fov: 52 - Math.sin(t * Math.PI) * 6,
+    };
+  });
+
+  /* ── 渲染 ─────────────────────────────────────────────── */
+  let frame = 0, disposed = false, acc = 0, last = performance.now();
+
+  function render(now) {
+    if (disposed) return;
+    const dt = Math.min(64, now - last); last = now;
+
+    if (REDUCED) { S.pos = S.target; }
+    else {
+      S.pos = lerp(S.pos, S.target, .085);          // 惯性插值 → 运镜质感
+      if (Math.abs(S.pos - S.target) < .0004) S.pos = S.target;
+    }
+    S.pointer.x = lerp(S.pointer.x, S.pointer.tx, .055);
+    S.pointer.y = lerp(S.pointer.y, S.pointer.ty, .055);
+
+    if (Math.round(S.pos) !== shownAct) paintAct(clamp(Math.round(S.pos), 0, LAST));
+
+    if (G && !document.hidden) {
+      acc += dt;
+      if (acc >= 25) { acc = 0; step(G, now, S.pos, dt); }   // 背景 40fps 够用
+    }
+    $('#bar').style.transform = `scaleX(${clamp(S.pos / LAST, 0, 1)})`;
+    if (!REDUCED) frame = requestAnimationFrame(render);
+  }
+
+  function step(G, now, pos, dt) {
+    const cy = now * .001;
+    const near = clamp(Math.round(pos), 0, LAST);
+
+    G.groups.forEach((e, k) => {
+      const d = Math.abs(k - pos);
+      // 只显示当前幕 ±1：省算力，也避免相邻幕互相穿帮
+      e.g.visible = d < 1.15;
+      if (!e.g.visible) return;
+      const w = 1 - smoother(clamp(d / 1.15, 0, 1));
+      const fade = d < .25 ? 1 : w;
+      e.g.traverse((o) => {
+        if (o.material && 'opacity' in o.material && !o.userData.isSprite) {
+          if (o.userData.base === undefined) o.userData.base = o.material.opacity;
+          o.material.opacity = o.userData.base * fade;
+        }
+      });
+      e.g.rotation.y += dt * .00006 * (k === near ? 1 : .3);
+
+      if (e.core) {
+        e.core.rotation.x += dt * .0004; e.core.rotation.y += dt * .00055;
+        e.core.scale.setScalar(1 + Math.sin(cy * 1.5) * .045);
+      }
+      if (e.rings) e.rings.forEach((r, n) => {
+        r.rotation.z += dt * .00022 * (n + 1) * (n % 2 ? -1 : 1);
+      });
+      if (e.tools) e.tools.forEach((t, n) => {
+        t.rotation.x += dt * .0008; t.rotation.y += dt * .0011;
+        const a = n / e.tools.length * Math.PI * 2 + cy * .32;
+        t.position.set(Math.cos(a) * 5.5, Math.sin(a) * 5.5, Math.sin(cy * .9 + n) * .7);
+      });
+      if (e.agents) e.agents.forEach((a, n) => {
+        a.position.y += Math.sin(cy * .8 + n * 1.3) * dt * .0012;
+      });
+      if (e.sheets) e.sheets.forEach((m, n) => {
+        m.position.y += Math.sin(cy * .55 + n) * dt * .0016;
+        if (m.material) m.material.opacity = .07 + Math.abs(Math.sin(cy * .5 + n)) * .1;
+      });
+      if (e.flow) {
+        const pa = e.flow.geometry.attributes.position;
+        for (let n = 0; n < e.FN; n++) {
+          let x = pa.getX(n) + dt * .014;
+          if (x > 17) x = -17;
+          pa.setX(n, x);
+        }
+        pa.needsUpdate = true;
+      }
+      if (e.breathe) e.g.scale.setScalar(1 + Math.sin(cy * .9) * e.breathe);
+    });
+
+    G.layers.forEach((L) => {
+      L.p.position.x = -(S.pointer.x - .5) * 10 * L.depth;
+      L.p.position.y = (S.pointer.y - .5) * 7 * L.depth;
+    });
+
+    const i0 = clamp(Math.floor(pos), 0, LAST);
+    const i1 = Math.min(LAST, i0 + 1);
+    const a = CAMS[i0], b = CAMS[i1];
+    const t = smoother(clamp(pos - i0, 0, 1));
+    const cam = G.camera;
+    cam.position.set(
+      lerp(a.p[0], b.p[0], t) + (S.pointer.x - .5) * 1.5,
+      lerp(a.p[1], b.p[1], t) - (S.pointer.y - .5) * 1.1,
+      lerp(a.p[2], b.p[2], t));
+    cam.lookAt(lerp(a.l[0], b.l[0], t), lerp(a.l[1], b.l[1], t), lerp(a.l[2], b.l[2], t));
+    const fov = lerp(a.fov, b.fov, t);
+    if (Math.abs(cam.fov - fov) > .02) { cam.fov = fov; cam.updateProjectionMatrix(); }
+
+    G.renderer.render(G.scene, G.camera);
+  }
+
+  /* ── 交互 ─────────────────────────────────────────────── */
+  function goTo(i, user) { S.target = clamp(i, 0, LAST); if (user) stopAuto(); }
+  function next() { goTo(Math.round(S.pos) + 1, true); }
+  function stopAuto() {
+    S.auto = false;
+    if (S.autoTimer) { clearTimeout(S.autoTimer); S.autoTimer = null; }
+  }
+  function scheduleAuto() {
+    if (!S.auto || REDUCED) return;
+    S.autoTimer = setTimeout(() => {
+      if (!S.auto || disposed) return;
+      // 末幕停住：把决定权交回用户，不要自己跳走
+      if (S.target >= LAST - .01) { S.auto = false; return; }   // 末幕不自动跳，等用户看完再自己按
+      goTo(Math.round(S.target) + 1, false);
+      scheduleAuto();
+    }, 6400);
+  }
+
+  addEventListener('wheel', (e) => {
+    e.preventDefault(); stopAuto();
+    S.target = clamp(S.target + e.deltaY * .0026, 0, LAST);
+  }, { passive: false });
+
+  addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button,a')) return;   // 别在按钮上触发拖拽
+    S.dragging = true; S.dragStart = S.pos; S.dragPos = e.clientY; stopAuto();
+  });
+  addEventListener('pointermove', (e) => {
+    S.pointer.tx = e.clientX / innerWidth;
+    S.pointer.ty = e.clientY / innerHeight;
+    if (S.dragging)
+      S.target = clamp(S.dragStart + (S.dragPos - e.clientY) / innerHeight * 2.2, 0, LAST);
+  });
+  addEventListener('pointerup', () => { S.dragging = false; });
+  addEventListener('pointercancel', () => { S.dragging = false; });
+
+  addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goTo(Math.round(S.pos) - 1, true); }
+    else if (e.key === 'Home') goTo(0, true);
+    else if (e.key === 'End') goTo(LAST, true);
+    else if (e.key === 'Escape') finish();
+  });
+
+  navBtns.forEach((b) => b.addEventListener('click', () => goTo(+b.dataset.i, true)));
+  $('#skip').addEventListener('click', finish);
+
+  let finished = false;
+  function finish() {
+    if (finished) return;
+    finished = true; disposed = true;
+    if (S.autoTimer) clearTimeout(S.autoTimer);
+    if (frame) cancelAnimationFrame(frame);
+    // 一次快速的亮度收束再跳转：直接跳会显得很「断」
+    const o = document.createElement('div');
+    o.style.cssText = 'position:fixed;inset:0;z-index:9;background:#03070d;opacity:0;' +
+      'transition:opacity .4s ease;pointer-events:none';
+    document.body.appendChild(o);
+    requestAnimationFrame(() => { o.style.opacity = '1'; });
+    setTimeout(() => { location.assign(NEXT); }, 390);
+  }
+  addEventListener('pagehide', () => { disposed = true; });
+
+  /* ── 启动 ─────────────────────────────────────────────── */
+  function resize() {
+    if (!G) return;
+    G.camera.aspect = innerWidth / innerHeight;
+    G.camera.updateProjectionMatrix();
+    G.renderer.setSize(innerWidth, innerHeight, false);
+  }
+  addEventListener('resize', resize);
+
+  G = buildScene();
+  resize();
+  if (G) {
+    // 首帧就画满（不做从 0 淡入）：低帧率设备、后台标签页、离屏截图
+    // 抓到的那一帧都必须是成品，否则看起来像「没做」
+    step(G, performance.now(), S.pos, 16);
+    requestAnimationFrame(render);
+  } else {
+    canvas.style.display = 'none';
+    $('#sig').textContent = 'STATIC MODE';   // WebGL 不可用也仍是完整的一页
+  }
+  paintAct(START);
+  if (START === LAST) S.auto = false; else scheduleAuto();
+  if (COARSE) $('#hint').textContent = '左右滑动翻阅';
+})();
+</script>
+</body>
+</html>

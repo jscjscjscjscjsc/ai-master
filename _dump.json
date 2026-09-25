@@ -1,0 +1,246 @@
+[
+ {
+  "id": "q01-05-04",
+  "type": "short",
+  "chapter_id": 1,
+  "chapter_title": "大模型认知与 Prompt 工程",
+  "kp_index": 4,
+  "kp_title": "Day 05｜章节实战：统一调用层 + 资产库 + 评测器",
+  "track": "course",
+  "title": "llm_client 的设计取舍",
+  "difficulty": 2,
+  "statement": "请说明 llm_client 统一调用层的各个设计要点分别解决了什么问题，并解释为什么「后端由 .env 决定」和「返回归一化的 ChatResult」这两点对上层代码很重要。",
+  "reference": "1. 后端由 .env 决定：同一份代码在靶场与真实平台间零改动切换\n2. 归一化 ChatResult：上层不依赖任何厂商原始 JSON 结构\n3. 统一异常 LLMError：把 HTTP 状态码翻译成「该怎么办」的建议\n4. 内置 usage 统计：成本意识从第一天建立\n5. is_mock 属性：界面提示演示模式，但不影响调用逻辑",
+  "explanation": "答题要逐条对应设计要点与它解决的问题，重点讲清「零改动切换」和「上层不依赖厂商 JSON」带来的可移植性。常见失分点是只罗列要点而不说为什么，或把 is_mock 说成会改变调用分支。",
+  "hints": [
+   "想想换厂商时要改哪些代码",
+   "上层代码依赖的是什么结构"
+  ],
+  "tags": [
+   "llm_client",
+   "设计取舍",
+   "答辩"
+  ],
+  "source": "generated",
+  "starter_code": "",
+  "solution": ""
+ },
+ {
+  "id": "q03-04-03",
+  "type": "choice",
+  "chapter_id": 3,
+  "chapter_title": "RAG 检索增强生成",
+  "kp_index": 3,
+  "kp_title": "Day 14｜混合检索、融合与重排",
+  "track": "course",
+  "title": "消融实验的收益与代价",
+  "difficulty": 3,
+  "statement": "四组方案实测：A 向量 Recall@5=0.88、P95=2.91ms；B BM25 1.00、0.14ms；C RRF 0.98、3.74ms；D RRF+重排 0.88、13.46ms。\n按「收益与代价一起报」的读法，最应得出的结论是？",
+  "reference": "1. 收益看 ΔRecall、ΔMRR\n2. 代价看 P95 倍数\n3. D 组 Recall 零增长、延迟 4.63 倍\n4. 重排价值取决于 reranker 质量\n5. 伪向量靶场结论不可外推",
+  "explanation": "只看收益列会误判「越靠后越好」，必须把 P95 倍数当代价一起看：D 用 4.63 倍延迟换来 0.0120 的 MRR。B 忽略代价；C 忽略 C 组把 q025 从 1.0 拉到 0.5；D 把伪 embedding 靶场的产物外推成普遍规律。",
+  "hints": [],
+  "tags": [
+   "消融实验",
+   "重排",
+   "工程判断"
+  ],
+  "source": "generated",
+  "options": [
+   "D 组 Recall 没涨、MRR 只涨 0.0120，P95 却翻 4.63 倍，不该直接上线",
+   "D 组 MRR 高于 A 组，说明重排一定值得，延迟可接受",
+   "C 组 Recall 0.98 接近满分，可直接替换 B 组作为生产方案",
+   "B 组全指标第一，说明 BM25 普遍优于向量检索"
+  ],
+  "answer": 0
+ },
+ {
+  "id": "q03-06-04",
+  "type": "short",
+  "chapter_id": 3,
+  "chapter_title": "RAG 检索增强生成",
+  "kp_index": 5,
+  "kp_title": "Day 16｜章节实战：企业知识库问答系统",
+  "track": "course",
+  "title": "引用支撑度低的原因与对策",
+  "difficulty": 2,
+  "statement": "评测报告显示引用编号有效性为 1.0000，但引用内容支撑度只有 0.4318。\n请解释为什么会出现「编号合法但内容不符」，并说明换真实模型后该指标会怎样变化、评测是否还应保留这一项。",
+  "reference": "1. 离线靶场对话接口从内置语料作答\n2. 并不真正读取传入证据\n3. 于是编号合法但内容张冠李戴\n4. 换真实模型后支撑度显著改善\n5. 该类失败在生产仍存在\n6. 评测必须保留此项",
+  "explanation": "关键是把「编号有效性」与「内容支撑度」区分开：前者只校验 label 是否在引用集合里，后者要求答案内容真被证据支持。常见失分是只答「模型能力不足」，忽略靶场接口不读传入证据这一具体原因，也漏掉生产环境仍需保留该项。",
+  "hints": [
+   "想想靶场 LLM 的证据来源",
+   "编号校验只查 label 是否存在"
+  ],
+  "tags": [
+   "引用支撑度",
+   "评测",
+   "幻觉"
+  ],
+  "source": "generated",
+  "starter_code": "",
+  "solution": ""
+ },
+ {
+  "id": "q05-03-01",
+  "type": "choice",
+  "chapter_id": 5,
+  "chapter_title": "Agent 框架实战",
+  "kp_index": 2,
+  "kp_title": "Day 23｜CrewAI 与 smolagents：两种不同抽象",
+  "track": "agent",
+  "title": "CrewAI 缺省 LLM 行为",
+  "difficulty": 1,
+  "statement": "在 CrewAI 中构造 Agent 时没有传 llm= 参数，按本课程（靶场/DeepSeek/通义）配置的环境直接运行，最可能发生什么？",
+  "reference": "1. 缺省 llm 默认连 OpenAI\n2. 需要 OPENAI_API_KEY\n3. 课程环境无该 key，认证失败\n4. 正确做法是显式构造 LLM 并传给每个 Agent",
+  "explanation": "CrewAI 在缺省情况下默认连 OpenAI，需要 OPENAI_API_KEY，而课程环境用的是靶场/DeepSeek/通义，因此会认证失败，属于阻断级缺陷。B 错在 CrewAI 不会自动读 LLM_BASE_URL；C 错在 llm 不是必填位置参数，是缺省回退；D 错在不会自动退化为桩模型。",
+  "hints": [],
+  "tags": [
+   "CrewAI",
+   "LLM配置",
+   "常见错误"
+  ],
+  "source": "generated",
+  "options": [
+   "CrewAI 默认去连 OpenAI，需要 OPENAI_API_KEY，报认证失败",
+   "CrewAI 自动读取 LLM_BASE_URL 环境变量并连上靶场",
+   "CrewAI 会抛出 NameError，因为 llm 是必填位置参数",
+   "CrewAI 会退化为本地桩模型，链路仍能跑完"
+  ],
+  "answer": 0
+ },
+ {
+  "id": "q05-03-02",
+  "type": "choice",
+  "chapter_id": 5,
+  "chapter_title": "Agent 框架实战",
+  "kp_index": 2,
+  "kp_title": "Day 23｜CrewAI 与 smolagents：两种不同抽象",
+  "track": "agent",
+  "title": "CrewAI model 前缀要求",
+  "difficulty": 2,
+  "statement": "用 CrewAI 的 LLM 类接 OpenAI 兼容端点时，model 参数写成 \"mock-chat\" 会报 \"LLM Provider NOT provided\"。正确的写法是什么，为什么？",
+  "reference": "1. model 必须带 provider 前缀\n2. 前缀决定用哪个 provider 适配器\n3. 正确示例 openai/mock-chat\n4. 与 base_url、api_key 配合使用",
+  "explanation": "实测坑：CrewAI 的 model 必须带 provider 前缀，如 openai/xxx，前缀用于选择 provider 适配器。B 错在仅靠 base_url 不会自动推断 provider；C 错在分隔符是斜杠不是冒号；D 错在设置 key 并不能解决 provider 缺失的问题。",
+  "hints": [],
+  "tags": [
+   "CrewAI",
+   "LLM配置",
+   "参数"
+  ],
+  "source": "generated",
+  "options": [
+   "写 \"openai/mock-chat\"，前缀告诉 CrewAI 用哪个 provider 适配器",
+   "写 \"mock-chat\"，只要 base_url 指向靶场即可自动识别",
+   "写 \"openai:mock-chat\"，冒号是 CrewAI 规定的分隔符",
+   "写 \"mock-chat\"，但必须同时设置 OPENAI_API_KEY 环境变量"
+  ],
+  "answer": 0
+ },
+ {
+  "id": "q05-03-05",
+  "type": "short",
+  "chapter_id": 5,
+  "chapter_title": "Agent 框架实战",
+  "kp_index": 2,
+  "kp_title": "Day 23｜CrewAI 与 smolagents：两种不同抽象",
+  "track": "agent",
+  "title": "桩模型现象与验收方式",
+  "difficulty": 3,
+  "statement": "用离线靶场（关键词驱动的确定性桩模型）跑 CrewAI 与 smolagents 时会出现两个可观察现象：CrewAI 三个 Task 产出质量不高；smolagents 一直循环到 max_steps。请解释各自原因、如何解读，并说明对照组实验应如何验收。",
+  "reference": "1. 桩模型不产出 Thought / Final Answer 结构化输出\n2. CrewAI 产出是桩模型的 JSON 抽取模板\n3. 链路正确性已验证：无 401、不外连、3 个 Task 跑完\n4. 产出质量取决于真实模型，换真实平台即正常\n5. smolagents 把上一轮 Observation 当新输入，反复调同一工具\n6. 由 max_steps 兜住，演示为何必须有步数上限\n7. 验收看链路与日志：工具是否被调用、消息列表、是否触发步数上限\n8. 不看桩模型措辞质量，评估质量要切真实平台",
+  "explanation": "关键是区分「链路正确性」与「产出质量」两件事。CrewAI 质量低是因为桩模型不产出结构化输出，链路本身已验证；smolagents 循环是因为把含关键词的 Observation 当新输入，由 max_steps 兜住。常见失分点是把这两个现象当缺陷，或误以为验收要看产出措辞。",
+  "hints": [
+   "区分链路正确性与产出质量",
+   "循环原因是 Observation 被当新输入",
+   "验收看日志不看措辞"
+  ],
+  "tags": [
+   "靶场",
+   "验收",
+   "工程判断"
+  ],
+  "source": "generated",
+  "starter_code": "",
+  "solution": ""
+ },
+ {
+  "id": "q05-03-06",
+  "type": "code",
+  "chapter_id": 5,
+  "chapter_title": "Agent 框架实战",
+  "kp_index": 2,
+  "kp_title": "Day 23｜CrewAI 与 smolagents：两种不同抽象",
+  "track": "agent",
+  "title": "补全 CrewAI 三角色流水线",
+  "difficulty": 2,
+  "statement": "补全下面的 CrewAI 三角色写作流水线：显式构造 LLM 并传给每个 Agent，定义研究、写作、审校三个 Task（写作依赖研究，审校依赖研究与写作），用顺序流程组装 Crew 并以 topic 输入启动。要求 model 带 provider 前缀，并在 import crewai 之前关闭遥测。",
+  "reference": "1. 遥测关闭须在 import crewai 之前\n2. model 必须带 openai/ 前缀\n3. 三个 Agent 都要显式传 llm\n4. context 表达任务依赖\n5. Process.sequential 明确顺序\n6. kickoff 用 inputs 传 topic",
+  "explanation": "本题考的是把 v1.0 的阻断级缺陷补上：遥测关闭要在 import 之前，model 必须带 provider 前缀，三个 Agent 都要显式传 llm。常见错误是漏掉某个 Agent 的 llm、忘记 provider 前缀、把 context 写成字符串而非 Task 列表，以及把 kickoff 的 topic 直接写死。",
+  "hints": [
+   "os.environ 那行要放在最前",
+   "model 写成 openai/ 加模型名",
+   "三个 Agent 都要 llm=llm"
+  ],
+  "tags": [
+   "CrewAI",
+   "代码题",
+   "LLM配置"
+  ],
+  "source": "generated",
+  "starter_code": "import os\n# TODO: 在 import crewai 之前关闭遥测\n\nfrom crewai import LLM, Agent, Crew, Process, Task\n\n# TODO: 构造 llm，model 带 provider 前缀，指向靶场\n\n# TODO: 定义 researcher / writer / editor 三个 Agent，都传 llm，allow_delegation=False\n\n# TODO: 定义 research_task / writing_task / review_task，用 context 表达依赖\n\n# TODO: 组装 Crew，process=Process.sequential\n\n# result = crew.kickoff(inputs={\"topic\": \"企业知识库如何减少无依据回答\"})",
+  "solution": "import os\nos.environ[\"CREWAI_TRACING_ENABLED\"] = \"false\"\n\nfrom crewai import LLM, Agent, Crew, Process, Task\n\nllm = LLM(\n    model=f\"openai/{os.getenv('LLM_CHAT_MODEL', 'mock-chat')}\",\n    base_url=os.getenv(\"LLM_BASE_URL\", \"http://127.0.0.1:8100/v1\"),\n    api_key=os.getenv(\"LLM_API_KEY\", \"mock-key\"),\n    temperature=0.3,\n)\n\nresearcher = Agent(\n    role=\"资料研究员\",\n    goal=\"从给定资料中提取可核查事实\",\n    backstory=\"你只使用允许的资料工具，并保留来源。\",\n    llm=llm,\n    allow_delegation=False,\n    verbose=True,\n)\nwriter = Agent(\n    role=\"技术写作者\",\n    goal=\"把研究结果写成结构清晰的中文说明\",\n    backstory=\"你区分事实、解释和建议，不添加无来源数字。\",\n    llm=llm,\n    allow_delegation=False,\n    verbose=True,\n)\neditor = Agent(\n    role=\"审校员\",\n    goal=\"检查逻辑、引用和格式，输出最终稿\",\n    backstory=\"发现证据不足时退回，不自行补造事实。\",\n    llm=llm,\n    allow_delegation=False,\n    verbose=True,\n)\n\nresearch_task = Task(\n    description=\"研究主题：{topic}，输出事实清单与来源。\",\n    expected_output=\"Markdown 事实表\",\n    agent=researcher,\n)\nwriting_task = Task(\n    description=\"依据研究结果撰写 800 字说明。\",\n    expected_output=\"包含标题、正文和引用的 Markdown\",\n    agent=writer,\n    context=[research_task],\n)\nreview_task = Task(\n    description=\"审查文章并输出修订后的最终稿。\",\n    expected_output=\"通过审校的 Markdown\",\n    agent=editor,\n    context=[research_task, writing_task],\n)\n\ncrew = Crew(\n    agents=[researcher, writer, editor],\n    tasks=[research_task, writing_task, review_task],\n    process=Process.sequential,\n    verbose=True,\n)\n\nresult = crew.kickoff(inputs={\"topic\": \"企业知识库如何减少无依据回答\"})"
+ },
+ {
+  "id": "q07-04-03",
+  "type": "choice",
+  "chapter_id": 7,
+  "chapter_title": "开源 Agent 项目源码拆解",
+  "kp_index": 3,
+  "kp_title": "Day 34｜从零自研迷你 Agent 框架",
+  "track": "course",
+  "title": "轨迹中哪些是真实能力",
+  "difficulty": 3,
+  "statement": "执行轨迹显示：第 1 步模型请求 calculator 并返回 399；第 2 步又请求同一工具，被环检测拦下；第 3 步输出一段通用回答。\n关于这条轨迹，下列判断正确的是？",
+  "reference": "1. 第 1 步工具真实执行返回 399\n2. 第 2 步环检测真实拦截\n3. 第 2、3 步形态属靶场偏差\n4. 真实平台第 2 步应输出最终答案",
+  "explanation": "正文强调：轨迹里有靶场造成的偏差（第 2、3 步形态不是真实模型行为），但「工具真的被执行」和「环检测真的拦住了重复调用」这两点都是真实的。读输出必须能区分框架能力与靶场局限。",
+  "hints": [],
+  "tags": [
+   "执行轨迹",
+   "靶场局限"
+  ],
+  "source": "generated",
+  "options": [
+   "第 3 步的通用回答证明模型具备真实推理能力",
+   "第 2 步的重复调用是真实模型的标准行为",
+   "工具真的被执行、环检测真的拦住重复调用，这两点真实",
+   "整条轨迹都是靶场偏差，不能作为框架能力的证据"
+  ],
+  "answer": 2
+ },
+ {
+  "id": "q09-03-03",
+  "type": "choice",
+  "chapter_id": 9,
+  "chapter_title": "全栈落地与毕业项目",
+  "kp_index": 2,
+  "kp_title": "Day 40｜毕业答辩与就业指导",
+  "track": "course",
+  "title": "README 最易加分项",
+  "difficulty": 2,
+  "statement": "作品集 README 的七块结构中，哪两块最容易加分也最容易被忽略？",
+  "reference": "1. 第2条快速开始：3 条命令跑起来\n2. 用离线靶场不需密钥\n3. 第7条主动写局限显可信\n4. 配环境太久会被关页面",
+  "explanation": "教材点明第 2 条「快速开始」和第 7 条「已知局限与后续计划」最容易加分也最易被忽略：招聘方不愿花 30 分钟配环境，能离线靶场一键跑是巨大加分；主动写局限显得可信。其余几块同样必要，但不是被特别强调的加分点。",
+  "hints": [],
+  "tags": [
+   "作品集",
+   "README"
+  ],
+  "source": "generated",
+  "options": [
+   "快速开始（离线靶场一键跑）与已知局限及后续计划",
+   "架构图与关键设计决策",
+   "评测数据与成本性能",
+   "演示截图与项目名一句话说明"
+  ],
+  "answer": 0
+ }
+]

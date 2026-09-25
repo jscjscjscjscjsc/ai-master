@@ -42,3 +42,36 @@
 .pg-log-row .ts { flex-shrink: 0; color: var(--muted); font: 10.5px var(--mono); }
 .pg-log-row .note { flex: 1; color: var(--ink-2); }
 .pg-log-row .delta { flex-shrink: 0; color: var(--gold); font: 700 12px var(--mono); }
+.pg-graph-wrap{overflow:auto;padding:12px;background:#0a1722;max-height:550px}
+.pg-graph-wrap svg{display:block}
+.pg-graph-edges path{fill:none;stroke:#5b7b83;stroke-width:1.3;opacity:.7;marker-end:url(#graph-arrow)}
+.pg-graph-heading{fill:#a9d0d0;font-size:13px;font-weight:700}
+.pg-graph-node rect{fill:#1b303a;stroke:#657985;stroke-width:1.5}
+.pg-graph-node text{fill:#f0f7f7;font-size:12px;pointer-events:none}
+.pg-graph-node .sub{fill:#b5cbcc;font-size:10px}
+.pg-graph-node.strong rect{fill:#164638;stroke:#45cd8d}
+.pg-graph-node.developing rect{fill:#514222;stroke:#dfbf5b}
+.pg-graph-node.weak rect{fill:#542e35;stroke:#e17680}
+.pg-graph-node:hover rect,.pg-graph-node:focus rect{stroke-width:3}
+
+/* ── 该补哪里（薄弱点清单）────────────────────────────────
+   图谱适合看全局，清单适合直接行动：学生打开进度页最想知道的
+   是"我现在该补哪一块"，所以把这两件事分开呈现。 */
+.pg-weak{padding:6px 18px 16px}
+.pg-weak-row{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+.pg-weak-row:last-child{border-bottom:0}
+.pg-weak-dot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;margin-top:7px}
+.pg-weak-row.weak .pg-weak-dot{background:#e17680;box-shadow:0 0 10px #e1768066}
+.pg-weak-row.developing .pg-weak-dot{background:#dfbf5b;box-shadow:0 0 10px #dfbf5b66}
+.pg-weak-body{flex:1;min-width:0}
+.pg-weak-body a{color:var(--ink);text-decoration:none;font-weight:600}
+.pg-weak-body a:hover{color:var(--cyan)}
+.pg-weak-meta{margin-top:5px;font-size:12px;color:var(--muted);line-height:1.7}
+.pg-weak-score{flex:0 0 auto;font:12px/1 Consolas,ui-monospace,monospace;color:var(--muted);
+  border:1px solid var(--line);padding:5px 9px;border-radius:3px;white-space:nowrap}
+.pg-weak-needs{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:3px;
+  font-size:11px;border:1px solid var(--line);color:var(--muted)}
+.pg-weak-needs.weak{color:#e17680;border-color:#e1768055}
+.pg-weak-needs.developing{color:#dfbf5b;border-color:#dfbf5b55}
+.pg-weak-needs.strong{color:#45cd8d;border-color:#45cd8d55}
+.pg-weak-empty{padding:20px 0;color:var(--muted);font-size:13px}

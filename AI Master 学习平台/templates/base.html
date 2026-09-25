@@ -28,6 +28,7 @@
     <a href="/progress" class="hide-sm {% if page == 'progress' %}on{% endif %}">学习档案</a>
   </div>
   <div class="nav-user">
+    <a href="/setup" class="btn sm ghost hide-sm" title="填写或更换大模型 API Key">模型配置</a>
     <span data-username>{{ username }}</span>
     {% if is_guest %}
       <a class="btn sm" href="/login">登录 / 注册</a>
@@ -47,6 +48,7 @@
 <script src="{{ url_for('static', filename='js/star.js') }}"></script>
 <script src="{{ url_for('static', filename='js/qcards.js') }}"></script>
 <script src="{{ url_for('static', filename='js/atmosphere.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ai_notice.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

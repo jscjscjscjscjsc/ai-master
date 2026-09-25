@@ -5,6 +5,7 @@
 {% block pageclass %}{% endblock %}
 
 {% block head %}
+<script>if (!sessionStorage.getItem('aimaster_entry_seen')) location.replace('/intro');</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 {% endblock %}
 

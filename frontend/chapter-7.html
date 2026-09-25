@@ -70,7 +70,7 @@
   <div class="ch-head-copy">
     <p class="kicker">SECTOR 07 / 阶段四 · 源码、调优与落地</p>
     <h1>🔍 开源 Agent 项目源码拆解</h1>
-    <p class="lead">Day 31–34：MetaGPT：SOP 流水线式多角色协作；Dify：可视化工作流与插件引擎；OpenHands 与 deer-flow：执行循环与长任务管理 等 4 天内容</p>
+    <p class="lead">Day 31–34：MetaGPT：SOP 流水线式多角色协作；Dify 与 LangFlow：可视化工作流与插件引擎；OpenHands 与 deer-flow：执行循环与长任务管理 等 4 天内容</p>
     <div class="row">
       
       <span class="chip"><b style="color:var(--ink)">31–34</b> Day</span>
@@ -110,7 +110,8 @@
 <section class="section">
   <div class="card pad-lg ch-overview">
     <h2>这一章要解决什么</h2>
-    <div class="lesson"><blockquote><strong>版本</strong>：v1.0（2026-09-21 编写） <strong>建议学时</strong>：4 天 × 6 学时 <strong>先修要求</strong>：完成第 4–6 章（能手写 ReAct 循环、MCP Server、多 Agent 协作） <strong>章节交付物</strong>：四个开源项目的架构拆解报告 + <strong>一个百行级自研迷你 Agent 框架</strong> <strong>核实说明</strong>：开源项目的版本与结构变化很快。本章涉及具体项目状态的内容均标注核实日期， 授课前请以各项目官方仓库为准。</blockquote>
+    <div class="lesson"><blockquote><strong>版本</strong>：v2.1（2026-09-23 修订·就业能力补强版） <strong>v2.1 修订</strong>：依赖与环境口径统一为 pyproject.toml + uv.lock；本章未新增小节。</blockquote>
+<blockquote><strong>建议学时</strong>：4 天 × 6 学时 <strong>先修要求</strong>：完成第 4–6 章（能手写 ReAct 循环、MCP Server、多 Agent 协作） <strong>章节交付物</strong>：四个开源项目的架构拆解报告 + <strong>一个百行级自研迷你 Agent 框架</strong> <strong>核实说明</strong>：开源项目的版本与结构变化很快。本章涉及具体项目状态的内容均标注核实日期， 授课前请以各项目官方仓库为准。</blockquote>
 <hr>
 <h3>7.0 为什么要读别人的代码</h3>
 <p>前六章你一直在<strong>写</strong>：手写 httpx 调用、手写 ReAct 循环、手写 MCP Server。 从本章开始要<strong>读</strong>——读生产级开源项目的代码。</p>
@@ -147,9 +148,9 @@
 
       
       <div class="kp-body" >
-        <div class="lesson"><h4>一、教学目标</h4>
+        <div class="lesson"><h4>7.1.1 教学目标</h4>
 <ol><li>说清 MetaGPT 的核心设计思路：<strong>把软件公司的 SOP 编码成 Agent 协作流程</strong>；</li><li>理解 <code>Role</code> / <code>Action</code> / <code>Environment</code> / <code>Message</code> 四个核心抽象的分工；</li><li>能对照第 6 章的三种协作模式，判断 MetaGPT 属于哪一类。</li></ol>
-<h4>二、核心设计思路</h4>
+<h4>7.1.2 核心设计思路</h4>
 <p>MetaGPT 的出发点是一个观察：<strong>软件团队之所以能协作，是因为有 SOP（标准作业程序）</strong>—— 产品经理写 PRD，架构师据此设计，工程师实现，测试验证。每一步的<strong>输入输出格式是约定的</strong>。</p>
 <p>所以 MetaGPT 做的事情是：</p>
 <pre class="code lang-text"><code>把「岗位职责 + 交付物格式」编码成 Agent 的 Role 和 Action
@@ -159,7 +160,7 @@
 于是「多智能体协作」变成了「消息驱动的流水线」</code></pre>
 <p><strong>这个设计的关键洞察</strong>：多 Agent 协作的难点不是「让模型扮演角色」（那只是改 system prompt）， 而是<strong>「保证角色之间的接口稳定」</strong>——PRD 的结构必须让架构师能读懂，架构图必须让工程师能实现。 MetaGPT 用<strong>结构化的交付物 Schema</strong> 解决了这个问题。</p>
 <blockquote><strong>对照第 6 章</strong>：MetaGPT 本质上是<strong>流水线模式</strong>（Day26 的模式一）， 但它比我们课堂上的版本严格得多——它给每个环节定义了强制的输出结构。</blockquote>
-<h4>三、四个核心抽象</h4>
+<h4>7.1.3 四个核心抽象</h4>
 <table><thead><tr><th style="text-align:left">抽象</th><th style="text-align:left">职责</th><th style="text-align:left">对应你手写过的什么</th></tr></thead><tbody><tr><td style="text-align:left"><strong>&lt;code&gt;Role&lt;/code&gt;</strong></td><td style="text-align:left">一个岗位。持有 goal、约束、可执行的 Action 列表</td><td style="text-align:left">第 4 章的 <code>Agent</code> + system prompt</td></tr><tr><td style="text-align:left"><strong>&lt;code&gt;Action&lt;/code&gt;</strong></td><td style="text-align:left">一个可执行的原子动作（写 PRD、画图、写代码）</td><td style="text-align:left">第 4 章的 <code>Tool</code>，但更重：它有自己的 prompt 模板和输出解析</td></tr><tr><td style="text-align:left"><strong>&lt;code&gt;Environment&lt;/code&gt;</strong></td><td style="text-align:left">共享的消息空间与调度器</td><td style="text-align:left">第 6 章 Manager 的「任务分派」部分</td></tr><tr><td style="text-align:left"><strong>&lt;code&gt;Message&lt;/code&gt;</strong></td><td style="text-align:left">结构化消息（带角色、内容、元数据）</td><td style="text-align:left">第 4 章的 messages 数组，但结构化程度高得多</td></tr></tbody></table>
 <p><strong>&lt;code&gt;Role&lt;/code&gt; 与 &lt;code&gt;Action&lt;/code&gt; 的分离是设计要点</strong>：</p>
 <pre class="code lang-python"><code># 简化示意（不是真实源码，用于说明结构）
@@ -175,20 +176,162 @@ class Action:
     async def run(self, context) -&gt; Message: ...</code></pre>
 <p><strong>为什么这样切分</strong>：</p>
 <ul><li>一个 <code>Role</code> 可以有多个 <code>Action</code>（架构师既能设计模块，也能评审）；</li><li>一个 <code>Action</code> 可以被多个 <code>Role</code> 复用（「写文档」这个动作产品经理和架构师都要做）；</li><li><code>output_schema</code> 是<strong>接口契约</strong>——这是让流水线能自动串起来的关键。</li></ul>
-<h4>四、精读建议</h4>
+<h4>7.1.4 精读建议</h4>
 <blockquote><strong>⚠️ 项目状态必读</strong>（核实日期 2026-09-21）： - <strong>仓库已改名</strong>：<code>geekan/MetaGPT</code> → <strong>&lt;code&gt;FoundationAgents/MetaGPT&lt;/code&gt;</strong>（旧地址会 301 跳转）； - <strong>版本号有陷阱</strong>：PyPI 上 <code>pip install metagpt</code> 装到的是 <strong>0.8.2</strong>（2025-03-09）， GitHub Releases 最新是 <code>v0.8.1</code>，但 <code>main</code> 分支的 <code>setup.py</code> 里自称 <code>1.0.0</code>（未发布到 PyPI）。 <strong>讲义和答辩中不要写「MetaGPT 1.0 已发布」</strong> —— 环境以 PyPI 的 0.8.2 为准； - README 要求 Python <strong>≥3.9 且 &lt;3.12</strong>（注意上界，3.12 会装不上）。</blockquote>
 <p><strong>已核实的核心源码路径</strong>（照着找，不用满仓库搜）：</p>
 <table><thead><tr><th style="text-align:left">抽象</th><th style="text-align:left">文件路径</th><th style="text-align:left">关键定义</th></tr></thead><tbody><tr><td style="text-align:left"><code>Role</code></td><td style="text-align:left"><code>metagpt/roles/role.py</code></td><td style="text-align:left"><code>class Role(BaseRole, ...)</code>；配套 <code>RoleReactMode</code>(Enum)、<code>RoleContext</code></td></tr><tr><td style="text-align:left"><code>Action</code></td><td style="text-align:left"><code>metagpt/actions/action.py</code></td><td style="text-align:left">基类；具体动作在 <code>metagpt/actions/__init__.py</code> 导出（<code>WriteDesign</code>、<code>WriteCode</code>、<code>RunCode</code>、<code>DesignReview</code> 等）</td></tr><tr><td style="text-align:left"><code>Team</code></td><td style="text-align:left"><code>metagpt/team.py</code></td><td style="text-align:left"><code>class Team(BaseModel)</code>；方法 <code>hire()</code>、<code>invest(v)</code>、<code>run_project(idea)</code>、<code>async run(n_round=3, ...)</code>；字段 <code>investment: float = 10.0</code></td></tr><tr><td style="text-align:left"><code>Environment</code></td><td style="text-align:left"><code>metagpt/environment/</code></td><td style="text-align:left">包，含 <code>base_env.py</code>；子目录按场景分：<code>software</code>、<code>mgx</code>、<code>android</code>、<code>minecraft</code>、<code>stanford_town</code>、<code>werewolf</code></td></tr><tr><td style="text-align:left">软件公司入口</td><td style="text-align:left"><code>metagpt/software_company.py</code></td><td style="text-align:left">模块级函数 <code>generate_repo()</code>、<code>startup()</code></td></tr></tbody></table>
 <p><strong>核心设计理念原文</strong>：<code>Code = SOP(Team)</code></p>
 <table><thead><tr><th style="text-align:right">顺序</th><th style="text-align:left">看什么</th><th style="text-align:left">带着什么问题</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:left">README 的示例代码</td><td style="text-align:left">跑一个最小例子，观察输出的目录结构（生成的文件长什么样）</td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">最小可运行示例（如「做一个贪吃蛇游戏」）</td><td style="text-align:left">从用户输入到最终产出，中间经过几个 Role？顺序是什么？</td></tr><tr><td style="text-align:right">3</td><td style="text-align:left"><code>Role</code> 类定义（<code>roles/role.py</code>）</td><td style="text-align:left"><code>_observe</code> / <code>_think</code> / <code>_act</code> 三段式是怎么组织的？（注意它与 ReAct 的对应关系）</td></tr><tr><td style="text-align:right">4</td><td style="text-align:left"><code>Action</code> 基类定义</td><td style="text-align:left"><code>run()</code> 方法怎么把 prompt 模板 + 输出解析串起来？</td></tr><tr><td style="text-align:right">5</td><td style="text-align:left"><code>Environment</code> 的调度逻辑（<code>environment/base_env.py</code>）</td><td style="text-align:left">消息怎么路由到关心它的 Role？有没有优先级或依赖排序？</td></tr><tr><td style="text-align:right">6</td><td style="text-align:left">一个具体 Action 的实现（如 <code>WriteDesign</code>）</td><td style="text-align:left">输出结构是怎么定义的？解析失败怎么处理？</td></tr></tbody></table>
 <blockquote><strong>读完后应该能回答</strong>： 1. 如果我要新增一个「安全评审员」岗位，需要改哪几个文件？ 2. 输出结构校验失败时，MetaGPT 会重试还是直接失败？ 3. 这套架构<strong>不适合</strong>做什么类型的任务？为什么？  <strong>注意</strong>：<code>Team</code>、<code>Environment</code> 是源码里的真实抽象，但 README 并未把它们列为「核心概念」。 也就是说，这是<strong>读源码才能发现的架构</strong>——这正是本章要训练的能力。</blockquote>
-<h4>五、动手：对照实验</h4>
+<h4>7.1.5 动手：对照实验</h4>
 <pre class="code lang-powershell"><code>python code/ch07/30_architecture_report.py</code></pre>
 <p>这个脚本会生成一份架构拆解报告。<strong>你需要做的是</strong>：用第 7 章的迷你框架（见 Day34） 实现一个简化版的「三角色流水线」，然后对比：</p>
 <table><thead><tr><th style="text-align:left">对比项</th><th style="text-align:left">你的迷你框架</th><th style="text-align:left">MetaGPT</th></tr></thead><tbody><tr><td style="text-align:left">Role 的定义方式</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">交付物如何约束结构</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">角色间如何传递数据</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">出错如何处理</td><td style="text-align:left"></td><td style="text-align:left"></td></tr></tbody></table>
 <blockquote><strong>这个对比表是 Day31 的验收依据。</strong> 不要抄文档，要写你自己读代码和数据结构的真实感受。</blockquote>
-<h4>六、当日验收</h4>
+<h4>7.1.6 当日验收</h4>
 <ul><li>[ ] 能说出 MetaGPT 用 SOP 解决的核心问题（角色间的接口稳定性）</li><li>[ ] 能说出 Role / Action / Environment / Message 各自职责</li><li>[ ] 能解释 Role 与 Action 为什么要分开</li><li>[ ] 完成与迷你框架的对比表</li><li>[ ] 能回答：MetaGPT 属于第 6 章三种模式中的哪一种？为什么？</li></ul>
+<h4>7.1.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q07-01-01</code> ~ <code>q07-01-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q07-01-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">MetaGPT 解决的核心问题</td></tr><tr><td style="text-align:left"><code>q07-01-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">Role 与 Action 为何分离</td></tr><tr><td style="text-align:left"><code>q07-01-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">MetaGPT 版本与环境事实</td></tr><tr><td style="text-align:left"><code>q07-01-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">四抽象职责与协作模式判断</td></tr><tr><td style="text-align:left"><code>q07-01-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">新增安全评审员岗位的改动</td></tr><tr><td style="text-align:left"><code>q07-01-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">实现三角色流水线迷你框架</td></tr><tr><td style="text-align:left"><code>q07-01-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">结构化交付物校验函数</td></tr></tbody></table>
+<h5><code>q07-01-01</code>（单选 · ★）MetaGPT 解决的核心问题</h5>
+<p>MetaGPT 把软件公司的 SOP 编码成 Agent 协作流程。 它认为多 Agent 协作的真正难点是什么？</p>
+<ul><li><strong>A</strong>. 让模型扮演好不同岗位的角色</li><li><strong>B</strong>. 保证角色之间的接口稳定，即交付物结构能被下游读懂</li><li><strong>C</strong>. 让多个模型同时并发推理以提升速度</li><li><strong>D</strong>. 降低 token 消耗以控制成本</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>难点不是角色扮演，改 system prompt 即可</li><li>难点是角色间接口稳定</li><li>用结构化交付物 Schema 保证</li><li>上游输出必须能被下游解析</li></ul>
+<p><strong>解析与常见错误</strong>：教材明确指出，多 Agent 协作的难点不是「让模型扮演角色」（那只是改 system prompt），而是保证角色之间的接口稳定：PRD 结构必须让架构师读懂，架构图必须让工程师能实现。MetaGPT 用结构化交付物 Schema 解决这个问题。A 是它认为不重要的部分，C、D 教材未作为核心问题提出。</p>
+<h5><code>q07-01-02</code>（单选 · ★★）Role 与 Action 为何分离</h5>
+<p>MetaGPT 把 Role 和 Action 拆成两个抽象。 下列哪一项是这种拆分的直接收益？</p>
+<ul><li><strong>A</strong>. Action 可以绕过 Environment 直接调用其他 Role</li><li><strong>B</strong>. 一个 Role 可持有多个 Action，一个 Action 也可被多个 Role 复用</li><li><strong>C</strong>. Role 不再需要 goal 和 watch 字段</li><li><strong>D</strong>. Action 的输出不再需要 output_schema 约束</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Role 持有 goal、actions、watch</li><li>一个 Role 可含多个 Action</li><li>一个 Action 可被多个 Role 复用</li><li>output_schema 是接口契约</li></ul>
+<p><strong>解析与常见错误</strong>：教材说明：一个 Role 可以有多个 Action（架构师既能设计模块也能评审），一个 Action 可以被多个 Role 复用（写文档产品经理和架构师都要做）。这正是拆分的目的。A 与消息池设计矛盾；C 错误，Role 仍持有 goal、actions、watch；D 相反，output_schema 是接口契约，正是拆分的关键。</p>
+<h5><code>q07-01-03</code>（单选 · ★★）MetaGPT 版本与环境事实</h5>
+<p>关于 MetaGPT 的项目状态，下列哪一项描述正确？</p>
+<ul><li><strong>A</strong>. pip install metagpt 装到的是 1.0.0，与 main 分支一致</li><li><strong>B</strong>. 仓库已改名为 FoundationAgents/MetaGPT，旧地址 301 跳转</li><li><strong>C</strong>. README 要求 Python ≥3.9，且没有上界限制</li><li><strong>D</strong>. GitHub Releases 最新版本高于 PyPI 上的 0.8.2</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>仓库改名为 FoundationAgents/MetaGPT</li><li>旧地址 301 跳转</li><li>PyPI 为 0.8.2，Releases 为 v0.8.1</li><li>Python ≥3.9 且 <3.12</li></ul>
+<p><strong>解析与常见错误</strong>：教材核实：仓库已改名 geekan/MetaGPT → FoundationAgents/MetaGPT，旧地址 301 跳转。A 错，PyPI 装到的是 0.8.2，main 分支 setup.py 自称 1.0.0 但未发布；C 错，README 要求 ≥3.9 且 <3.12，3.12 装不上；D 错，GitHub Releases 最新是 v0.8.1，低于 PyPI 的 0.8.2。</p>
+<h5><code>q07-01-04</code>（简答 · ★★）四抽象职责与协作模式判断</h5>
+<p>请说明 MetaGPT 中 Role、Action、Environment、Message 四个抽象各自的职责， 并判断 MetaGPT 属于第 6 章三种协作模式中的哪一种，说明理由。</p>
+<p><strong>提示</strong>：先按「岗位—动作—消息池—消息」四层说清分工；对照第 6 章三种模式，看数据是否单向按序流动</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Role：一个岗位，持有 goal、约束、Action 列表</li><li>Action：可执行原子动作，自带 prompt 模板与输出解析</li><li>Environment：共享消息空间与调度器</li><li>Message：带角色、内容、元数据的结构化消息</li><li>属于流水线模式（Day26 模式一）</li><li>比课堂版本更严格，每环节有强制输出结构</li></ul>
+<p><strong>解析与常见错误</strong>：答题要抓住四抽象的分工边界，尤其 Environment 承担共享消息池与调度、Message 是结构化消息。模式判断的关键依据是：各角色按 SOP 顺序消费和产出，数据单向流动，因此是流水线模式；并要指出它比课堂版本严格，给每个环节定义了强制输出结构。只答模式名称不说明理由会失分。</p>
+<h5><code>q07-01-05</code>（简答 · ★★★）新增安全评审员岗位的改动</h5>
+<p>如果要在 MetaGPT 中新增一个「安全评审员」岗位， 你预计需要改动或新增哪些部分？请结合 Role 与 Action 的分离、以及 Environment 的消息路由来说明。</p>
+<p><strong>提示</strong>：从 Role 的 goal / actions / watch 三个字段入手；想清楚它的输入来自谁、输出给谁</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>新增一个 Role 子类，定义 goal 与 watch 的消息类型</li><li>为其挂载评审类 Action（可复用已有 Action）</li><li>新 Action 需定义 prompt 模板与 output_schema</li><li>输出结构需让下游角色能解析，保持接口稳定</li><li>Environment 需能把它关心的消息路由过来</li><li>在流水线顺序中安排它的位置与触发条件</li></ul>
+<p><strong>解析与常见错误</strong>：这题考的是把抽象落到改动点。核心是：Role 负责岗位定义与订阅哪些消息，Action 负责具体评审动作与输出 Schema，Environment 负责把消息路由到关心它的 Role。常见失分是只说「加一个 Agent」，忽略 output_schema 这个接口契约，以及忽略 watch 决定它何时被触发。</p>
+<h5><code>q07-01-06</code>（代码 · ★★★）实现三角色流水线迷你框架</h5>
+<p>用简化框架实现一个三角色流水线：产品经理 → 架构师 → 工程师。 要求：</p>
+<ol><li>每个角色有 goal 和可执行的 action；</li><li>每个 action 有 prompt 模板和 output_schema（用 dict 描述字段）；</li><li>用共享消息池传递结构化消息，按顺序消费；</li><li>输出校验失败时重试一次，仍失败则抛出异常。</li></ol>
+<p>请补全 Pipeline 的 run 方法。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>class Message:
+    def __init__(self, role, content):
+        self.role = role
+        self.content = content
+
+class Action:
+    def __init__(self, name, schema, fn):
+        self.name = name
+        self.schema = schema
+        self.fn = fn
+
+    def run(self, ctx):
+        out = self.fn(ctx)
+        for k in self.schema:
+            if k not in out:
+                raise ValueError(f"missing {k}")
+        return out
+
+class Pipeline:
+    def __init__(self, roles, env):
+        self.roles = roles
+        self.env = env
+
+    def run(self, idea):
+        # TODO: 按顺序执行每个角色的 action，写入 env，校验失败重试一次
+        pass</code></pre>
+<p><strong>提示</strong>：ctx 取消息池最后一条的 content；用 for 循环包 try/except 实现重试一次</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>消息池按顺序追加，下游读上一条</li><li>每个 action 用 schema 校验输出字段</li><li>校验失败重试一次，再失败抛异常</li><li>角色按 SOP 顺序串行执行</li><li>输出结构化，保证下游能解析</li></ul>
+<p><strong>解析与常见错误</strong>：思路是把 MetaGPT 的流水线抽象压缩成：共享消息池 + 顺序角色 + Schema 校验。关键点是下游只读上一条消息，形成单向数据流；校验失败重试一次再抛异常，对应教材提到的解析失败处理问题。常见错误是让角色并发执行破坏顺序，或校验失败直接静默跳过，导致下游拿到残缺输入。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>class Message:
+    def __init__(self, role, content):
+        self.role = role
+        self.content = content
+
+class Action:
+    def __init__(self, name, schema, fn):
+        self.name = name
+        self.schema = schema
+        self.fn = fn
+
+    def run(self, ctx):
+        out = self.fn(ctx)
+        for k in self.schema:
+            if k not in out:
+                raise ValueError(f"missing {k}")
+        return out
+
+class Pipeline:
+    def __init__(self, roles, env):
+        self.roles = roles
+        self.env = env
+
+    def run(self, idea):
+        self.env.append(Message("user", {"idea": idea}))
+        for role in self.roles:
+            ctx = self.env[-1].content
+            last_err = None
+            for _ in range(2):
+                try:
+                    out = role.action.run(ctx)
+                    self.env.append(Message(role.name, out))
+                    last_err = None
+                    break
+                except ValueError as e:
+                    last_err = e
+            if last_err is not None:
+                raise RuntimeError(f"{role.name} failed: {last_err}")
+        return self.env</code></pre>
+<p></details></p>
+<h5><code>q07-01-07</code>（代码 · ★★）结构化交付物校验函数</h5>
+<p>MetaGPT 用 output_schema 作为接口契约。 请实现 validate(payload, schema)：schema 是 {字段名: 类型} 的 dict， 检查 payload 是否包含所有字段且类型匹配，返回缺失字段与类型错误字段两个列表。 类型匹配需支持 int/str/list/dict 等基本类型。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def validate(payload, schema):
+    """返回 (missing, type_errors) 两个列表"""
+    # TODO
+    pass</code></pre>
+<p><strong>提示</strong>：先判断字段是否存在，再判断类型；缺失字段不应再报类型错误</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>遍历 schema 的每个字段</li><li>字段缺失记入 missing 并跳过类型检查</li><li>类型不符记入 type_errors</li><li>用 isinstance 做类型判断</li><li>返回两个列表供调用方决定重试或失败</li></ul>
+<p><strong>解析与常见错误</strong>：这题对应 output_schema 作为接口契约的落地。要点是先查缺失再查类型，缺失字段直接跳过类型检查，避免同一字段重复报错。常见错误是用 type(x) == expected 而非 isinstance，导致子类或 bool/int 边界判断异常；以及把两个错误混在一个列表里，调用方无法区分该重试还是该失败。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def validate(payload, schema):
+    missing = []
+    type_errors = []
+    for field, expected in schema.items():
+        if field not in payload:
+            missing.append(field)
+            continue
+        if not isinstance(payload[field], expected):
+            type_errors.append(field)
+    return missing, type_errors
+
+
+if __name__ == "__main__":
+    schema = {"title": str, "modules": list, "version": int}
+    print(validate({"title": "x", "modules": []}, schema))
+    print(validate({"title": 1, "modules": [], "version": 1}, schema))</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -222,7 +365,7 @@ class Action:
       <div class="kp-head">
         <span class="kp-no">D32</span>
         <div class="kp-head-main">
-          <h3>Day 32｜Dify：可视化工作流与插件引擎</h3>
+          <h3>Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎</h3>
           <div class="kp-meta">
             <span>≈120 分钟</span>
             <span>6 道练习</span>
@@ -234,12 +377,12 @@ class Action:
 
       
       <div class="kp-body" hidden>
-        <div class="lesson"><h4>一、教学目标</h4>
-<ol><li>理解「低代码编排」与「代码编排」各自的适用边界；</li><li>说清 Dify 工作流引擎的节点模型；</li><li>理解插件机制如何解决「工具生态」问题。</li></ol>
-<h4>二、定位对比：Dify 与前面章节的关系</h4>
-<table><thead><tr><th style="text-align:left">项目</th><th style="text-align:left">定位</th><th style="text-align:left">谁在用</th></tr></thead><tbody><tr><td style="text-align:left">MetaGPT</td><td style="text-align:left">用 SOP 生成软件工程交付物</td><td style="text-align:left">研究者、自动化内容生产</td></tr><tr><td style="text-align:left"><strong>Dify</strong></td><td style="text-align:left"><strong>可视化搭建 LLM 应用与工作流</strong></td><td style="text-align:left"><strong>业务团队、非专业开发者、快速交付</strong></td></tr><tr><td style="text-align:left">LangGraph</td><td style="text-align:left">代码化的状态图编排</td><td style="text-align:left">工程团队、需要精细控制</td></tr><tr><td style="text-align:left">你的迷你框架</td><td style="text-align:left">理解原理的教学工具</td><td style="text-align:left">你自己</td></tr></tbody></table>
+        <div class="lesson"><h4>7.2.1 教学目标</h4>
+<ol><li>理解「低代码编排」与「代码编排」各自的适用边界；</li><li>说清 Dify 与 LangFlow 的工作流节点模型；</li><li>理解插件机制如何解决「工具生态」问题；</li><li>说清 Dify 与 LangFlow 在许可证、部署模型、扩展方式上的差异，并各自跑通一次真实调用。</li></ol>
+<h4>7.2.2 定位对比：Dify 与前面章节的关系</h4>
+<table><thead><tr><th style="text-align:left">项目</th><th style="text-align:left">定位</th><th style="text-align:left">谁在用</th></tr></thead><tbody><tr><td style="text-align:left">MetaGPT</td><td style="text-align:left">用 SOP 生成软件工程交付物</td><td style="text-align:left">研究者、自动化内容生产</td></tr><tr><td style="text-align:left"><strong>Dify</strong></td><td style="text-align:left"><strong>可视化搭建 LLM 应用与工作流</strong></td><td style="text-align:left"><strong>业务团队、非专业开发者、快速交付</strong></td></tr><tr><td style="text-align:left">LangGraph</td><td style="text-align:left">代码化的状态图编排</td><td style="text-align:left">工程团队、需要精细控制</td></tr><tr><td style="text-align:left"><strong>LangFlow</strong></td><td style="text-align:left"><strong>开源、可自托管的可视化编排（Python，MIT）</strong></td><td style="text-align:left"><strong>要自己掌控部署与数据的团队、Python 开发者</strong></td></tr><tr><td style="text-align:left">你的迷你框架</td><td style="text-align:left">理解原理的教学工具</td><td style="text-align:left">你自己</td></tr></tbody></table>
 <p><strong>Dify 的核心价值主张</strong>：把「编排」这件事从代码里搬到画布上。 不写代码也能搭出一个带知识库、工具调用、条件分支的应用。</p>
-<h4>三、工作流引擎的节点模型</h4>
+<h4>7.2.3 工作流引擎的节点模型</h4>
 <p>Dify 的工作流是<strong>有向图</strong>，与 LangGraph 的 State/Node/Edge 是同构的——只是表达方式不同：</p>
 <table><thead><tr><th style="text-align:left">LangGraph（代码）</th><th style="text-align:left">Dify（画布）</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left"><code>State</code></td><td style="text-align:left">变量池 / 会话变量</td><td style="text-align:left">流转的数据</td></tr><tr><td style="text-align:left"><code>Node</code></td><td style="text-align:left">节点</td><td style="text-align:left">一个处理单元</td></tr><tr><td style="text-align:left"><code>Edge</code></td><td style="text-align:left">连线</td><td style="text-align:left">执行顺序</td></tr><tr><td style="text-align:left"><code>Conditional Edge</code></td><td style="text-align:left"><code>If-Else</code> 节点</td><td style="text-align:left">按条件路由</td></tr><tr><td style="text-align:left">Checkpoint</td><td style="text-align:left">运行记录</td><td style="text-align:left">可回看每次执行的中间结果</td></tr></tbody></table>
 <p><strong>为什么要在这里讲 Dify</strong>：让学生看到「同样的图结构，有两种表达方式」。 理解了这层同构关系，你就能：</p>
@@ -248,7 +391,7 @@ class Action:
 <table><thead><tr><th style="text-align:left">类别</th><th style="text-align:left">节点名</th></tr></thead><tbody><tr><td style="text-align:left">流程控制</td><td style="text-align:left"><code>Start Node</code> / <code>User Input</code> / <code>Answer</code> / <code>Output</code> / <code>If-Else</code> / <code>Iteration</code> / <code>Loop</code> / <code>Human Input</code> / <code>Variable Aggregator</code> / <code>Variable Assigner</code> / <code>List Operator</code></td></tr><tr><td style="text-align:left">AI 能力</td><td style="text-align:left"><code>LLM</code> / <code>Agent</code> / <code>Question Classifier</code> / <code>Parameter Extractor</code></td></tr><tr><td style="text-align:left">数据</td><td style="text-align:left"><code>Knowledge Retrieval</code> / <code>Document Extractor</code> / <code>Template</code> / <code>Code</code></td></tr><tr><td style="text-align:left">集成</td><td style="text-align:left"><code>Tool Node</code> / <code>HTTP Request</code></td></tr><tr><td style="text-align:left">触发</td><td style="text-align:left"><code>Trigger</code>（下分 <code>Schedule Trigger</code> / <code>Integration Trigger</code> / <code>Webhook Trigger</code>）</td></tr></tbody></table>
 <blockquote><strong>教学提示</strong>：让学生对照这张表找「哪些是第 3 章的 RAG 环节」 （<code>Knowledge Retrieval</code> + <code>Document Extractor</code>）， 「哪些是第 2 章的后端能力」（<code>HTTP Request</code>）， 「哪些是第 5 章的图控制流」（<code>If-Else</code> / <code>Iteration</code> / <code>Loop</code>）。 <strong>同一个概念在不同工具里的名字不同，但本质相同</strong>——这是抽象能力的训练。</blockquote>
 <blockquote><strong>注意</strong>：Dify 官方文档<strong>没有公开</strong>工作流引擎的内部类名（如 <code>WorkflowEngine</code> 之类）。 如果你的报告里要写引擎的内部实现，需要自己读源码，不要凭猜测写。</blockquote>
-<h4>四、插件机制</h4>
+<h4>7.2.4 插件机制</h4>
 <blockquote><strong>⚠️ 术语已变</strong>（核实日期 2026-09-21，Dify v1.17.1）： Dify 官方现在把扩展机制称为 <strong>Integrations（集成）</strong>，不再叫 "plugins"。 搜索资料时用新词能查到更准的文档。</blockquote>
 <p>Dify 的集成体系解决的是<strong>生态问题</strong>：让第三方能给平台贡献能力，而不用改平台代码。</p>
 <p><strong>集成类型</strong>（官方枚举）：<strong>Model Provider</strong>、<strong>Tool</strong>、<strong>Data Source</strong>、<strong>Trigger</strong>、 <strong>Agent Strategy</strong>、<strong>Custom Endpoint</strong>、<strong>Extension</strong>。安装自 <strong>Marketplace</strong>。</p>
@@ -256,13 +399,294 @@ class Action:
 <p><strong>集成机制要解决的四个问题</strong>（这四个问题是通用的，不只是 Dify）：</p>
 <table><thead><tr><th style="text-align:left">问题</th><th style="text-align:left">解法</th></tr></thead><tbody><tr><td style="text-align:left">集成如何声明自己能做什么</td><td style="text-align:left">Manifest（YAML）+ 能力声明</td></tr><tr><td style="text-align:left">权限边界如何界定</td><td style="text-align:left">声明所需权限，安装时由用户确认</td></tr><tr><td style="text-align:left">版本兼容如何保证</td><td style="text-align:left">平台定义接口版本，集成声明兼容范围</td></tr><tr><td style="text-align:left">恶意集成如何防范</td><td style="text-align:left">签名校验、权限最小化、沙箱执行</td></tr></tbody></table>
 <blockquote><strong>与 MCP 的关系</strong>：Dify 的 Integration 是<strong>平台内</strong>的能力扩展机制， MCP 是<strong>跨平台</strong>的工具协议。两者解决的问题层次不同，也常一起用 （Dify 可以作为 MCP Client 去调用 MCP Server）。 <strong>不要把它们当成竞争关系</strong> —— 这是面试时容易被问到的一个辨析点。</blockquote>
-<h4>五、动手：用 Dify 复刻一个上章项目</h4>
+<h4>7.2.5 动手：用 Dify 复刻一个上章项目</h4>
 <p><strong>任务</strong>：用 Dify 复刻你在第 6 章做的系统（多 Agent 流水线 + 工具调用）。</p>
 <p>然后填写这个对比表：</p>
 <table><thead><tr><th style="text-align:left">对比项</th><th style="text-align:left">代码实现（第 6 章）</th><th style="text-align:left">Dify 实现（今天）</th></tr></thead><tbody><tr><td style="text-align:left">搭建耗时</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">修改一个环节的成本</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">能表达的最复杂控制流</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">调试手段</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">版本管理与 Code Review</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">能否接入自定义工具</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left"><strong>什么情况下你更愿意用它</strong></td><td style="text-align:left"></td><td style="text-align:left"></td></tr></tbody></table>
 <blockquote><strong>低代码与代码不是替代关系，而是权衡关系。</strong> 这个表的作用不是评判哪个更好，而是让你在真实项目里能做出有依据的选择。 提示：注意「版本管理」和「Code Review」这两行——这是低代码方案在团队协作中的典型短板。</blockquote>
-<h4>六、当日验收</h4>
+<h4>7.2.6 当日验收</h4>
 <ul><li>[ ] 能说出 Dify 的节点模型与 LangGraph 的 State/Node/Edge 如何对应</li><li>[ ] 能说出插件机制要解决的四个通用问题</li><li>[ ] 能辨析 Dify 插件与 MCP 的区别与联系</li><li>[ ] 完成复刻对比表，且能说明「什么场景选哪个」</li></ul>
+<h4>7.2.7 LangFlow：可自托管的开源可视化编排</h4>
+<p><strong>为什么在今天加这个项目</strong>：Dify 让你看到「编排可以搬上画布」。但 Dify 社区版本质是<strong>平台型产品</strong>——你在它的框架内做扩展。 LangFlow 回答的是另一个问题：<strong>如果画布本身是开源、可自托管、还能当 Python 库用的，会怎样？</strong></p>
+<p><strong>已核实事实</strong>（核实日期 2026-09-23）</p>
+<table><thead><tr><th style="text-align:left">项目</th><th style="text-align:left">事实</th></tr></thead><tbody><tr><td style="text-align:left">仓库</td><td style="text-align:left"><code>langflow-ai/langflow</code></td></tr><tr><td style="text-align:left">许可证</td><td style="text-align:left">MIT</td></tr><tr><td style="text-align:left">主语言</td><td style="text-align:left">Python</td></tr><tr><td style="text-align:left">Star</td><td style="text-align:left">约 15.5 万</td></tr><tr><td style="text-align:left">当前版本</td><td style="text-align:left">PyPI <code>langflow 1.12.3</code></td></tr><tr><td style="text-align:left">Python 要求</td><td style="text-align:left"><code>&gt;=3.10,&lt;3.15</code></td></tr><tr><td style="text-align:left">官方文档</td><td style="text-align:left"><code>https://docs.langflow.org</code>（文档对应 1.12.x）</td></tr><tr><td style="text-align:left">核心定位</td><td style="text-align:left">开源、Python、可视化编排 AI 应用与 Agent，<strong>同时支持 MCP</strong>，不绑定特定 LLM / 向量库</td></tr></tbody></table>
+<p><strong>三条与 Dify 的关键差异</strong>：</p>
+<ol><li><strong>部署模型</strong>：Dify 更像「装一个平台」，LangFlow 更像「起一个 Python 服务」——MIT 许可，可以整包自托管；</li><li><strong>与代码的距离</strong>：LangFlow 的组件<strong>就是 Python 类</strong>，你可以从 PyPI 装它、在代码里写自定义组件；Dify 的扩展走它自己的 CLI 与 Manifest；</li><li><strong>依赖边界</strong>：<code>langflow-base</code> 是<strong>去掉各家 provider 扩展</strong>的同款 UI/API——需要哪家模型再装哪家，避免拖进一大堆用不上的 SDK。</li></ol>
+<p><strong>安装与启动</strong>（官方推荐 uv）</p>
+<pre class="code lang-bash"><code>uv venv
+uv pip install langflow
+uv run langflow run</code></pre>
+<p>默认服务地址：<code>http://127.0.0.1:7860</code>。升级：<code>uv pip install langflow -U</code>。</p>
+<p>Docker 方式：</p>
+<pre class="code lang-bash"><code>docker run -p 7860:7860 \
+  -e LANGFLOW_AUTO_LOGIN=false \
+  -e LANGFLOW_SUPERUSER_PASSWORD=你的密码 \
+  langflowai/langflow:latest</code></pre>
+<blockquote><strong>Windows 用户注意</strong>：官方另提供桌面版 <code>.msi</code>（安装时可能需要 C++ Build Tools）。 但<strong>桌面版不支持 Shareable Playground 与 Voice Mode</strong>——课程项目若要用到这两个功能， 请走上面的 uv 或 Docker 路线，不要用桌面版。</blockquote>
+<p><strong>上手路径</strong>：打开 <code>http://127.0.0.1:7860</code> 后，从 Quickstart 模板 <strong>Simple Agent</strong> 开始。 它由 <code>Agent</code> + <code>Chat Input</code> + <code>Chat Output</code> 三个必需组件，外加 <code>Calculator</code>、<code>URL</code> 两个工具组件构成。 先在画布上把它原样跑通，再谈改——<strong>先获得一个能工作的基线，是所有调试方法的第一条</strong>。</p>
+<h4>7.2.8 同构对照：Dify / LangFlow / LangGraph 三视图</h4>
+<p>三张表并排看，你会发现<strong>同一套图语义，三种表达方式</strong>：</p>
+<table><thead><tr><th style="text-align:left">概念</th><th style="text-align:left">LangGraph（代码）</th><th style="text-align:left">Dify（画布）</th><th style="text-align:left">LangFlow（画布 + Python 组件）</th></tr></thead><tbody><tr><td style="text-align:left">数据容器</td><td style="text-align:left"><code>State</code></td><td style="text-align:left">变量池 / 会话变量</td><td style="text-align:left">组件输出 → 下游输入的<strong>类型化连线</strong></td></tr><tr><td style="text-align:left">处理单元</td><td style="text-align:left"><code>Node</code></td><td style="text-align:left">节点</td><td style="text-align:left">组件（Component 类实例）</td></tr><tr><td style="text-align:left">执行顺序</td><td style="text-align:left"><code>Edge</code></td><td style="text-align:left">连线</td><td style="text-align:left">连线</td></tr><tr><td style="text-align:left">条件路由</td><td style="text-align:left"><code>Conditional Edge</code></td><td style="text-align:left"><code>If-Else</code> 节点</td><td style="text-align:left">条件分支组件 / 路由连线</td></tr><tr><td style="text-align:left">工具扩展</td><td style="text-align:left"><code>@tool</code> 函数</td><td style="text-align:left">Integration（Manifest）</td><td style="text-align:left">自定义 Component 类</td></tr><tr><td style="text-align:left">持久化</td><td style="text-align:left">Checkpoint</td><td style="text-align:left">运行记录</td><td style="text-align:left">运行记录 / 流文件（JSON）</td></tr><tr><td style="text-align:left">外部调用</td><td style="text-align:left">进程内调用</td><td style="text-align:left">平台 API</td><td style="text-align:left"><code>POST /api/v1/run/&lt;FLOW_ID&gt;</code></td></tr></tbody></table>
+<blockquote><strong>教学提示</strong>：注意第三列与前两列的本质差异——LangFlow 的「节点」不是平台配置出来的一行数据， 而是<strong>一个 Python 类的实例</strong>。这决定了它的能力上限：你能在组件里写任意 Python， 但也要自己承担依赖、版本与运行环境的责任。</blockquote>
+<p><strong>一句话选型</strong>（直接写进 7.2.5 的对比表最后一栏）：</p>
+<ul><li>要<strong>最快交付一个业务应用</strong>、团队里有人不写代码 → Dify；</li><li>要<strong>开源可自托管、扩展写成 Python 类、当服务跑在容器里</strong> → LangFlow；</li><li>要<strong>精细控制状态与分支、把编排嵌进自己的后端</strong> → LangGraph（第 5 章）；</li><li><strong>三者不互斥</strong>：常见组合是「Dify / LangFlow 做原型验证 → 关键路径用 LangGraph 重写」。</li></ul>
+<h4>7.2.9 LangFlow 的组件模型与 1.12 的 lfx 重构</h4>
+<p><strong>为什么要讲这次重构</strong>：它是「抽象层如何演进」的活教材，也是答辩时能拉开差距的细节。</p>
+<p><code>langflow 1.12</code> 把核心能力抽成了一个<strong>独立的 pip 包 &lt;code&gt;lfx&lt;/code&gt;</strong>： 源码位置从 <code>src/backend/base/langflow/...</code> 迁到了 <code>src/lfx/src/lfx/...</code>。 你在网上翻旧文章时会看到 <code>langflow/custom/custom_component/component.py</code>——<strong>它现在只是向后兼容的转发层</strong>，真正的实现在 <code>lfx</code> 里。</p>
+<p>对你的直接影响：<strong>写自定义组件时从 &lt;code&gt;lfx&lt;/code&gt; 导入，而不是从 &lt;code&gt;langflow&lt;/code&gt; 导入</strong>。</p>
+<pre class="code lang-python"><code>from lfx.custom import Component
+from lfx.inputs.inputs import BoolInput, DropdownInput, HandleInput, MessageTextInput</code></pre>
+<p>一个最小组件骨架：</p>
+<pre class="code lang-python"><code>from lfx.custom import Component
+from lfx.inputs.inputs import MessageTextInput
+from lfx.schema import Message
+
+
+class UppercaseComponent(Component):
+    display_name = "Uppercase"
+    description = "把输入文本转成大写，演示自定义组件的最小结构"
+    icon = "type"
+
+    inputs = [
+        MessageTextInput(name="text", display_name="文本", required=True),
+    ]
+
+    def build(self) -&gt; Message:
+        return Message(text=self.text.upper())</code></pre>
+<p><strong>读这个骨架的三个要点</strong>：</p>
+<ol><li><code>inputs</code> 声明了组件在画布上要渲染哪些输入控件——<strong>画布 UI 是数据驱动的</strong>，不是手画的；</li><li><code>build()</code> 是执行入口，返回值沿连线流向下游；</li><li><code>display_name</code> / <code>description</code> / <code>icon</code> 是给用户在画布上看的元数据。</li></ol>
+<blockquote><strong>为什么这个设计值得学</strong>：它把「前端表单、后端执行、类型校验」三件事统一到了<strong>一份声明</strong>里。 第 9 章的毕业项目里要做「可配置的 Agent 能力」，可以直接借用这个思路。</blockquote>
+<p><strong>关于 MCP</strong>：LangFlow 同时支持 MCP——既能作为 MCP Client 去连外部 MCP Server，也能把画布上的流暴露成 MCP Server。 对照 7.2.4 里 Dify 的 Integration 辨析，你现在应该能自己回答：「LangFlow 的组件机制和 MCP 是竞争关系吗？」</p>
+<h4>7.2.10 动手：从后端调用 LangFlow 的流</h4>
+<p><strong>任务</strong>：在画布上搭一条最简单的流（Chat Input → LLM 组件 → Chat Output），发布后<strong>从命令行调用它</strong>，并看清返回结构。</p>
+<p>调用格式（官方 API）：</p>
+<pre class="code lang-bash"><code>curl -X POST http://127.0.0.1:7860/api/v1/run/&lt;FLOW_ID&gt; \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: &lt;你的 API Key&gt;" \
+  -d '{"output_type": "chat", "input_type": "chat", "input_value": "Hello"}'</code></pre>
+<p><strong>三个必须自己确认的点</strong>：</p>
+<ol><li><code>&lt;FLOW_ID&gt;</code> 从哪来（流页面的 URL 或分享面板）；</li><li><code>x-api-key</code> 从哪来（平台设置里生成）；</li><li>返回体里<strong>哪一层才是模型输出的文本</strong>——不要看见一串 JSON 就以为拿到了答案。</li></ol>
+<blockquote><strong>接课上内容</strong>：这就是第 2 章「LLM API 工程化」搬到可视化平台上的版本。 你的后端不需要知道流里画了什么，只需要知道<strong>入口地址、鉴权头、请求体、响应路径</strong>—— 这四样在 Dify、LangFlow、LangGraph 上是同一个工程问题。</blockquote>
+<p><strong>接线到本课程的真实模型服务</strong>（<code>https://api.anmoxuan.xyz/v1</code>，模型 <code>deepseek-v4.1-flash-expires-on-0910</code>）： 在模型组件里选 <strong>OpenAI 兼容（OpenAI-Compatible / Custom）</strong> 入口， <strong>Base URL 填到 &lt;code&gt;/v1&lt;/code&gt; 结尾</strong>、<strong>API Key 填中转站密钥</strong>，保存前先点一次测试。 注意：该中转站<strong>不提供</strong> <code>/v1/embeddings</code> 与 <code>/v1/rerank</code>， 所以走 RAG 模板时把嵌入切到本地嵌入（课程 <code>.env</code> 里的 <code>LLM_EMBED_BACKEND=local</code> 就是这个原因）。</p>
+<h4>7.2.11 当日验收（LangFlow 部分）</h4>
+<ul><li>[ ] 能说出 LangFlow 与 Dify 在<strong>许可证、部署模型、扩展方式</strong>上的三点差异</li><li>[ ] 能默写本地启动 LangFlow 的 uv 三条命令与默认端口 <code>7860</code></li><li>[ ] 能说出 <code>lfx</code> 重构改变了什么，以及自定义组件应该从哪个包导入</li><li>[ ] 能写出调用一条流的 HTTP 方法、路径、鉴权头与最小请求体</li><li>[ ] 能解释「LangFlow 的组件机制与 MCP 不是竞争关系」</li></ul>
+<h4>7.2.12 当日练习：9 道题</h4>
+<blockquote>本节的 9 道题与 AI Master 当日练习台账一一对应（<code>q07-02-02</code> ~ <code>q07-02-10</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q07-02-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">插件机制要解决的四个问题</td></tr><tr><td style="text-align:left"><code>q07-02-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">Dify 集成与 MCP 的关系辨析</td></tr><tr><td style="text-align:left"><code>q07-02-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">低代码与代码的权衡分析</td></tr><tr><td style="text-align:left"><code>q07-02-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">节点类型与前面章节的对应</td></tr><tr><td style="text-align:left"><code>q07-02-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">用配置描述 Dify 工作流图</td></tr><tr><td style="text-align:left"><code>q07-02-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">插件 Manifest 校验器</td></tr><tr><td style="text-align:left"><code>q07-02-08</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">LangFlow 定位与许可辨析</td></tr><tr><td style="text-align:left"><code>q07-02-09</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">三视图选型决策与 lfx 重构</td></tr><tr><td style="text-align:left"><code>q07-02-10</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">LangFlow 流调用响应解析器</td></tr></tbody></table>
+<h5><code>q07-02-02</code>（单选 · ★★）插件机制要解决的四个问题</h5>
+<p>集成机制要解决四个通用问题：能力声明、权限边界、版本兼容、恶意防范。 下列解法与问题的对应，哪一项不匹配？</p>
+<ul><li><strong>A</strong>. 能力声明 —— Manifest（YAML）+ 能力声明</li><li><strong>B</strong>. 权限边界 —— 声明所需权限，安装时由用户确认</li><li><strong>C</strong>. 版本兼容 —— 平台定义接口版本，集成声明兼容范围</li><li><strong>D</strong>. 恶意防范 —— 由 Marketplace 人工审核后即可放行</li></ul>
+<p><strong>答案</strong>：D</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>能力声明用 Manifest</li><li>权限由用户安装时确认</li><li>版本由平台定义接口版本</li><li>恶意防范靠签名与沙箱</li></ul>
+<p><strong>解析与常见错误</strong>：恶意集成的防范手段是签名校验、权限最小化、沙箱执行，而不是仅靠 Marketplace 审核。前三项与正文一致。</p>
+<h5><code>q07-02-03</code>（单选 · ★★）Dify 集成与 MCP 的关系辨析</h5>
+<p>关于 Dify 的 Integration 与 MCP 的关系，下列说法正确的是？</p>
+<ul><li><strong>A</strong>. 两者是竞争关系，选了 Dify 就不能用 MCP</li><li><strong>B</strong>. Integration 是平台内的能力扩展机制，MCP 是跨平台的工具协议，两者层次不同且常一起用</li><li><strong>C</strong>. MCP 是 Dify 独有的插件格式，只能被 Dify 调用</li><li><strong>D</strong>. Integration 是跨平台协议，MCP 是 Dify 平台内的扩展机制</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Integration 是平台内扩展</li><li>MCP 是跨平台工具协议</li><li>层次不同，不构成竞争</li><li>Dify 可作 MCP Client</li><li>二者常一起使用</li></ul>
+<p><strong>解析与常见错误</strong>：Integration 解决平台内扩展，MCP 解决跨平台工具调用，层次不同，Dify 可作为 MCP Client 调用 MCP Server，二者常配合使用，不是竞争关系。</p>
+<h5><code>q07-02-04</code>（简答 · ★★）低代码与代码的权衡分析</h5>
+<p>用 Dify 复刻第 6 章的多 Agent 流水线后，需要填写对比表，包含搭建耗时、修改成本、最复杂控制流、调试手段、版本管理与 Code Review、能否接入自定义工具等维度。 请说明：在团队协作场景下，低代码方案相比代码实现有哪些典型短板？并给出「什么场景选哪个」的判断依据。</p>
+<p><strong>提示</strong>：注意版本管理与 Code Review 两行；从团队协作与工程可控性角度切入</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>版本管理与 Code Review 是低代码典型短板</li><li>画布改动难做 diff 与评审</li><li>复杂控制流表达能力受限</li><li>调试依赖运行记录，粒度较粗</li><li>原型验证选低代码，精细控制选代码</li><li>二者是权衡关系而非替代</li></ul>
+<p><strong>解析与常见错误</strong>：答题要点是抓住版本管理与 Code Review 这两个短板，并说明低代码在复杂控制流与调试粒度上的限制。常见失分是只谈效率高、上手快，没有给出可依据的选择标准。</p>
+<h5><code>q07-02-05</code>（简答 · ★★）节点类型与前面章节的对应</h5>
+<p>Dify 的节点类型分为流程控制、AI 能力、数据、集成、触发五类。 请从节点表中分别找出对应第 3 章 RAG 环节、第 2 章后端能力、第 5 章图控制流的节点，并说明这种「同一概念不同名字」的对照对抽象能力训练的意义。</p>
+<p><strong>提示</strong>：先回忆第 3 章 RAG 的关键环节；第 5 章讲的是图控制流</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>RAG 对应 Knowledge Retrieval 与 Document Extractor</li><li>后端能力对应 HTTP Request</li><li>图控制流对应 If-Else、Iteration、Loop</li><li>本质相同，名字不同</li><li>训练跨工具抽象能力</li></ul>
+<p><strong>解析与常见错误</strong>：需要准确指出三组对应节点，并说明抽象能力的意义：理解同一概念在不同工具中的表达，能迁移到其他可视化编排工具。常见失分是只列节点名，不解释意义。</p>
+<h5><code>q07-02-06</code>（代码 · ★★）用配置描述 Dify 工作流图</h5>
+<p>给定一个用 Python 字典描述的工作流定义，结构为 {"nodes": [...], "edges": [...]}。 每个 node 含 id 与 type，每条 edge 含 source 与 target。 请实现 validate_workflow(wf) 函数，返回 (ok, errors)：</p>
+<ol><li>检查所有 edge 的 source/target 都指向已存在的节点 id，否则记错误；</li><li>检查是否存在环，若存在则记错误；</li><li>无错误时 ok 为 True，errors 为空列表。</li></ol>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def validate_workflow(wf):
+    """返回 (ok, errors)"""
+    nodes = wf.get("nodes", [])
+    edges = wf.get("edges", [])
+    errors = []
+    # TODO: 校验边端点与环
+    return (len(errors) == 0, errors)</code></pre>
+<p><strong>提示</strong>：先做端点存在性校验；判环可用 DFS 三色标记</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先收集节点 id 集合</li><li>校验每条边端点存在</li><li>建邻接表做 DFS 判环</li><li>用三色标记识别回边</li><li>返回 (ok, errors)</li></ul>
+<p><strong>解析与常见错误</strong>：思路是先校验边的端点，再建邻接表用 DFS 三色标记判环。常见错误是只做端点校验忘了判环，或把自环漏掉；另外要注意 source/target 不存在时不应加入邻接表。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def validate_workflow(wf):
+    nodes = wf.get("nodes", [])
+    edges = wf.get("edges", [])
+    errors = []
+    ids = {n["id"] for n in nodes}
+    for e in edges:
+        if e["source"] not in ids:
+            errors.append(f"unknown source: {e['source']}")
+        if e["target"] not in ids:
+            errors.append(f"unknown target: {e['target']}")
+    adj = {i: [] for i in ids}
+    for e in edges:
+        if e["source"] in adj and e["target"] in ids:
+            adj[e["source"]].append(e["target"])
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color = {i: WHITE for i in ids}
+    def dfs(u):
+        color[u] = GRAY
+        for v in adj[u]:
+            if color[v] == GRAY:
+                return True
+            if color[v] == WHITE and dfs(v):
+                return True
+        color[u] = BLACK
+        return False
+    for i in ids:
+        if color[i] == WHITE and dfs(i):
+            errors.append("cycle detected")
+            break
+    return (len(errors) == 0, errors)
+
+if __name__ == "__main__":
+    wf = {"nodes": [{"id": "start", "type": "Start"},
+                    {"id": "llm", "type": "LLM"},
+                    {"id": "ans", "type": "Answer"}],
+          "edges": [{"source": "start", "target": "llm"},
+                    {"source": "llm", "target": "ans"}]}
+    print(validate_workflow(wf))
+    wf2 = {"nodes": wf["nodes"],
+           "edges": wf["edges"] + [{"source": "ans", "target": "llm"}]}
+    print(validate_workflow(wf2))</code></pre>
+<p></details></p>
+<h5><code>q07-02-07</code>（代码 · ★★★）插件 Manifest 校验器</h5>
+<p>集成通过 Manifest（YAML）声明自己的能力与权限。 假设 Manifest 解析后是 Python 字典，字段包括 name、version、permissions（列表）、api_version。 请实现 check_manifest(m) 函数，返回 (ok, errors)：</p>
+<ol><li>name 非空字符串；</li><li>version 形如 "1.2.3"；</li><li>permissions 是列表且每项为字符串；</li><li>api_version 必须落在平台支持的集合 {"1.0", "1.1"} 内；</li><li>任一不满足则记入 errors，ok 为 errors 为空。</li></ol>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import re
+
+SUPPORTED_API = {"1.0", "1.1"}
+
+def check_manifest(m):
+    """返回 (ok, errors)"""
+    errors = []
+    # TODO: 逐项校验
+    return (len(errors) == 0, errors)</code></pre>
+<p><strong>提示</strong>：version 用正则 ^\d+\.\d+\.\d+$；permissions 要同时校验类型与元素</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>name 需非空字符串</li><li>version 用正则匹配三段数字</li><li>permissions 必须是字符串列表</li><li>api_version 需在支持集合内</li><li>逐项收集错误不提前返回</li></ul>
+<p><strong>解析与常见错误</strong>：关键是逐项校验并收集全部错误，而不是遇到第一个错误就返回。常见错误是 permissions 只判断是 list 而漏判元素类型，或 api_version 用字符串比较导致 "1.10" 被误判通过。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import re
+
+SUPPORTED_API = {"1.0", "1.1"}
+VER_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+def check_manifest(m):
+    errors = []
+    name = m.get("name")
+    if not isinstance(name, str) or not name.strip():
+        errors.append("invalid name")
+    version = m.get("version")
+    if not isinstance(version, str) or not VER_RE.match(version):
+        errors.append("invalid version")
+    perms = m.get("permissions")
+    if not isinstance(perms, list) or not all(isinstance(p, str) for p in perms):
+        errors.append("invalid permissions")
+    api = m.get("api_version")
+    if api not in SUPPORTED_API:
+        errors.append("unsupported api_version")
+    return (len(errors) == 0, errors)
+
+if __name__ == "__main__":
+    print(check_manifest({"name": "demo", "version": "1.0.0",
+                          "permissions": ["http"], "api_version": "1.1"}))
+    print(check_manifest({"name": "", "version": "1.0",
+                          "permissions": "http", "api_version": "2.0"}))</code></pre>
+<p></details></p>
+<h5><code>q07-02-08</code>（单选 · ★★）LangFlow 定位与许可辨析</h5>
+<p>关于 LangFlow（核实日期 2026-09-23，版本 1.12.3），下列说法<strong>正确</strong>的是？</p>
+<ul><li><strong>A</strong>. 它是闭源商业产品，只能通过官方托管云服务使用</li><li><strong>B</strong>. 它以 MIT 许可开源、主语言是 Python、可自托管在 7860 端口</li><li><strong>C</strong>. 它只支持自带的模型供应商，不能接 OpenAI 兼容接口</li><li><strong>D</strong>. 它只能作为 MCP Client 调用别人，不能把自己暴露成 MCP Server</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>MIT 许可、可自托管</li><li>主语言 Python</li><li>默认端口 7860</li><li>不绑定特定 LLM / 向量库</li><li>既可作 MCP Client 也可暴露为 MCP Server</li></ul>
+<p><strong>解析与常见错误</strong>：LangFlow 是 MIT 许可的开源项目（仓库 <code>langflow-ai/langflow</code>，主语言 Python，默认服务地址 <code>http://127.0.0.1:7860</code>），A 错。它不绑定特定模型供应商，可通过 OpenAI 兼容入口接入任意兼容服务，C 错。它对 MCP 双向支持，D 错。常见错误是把「官方另提供云服务」误读成「只能云端用」。</p>
+<h5><code>q07-02-09</code>（简答 · ★★★）三视图选型决策与 lfx 重构</h5>
+<p>某团队要做一个内部知识库问答应用：团队里有一位会写 Python 的后端、两位不写代码的运营同学；公司要求数据必须留在自己的服务器上；上线后关键路径还要嵌进已有的 Python 后端做精细控制。</p>
+<p>请回答：</p>
+<ol><li>结合 Dify / LangFlow / LangGraph 的差异，说明这个场景下你会怎么搭配使用，并给出理由；</li><li><code>langflow 1.12</code> 的 <code>lfx</code> 重构改变了什么？写自定义组件时应该从哪个包导入？</li></ol>
+<p><strong>提示</strong>：从「谁改哪个环节」「数据放在哪」「在哪里做精细控制」三个角度切入；第 2 问关注核心实现被抽到哪个独立包</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>识别「数据不出内网」是硬约束，据此优先可自托管方案</li><li>指出 Dify 与 LangFlow 都是可视化编排，LangFlow 为 MIT 可自托管</li><li>指出运营同学改画布、后端同学写组件与接后端，是分工而非二选一</li><li>指出关键路径用代码（LangGraph 或自研）重写以取得精细控制</li><li>明确说明三者不是互斥关系</li><li>指出 1.12 把核心抽成独立 pip 包 <code>lfx</code>（源码位于 <code>src/lfx/src/lfx/</code>）</li><li>指出 <code>langflow/custom/custom_component/component.py</code> 只是向后兼容转发层</li><li>指出自定义组件应从 <code>lfx</code> 导入（如 <code>from lfx.custom import Component</code>）</li></ul>
+<p><strong>解析与常见错误</strong>：合理答法是「运营用画布做原型与日常迭代，后端把关键路径用代码重写并接回自己的服务」，且因为数据不出内网而优先 MIT 可自托管的 LangFlow。第 2 问的正确答案是核心已被抽成独立包 <code>lfx</code>，旧路径只是兼容转发层，因此应 <code>from lfx.custom import Component</code>。常见失分：把三者说成互斥选择；第二问只回答成「目录改名」，没说出「独立 pip 包」这一层。</p>
+<h5><code>q07-02-10</code>（代码 · ★★★）LangFlow 流调用响应解析器</h5>
+<p>调用一条 LangFlow 流（<code>POST /api/v1/run/&lt;FLOW_ID&gt;</code>）会得到一层套一层的 JSON。为便于教学，本题只需对<strong>下面这份结构简化的返回体</strong>负责：</p>
+<pre class="code lang-python"><code>payload = {
+    "outputs": [
+        {
+            "outputs": [
+                {"results": {"message": {"text": "你好，我是助手"}}},
+                {"results": {"message": {"text": "补充说明"}}},
+            ]
+        }
+    ]
+}</code></pre>
+<p>请实现 <code>extract_message_texts(payload)</code>，返回<strong>所有</strong>提取到的文本组成的列表（保持出现顺序）：</p>
+<ol><li>结构缺失或类型不对时<strong>不抛异常</strong>，跳过该项；</li><li>文本不是非空字符串时跳过；</li><li>没有任何文本可取时返回空列表 <code>[]</code>。</li></ol>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def extract_message_texts(payload):
+    """+ '"""' + r"""从 LangFlow 运行返回体中提取全部 message.text"""+ '"""' + r"""
+    texts = []
+    # TODO: 逐层安全下钻
+    return texts</code></pre>
+<p><strong>提示</strong>：先判断 <code>payload</code> 是不是字典、<code>outputs</code> 是不是列表，再逐层用 <code>.get()</code> 下钻；不要用 <code>payload["outputs"][0]["outputs"][0]</code> 这种硬索引</p>
+<p><strong>期望运行结果</strong>（由 AI 模拟运行给出，无需自行安装环境）</p>
+<pre class="code lang-text"><code>extract_message_texts(payload)                 -&gt; ['你好，我是助手', '补充说明']
+extract_message_texts({"outputs": []})         -&gt; []
+extract_message_texts({"outputs": [{"outputs": [{"results": {}}]}]}) -&gt; []
+extract_message_texts({})                      -&gt; []</code></pre>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>入口处校验 payload 是否为 dict</li><li>outputs 不是列表时直接返回空列表</li><li>两层 outputs 都逐项安全下钻</li><li>results / message / text 逐层做类型校验</li><li>非空字符串校验（<code>strip()</code>）</li><li>缺失或类型不符时跳过而不是抛异常</li><li>结果保持出现顺序</li></ul>
+<p><strong>解析与常见错误</strong>：思路是「每一层先判类型、再取值」，把 <code>payload → outputs[] → outputs[] → results.message.text</code> 每一跳都写成「类型不对就跳过」，最后统一收集文本。常见错误有三类：一是用硬索引直接取，遇到 <code>{}</code> 就抛 <code>KeyError</code> / <code>IndexError</code>；二是只取第一层 <code>outputs[0]</code>，漏掉第二个结果；三是把 <code>text</code> 为 <code>None</code> 或空串的项也收进列表。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def extract_message_texts(payload):
+    """+ '"""' + r"""从 LangFlow 运行返回体中提取全部 message.text"""+ '"""' + r"""
+    texts = []
+    if not isinstance(payload, dict):
+        return texts
+    outer = payload.get("outputs")
+    if not isinstance(outer, list):
+        return texts
+    for group in outer:
+        if not isinstance(group, dict):
+            continue
+        inner = group.get("outputs")
+        if not isinstance(inner, list):
+            continue
+        for item in inner:
+            if not isinstance(item, dict):
+                continue
+            results = item.get("results")
+            if not isinstance(results, dict):
+                continue
+            message = results.get("message")
+            if not isinstance(message, dict):
+                continue
+            text = message.get("text")
+            if isinstance(text, str) and text.strip():
+                texts.append(text)
+    return texts
+
+
+if __name__ == "__main__":
+    payload = {"outputs": [{"outputs": [
+        {"results": {"message": {"text": "你好，我是助手"}}},
+        {"results": {"message": {"text": "补充说明"}}},
+    ]}]}
+    print(extract_message_texts(payload))
+    print(extract_message_texts({"outputs": []}))
+    print(extract_message_texts({"outputs": [{"outputs": [{"results": {}}]}]}))
+    print(extract_message_texts({}))</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -281,10 +705,10 @@ class Action:
                   >
             标记为已掌握（+12 修为）
           </button>
-          <button class="btn agent" data-act="kp-ask" data-title="Day 32｜Dify：可视化工作流与插件引擎">
+          <button class="btn agent" data-act="kp-ask" data-title="Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎">
             这一节没看懂，问星语
           </button>
-          <button class="btn ghost" data-act="kp-tts" data-title="Day 32｜Dify：可视化工作流与插件引擎">
+          <button class="btn ghost" data-act="kp-tts" data-title="Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎">
             🔊 朗读这一节
           </button>
         </div>
@@ -308,23 +732,23 @@ class Action:
 
       
       <div class="kp-body" hidden>
-        <div class="lesson"><h4>一、教学目标</h4>
+        <div class="lesson"><h4>7.3.1 教学目标</h4>
 <ol><li>理解「Agent 真的去执行代码」需要额外解决哪些工程问题；</li><li>说清沙箱隔离的必要性与实现层次；</li><li>理解长任务管理器的设计要点。</li></ol>
-<h4>二、从「调用工具」到「执行代码」的跳跃</h4>
+<h4>7.3.2 从「调用工具」到「执行代码」的跳跃</h4>
 <p>第 4 章的工具调用是这样的：模型输出 <code>{"name": "get_weather", "arguments": {...}}</code>， 你的程序校验参数、执行函数、返回结果。<strong>风险是可控的</strong>——因为可执行的函数是你预先注册的。</p>
 <p><strong>Code Agent 是另一回事</strong>：模型生成一段代码，你去执行它。</p>
 <table><thead><tr><th style="text-align:left">维度</th><th style="text-align:left">工具调用（第 4 章）</th><th style="text-align:left">代码执行（Code Agent）</th></tr></thead><tbody><tr><td style="text-align:left">可执行范围</td><td style="text-align:left">预注册的函数（白名单）</td><td style="text-align:left">任意代码</td></tr><tr><td style="text-align:left">风险</td><td style="text-align:left">参数错误、越权调用</td><td style="text-align:left"><strong>任意代码执行、文件读写、网络访问、资源耗尽</strong></td></tr><tr><td style="text-align:left">参数校验</td><td style="text-align:left">Pydantic 严格校验</td><td style="text-align:left">无法穷举，只能靠沙箱</td></tr><tr><td style="text-align:left">出错恢复</td><td style="text-align:left">返回结构化错误</td><td style="text-align:left">可能把环境搞坏（删文件、装错包）</td></tr></tbody></table>
 <p><strong>所以 Code Agent 的核心工程问题是沙箱，不是提示词。</strong></p>
-<h4>三、沙箱的层次</h4>
+<h4>7.3.3 沙箱的层次</h4>
 <table><thead><tr><th style="text-align:left">层次</th><th style="text-align:left">手段</th><th style="text-align:left">隔离强度</th><th style="text-align:left">代价</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">限制可导入模块（import 白名单）</td><td style="text-align:left">弱</td><td style="text-align:left">低（容易被绕过）</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">子进程 + 超时 + 资源限制</td><td style="text-align:left">中</td><td style="text-align:left">中</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left">容器（Docker）+ 无网络 + 只读挂载</td><td style="text-align:left">较强</td><td style="text-align:left">中高</td></tr><tr><td style="text-align:left">4</td><td style="text-align:left">虚拟机 / 微虚拟机</td><td style="text-align:left">强</td><td style="text-align:left">高</td></tr><tr><td style="text-align:left">5</td><td style="text-align:left">独立机器 / 云沙箱服务</td><td style="text-align:left">最强</td><td style="text-align:left">最高</td></tr></tbody></table>
 <p><strong>必须记住的一条</strong>：<strong>任何依赖「在同一个进程里跑 Python 并拦截危险操作」的方案都不是安全边界。</strong> Python 的动态特性决定了这类拦截可以被绕过。真正的边界必须是<strong>操作系统级或进程级</strong>的。</p>
 <p><strong>沙箱除了安全，还要解决</strong>：</p>
 <ol><li><strong>状态隔离</strong>：多次执行之间是否共享文件系统？不隔离会互相污染；</li><li><strong>依赖管理</strong>：模型装的包会不会破坏宿主环境？</li><li><strong>超时与资源</strong>：一个死循环会占满 CPU；</li><li><strong>可复现</strong>：同样的任务两次执行，环境是否一致。</li></ol>
-<h4>四、长任务管理器</h4>
+<h4>7.3.4 长任务管理器</h4>
 <p>一个跑几分钟到几十分钟的任务，需要额外的机制：</p>
 <table><thead><tr><th style="text-align:left">机制</th><th style="text-align:left">作用</th></tr></thead><tbody><tr><td style="text-align:left"><strong>持久化会话</strong></td><td style="text-align:left">进程重启后任务能继续</td></tr><tr><td style="text-align:left"><strong>状态快照</strong></td><td style="text-align:left">中途失败能从最近的检查点恢复，而不是从头再来</td></tr><tr><td style="text-align:left"><strong>进度可见</strong></td><td style="text-align:left">用户能看到「现在在第几步、在做什么」</td></tr><tr><td style="text-align:left"><strong>中断与取消</strong></td><td style="text-align:left">用户能叫停</td></tr><tr><td style="text-align:left"><strong>产出归档</strong></td><td style="text-align:left">长任务的中间产物要落盘（否则进程没了就全丢了）</td></tr><tr><td style="text-align:left"><strong>并发控制</strong></td><td style="text-align:left">多个长任务同时跑时，资源如何分配</td></tr></tbody></table>
 <blockquote><strong>对照你自己的实现</strong>：第 6 章 Day29 的 <code>61_long_task.py</code> 其实就是一个极简的长任务管理器。 你实现了任务拆解、进度查询、上下文压缩。OpenHands 在生产环境要处理的是同样的问题， 只是多了沙箱隔离、崩溃恢复、并发调度、资源配额。 <strong>这就是「从课堂到生产」的差距所在——不是算法更难，而是边界情况多得超出想象。</strong></blockquote>
-<h4>五、精读建议</h4>
+<h4>7.3.5 精读建议</h4>
 <blockquote><strong>⚠️ 项目已重构拆仓（核实日期 2026-09-21）——这是本章最需要注意的状态变化</strong>：  OpenHands <strong>不再是单一仓库</strong>，架构已整体改变：  | 组件 | 仓库 | 当前版本 | 职责（官方原文） | |---|---|---:|---| | <strong>Agent Canvas</strong> | <code>OpenHands/OpenHands</code> | v1.20.0 | "the open-source browser client and control center for agent conversations and automations" | | <strong>Software Agent SDK</strong> | <code>OpenHands/software-agent-sdk</code> | v1.49.2 | "a composable Python library for building agents that work with code" | | <strong>Agent Server</strong> | 同上 | — | "exposes agent execution, conversations, tools, and workspaces through REST and WebSocket APIs" | | <strong>Sandbox Server</strong> | 同上 | — | "creates and manages sandboxed environments that host Agent Server" | | <strong>Automation Server</strong> | 同上 | — | 定时与事件驱动的自动化生命周期 | | <strong>CLI</strong> | 同上 | — | 终端界面，基于 Software Agent SDK |  <strong>旧架构已归档到 &lt;code&gt;OpenHands/legacy&lt;/code&gt;</strong>：之前教程里常提到的 Docker Runtime、Action Execution Server、ActionExecutor、EventStream、 <code>docker_runtime.py</code> / <code>local_runtime.py</code> 等都属<strong>旧架构</strong>，现在在 legacy 仓库里。 <strong>网上大量中文教程仍在讲旧架构</strong> —— 读之前先确认讲的是哪一代。  文档域名也从 <code>docs.all-hands.dev</code> 迁到 <strong>&lt;code&gt;docs.openhands.dev&lt;/code&gt;</strong>。</blockquote>
 <p><strong>新架构的核心设计原则（官方原文）</strong>：</p>
 <ul><li>Agent "<strong>Implements the reasoning-action loop</strong>"（实现推理-行动循环）；</li><li><code>Conversation</code> "Manages conversation state and lifecycle"（管理对话状态与生命周期）；</li><li><strong>"Stateless, immutable components with type-safe Pydantic models"</strong>（无状态、不可变组件 + 类型安全的 Pydantic 模型）；</li><li><strong>"same agent code works in both modes—just swap the workspace type"</strong>（同一份 Agent 代码在两种模式下都能跑，只需替换 workspace 类型）。</li></ul>
@@ -336,8 +760,160 @@ conversation = Conversation(agent=agent, workspace=cwd)</code></pre>
 <blockquote><code>Conversation.run()</code> / <code>Conversation.step()</code> 这种具体方法名<strong>未核实</strong>， 需要查 SDK API reference，不要凭记忆写。</blockquote>
 <table><thead><tr><th style="text-align:right">顺序</th><th style="text-align:left">看什么</th><th style="text-align:left">带着什么问题</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:left"><code>docs.openhands.dev</code> 的架构总览</td><td style="text-align:left">一次任务从提交到产出，经过哪些组件？</td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">Software Agent SDK 的 Agent 定义</td><td style="text-align:left">它和你的 ReAct 循环有什么结构上的相同与不同？</td></tr><tr><td style="text-align:right">3</td><td style="text-align:left">Sandbox Server 的接口</td><td style="text-align:left">沙箱是<strong>可插拔</strong>的（本地/远程可换）吗？为什么这么设计？</td></tr><tr><td style="text-align:right">4</td><td style="text-align:left"><code>Conversation</code> 的状态管理</td><td style="text-align:left">保存了什么？（全部对话？还是摘要 + 产物引用？）</td></tr><tr><td style="text-align:right">5</td><td style="text-align:left">错误处理路径</td><td style="text-align:left">代码执行失败时，是重试、换方案、还是终止？</td></tr></tbody></table>
 <blockquote><strong>读完后应该能回答</strong>： 1. 如果去掉沙箱，这个项目还能用吗？会有什么后果？ 2. 它的 Workspace 抽象（本地/远程可换）与你的实现有何异同？这个抽象的好处是什么？ 3. 为什么它把 "stateless, immutable components" 作为设计原则？这和 Agent 需要维护对话状态矛盾吗？</blockquote>
-<h4>六、当日验收</h4>
+<h4>7.3.6 当日验收</h4>
 <ul><li>[ ] 能说出「工具调用」与「代码执行」在风险上的本质区别</li><li>[ ] 能说出沙箱的五个层次，并解释为什么进程内拦截不算安全边界</li><li>[ ] 能列出长任务管理器需要处理的六个机制</li><li>[ ] 完成精读笔记，包含「读完后应该能回答」的三个问题</li></ul>
+<h4>7.3.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q07-03-01</code> ~ <code>q07-03-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q07-03-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">工具调用与代码执行的风险差异</td></tr><tr><td style="text-align:left"><code>q07-03-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">沙箱层次与安全边界</td></tr><tr><td style="text-align:left"><code>q07-03-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">长任务管理器机制</td></tr><tr><td style="text-align:left"><code>q07-03-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">为什么进程内拦截不算安全边界</td></tr><tr><td style="text-align:left"><code>q07-03-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">沙箱除安全外要解决的问题</td></tr><tr><td style="text-align:left"><code>q07-03-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现极简长任务管理器</td></tr><tr><td style="text-align:left"><code>q07-03-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">带超时与资源限制的代码执行</td></tr></tbody></table>
+<h5><code>q07-03-01</code>（单选 · ★）工具调用与代码执行的风险差异</h5>
+<p>第 4 章的工具调用与 Code Agent 的代码执行，在风险上的本质区别是什么？</p>
+<ul><li><strong>A</strong>. 工具调用可执行范围是预注册白名单函数，代码执行是任意代码，无法穷举校验</li><li><strong>B</strong>. 工具调用参数校验更松，代码执行反而有 Pydantic 严格校验</li><li><strong>C</strong>. 两者风险相同，只是代码执行写起来更简单</li><li><strong>D</strong>. 工具调用会破坏环境，代码执行只返回结构化错误</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>工具调用=白名单函数</li><li>代码执行=任意代码</li><li>参数无法穷举校验</li><li>出错可能搞坏环境</li><li>核心工程问题是沙箱</li></ul>
+<p><strong>解析与常见错误</strong>：工具调用只能触发预先注册的函数，属白名单，参数可被 Pydantic 严格校验，出错返回结构化错误。代码执行则是模型生成任意代码，可读写文件、访问网络、耗尽资源，无法穷举校验，只能靠沙箱。因此 Code Agent 的核心工程问题是沙箱而非提示词。</p>
+<h5><code>q07-03-02</code>（单选 · ★★）沙箱层次与安全边界</h5>
+<p>关于沙箱的五个层次，下列说法正确的是？</p>
+<ul><li><strong>A</strong>. 限制可导入模块属于强隔离，代价也最高</li><li><strong>B</strong>. 子进程加超时与资源限制属于最强隔离</li><li><strong>C</strong>. 容器加无网络与只读挂载属于较强隔离，代价中高</li><li><strong>D</strong>. 依赖在同一进程内拦截危险操作即可构成安全边界</li></ul>
+<p><strong>答案</strong>：C</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>层次1 弱隔离低代价</li><li>层次2 子进程中代价</li><li>层次3 容器较强中高代价</li><li>层次4/5 强/最强高代价</li><li>进程内拦截非安全边界</li></ul>
+<p><strong>解析与常见错误</strong>：层次 1 限制导入模块隔离弱、易被绕过；层次 2 子进程加超时资源限制为中等；层次 3 容器加无网络加只读挂载属较强隔离、代价中高；层次 4、5 才是强与最强。进程内拦截因 Python 动态特性可被绕过，不构成安全边界。</p>
+<h5><code>q07-03-03</code>（单选 · ★★）长任务管理器机制</h5>
+<p>一个跑几分钟到几十分钟的长任务，需要哪些额外机制？</p>
+<ul><li><strong>A</strong>. 只需要提示词优化和更快的模型</li><li><strong>B</strong>. 持久化会话、状态快照、进度可见、中断取消、产出归档、并发控制</li><li><strong>C</strong>. 只需要把超时时间调大即可</li><li><strong>D</strong>. 只需要把中间产物放在内存里加快速度</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>持久化会话</li><li>状态快照</li><li>进度可见</li><li>中断与取消</li><li>产出归档</li><li>并发控制</li></ul>
+<p><strong>解析与常见错误</strong>：长任务管理器需要六个机制：持久化会话让进程重启后能继续；状态快照支持从检查点恢复；进度可见让用户知道第几步；中断取消让用户叫停；产出归档把中间产物落盘；并发控制分配多任务资源。内存保存中间产物在进程消失后会全部丢失。</p>
+<h5><code>q07-03-04</code>（简答 · ★★）为什么进程内拦截不算安全边界</h5>
+<p>请解释为什么「在同一个进程里跑 Python 并拦截危险操作」的方案不能作为安全边界，并说明真正的边界应该建在哪一层。</p>
+<p><strong>提示</strong>：想想 Python 有哪些动态能力；对比进程内与进程外的隔离</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Python 动态特性可绕过拦截</li><li>如反射、动态导入、C 扩展</li><li>拦截规则无法穷举危险操作</li><li>真正边界须操作系统级或进程级</li><li>可用子进程、容器、虚拟机</li><li>隔离强度与代价需权衡</li></ul>
+<p><strong>解析与常见错误</strong>：关键是理解 Python 的动态特性让任何进程内拦截都能被绕过，且危险操作无法穷举。答题应指出真正边界必须是操作系统级或进程级，如子进程、容器、虚拟机，并说明隔离强度与代价的权衡。常见失分是只答「不安全」而不说清绕过原理与边界层次。</p>
+<h5><code>q07-03-05</code>（简答 · ★★）沙箱除安全外要解决的问题</h5>
+<p>沙箱除了提供安全隔离，还要解决哪些工程问题？请逐条说明其含义。</p>
+<p><strong>提示</strong>：想想多次执行之间的相互影响；想想模型装包会带来什么</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>状态隔离：多次执行文件系统是否共享</li><li>依赖管理：模型装的包是否破坏宿主</li><li>超时与资源：死循环占满 CPU</li><li>可复现：两次执行环境是否一致</li><li>不隔离会互相污染</li></ul>
+<p><strong>解析与常见错误</strong>：答题需覆盖状态隔离、依赖管理、超时与资源、可复现四点并解释含义。状态隔离关注多次执行是否共享文件系统，不隔离会互相污染；依赖管理关注模型装的包是否破坏宿主；超时资源针对死循环占满 CPU；可复现关注两次执行环境是否一致。常见失分是只答安全，遗漏这四类工程问题。</p>
+<h5><code>q07-03-06</code>（代码 · ★★）实现极简长任务管理器</h5>
+<p>实现一个极简长任务管理器 LongTask，支持：把任务拆解为若干步骤；记录当前进度；支持中断取消；把中间产物落盘到指定目录以便进程重启后恢复。</p>
+<p>要求：</p>
+<ol><li>提供 add_step(name) 添加步骤；</li><li>提供 run() 依次执行步骤，每步执行后把进度与产物写入磁盘；</li><li>提供 cancel() 中断；</li><li>提供 load() 从磁盘恢复进度。</li></ol>
+<p>输入输出自行设计，保证可运行。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import json, os
+
+class LongTask:
+    def __init__(self, workdir):
+        self.workdir = workdir
+        self.steps = []
+        self.done = 0
+        self.cancelled = False
+
+    def add_step(self, name):
+        # TODO: 添加步骤
+        pass
+
+    def run(self):
+        # TODO: 依次执行并落盘
+        pass
+
+    def cancel(self):
+        # TODO: 中断
+        pass
+
+    def load(self):
+        # TODO: 从磁盘恢复
+        pass</code></pre>
+<p><strong>提示</strong>：进度与产物都要落盘；取消用标志位而非强杀</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用 JSON 落盘 steps 与 done</li><li>每步执行后立即保存</li><li>cancel 用标志位在循环中检查</li><li>load 从磁盘恢复进度</li><li>中间产物写入 workdir</li><li>保证重启后可续跑</li></ul>
+<p><strong>解析与常见错误</strong>：核心是把进度和中间产物持久化到磁盘，使进程重启后能恢复续跑。每步执行后立即保存状态，取消用标志位在循环中检查。常见错误是只把状态放内存、取消用异常强杀导致状态不一致、产物不落盘重启即丢。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import json, os
+
+class LongTask:
+    def __init__(self, workdir):
+        self.workdir = workdir
+        os.makedirs(workdir, exist_ok=True)
+        self.state_path = os.path.join(workdir, "state.json")
+        self.steps = []
+        self.done = 0
+        self.cancelled = False
+
+    def add_step(self, name):
+        self.steps.append(name)
+
+    def _save(self):
+        with open(self.state_path, "w") as f:
+            json.dump({"steps": self.steps, "done": self.done}, f)
+
+    def run(self):
+        while self.done &lt; len(self.steps):
+            if self.cancelled:
+                print("cancelled at step", self.done)
+                break
+            name = self.steps[self.done]
+            with open(os.path.join(self.workdir, f"out_{self.done}.txt"), "w") as f:
+                f.write(f"result of {name}")
+            self.done += 1
+            self._save()
+
+    def cancel(self):
+        self.cancelled = True
+
+    def load(self):
+        if os.path.exists(self.state_path):
+            with open(self.state_path) as f:
+                s = json.load(f)
+            self.steps = s["steps"]
+            self.done = s["done"]
+
+if __name__ == "__main__":
+    t = LongTask("/tmp/lt")
+    t.add_step("a"); t.add_step("b"); t.add_step("c")
+    t.run()
+    t2 = LongTask("/tmp/lt")
+    t2.load()
+    print(t2.done, t2.steps)</code></pre>
+<p></details></p>
+<h5><code>q07-03-07</code>（代码 · ★★★）带超时与资源限制的代码执行</h5>
+<p>实现一个 run_code(code, timeout) 函数，在子进程中执行给定 Python 代码字符串，要求：</p>
+<ol><li>设置超时，超时则终止子进程并返回超时标记；</li><li>捕获标准输出与错误输出；</li><li>返回结构化结果，包含是否超时、返回码、stdout、stderr；</li><li>说明为什么这种子进程方案比进程内拦截更接近安全边界。</li></ol>
+<p>保证代码可运行。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import subprocess, sys
+
+def run_code(code, timeout=5):
+    # TODO: 在子进程中执行 code，带超时
+    pass</code></pre>
+<p><strong>提示</strong>：用 subprocess.run 的 timeout 参数；捕获 TimeoutExpired 异常</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用 subprocess 起独立子进程</li><li>传 timeout 参数控制超时</li><li>capture_output 抓 stdout/stderr</li><li>捕获 TimeoutExpired 返回超时标记</li><li>返回结构化字典结果</li><li>子进程隔离优于进程内拦截</li></ul>
+<p><strong>解析与常见错误</strong>：用 subprocess 在独立子进程执行代码，通过 timeout 参数控制超时，捕获 TimeoutExpired 返回超时标记，用 capture_output 抓取输出并返回结构化结果。子进程是进程级隔离，比进程内拦截更接近安全边界，因为拦截可被 Python 动态特性绕过。常见错误是不捕获超时异常导致整个程序崩溃。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import subprocess, sys
+
+def run_code(code, timeout=5):
+    try:
+        p = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output=True, text=True, timeout=timeout
+        )
+        return {"timeout": False, "returncode": p.returncode,
+                "stdout": p.stdout, "stderr": p.stderr}
+    except subprocess.TimeoutExpired as e:
+        return {"timeout": True, "returncode": None,
+                "stdout": e.stdout or "", "stderr": e.stderr or ""}
+
+if __name__ == "__main__":
+    print(run_code("print(1+1)"))
+    print(run_code("while True: pass", timeout=1))</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -384,9 +960,9 @@ conversation = Conversation(agent=agent, workspace=cwd)</code></pre>
       
       <div class="kp-body" hidden>
         <div class="lesson"><blockquote><strong>这是本课程最有成就感的一天。</strong> 你要把前面 33 天学到的一切， 抽象成一个<strong>自己能讲清楚每一行</strong>的框架。</blockquote>
-<h4>一、教学目标</h4>
+<h4>7.4.1 教学目标</h4>
 <ol><li>综合运用前 33 天的知识，自研一个百行级 Agent 框架；</li><li>用分层设计解决「可替换」与「可测试」两个工程问题；</li><li>写出一份能作为作品集的架构文档。</li></ol>
-<h4>二、框架的分层设计</h4>
+<h4>7.4.2 框架的分层设计</h4>
 <pre class="code lang-mermaid"><code>flowchart TD
     A[用户代码] --&gt; B[Runner 执行器]
     B --&gt; C[Agent 智能体]
@@ -405,7 +981,7 @@ conversation = Conversation(agent=agent, workspace=cwd)</code></pre>
 <p><strong>这个分层不是抄来的，是从你在第 4 章踩过的坑里长出来的</strong>：</p>
 <table><thead><tr><th style="text-align:left">第 4 章的坑</th><th style="text-align:left">抽象出什么层</th></tr></thead><tbody><tr><td style="text-align:left">tool 消息 content 传了 dict 导致 400</td><td style="text-align:left"><code>Message</code> 层统一处理格式转换</td></tr><tr><td style="text-align:left"><code>llm.decide()</code> 到处手写解析逻辑</td><td style="text-align:left"><code>LLM</code> 层归一化响应</td></tr><tr><td style="text-align:left">参数校验散落在各处</td><td style="text-align:left"><code>Tool</code> 层用 Pydantic 统一校验</td></tr><tr><td style="text-align:left">加一个新的记忆策略就要改 Agent 循环</td><td style="text-align:left"><code>Memory</code> 层定义接口</td></tr><tr><td style="text-align:left">步数、超时、追踪逻辑和决策逻辑混在一起</td><td style="text-align:left"><code>Runner</code> 层独立</td></tr></tbody></table>
 <blockquote><strong>这就是「封装」的正确理解方式</strong>：不是为了「看起来专业」而分层， 而是<strong>每一层都对应一个你真实遇到过的变化点</strong>。</blockquote>
-<h4>三、关键实现要点</h4>
+<h4>7.4.3 关键实现要点</h4>
 <h5><code>@tool</code> 装饰器：从函数签名自动生成 Schema</h5>
 <pre class="code lang-python"><code>@tool
 def calculator(expression: str, precision: int = 2) -&gt; str:
@@ -445,7 +1021,7 @@ def calculator(expression: str, precision: int = 2) -&gt; str:
         ...</code></pre>
 <p><strong>把它独立出来的价值</strong>：想加追踪（第 6 章）？改 <code>Runner</code> 一处。 想加预算护栏？改 <code>Runner</code> 一处。想加中途人工确认？还是改 <code>Runner</code> 一处。</p>
 <blockquote><strong>抽象自检问题</strong>：如果你发现「加一个新功能需要改三个文件」， 说明分层划错了 —— 变化点没有被隔离在单层里。 这是判断抽象是否合理的<strong>最实用标准</strong>，比任何设计原则都直接。</blockquote>
-<h4>四、动手：使用并解读你的框架</h4>
+<h4>7.4.4 动手：使用并解读你的框架</h4>
 <pre class="code lang-powershell"><code># 用迷你框架完成一个带工具调用的任务
 python code/ch07/10_use_miniagent.py
 
@@ -461,14 +1037,14 @@ python code/ch07/30_architecture_report.py</code></pre>
 <table><thead><tr><th style="text-align:right">步骤</th><th style="text-align:left">类型</th><th style="text-align:right">耗时(ms)</th><th style="text-align:left">内容摘要</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:left">llm</td><td style="text-align:right">1.0</td><td style="text-align:left">请求调用 <code>calculator</code></td></tr><tr><td style="text-align:right">1</td><td style="text-align:left">tool</td><td style="text-align:right">0.1</td><td style="text-align:left"><code>23 * 17 + 8 = 399</code></td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">llm</td><td style="text-align:right">1.1</td><td style="text-align:left">请求调用 <code>calculator</code></td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">tool</td><td style="text-align:right">0.0</td><td style="text-align:left">×重复调用被拦截（loop detected）</td></tr><tr><td style="text-align:right">3</td><td style="text-align:left">llm</td><td style="text-align:right">3.1</td><td style="text-align:left">一般来说，公司都会按照劳动法和行业惯例来处理这类事项…</td></tr></tbody></table>
 <p>停止原因 <code>done</code>、总步数 5、模型调用次数 3、工具调用次数 2、总耗时 5.5ms。</p>
 <p><strong>（2）图上标注的「轨迹要点」有一段极重要的诚实说明</strong>，必须讲给学生：</p>
-<blockquote>第 1 步模型请求 <code>calculator</code>，工具<strong>真的被执行了</strong>并返回 399；第 2 步靶场又请求同一个工具，<strong>被环检测拦下并决策，循环随即收敛</strong>；<strong>真实平台上的第 2 步应该是「模型读完工具结果，输出最终答案」</strong>。这段轨迹因此同时演示了两件事：<strong>工具链路是通的，护栏是必要的。</strong></blockquote>
-<p>也就是说：<strong>这条轨迹里有靶场造成的偏差（第 2、3 步的形态不是真实模型的行为），但「工具真的被执行」和「环检测真的拦住了重复调用」这两点都是真实的。</strong> 读真实输出时必须能区分「哪些是框架的能力、哪些是靶场的局限」。</p>
+<blockquote>第 1 步模型请求 <code>calculator</code>，工具<strong>真的被执行了</strong>并返回 399；第 2 步模型服务又请求同一个工具，<strong>被环检测拦下并决策，循环随即收敛</strong>；<strong>真实平台上的第 2 步应该是「模型读完工具结果，输出最终答案」</strong>。这段轨迹因此同时演示了两件事：<strong>工具链路是通的，护栏是必要的。</strong></blockquote>
+<p>也就是说：<strong>这条轨迹里有模型服务造成的偏差（第 2、3 步的形态不是真实模型的行为），但「工具真的被执行」和「环检测真的拦住了重复调用」这两点都是真实的。</strong> 读真实输出时必须能区分「哪些是框架的能力、哪些是模型服务的局限」。</p>
 <p><strong>（3）「换一个参数就换一套记忆」——这正是 7.2 说的「判断抽象是否合理的最实用标准」。</strong> 图上用同一个 Agent 做 6 轮对话，对比不同记忆策略下的上下文规模：</p>
 <table><thead><tr><th style="text-align:left">记忆策略</th><th style="text-align:right">轮次</th><th style="text-align:right">上下文条数</th><th style="text-align:right">估算 token</th><th style="text-align:right">摘要次数</th><th style="text-align:right">丢弃条数</th></tr></thead><tbody><tr><td style="text-align:left"><code>BufferMemory(20)</code></td><td style="text-align:right">6</td><td style="text-align:right">20</td><td style="text-align:right">440</td><td style="text-align:right">0</td><td style="text-align:right">8</td></tr><tr><td style="text-align:left"><code>BufferMemory(4)</code></td><td style="text-align:right">6</td><td style="text-align:right">3</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">25</td></tr></tbody></table>
 <p>读法（图上原话）：<strong>&lt;code&gt;BufferMemory(4)&lt;/code&gt; 上下文永远只有 4 条，但「丢掉了『我叫张伟』」；&lt;code&gt;SummaryMemory&lt;/code&gt; 上下文更少（靠摘要压缩），却能把早期信息带到最后一轮。这就是「记忆策略」与「上下文预算」之间的真实取舍。</strong></p>
 <p>注意代码上的对比：换记忆策略<strong>只改一个参数</strong>（<code>memory=factory()</code>），Agent 和 Runner 一行都不用动。<strong>能这样换的抽象才是好抽象</strong>——如果换记忆策略要改 Agent 内部逻辑，那说明记忆的职责切错了地方。</p>
-<blockquote><strong>截图末尾同样有一个真实报错（&lt;code&gt;HTTP 500&lt;/code&gt; / &lt;code&gt;LLMError&lt;/code&gt;）</strong>，出现在「记忆策略」段落之后的一次模型调用上，以 <code>[退出码 1]</code> 结束。这是<strong>离线靶场侧的错误</strong>，不是框架缺陷：它发生在框架已经完整跑通工具调用链路（前面步骤表与记忆对比表均已正常输出）之后。课堂上正好用它对比 Day29 那个 <code>NameError</code>：<strong>两者都要先判断「错误出在哪一层」</strong>——这个错误出在 LLM 客户端与靶场之间，属于<strong>外部依赖失效</strong>，框架侧的异常处理路径（把 <code>LLMError</code> 抛出并带着建议信息）正是 7.3 要求的「异常处理明确」。</blockquote>
-<h4>五、抽象对照表（答辩核心）</h4>
+<blockquote><strong>截图末尾同样有一个真实报错（&lt;code&gt;HTTP 500&lt;/code&gt; / &lt;code&gt;LLMError&lt;/code&gt;）</strong>，出现在「记忆策略」段落之后的一次模型调用上，以 <code>[退出码 1]</code> 结束。这是<strong>真实模型服务侧的错误</strong>，不是框架缺陷：它发生在框架已经完整跑通工具调用链路（前面步骤表与记忆对比表均已正常输出）之后。课堂上正好用它对比 Day29 那个 <code>NameError</code>：<strong>两者都要先判断「错误出在哪一层」</strong>——这个错误出在 LLM 客户端与模型服务之间，属于<strong>外部依赖失效</strong>，框架侧的异常处理路径（把 <code>LLMError</code> 抛出并带着建议信息）正是 7.3 要求的「异常处理明确」。</blockquote>
+<h4>7.4.5 抽象对照表（答辩核心）</h4>
 <table><thead><tr><th style="text-align:left">你的迷你框架</th><th style="text-align:left">LangChain</th><th style="text-align:left">LangGraph</th><th style="text-align:left">职责</th></tr></thead><tbody><tr><td style="text-align:left"><code>LLM</code></td><td style="text-align:left"><code>BaseChatModel</code></td><td style="text-align:left">复用 LangChain</td><td style="text-align:left">模型接入</td></tr><tr><td style="text-align:left"><code>Tool</code> + <code>ToolRegistry</code></td><td style="text-align:left"><code>BaseTool</code> + <code>Toolkit</code></td><td style="text-align:left">复用</td><td style="text-align:left">工具注册与调用</td></tr><tr><td style="text-align:left"><code>Message</code></td><td style="text-align:left"><code>BaseMessage</code> 系列</td><td style="text-align:left">复用</td><td style="text-align:left">消息表示</td></tr><tr><td style="text-align:left"><code>Memory</code></td><td style="text-align:left"><code>BaseMemory</code> / <code>ChatHistory</code></td><td style="text-align:left"><code>Checkpointer</code></td><td style="text-align:left">上下文管理</td></tr><tr><td style="text-align:left"><code>Agent</code></td><td style="text-align:left"><code>AgentExecutor</code> / <code>Agent</code></td><td style="text-align:left"><code>StateGraph</code> 的节点</td><td style="text-align:left">决策</td></tr><tr><td style="text-align:left"><code>Runner</code></td><td style="text-align:left"><code>AgentExecutor</code> 的循环</td><td style="text-align:left"><code>compile()</code> 出的图执行器</td><td style="text-align:left">控制流与生命周期</td></tr></tbody></table>
 <blockquote><strong>答辩要求</strong>：随机抽一个抽象，你要能回答： 1. 它解决什么问题？如果去掉它会怎样？ 2. LangChain 在同一个位置是怎么做的？多了什么、少了什么？ 3. 如果让你给这个抽象加一个功能（比如重试），你会改哪里？</blockquote>
 <p><strong>运行验证：与 LangChain / LangGraph 的逐层对照</strong></p>
@@ -489,11 +1065,11 @@ python code/ch07/30_architecture_report.py</code></pre>
 <p>并且明确标注了能力边界：<strong>如果这一列大面积显示「模块未安装」，说明本节只做了「文档级」对照</strong>，要升级为「代码级」对照需 <code>pip install langchain langgraph</code> 后重跑脚本。图上还给了一条<strong>「版本纪律」的现场案例</strong>：注意框架的导入路径在 <code>0.x → 1.x</code> 之间发生过迁移（例如 <code>create_agent</code> 从 <code>langgraph.prebuilt</code> 迁到 <code>langchain.agents</code>），本脚本的候选路径按 <strong>1.x</strong> 排列，旧版本会显示「不在这个模块下」——<strong>这本身就是「版本纪律」的现场案例</strong>。</p>
 <p><strong>（5）三句话回答「自研 vs 框架」</strong>（图上总结，可直接背）：</p>
 <ol><li><strong>抽象是同构的</strong>：消息 / 工具 / 模型 / 记忆 / Agent / 执行器，六层一一对应。<strong>你能在迷你框架里讲清每层「为什么存在」，读任何框架源码都会快很多。</strong></li><li><strong>差异在护栏</strong>：持久化、并行、流式事件、可观测性、生态适配器、状态校验——<strong>这些是「产品化」投入，抽象骨架本身很便宜。</strong></li><li><strong>决策依据是场景，不是信仰</strong>：步骤可枚举就自己写（甚至不用框架），需要断点续跑与人在回路就上 LangGraph。<strong>混合使用是常态而非妥协。</strong></li></ol>
-<h4>六、交付要求</h4>
+<h4>7.4.6 交付要求</h4>
 <table><thead><tr><th style="text-align:left">交付物</th><th style="text-align:left">要求</th></tr></thead><tbody><tr><td style="text-align:left">框架代码</td><td style="text-align:left">核心（不含注释与空行）200–350 行；能跑通</td></tr><tr><td style="text-align:left"><code>README.md</code></td><td style="text-align:left">快速开始、分层说明、设计取舍（为什么这样切分）</td></tr><tr><td style="text-align:left">架构图</td><td style="text-align:left">mermaid 或图片，标注每层职责与依赖方向</td></tr><tr><td style="text-align:left">架构文档</td><td style="text-align:left"><code>reports/ch07_architecture.md</code>，含类职责表与扩展点说明</td></tr><tr><td style="text-align:left"><strong>对比报告（3000 字）</strong></td><td style="text-align:left">自研框架 vs MetaGPT vs LangGraph 的设计差异与取舍</td></tr></tbody></table>
 <p><strong>对比报告的写作要求</strong>（这是评分重点）：</p>
 <ol><li>不要写「XX 更强大」这类结论，要写<strong>具体的设计取舍</strong>；</li><li>每个对比点都要有<strong>代码或数据结构作为证据</strong>；</li><li>必须包含一节「我的框架不适合做什么」，<strong>能说出边界的才是真懂</strong>；</li><li>必须有一节「如果继续演进，下一步加什么」，并说明优先级理由。</li></ol>
-<h4>七、评分量表</h4>
+<h4>7.4.7 评分量表</h4>
 <table><thead><tr><th style="text-align:left">维度</th><th style="text-align:right">分值</th><th style="text-align:left">满分标准</th></tr></thead><tbody><tr><td style="text-align:left">框架可运行</td><td style="text-align:right">25</td><td style="text-align:left">演示任务能跑通，工具有真实调用</td></tr><tr><td style="text-align:left">分层设计</td><td style="text-align:right">25</td><td style="text-align:left">每层职责单一、依赖单向、有明确的扩展点</td></tr><tr><td style="text-align:left">代码质量</td><td style="text-align:right">15</td><td style="text-align:left">类型标注完整、异常处理明确、无硬编码</td></tr><tr><td style="text-align:left">文档</td><td style="text-align:right">20</td><td style="text-align:left">架构清晰、取舍有依据、边界说明诚实</td></tr><tr><td style="text-align:left">答辩</td><td style="text-align:right">15</td><td style="text-align:left">能回答「去掉某层会怎样」这类设计问题</td></tr></tbody></table>
 <hr></div>
 
@@ -545,7 +1121,187 @@ python code/ch07/30_architecture_report.py</code></pre>
 <table><thead><tr><th style="text-align:left">部分</th><th style="text-align:left">章节</th></tr></thead><tbody><tr><td style="text-align:left">一、智能体与语言模型基础</td><td style="text-align:left">初识智能体 / 智能体发展史 / 大语言模型基础</td></tr><tr><td style="text-align:left">二、构建你的大语言模型智能体</td><td style="text-align:left">经典范式构建 / 低代码平台搭建 / 框架开发实践 / <strong>构建你的 Agent 框架</strong></td></tr><tr><td style="text-align:left">三、高级知识扩展</td><td style="text-align:left">记忆与检索 / <strong>上下文工程</strong> / <strong>智能体通信协议</strong> / Agentic-RL / 智能体性能评估</td></tr><tr><td style="text-align:left">四、综合案例进阶</td><td style="text-align:left">智能旅行助手 / 自动化深度研究智能体 / 构建赛博小镇</td></tr><tr><td style="text-align:left">五、毕业设计</td><td style="text-align:left">毕业设计</td></tr></tbody></table>
 <hr>
 <h3>下一章预告</h3>
-<p>第 8 章（Day35–37）转向模型的<strong>内部</strong>：Transformer 与 LoRA 原理、QLoRA 微调实战、 上下文工程与成本优化。你会第一次<strong>真的训练一个模型</strong>（哪怕只是小模型）， 从而理解「微调」与「RAG / Prompt 工程」各自解决什么问题的边界。</p></div>
+<p>第 8 章（Day35–37）转向模型的<strong>内部</strong>：Transformer 与 LoRA 原理、QLoRA 微调实战、 上下文工程与成本优化。你会第一次<strong>真的训练一个模型</strong>（哪怕只是小模型）， 从而理解「微调」与「RAG / Prompt 工程」各自解决什么问题的边界。</p>
+<h4>7.4.8 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q07-04-01</code> ~ <code>q07-04-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q07-04-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">分层设计的判断标准</td></tr><tr><td style="text-align:left"><code>q07-04-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">@tool 装饰器的核心价值</td></tr><tr><td style="text-align:left"><code>q07-04-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">轨迹中哪些是真实能力</td></tr><tr><td style="text-align:left"><code>q07-04-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">Runner 为何独立成层</td></tr><tr><td style="text-align:left"><code>q07-04-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">记忆策略的取舍与可替换性</td></tr><tr><td style="text-align:left"><code>q07-04-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现 Memory 抽象与两种策略</td></tr><tr><td style="text-align:left"><code>q07-04-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">Runner 的循环与终止条件</td></tr></tbody></table>
+<h5><code>q07-04-01</code>（单选 · ★）分层设计的判断标准</h5>
+<p>在迷你 Agent 框架中，判断抽象是否合理的「最实用标准」是什么？</p>
+<ul><li><strong>A</strong>. 加一个新功能需要改动的文件数量是否集中在一层</li><li><strong>B</strong>. 框架总代码行数是否控制在百行级别</li><li><strong>C</strong>. 每一层是否都使用了抽象基类</li><li><strong>D</strong>. 分层数量是否与 LangChain 保持一致</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>变化点应隔离在单层</li><li>加功能只改一处即为好抽象</li><li>改三个文件说明分层划错</li><li>比任何设计原则都直接</li></ul>
+<p><strong>解析与常见错误</strong>：正文明确指出：「如果你发现加一个新功能需要改三个文件，说明分层划错了」，即变化点应被隔离在单层里。行数、抽象基类、与 LangChain 对齐都不是判断标准，分层数量也不是越多越好。</p>
+<h5><code>q07-04-02</code>（单选 · ★★）@tool 装饰器的核心价值</h5>
+<p>@tool 装饰器从函数签名自动生成 JSON Schema，而不是让用户手写 Schema。 这样做的根本原因是什么？</p>
+<ul><li><strong>A</strong>. 手写 Schema 无法表达嵌套对象类型</li><li><strong>B</strong>. 避免函数签名与 Schema 双重维护导致的不一致</li><li><strong>C</strong>. 装饰器生成的 Schema 体积更小、传输更快</li><li><strong>D</strong>. 只有装饰器才能读取 docstring 的 Args 段</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>手写 Schema 存在双重维护</li><li>签名成为唯一事实源</li><li>避免模型传参与函数不匹配</li><li>读类型标注与 Args 描述</li></ul>
+<p><strong>解析与常见错误</strong>：正文指出手写 Schema 有「双重维护」问题：改了签名忘了改 Schema，就会出现「模型按 Schema 传参、函数不认」的诡异 bug。装饰器让签名成为唯一事实源。其余选项都不是正文给出的理由。</p>
+<h5><code>q07-04-03</code>（单选 · ★★★）轨迹中哪些是真实能力</h5>
+<p>执行轨迹显示：第 1 步模型请求 calculator 并返回 399；第 2 步又请求同一工具，被环检测拦下；第 3 步输出一段通用回答。 关于这条轨迹，下列判断正确的是？</p>
+<ul><li><strong>A</strong>. 第 3 步的通用回答证明模型具备真实推理能力</li><li><strong>B</strong>. 第 2 步的重复调用是真实模型的标准行为</li><li><strong>C</strong>. 工具真的被执行、环检测真的拦住重复调用，这两点真实</li><li><strong>D</strong>. 整条轨迹都是模型偏差，不能作为框架能力的证据</li></ul>
+<p><strong>答案</strong>：C</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>第 1 步工具真实执行返回 399</li><li>第 2 步环检测真实拦截</li><li>第 2、3 步形态偏离理想路径，属模型或配置造成的偏差</li><li>真实平台第 2 步应输出最终答案</li></ul>
+<p><strong>解析与常见错误</strong>：正文强调：轨迹里第 2、3 步的形态偏离理想路径，属模型或配置造成的偏差，但「工具真的被执行」和「环检测真的拦住了重复调用」这两点都是真实的。读输出必须能区分框架能力与模型能力边界。</p>
+<h5><code>q07-04-04</code>（简答 · ★★）Runner 为何独立成层</h5>
+<p>请说明 Runner 层与 Agent 层的职责边界分别是什么。 并解释：把 Runner 独立出来后，加追踪、加预算护栏、加中途人工确认这三件事各自改在哪里，为什么这样划分更合理。</p>
+<p><strong>提示</strong>：先分清「决策」与「控制流」；想想加功能要改几个文件</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Agent 只回答下一步做什么</li><li>Runner 回答循环怎么转</li><li>四个终止条件：完成/步数/超时/出错</li><li>追踪、护栏、人工确认都改 Runner 一处</li><li>执行策略集中，决策逻辑不受污染</li></ul>
+<p><strong>解析与常见错误</strong>：答题要抓住「Agent 决策、Runner 控制流」这条分界，再落到三个功能都只改 Runner 一处。常见失分点是把终止条件说成只有步数，或把追踪说成要改 Agent。</p>
+<h5><code>q07-04-05</code>（简答 · ★★）记忆策略的取舍与可替换性</h5>
+<p>同一个 Agent 做 6 轮对话，BufferMemory(20) 上下文 20 条、估算 440 token；BufferMemory(4) 上下文 3 条、估算 100 token；SummaryMemory 上下文更少却能把早期信息带到最后一轮。 请分析这三种策略各自的代价，并说明「换记忆策略只改一个参数」为什么是好抽象的体现。</p>
+<p><strong>提示</strong>：对比条数、token、信息保留三方面；注意摘要不是免费的</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>BufferMemory 保留最近 N 条，简单但丢早期信息</li><li>BufferMemory(4) 丢掉了「我叫张伟」</li><li>SummaryMemory 省 token 但有损</li><li>摘要本身要花钱</li><li>换策略只改 memory=factory()，Agent 与 Runner 不动</li></ul>
+<p><strong>解析与常见错误</strong>：要点是三种策略在「简单/省 token/有损/额外成本」上的取舍，以及可替换性验证了记忆职责切在 Memory 层。常见失分是只说 SummaryMemory 省 token，忘了摘要本身要花钱且有损。</p>
+<h5><code>q07-04-06</code>（代码 · ★★）实现 Memory 抽象与两种策略</h5>
+<p>实现 Memory 抽象基类与两种策略。 要求：</p>
+<ol><li>Memory 定义 add(message) 与 get_context() 两个抽象方法；</li><li>BufferMemory(max_size) 保留最近 max_size 条；</li><li>SummaryMemory 在超出阈值时把早期消息压缩成一条摘要（可用占位函数模拟）；</li><li>换策略时调用方只改构造参数，不改其他代码。</li></ol>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from abc import ABC, abstractmethod
+
+class Message:
+    def __init__(self, role, content):
+        self.role = role
+        self.content = content
+
+class Memory(ABC):
+    @abstractmethod
+    def add(self, message: Message) -&gt; None:
+        ...
+
+    @abstractmethod
+    def get_context(self) -&gt; list:
+        ...
+
+# TODO: 实现 BufferMemory 与 SummaryMemory</code></pre>
+<p><strong>提示</strong>：截断用切片保留尾部；摘要作为一条 system 消息放最前</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Memory 用 ABC 定义两个抽象方法</li><li>BufferMemory 按 max_size 截断保留最近</li><li>SummaryMemory 超阈值时压缩早期消息</li><li>get_context 返回 list[Message]</li><li>换策略只改构造参数</li></ul>
+<p><strong>解析与常见错误</strong>：关键是把「保留多少」与「怎么压缩」都封在 Memory 内部，对外只暴露 add/get_context。常见错误是让 Agent 直接操作消息列表，或在 BufferMemory 里原地 pop(0) 导致 O(n) 且语义不清。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from abc import ABC, abstractmethod
+
+class Message:
+    def __init__(self, role, content):
+        self.role = role
+        self.content = content
+
+class Memory(ABC):
+    @abstractmethod
+    def add(self, message: Message) -&gt; None:
+        ...
+
+    @abstractmethod
+    def get_context(self) -&gt; list:
+        ...
+
+class BufferMemory(Memory):
+    def __init__(self, max_size: int = 20):
+        self.max_size = max_size
+        self._messages = []
+
+    def add(self, message: Message) -&gt; None:
+        self._messages.append(message)
+        if len(self._messages) &gt; self.max_size:
+            self._messages = self._messages[-self.max_size:]
+
+    def get_context(self) -&gt; list:
+        return list(self._messages)
+
+class SummaryMemory(Memory):
+    def __init__(self, threshold: int = 4, summarize=None):
+        self.threshold = threshold
+        self.summarize = summarize or (lambda msgs: "摘要:" + "/".join(m.content for m in msgs))
+        self._summary = None
+        self._recent = []
+
+    def add(self, message: Message) -&gt; None:
+        self._recent.append(message)
+        if len(self._recent) &gt; self.threshold:
+            overflow = self._recent[:-self.threshold]
+            merged = ([Message("system", self._summary)] if self._summary else []) + overflow
+            self._summary = self.summarize(merged)
+            self._recent = self._recent[-self.threshold:]
+
+    def get_context(self) -&gt; list:
+        head = [Message("system", self._summary)] if self._summary else []
+        return head + list(self._recent)</code></pre>
+<p></details></p>
+<h5><code>q07-04-07</code>（代码 · ★★★）Runner 的循环与终止条件</h5>
+<p>实现 Runner.run，驱动 Agent 循环并记录每一步。 要求：</p>
+<ol><li>循环调用 agent.step(task)，直到满足终止条件；</li><li>四个终止条件：任务完成、达到 max_steps、超时、出错；</li><li>每步记录步骤号、类型、耗时(ms)、内容摘要；</li><li>返回 RunResult，包含 steps、stop_reason、llm_calls、tool_calls、elapsed_ms。</li></ol>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import time
+
+class RunResult:
+    def __init__(self):
+        self.steps = []
+        self.stop_reason = None
+        self.llm_calls = 0
+        self.tool_calls = 0
+        self.elapsed_ms = 0.0
+
+class Runner:
+    def run(self, agent, task, max_steps: int = 10, timeout: float = 60) -&gt; RunResult:
+        # TODO: 循环体 agent.step() -&gt; 检查终止条件 -&gt; 记录步骤
+        pass</code></pre>
+<p><strong>提示</strong>：for-else 可处理步数耗尽；超时检查放在每轮开头</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>循环调 agent.step 直至终止</li><li>四个终止条件：完成/步数/超时/出错</li><li>每步记录步骤号、类型、耗时、摘要</li><li>分别累计 llm_calls 与 tool_calls</li><li>出错时记录并置 stop_reason=error</li></ul>
+<p><strong>解析与常见错误</strong>：核心是把控制流集中：循环怎么转、何时停、记什么都在 Runner。常见错误是超时只在循环结束后判断、把异常直接抛出而不记录停止原因，或把 llm/tool 计数混在 Agent 里。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import time
+
+class RunResult:
+    def __init__(self):
+        self.steps = []
+        self.stop_reason = None
+        self.llm_calls = 0
+        self.tool_calls = 0
+        self.elapsed_ms = 0.0
+
+class Runner:
+    def run(self, agent, task, max_steps: int = 10, timeout: float = 60) -&gt; RunResult:
+        result = RunResult()
+        start = time.time()
+        for i in range(1, max_steps + 1):
+            if (time.time() - start) &gt; timeout:
+                result.stop_reason = "timeout"
+                break
+            t0 = time.time()
+            try:
+                step = agent.step(task)
+            except Exception as exc:
+                result.steps.append({
+                    "index": i, "type": "error",
+                    "ms": round((time.time() - t0) * 1000, 1),
+                    "summary": str(exc),
+                })
+                result.stop_reason = "error"
+                break
+            ms = round((time.time() - t0) * 1000, 1)
+            result.steps.append({
+                "index": i, "type": step.get("type"),
+                "ms": ms, "summary": step.get("summary", ""),
+            })
+            if step.get("type") == "llm":
+                result.llm_calls += 1
+            elif step.get("type") == "tool":
+                result.tool_calls += 1
+            if step.get("done"):
+                result.stop_reason = "done"
+                break
+        else:
+            result.stop_reason = "max_steps"
+        result.elapsed_ms = round((time.time() - start) * 1000, 1)
+        return result</code></pre>
+<p></details></p>
+<hr></div>
   </div>
 </section>
 

@@ -110,7 +110,8 @@
 <section class="section">
   <div class="card pad-lg ch-overview">
     <h2>这一章要解决什么</h2>
-    <div class="lesson"><blockquote>建议学时：4 天，每天 6 学时 学习方式：协议拆解、教师手写、故障注入、项目答辩 章节交付：不依赖 Agent 框架的 Enterprise Copilot Agent</blockquote>
+    <div class="lesson"><blockquote><strong>版本</strong>：v2.1（2026-09-23 修订·就业能力补强版） <strong>v2.1 修订</strong>：新增 4.4.6 SQL 与持久化（Agent 的记忆必须活过重启）；修正 4.2.x 小节编号。</blockquote>
+<blockquote>建议学时：4 天，每天 6 学时 学习方式：协议拆解、教师手写、故障注入、项目答辩 章节交付：不依赖 Agent 框架的 Enterprise Copilot Agent</blockquote>
 <h3>4.0 本章学习目标</h3>
 <p>完成本章后，学生能够：</p>
 <ol><li>解释普通对话、工作流与 Agent 的控制流差异。</li><li>使用 JSON Schema 描述工具输入，完成 tool call、tool result 的往返循环。</li><li>手写带最大步数、超时、参数校验和停止原因的 Agent 控制器。</li><li>用“动作、观察、状态更新”实现可审计的 ReAct 风格循环。</li><li>使用 SQLite 保存对话与事件，进程重启后仍能恢复必要上下文。</li><li>将第三章的 RAG 作为一个工具接入 Agent。</li><li>识别提示词注入、工具越权、重复执行、循环失控等风险，并设置护栏。</li></ol>
@@ -401,12 +402,105 @@ class AgentLLM:
 <blockquote>模型需要「看到错误」才能自我纠错，而进程崩溃会让整个 Agent 挂掉 —— <strong>错误应当是一条观察，不是一次事故。</strong></blockquote>
 <p>终端里有一条完整的自我修正轨迹，值得逐行读：第 1 步 <code>tool_result.ok=false</code>（除零错误），第 2 步模型改用合法参数后成功，最终回答「10 除以 2 等于 5」。<strong>这就是「结构化错误」的价值</strong>：不是程序容错，而是给模型一次改正的机会。</p>
 <p><strong>（3）未知工具被白名单拦截。</strong> 模型幻觉出一个不存在的工具 <code>delete_all_files</code>，注册表直接拒绝。要点：<strong>注册表 = 白名单，未注册的工具永远不可能被执行，不管模型怎么请求。</strong> 而且错误信息里带上「可用工具：calculator、get_weather、search_policy」的列表——这是在帮模型走回正轨，而不是单纯报错。</p>
-<p><strong>（4）协议一致性自检：修掉一个「靶场能跑、线上必炸」的 bug。</strong> 原写法把 <code>result</code>（一个 <code>dict</code>）直接塞进 <code>tool</code> 消息的 <code>content</code>。离线靶场的 <code>Message.content</code> 声明为 <code>Any</code>、很宽松，所以能跑；但真实平台（OpenAI / DeepSeek / 通义 / 智谱）要求 <code>content</code> 必须是<strong>字符串</strong>，传 <code>dict</code> 会返回 <code>HTTP 400 invalid type for 'messages[n].content'</code>。因为靶场不校验，这个 bug 在本地永远暴露不出来——<strong>属于最危险的一类问题</strong>。本项目用 <code>AgentLLM.tool_message()</code> 从根上堵住，并加了一条自动一致性检查：图中 (a) 正确写法通过、(b) 故意复现的原写法被检查器成功捕获。</p>
+<p><strong>（4）协议一致性自检：修掉一个「模型服务能跑、线上必炸」的 bug。</strong> 原写法把 <code>result</code>（一个 <code>dict</code>）直接塞进 <code>tool</code> 消息的 <code>content</code>。真实模型服务的 <code>Message.content</code> 声明为 <code>Any</code>、很宽松，所以能跑；但真实平台（OpenAI / DeepSeek / 通义 / 智谱）要求 <code>content</code> 必须是<strong>字符串</strong>，传 <code>dict</code> 会返回 <code>HTTP 400 invalid type for 'messages[n].content'</code>。因为模型服务不校验，这个 bug 在本地永远暴露不出来——<strong>属于最危险的一类问题</strong>。本项目用 <code>AgentLLM.tool_message()</code> 从根上堵住，并加了一条自动一致性检查：图中 (a) 正确写法通过、(b) 故意复现的原写法被检查器成功捕获。</p>
 <p><strong>（5）不使用 &lt;code&gt;eval&lt;/code&gt;。</strong> 结论表最后一行：calculator 走 <code>operator</code> 模块分派，表达式用正则白名单解析。</p>
 <p>最终验收结论（截图末尾的核对表）：工具 Schema 导出 3 个工具格式符合 OpenAI 规范、单工具调用往返全链路通过、多工具连续调用（2 轮，calculator 与 search_policy 各自被正确触发）、参数错误 9 种故障全部结构化返回、未知工具拦截、协议一致性检查通过。</p>
 <blockquote><strong>Day17 交付：可测试的工具层</strong>（白名单 + Pydantic 校验 + 结构化结果 + 协议合规的 tool 消息）。四项缺一不可。</blockquote>
-<h4>4.2.7 当日教学流程</h4>
+<h4>4.2.8 当日教学流程</h4>
 <table><thead><tr><th style="text-align:right">时间</th><th style="text-align:left">教学活动</th><th style="text-align:left">学生产出</th></tr></thead><tbody><tr><td style="text-align:right">30 min</td><td style="text-align:left">人工扮演模型、控制器、工具</td><td style="text-align:left">协议时序图</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">拆解 Schema 与安全边界</td><td style="text-align:left">两个 Schema</td></tr><tr><td style="text-align:right">90 min</td><td style="text-align:left">手写注册表和执行器</td><td style="text-align:left">可测试工具层</td></tr><tr><td style="text-align:right">80 min</td><td style="text-align:left">接入模型归一化接口</td><td style="text-align:left">call/result 日志</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">注入错误参数、未知工具、除零</td><td style="text-align:left">错误恢复记录</td></tr><tr><td style="text-align:right">40 min</td><td style="text-align:left">抽讲与提交</td><td style="text-align:left">验收表</td></tr></tbody></table>
+<h4>4.2.9 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q04-01-01</code> ~ <code>q04-01-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q04-01-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">additionalProperties 的作用</td></tr><tr><td style="text-align:left"><code>q04-01-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">tool 消息 content 的格式</td></tr><tr><td style="text-align:left"><code>q04-01-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">arguments 解析失败的兜底</td></tr><tr><td style="text-align:left"><code>q04-01-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">为什么用 Literal 而非 str</td></tr><tr><td style="text-align:left"><code>q04-01-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">注册表的三项责任</td></tr><tr><td style="text-align:left"><code>q04-01-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现类型安全的 execute_tool</td></tr><tr><td style="text-align:left"><code>q04-01-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">实现一轮工具调用循环</td></tr></tbody></table>
+<h5><code>q04-01-01</code>（单选 · ★）additionalProperties 的作用</h5>
+<p>在工具 Schema 的 parameters 中设置 additionalProperties: False，主要目的是什么？</p>
+<ul><li><strong>A</strong>. 阻止模型悄悄加入未定义的字段</li><li><strong>B</strong>. 限制模型只能调用白名单内的工具</li><li><strong>C</strong>. 强制参数在运行时通过 Pydantic 校验</li><li><strong>D</strong>. 缩小模型可选的动作空间到枚举值</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>约束对象参数，禁止未声明字段</li><li>白名单由注册表负责</li><li>运行时校验由 Pydantic 负责</li><li>enum 负责缩小动作空间</li></ul>
+<p><strong>解析与常见错误</strong>：additionalProperties: False 约束的是对象参数本身，禁止出现 Schema 未声明的额外字段。限制白名单是注册表的职责，运行时校验由 Pydantic 完成，缩小动作空间靠 enum，三者各司其职，不能混淆。</p>
+<h5><code>q04-01-02</code>（单选 · ★★）tool 消息 content 的格式</h5>
+<p>在 run_tool_round 中，把工具执行结果回传给模型时，content 字段应该怎么填？</p>
+<ul><li><strong>A</strong>. json.dumps(result, ensure_ascii=False) 序列化成字符串</li><li><strong>B</strong>. 直接传 result 这个 dict，让服务端自己解析</li><li><strong>C</strong>. 用 str(result)，即 Python 字典的 repr 形式</li><li><strong>D</strong>. 只传 data 字段，错误信息通过异常抛出</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>content 必须是 string</li><li>传 dict 会触发 HTTP 400</li><li>用 json.dumps 序列化</li><li>ensure_ascii=False 保留中文</li></ul>
+<p><strong>解析与常见错误</strong>：OpenAI 兼容协议要求 tool 消息的 content 是 string，直接传 dict 会被服务端以 HTTP 400 Invalid parameter 拒绝，这是看起来无害实际必炸的协议细节。str(result) 得到的是单引号 repr，不是合法 JSON，模型难以解析。</p>
+<h5><code>q04-01-03</code>（单选 · ★★）arguments 解析失败的兜底</h5>
+<p>归一化层解析 arguments 时，如果 json.loads 抛出 JSONDecodeError，课堂做法是什么？</p>
+<ul><li><strong>A</strong>. 把 arguments 兜底成空 dict，交给后续校验处理</li><li><strong>B</strong>. 直接向上抛出异常，终止整个 Agent 进程</li><li><strong>C</strong>. 把原始字符串原样传给 handler 使用</li><li><strong>D</strong>. 重试调用模型，要求它重新生成参数</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>arguments 是 JSON 字符串</li><li>解析失败不能崩整个 Agent</li><li>兜底成空 dict</li><li>由后续校验返回结构化错误</li></ul>
+<p><strong>解析与常见错误</strong>：arguments 是模型生成的 JSON 字符串，属于不可信输入，解析失败不能让整个 Agent 崩。兜底成空 dict 后，注册表的 Pydantic 校验会以 invalid_arguments 形式返回结构化错误，模型有机会修正。抛异常或原样传字符串都会破坏后续流程。</p>
+<h5><code>q04-01-04</code>（简答 · ★★）为什么用 Literal 而非 str</h5>
+<p>计算器的 operator 参数写成 Literal["+", "-", "*", "/"] 而不是 str。请说明这两种写法在错误发生位置上有什么差别，以及为什么这体现了「参数校验是安全边界」这一教学点。</p>
+<p><strong>提示</strong>：想想错误在哪一层被拦住；错误越早暴露越好</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Literal 在进入函数前被 Pydantic 拒绝</li><li>str 要到函数体 if 判断才拒绝</li><li>Literal 错误位置更靠前</li><li>Literal 错误消息更明确</li><li>校验前置即安全边界</li></ul>
+<p><strong>解析与常见错误</strong>：关键是对比错误发生的层次：Literal 让 Pydantic 在模型校验阶段就拒绝非法运算符，函数体根本不会执行；str 则要进入函数体、走到 if 判断才被拒绝。前者把校验前置到边界，错误位置更靠前、消息更明确，正是参数校验作为安全边界的落地。</p>
+<h5><code>q04-01-05</code>（简答 · ★★）注册表的三项责任</h5>
+<p>TOOLS 注册表同时承担白名单、参数模型映射、函数路由三项责任。请分别说明每一项责任由代码中的哪个部分实现，以及为什么错误要以普通观察结果返回而不是直接抛异常。</p>
+<p><strong>提示</strong>：看 execute_tool 的返回结构；想想模型能否自我纠错</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>白名单由 TOOLS.get 未命中判断实现</li><li>参数模型映射由 Tool.args_model 承载</li><li>函数路由由 Tool.handler 调用实现</li><li>错误返回让模型有机会修正参数</li><li>避免整个进程崩溃</li></ul>
+<p><strong>解析与常见错误</strong>：白名单体现在 TOOLS.get(name) 为 None 时返回 unknown_tool；参数模型映射由 Tool 的 args_model 字段承载；函数路由由 handler 调用完成。错误作为 ok: False 的普通观察结果回传，模型能据此修正参数重试，而不是让进程直接崩溃。</p>
+<h5><code>q04-01-06</code>（代码 · ★★）实现类型安全的 execute_tool</h5>
+<p>给定 Tool 数据类（含 name、description、args_model、handler）和 TOOLS 注册表，请实现 execute_tool(name, raw_arguments)，要求：工具不存在返回 unknown_tool；参数校验失败返回 invalid_arguments 并带上 exc.errors()；handler 抛异常返回 tool_error；成功返回 ok 与 data。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def execute_tool(name: str, raw_arguments: dict) -&gt; dict:
+    # 依次处理：未知工具、参数校验、执行异常、成功
+    pass</code></pre>
+<p><strong>提示</strong>：ValidationError 要在 Exception 之前捕获；返回结构统一带 ok 字段</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先查注册表判断白名单</li><li>未命中返回 unknown_tool</li><li>用 args_model.model_validate 校验</li><li>ValidationError 单独捕获</li><li>其余异常归为 tool_error</li></ul>
+<p><strong>解析与常见错误</strong>：核心是分层捕获：先查注册表做白名单，再用 model_validate 校验参数，ValidationError 必须放在 Exception 之前捕获，否则会被通用分支吞掉、丢失 details。所有分支都返回统一的 ok 结构，让模型能据此修正参数。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def execute_tool(name: str, raw_arguments: dict) -&gt; dict:
+    tool = TOOLS.get(name)
+    if tool is None:
+        return {"ok": False, "error": {"type": "unknown_tool", "message": f"工具不存在: {name}"}}
+    try:
+        args = tool.args_model.model_validate(raw_arguments)
+        data = tool.handler(args)
+        return {"ok": True, "data": data}
+    except ValidationError as exc:
+        return {"ok": False, "error": {"type": "invalid_arguments", "details": exc.errors()}}
+    except Exception as exc:
+        return {"ok": False, "error": {"type": "tool_error", "message": str(exc)}}</code></pre>
+<p></details></p>
+<h5><code>q04-01-07</code>（代码 · ★★★）实现一轮工具调用循环</h5>
+<p>请实现 run_tool_round(llm, messages, tool_schemas)：调用 llm.decide 获取 ModelTurn；若无 tool_calls 直接返回文本；否则把 assistant 消息和每个工具结果追加进 messages，再调用一次 decide 返回最终文本。注意 tool 消息的字段与 content 序列化。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import json
+
+def run_tool_round(llm, messages: list[dict], tool_schemas: list[dict]) -&gt; str:
+    turn = llm.decide(messages=messages, tools=tool_schemas)
+    # 处理无工具调用与有工具调用两种情况
+    pass</code></pre>
+<p><strong>提示</strong>：assistant 消息要在 tool 消息之前；content 不能直接传 dict</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>无 tool_calls 直接返回文本</li><li>先追加 assistant 消息</li><li>tool 消息带 tool_call_id 与 name</li><li>content 必须 json.dumps 成字符串</li><li>追加后再调一次 decide</li></ul>
+<p><strong>解析与常见错误</strong>：顺序很关键：必须先追加 assistant 消息再追加 tool 消息，且 tool 消息要带 tool_call_id 与 name 与调用对应。content 必须 json.dumps 成字符串，直接传 dict 会触发 HTTP 400。本轮只做一轮，Day18 再扩展为有停止条件的循环。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import json
+
+def run_tool_round(llm, messages: list[dict], tool_schemas: list[dict]) -&gt; str:
+    turn = llm.decide(messages=messages, tools=tool_schemas)
+    if not turn.tool_calls:
+        return turn.text or ""
+    messages.append(llm.assistant_message(turn))
+    for call in turn.tool_calls:
+        result = execute_tool(call.name, call.arguments)
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call.call_id,
+            "name": call.name,
+            "content": json.dumps(result, ensure_ascii=False),
+        })
+    final_turn = llm.decide(messages=messages, tools=tool_schemas)
+    return final_turn.text or ""</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -601,6 +695,148 @@ class ReactAgent:
 <table><thead><tr><th style="text-align:left">故障</th><th style="text-align:left">期望行为</th></tr></thead><tbody><tr><td style="text-align:left">模型请求不存在的工具</td><td style="text-align:left">返回 <code>unknown_tool</code>，下一步可改正</td></tr><tr><td style="text-align:left">参数缺字段</td><td style="text-align:left">Pydantic 返回字段错误，不执行工具</td></tr><tr><td style="text-align:left">除数为 0</td><td style="text-align:left">工具返回业务错误，进程不中断</td></tr><tr><td style="text-align:left">模型连续调用同一工具</td><td style="text-align:left">幂等保护或重复检测介入</td></tr><tr><td style="text-align:left">模型始终不结束</td><td style="text-align:left">达到 <code>max_steps</code> 安全终止</td></tr><tr><td style="text-align:left">模型接口超时</td><td style="text-align:left">记录 <code>model_error</code> 或 <code>timeout</code>，不无限重试</td></tr></tbody></table>
 <h4>4.3.6 当日作业</h4>
 <p>新增一个只读工具，例如汇率模拟器或第三章的知识库检索工具。提交四条测试：正常调用、参数错误、未知工具、最大步数停止。</p>
+<h4>4.3.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q04-02-01</code> ~ <code>q04-02-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q04-02-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">预算护栏为何调用前检查</td></tr><tr><td style="text-align:left"><code>q04-02-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">estimate_next 为何用历史均值</td></tr><tr><td style="text-align:left"><code>q04-02-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">重复调用为何报 max_steps</td></tr><tr><td style="text-align:left"><code>q04-02-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">五种 stop_reason 与验收</td></tr><tr><td style="text-align:left"><code>q04-02-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">假模型做确定性测试</td></tr><tr><td style="text-align:left"><code>q04-02-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现 BudgetGuard 预算护栏</td></tr><tr><td style="text-align:left"><code>q04-02-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">补全 ReAct 控制循环</td></tr></tbody></table>
+<h5><code>q04-02-01</code>（单选 · ★★）预算护栏为何调用前检查</h5>
+<p>BudgetGuard 要求在每步开始前调用 check()，而不是在每步结束后统计。 这样设计最核心的理由是什么？</p>
+<ul><li><strong>A</strong>. 调用后统计时超支已经发生，无法阻止本次超限</li><li><strong>B</strong>. 调用前检查可以少统计一次 token，节省开销</li><li><strong>C</strong>. 调用后统计无法拿到 usage 对象里的 token 数</li><li><strong>D</strong>. 调用前检查能让模型自己决定是否继续调用工具</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>护栏目标是提前终止</li><li>事后统计无法挽回超支</li><li>预测 = 已用 + 本步估算</li><li>超限抛 BudgetExceeded</li></ul>
+<p><strong>解析与常见错误</strong>：护栏的意义是提前终止，调用后统计只能事后知道超支，损失已产生。B 与节省开销无关，记账仍要做。C 错误，usage 在返回结果里可读。D 错误，是否继续由控制器决定，不是模型。</p>
+<h5><code>q04-02-02</code>（单选 · ★★）estimate_next 为何用历史均值</h5>
+<p>estimate_next() 在无历史时返回 2000，有历史时用历史平均值乘 1.2。 为什么不用一个固定估算值？</p>
+<ul><li><strong>A</strong>. Agent 每步消耗随上下文增长而变大，固定值会在后几步严重低估</li><li><strong>B</strong>. 历史平均值计算更简单，代码量更少</li><li><strong>C</strong>. 固定值无法通过类型检查，会抛 TypeError</li><li><strong>D</strong>. 乘 1.2 是为了把 token 换算成金额</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>上下文随步数增长</li><li>固定值后期低估</li><li>历史均值更贴近真实</li><li>乘 1.2 留 20% 余量</li></ul>
+<p><strong>解析与常见错误</strong>：上下文随步数累积，每步 prompt token 递增，固定值后期低估导致熔断失效。B 相反，历史均值实现更复杂。C 与类型无关。D 错误，1.2 是留 20% 余量，不是汇率换算。</p>
+<h5><code>q04-02-03</code>（单选 · ★★★）重复调用为何报 max_steps</h5>
+<p>注入死循环后控制器以 stop_reason='max_steps' 终止， 而不是新增一个 repeat_detected 取值。 这样取舍的主要理由是什么？</p>
+<ul><li><strong>A</strong>. stop_reason 是监控报表统计维度，取值集合须封闭稳定，加值会让历史报表断档</li><li><strong>B</strong>. repeat_detected 这个名字太长，不适合放进枚举</li><li><strong>C</strong>. 控制器无法区分重复调用和正常调用</li><li><strong>D</strong>. max_steps 的语义本来就包含重复检测</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>stop_reason 是统计维度</li><li>取值集合须封闭稳定</li><li>加值会让历史报表断档</li><li>原因放 trace 明细事件</li></ul>
+<p><strong>解析与常见错误</strong>：stop_reason 作为统计维度必须封闭，随意加值会破坏历史报表可比性。正确做法是维度用枚举、原因写进 trace 明细事件，如 reason=repeat_abort。B 是无关的形式理由。C 错误，规则能检测到第 2、3 次。D 错误，两者语义不同。</p>
+<h5><code>q04-02-04</code>（简答 · ★★）五种 stop_reason 与验收</h5>
+<p>请说明 AgentResult.stop_reason 至少需要区分哪五种取值， 并解释为什么必须区分它们、Day18 的验收标准是什么。 再说明控制器代码里对取值做了什么强校验。</p>
+<p><strong>提示</strong>：回忆 4.3.2 列出的取值；验收表要求全部在真实环境复现</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>五种：completed / max_steps / timeout / model_error / budget_exceeded</li><li>区分才能统计 Agent 失败类型</li><li>五种都要在真实环境复现</li><li>程序内有 assertion 强校验合法取值</li><li>预算超限须真正实现，不能只写在文档里</li></ul>
+<p><strong>解析与常见错误</strong>：要点是把 stop_reason 当作失败分类维度，而不是随手写的字符串。常见失分：只答出三四种，漏掉 budget_exceeded；或只说“要区分”却讲不出为什么——原因是只有分类才能统计失败类型、定位问题。</p>
+<h5><code>q04-02-05</code>（简答 · ★★）假模型做确定性测试</h5>
+<p>为什么测试 Agent 控制器不应该依赖真实模型？ 请说明 ScriptedLLM 需要满足什么条件才能直接替换真实模型， 并列举用它覆盖的四个测试用例。</p>
+<p><strong>提示</strong>：想最大步数停止、工具报错修正这些分支；接口一致才能无缝替换</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>真实模型每次回答不同，分支测不稳定</li><li>ScriptedLLM 实现与 AgentLLM 相同的三个方法</li><li>可直接替换，无需改控制器</li><li>用例：正常完成</li><li>用例：工具报错后自我修正</li><li>用例：幻觉工具名被白名单拦截</li><li>用例：模型直接回答不用工具</li></ul>
+<p><strong>解析与常见错误</strong>：核心是可控性与可重复性：真实模型输出随机，边界分支无法稳定复现。替换条件是接口一致（同样的方法签名），控制器不感知实现。常见失分：只答“假模型更快”，忽略确定性这一根本理由。</p>
+<h5><code>q04-02-06</code>（代码 · ★★）实现 BudgetGuard 预算护栏</h5>
+<p>实现 BudgetGuard：</p>
+<ul><li>字段 max_tokens、used_tokens、history（每次调用消耗列表）</li><li>estimate_next()：无历史返回 2000，否则历史均值乘 1.2 取整</li><li>check()：若 used_tokens + estimate_next() 超过 max_tokens，抛 BudgetExceeded</li><li>charge(usage)：把 prompt_tokens + completion_tokens 累加并记入 history</li></ul>
+<p>并给出 BudgetExceeded 异常定义。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from dataclasses import dataclass, field
+
+class BudgetExceeded(RuntimeError):
+    ...
+
+@dataclass
+class BudgetGuard:
+    max_tokens: int
+    used_tokens: int = 0
+    history: list[int] = field(default_factory=list)
+
+    def estimate_next(self) -&gt; int:
+        ...
+
+    def check(self) -&gt; None:
+        ...
+
+    def charge(self, usage) -&gt; None:
+        ...</code></pre>
+<p><strong>提示</strong>：先写 estimate_next 再写 check；charge 里别忘了 append 到 history</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>无历史返回 2000 保守值</li><li>有历史用均值乘 1.2 取整</li><li>check 在每步开始前调用</li><li>超限抛 BudgetExceeded 带信息</li><li>charge 累加 prompt+completion</li><li>捕获后置 stop_reason=budget_exceeded</li></ul>
+<p><strong>解析与常见错误</strong>：关键在预测时机：check 必须在调用前，否则超支已发生。estimate_next 用历史均值而非固定值，因为每步消耗随上下文增长。常见错误：把 charge 写成覆盖而非累加；estimate_next 忘记乘 1.2 余量；异常信息不带已用与上限。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from dataclasses import dataclass, field
+
+class BudgetExceeded(RuntimeError):
+    """预算超限，带上完整信息便于日志与用户提示。"""
+
+@dataclass
+class BudgetGuard:
+    max_tokens: int
+    used_tokens: int = 0
+    history: list[int] = field(default_factory=list)
+
+    def estimate_next(self) -&gt; int:
+        if not self.history:
+            return 2000
+        return int(sum(self.history) / len(self.history) * 1.2)
+
+    def check(self) -&gt; None:
+        if self.used_tokens + self.estimate_next() &gt; self.max_tokens:
+            raise BudgetExceeded(
+                f"预算不足：已用 {self.used_tokens}，"
+                f"预计本步还需 {self.estimate_next()}，上限 {self.max_tokens}"
+            )
+
+    def charge(self, usage) -&gt; None:
+        spent = usage.prompt_tokens + usage.completion_tokens
+        self.used_tokens += spent
+        self.history.append(spent)</code></pre>
+<p></details></p>
+<h5><code>q04-02-07</code>（代码 · ★★★）补全 ReAct 控制循环</h5>
+<p>补全 ReactAgent.run 的循环体，要求：</p>
+<ul><li>每步开始前检查超时，超时返回 stop_reason='timeout'</li><li>调用 llm.decide，异常时记录 model_error 事件并返回 stop_reason='model_error'</li><li>无 tool_calls 时记录 final 事件并返回 completed</li><li>有 tool_calls 时追加 assistant 消息、逐个执行工具、记录 tool_call/tool_result 事件并追加 tool 消息</li><li>循环结束返回 max_steps</li></ul>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import json
+from time import monotonic
+
+def run(self, task: str) -&gt; AgentResult:
+    if not task.strip():
+        raise ValueError("任务不能为空")
+    started = monotonic()
+    messages = [
+        {"role": "system", "content": "按需使用工具。工具失败时根据结构化错误修正。证据不足时明确说明。"},
+        {"role": "user", "content": task},
+    ]
+    events: list[AgentEvent] = []
+    for step in range(1, self.max_steps + 1):
+        # TODO: 超时检查 / 模型调用 / 分支处理
+        pass
+    return AgentResult("已达到最大执行步数，任务安全终止。", "max_steps", self.max_steps, events)</code></pre>
+<p><strong>提示</strong>：注意 assistant 消息必须在工具执行前追加；tool 消息要带 tool_call_id 才能对上</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>超时检查在每步开始前</li><li>模型异常捕获置 model_error</li><li>无 tool_calls 即 completed</li><li>先追加 assistant 消息再执行工具</li><li>tool 消息带 tool_call_id 与 name</li><li>循环走完返回 max_steps</li></ul>
+<p><strong>解析与常见错误</strong>：控制器而非模型决定步数与超时，是这一天的核心。常见错误：先执行工具再追加 assistant 消息，导致消息序列非法；tool 消息漏掉 tool_call_id；异常时忘记记录事件；超时用 step 而非 step-1。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>for step in range(1, self.max_steps + 1):
+    if monotonic() - started &gt; self.timeout_seconds:
+        return AgentResult("任务超过时间限制。", "timeout", step - 1, events)
+    try:
+        turn = self.llm.decide(messages, self.tool_schemas)
+    except Exception as exc:
+        events.append(AgentEvent(step, "model_error", {"error": type(exc).__name__}))
+        return AgentResult("模型服务暂时不可用。", "model_error", step, events)
+    if not turn.tool_calls:
+        events.append(AgentEvent(step, "final", {"text_length": len(turn.text or "")}))
+        return AgentResult(turn.text or "", "completed", step, events)
+    messages.append(self.llm.assistant_message(turn))
+    for call in turn.tool_calls:
+        events.append(AgentEvent(step, "tool_call", {"call_id": call.call_id, "name": call.name, "arguments": call.arguments}))
+        result = execute_tool(call.name, call.arguments)
+        events.append(AgentEvent(step, "tool_result", {"call_id": call.call_id, "name": call.name, "ok": result["ok"]}))
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call.call_id,
+            "name": call.name,
+            "content": json.dumps(result, ensure_ascii=False),
+        })</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -794,7 +1030,156 @@ TOOLS["search_knowledge"] = Tool(
 <p><strong>这个适配层带来的三个收益</strong>（这是本节真正的教学点）：</p>
 <table><thead><tr><th style="text-align:left">收益</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left">Agent 逻辑零改动</td><td style="text-align:left">加入 MCP 工具后，ReAct 循环一行都不用改</td></tr><tr><td style="text-align:left">可测试</td><td style="text-align:left">用假的 MCP client 就能测试 Agent，不需要真实的 Server</td></tr><tr><td style="text-align:left">可替换</td><td style="text-align:left">换协议、换工具源，只改这一层</td></tr></tbody></table>
 <blockquote><strong>Day27 会补上的内容</strong>：<code>client.call_tool()</code> 内部的真实请求构造 （<code>_meta</code> 必需字段、<code>Mcp-Method</code> / <code>Mcp-Name</code> 请求头、头部与请求体一致性校验、 <code>-32602</code> / <code>-32020</code> 等错误码的处理）。 到那时你会看到：适配层把「协议复杂度」和「Agent 决策逻辑」干净地分开了—— <strong>这正是分层的价值。</strong></blockquote>
-<h4>4.4.6 当日验收</h4>
+<h4>4.4.6 SQL 与持久化：Agent 的记忆必须活过重启</h4>
+<p>前面几节你用的记忆存的是内存列表，进程一退就没了。这一节把它换成真正的数据库，并补上<strong>后端同学必须会的 SQL 基本功</strong>。</p>
+<p>招聘 JD 里的「熟悉数据库」不是要你会写存储过程，而是要你能说清：<strong>建表怎么建、查询怎么不拖累别人、并发怎么不出错、用户输入怎么不把库删了。</strong></p>
+<h5>先选型：为什么从 SQLite 起步</h5>
+<table><thead><tr><th style="text-align:left">数据库</th><th style="text-align:left">适用场景</th><th style="text-align:left">本课程定位</th></tr></thead><tbody><tr><td style="text-align:left">SQLite</td><td style="text-align:left">单机、单进程、文件型、零运维</td><td style="text-align:left"><strong>教学与原型主力</strong>，Day 20 / Day 30 使用</td></tr><tr><td style="text-align:left">PostgreSQL</td><td style="text-align:left">多进程并发读写、复杂查询、生产标配</td><td style="text-align:left">生产替换目标，接口层保持一致</td></tr><tr><td style="text-align:left">Redis</td><td style="text-align:left">缓存、限流计数、会话、分布式锁</td><td style="text-align:left">Day 09 限流与 Day 38 会话</td></tr><tr><td style="text-align:left">向量库</td><td style="text-align:left">语义检索</td><td style="text-align:left">Day 13 起使用</td></tr></tbody></table>
+<p><strong>关键认识</strong>：SQLite 与 PostgreSQL 的 SQL 方言高度一致。学会 SQLite 上的建表、索引、事务、参数化查询，迁移到 PostgreSQL 主要改的是连接方式，不是 SQL 思维。</p>
+<h5>建表：三张表就能支撑一个 Agent 的记忆</h5>
+<pre class="code lang-python"><code># code/day20_memory/schema.py
+import sqlite3
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS conversation (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_id   TEXT    NOT NULL,
+    title       TEXT,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (thread_id)
+);
+
+CREATE TABLE IF NOT EXISTS message (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_id   TEXT    NOT NULL,
+    role        TEXT    NOT NULL CHECK (role IN ('system', 'user', 'assistant', 'tool')),
+    content     TEXT    NOT NULL,
+    token_count INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (thread_id) REFERENCES conversation (thread_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_message_thread_created
+    ON message (thread_id, created_at);
+
+CREATE TABLE IF NOT EXISTS tool_call_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_id   TEXT    NOT NULL,
+    tool_name   TEXT    NOT NULL,
+    arguments   TEXT    NOT NULL,
+    status      TEXT    NOT NULL CHECK (status IN ('ok', 'error', 'skipped')),
+    idempotency_key TEXT,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (idempotency_key)
+);
+"""
+
+
+def init_db(path: str = "agent_memory.db") -&gt; None:
+    with sqlite3.connect(path) as conn:
+        conn.executescript(SCHEMA)</code></pre>
+<p>四个设计决策，面试时都能被追问：</p>
+<table><thead><tr><th style="text-align:left">决策</th><th style="text-align:left">理由</th></tr></thead><tbody><tr><td style="text-align:left"><code>role</code> 与 <code>status</code> 加 <code>CHECK</code></td><td style="text-align:left"><strong>数据库层兜底</strong>。应用层校验可能被绕过，约束不会</td></tr><tr><td style="text-align:left"><code>created_at</code> 用 <code>datetime('now')</code> 默认值</td><td style="text-align:left">写入方忘记传时间也不会产生脏数据</td></tr><tr><td style="text-align:left"><code>UNIQUE (thread_id)</code></td><td style="text-align:left">一个会话只有一行，避免重复创建</td></tr><tr><td style="text-align:left"><code>UNIQUE (idempotency_key)</code></td><td style="text-align:left">工具调用的幂等保证<strong>由数据库强制</strong>，不靠应用层自觉</td></tr></tbody></table>
+<p>最后一条尤其重要。Day 19 讲过的「防重复副作用」，在应用层判断是「查一下再写」，两个请求同时进来就会双写；把唯一约束放到数据库，<strong>冲突由数据库拒绝，这才是真正的幂等</strong>。</p>
+<h5>索引：为什么加了它就从 2 秒变 2 毫秒</h5>
+<p>不建索引时，<code>WHERE thread_id = ?</code> 会<strong>全表扫描</strong>；数据量上万行后，每次查询都要读完整张表。</p>
+<pre class="code lang-sql"><code>EXPLAIN QUERY PLAN
+SELECT role, content FROM message
+WHERE thread_id = 't-1024'
+ORDER BY created_at DESC
+LIMIT 20;</code></pre>
+<p>输出里出现 <code>SCAN message</code> 就是全表扫描；出现 <code>SEARCH message USING INDEX idx_message_thread_created</code> 才是走索引。</p>
+<p><strong>索引不是越多越好</strong>：</p>
+<ul><li>索引让<strong>读变快</strong>，让<strong>写变慢</strong>（每次写都要维护索引）</li><li>会占用额外磁盘空间</li><li>联合索引 <code>(thread_id, created_at)</code> 遵循<strong>最左前缀</strong>：单查 <code>created_at</code> 用不上它</li></ul>
+<p>判断标准：<strong>出现在 &lt;code&gt;WHERE&lt;/code&gt;、&lt;code&gt;ORDER BY&lt;/code&gt;、&lt;code&gt;JOIN&lt;/code&gt; 的列</strong>才考虑建索引，其余不动。</p>
+<h5>事务：要么全成，要么全不成</h5>
+<pre class="code lang-python"><code>def append_exchange(path: str, thread_id: str, user_msg: str, assistant_msg: str) -&gt; None:
+    conn = sqlite3.connect(path)
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO message (thread_id, role, content) VALUES (?, 'user', ?)",
+                (thread_id, user_msg),
+            )
+            conn.execute(
+                "INSERT INTO message (thread_id, role, content) VALUES (?, 'assistant', ?)",
+                (thread_id, assistant_msg),
+            )
+    finally:
+        conn.close()</code></pre>
+<p><code>with conn:</code> 是 SQLite 的事务上下文：<strong>正常退出提交，抛异常回滚</strong>。上面两条插入必须一起成功——只存了用户提问、没存回答，会话历史就断了。</p>
+<p>三个必须记住的事务事实：</p>
+<ol><li><strong>默认是最小权限、自动提交</strong>：不写 <code>with conn:</code>，每条语句各自成事务</li><li><strong>长事务会锁库</strong>：SQLite 写操作会锁整库；不要在事务里发 HTTP 请求</li><li><strong>先写后读的一致性</strong>：同一连接内能读到自己未提交的修改，其它连接读不到</li></ol>
+<h5>参数化查询：防 SQL 注入的唯一正确做法</h5>
+<pre class="code lang-python"><code># 错误写法：字符串拼接
+role = "user"
+sql = f"SELECT * FROM message WHERE role = '{role}'"     # 不要这样写
+
+# 正确写法：参数化
+conn.execute("SELECT * FROM message WHERE role = ?", (role,))</code></pre>
+<p>假设用户输入的是 <code>user' OR '1'='1</code>：</p>
+<table><thead><tr><th style="text-align:left">写法</th><th style="text-align:left">实际执行的语义</th><th style="text-align:left">结果</th></tr></thead><tbody><tr><td style="text-align:left">拼接</td><td style="text-align:left"><code>WHERE role = 'user' OR '1'='1'</code></td><td style="text-align:left"><strong>返回全表</strong>，越权读取</td></tr><tr><td style="text-align:left">参数化</td><td style="text-align:left"><code>role</code> 的值就是那串字符串本身</td><td style="text-align:left">查不到，安全</td></tr></tbody></table>
+<p>更危险的输入是 <code>'; DROP TABLE message; --</code>，拼接写法会直接删表。</p>
+<p><strong>参数化不是「更安全」，而是唯一正确的做法。</strong>而且它还有性能收益：SQLite 能缓存执行计划。</p>
+<p>同时记住三条边界：</p>
+<ul><li><strong>表名、列名不能用参数占位</strong>：需要动态表名时必须走白名单校验</li><li><code>executemany</code> 用于批量写入，性能明显更好</li><li>大字段（如完整对话正文）不要塞进索引</li></ul>
+<h5>上下文装配：从库里取出「刚好够用」的历史</h5>
+<pre class="code lang-python"><code>def load_recent_messages(path: str, thread_id: str, max_tokens: int = 3000) -&gt; list[dict]:
+    conn = sqlite3.connect(path)
+    try:
+        rows = conn.execute(
+            """
+            SELECT role, content, token_count
+            FROM message
+            WHERE thread_id = ?
+            ORDER BY created_at DESC, id DESC
+            LIMIT 50
+            """,
+            (thread_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    selected, used = [], 0
+    for role, content, token_count in rows:
+        if used + token_count &gt; max_tokens:
+            break
+        selected.append({"role": role, "content": content})
+        used += token_count
+
+    return list(reversed(selected))</code></pre>
+<p>三个要点：</p>
+<ol><li><strong>倒序取最近 N 条，再反转</strong>：直接 <code>ORDER BY created_at ASC LIMIT 50</code> 会取到最早的 50 条，越聊越失忆</li><li><strong>按 token 预算截断</strong>，而不是按条数——一条长消息可能顶十条短消息</li><li><strong>&lt;code&gt;ORDER BY created_at DESC, id DESC&lt;/code&gt;</strong>：同一秒内写入的消息靠自增主键定序</li></ol>
+<h5>迁移意识：表结构一定会变</h5>
+<p>不要直接在生产库上改表。最小做法是把迁移写成<strong>有序脚本</strong>：</p>
+<pre class="code lang-python"><code># code/day20_memory/migrations.py
+MIGRATIONS = [
+    (
+        1,
+        "CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY);",
+    ),
+    (
+        2,
+        "ALTER TABLE message ADD COLUMN token_count INTEGER NOT NULL DEFAULT 0;",
+    ),
+]
+
+
+def migrate(conn: sqlite3.Connection) -&gt; int:
+    conn.execute("CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY)")
+    current = conn.execute("SELECT COALESCE(MAX(version), 0) FROM schema_version").fetchone()[0]
+    for version, sql in MIGRATIONS:
+        if version &gt; current:
+            conn.execute(sql)
+            conn.execute("INSERT INTO schema_version (version) VALUES (?)", (version,))
+    return conn.execute("SELECT COALESCE(MAX(version), 0) FROM schema_version").fetchone()[0]</code></pre>
+<p>生产项目用 Alembic 管理，但<strong>思路是一样的</strong>：每次变更是一个带版本的脚本，可重复执行、可追溯。面试说「我用版本化迁移脚本管理表结构，不做手工改表」就是加分项。</p>
+<h5>常见错误与排查顺序</h5>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">原因</th><th style="text-align:left">解决</th></tr></thead><tbody><tr><td style="text-align:left"><code>sqlite3.OperationalError: database is locked</code></td><td style="text-align:left">有长期未提交的事务</td><td style="text-align:left">缩短事务；不要在事务里做网络调用；设置 <code>timeout</code></td></tr><tr><td style="text-align:left"><code>UNIQUE constraint failed</code></td><td style="text-align:left">幂等键或 thread_id 重复</td><td style="text-align:left">这是<strong>预期行为</strong>，用 <code>INSERT OR IGNORE</code> 或捕获后按幂等处理</td></tr><tr><td style="text-align:left">查询越来越慢</td><td style="text-align:left">缺索引或全表扫描</td><td style="text-align:left"><code>EXPLAIN QUERY PLAN</code> 确认是否 <code>SCAN</code>；建联合索引</td></tr><tr><td style="text-align:left">历史消息顺序错乱</td><td style="text-align:left">只按 <code>created_at</code> 排序</td><td style="text-align:left">加 <code>id DESC</code> 做同秒内定序</td></tr><tr><td style="text-align:left">中文写入报错</td><td style="text-align:left">编码问题</td><td style="text-align:left">连接时确认使用 UTF-8；Windows 下注意终端的 <code>gbk</code></td></tr><tr><td style="text-align:left">删了会话但消息还在</td><td style="text-align:left">没开启外键级联</td><td style="text-align:left">SQLite 需显式 <code>PRAGMA foreign_keys = ON</code>，或手动删除关联行</td></tr><tr><td style="text-align:left">参数占位不生效</td><td style="text-align:left">用了 <code>?</code> 去占表名</td><td style="text-align:left">表名/列名走白名单，不能用参数</td></tr></tbody></table>
+<h5>当日动手与验收</h5>
+<ol><li>用上面的 <code>SCHEMA</code> 建库，写入 3 个会话、每个 20 条消息</li><li>用 <code>EXPLAIN QUERY PLAN</code> 分别验证「有索引」和「无索引」的查询计划差异，截图对比</li><li>实现 <code>append_exchange</code>，并故意在第二条插入前抛异常，验证<strong>事务回滚后库中没有半条记录</strong></li><li>用 <code>'; DROP TABLE message; --</code> 作为输入，分别用拼接与参数化两种写法实测，截图对比结果</li><li>实现 <code>load_recent_messages</code>，验证 token 预算截断生效</li><li>写至少 3 条迁移脚本，并验证重复执行不会报错</li></ol>
+<p><strong>验收标准</strong>：能当场向面试官演示「注入攻击被参数化挡住」与「事务回滚不产生脏数据」两个实验，并解释 <code>EXPLAIN QUERY PLAN</code> 的输出。</p>
+<h4>4.4.7 当日验收</h4>
 <ol><li>会话 A 告诉 Agent 一个允许保存的偏好，<strong>关闭程序（换一个进程）再启动</strong>后可以查询到。</li></ol>
 <blockquote>注意：必须在<strong>两个独立进程</strong>里验证。在同一个进程里"重启"是无效验证—— 内存里的变量也能读到，你无法证明它真的落盘了。</blockquote>
 <ol><li>会话 B 不能读到会话 A 的普通对话历史。</li><li><code>search_knowledge</code> 能返回答案和引用；空知识问题仍能拒答。</li><li>数据库中可查询工具事件，但密钥和完整敏感参数不落库。</li><li><strong>Agent 能调用一个 MCP 工具</strong>（与大纲 Day19 验收标准对齐）。</li></ol>
@@ -807,13 +1192,142 @@ TOOLS["search_knowledge"] = Tool(
 <p>图上还解释了为什么把拒答判定放进<strong>工具层</strong>而不是交给模型自觉：<strong>模型天然倾向于「总要答点什么」</strong>，把阈值判断交给程序，行为才可复现、可评测。</p>
 <p><strong>（2）一个真实的失败形态：模型没有调用工具，直接凭自己的知识回答了。</strong> 图中 <code>stop_reason='completed'</code>、<code>steps=1</code>、工具被调用次数=0，最终回答却给出了一条<strong>看起来很正常</strong>的制度条款。脚本明确标注：</p>
 <blockquote><strong>这正是「该查不查」——企业 Agent 最危险的一类问题，因为它看起来一切正常（&lt;code&gt;stop_reason=completed&lt;/code&gt;），但答案完全没有证据支撑。</strong></blockquote>
-<p>原因也写清楚了：离线靶场用<strong>关键词</strong>判定工具意图（年假/报销/差旅/考勤），而「年会抽奖」不在它的触发词表里，所以它根本没意识到该查。<strong>真实模型也有同样的毛病，只是没那么机械。</strong></p>
+<p>原因也写清楚了：真实模型服务用<strong>关键词</strong>判定工具意图（年假/报销/差旅/考勤），而「年会抽奖」不在它的触发词表里，所以它根本没意识到该查。<strong>真实模型也有同样的毛病，只是没那么机械。</strong></p>
 <p>工程上的正确应对是三条一起上，缺一不可：</p>
 <ol><li><strong>system prompt 里写死</strong>「回答制度问题前必须先检索」——最弱，但要有；</li><li><strong>对高风险意图用 &lt;code&gt;tool_choice&lt;/code&gt; 强制首轮调用工具</strong>——由程序保证，不靠模型自觉；</li><li><strong>校验最终回答里是否带 &lt;code&gt;citations&lt;/code&gt;，「没有引用不许返回」</strong>——最后一道闸门。</li></ol>
 <p><strong>（3）落盘证据不是靠"我以为"。</strong> 脚本<strong>直接读 SQLite 数据库文件</strong>（绕过所有 Python 代码）确认落盘情况：<code>messages</code> 6 行（短期对话记忆）、<code>facts</code> 5 行（长期可检索事实）、<code>events</code> 9 行（工具事件审计）。验收表里有几条特别值得讲：</p>
 <ul><li><strong>线程安全</strong>：8 线程 × 60 次并发写，480/480 无丢失数据；</li><li><strong>重启后恢复</strong>：<strong>用两个独立进程验证</strong>（进程 2 读到进程 1 的数据）——图上专门强调：同进程 <code>close/open</code> 只能证明文件没删，<strong>证明不了进程退出后状态还在</strong>；</li><li><strong>会话隔离</strong>：会话 B 读不到会话 A 的对话与事实；</li><li><strong>密钥不落库</strong>：扫描数据库文件搜不到原始密钥；</li><li><strong>事件可关联</strong>：<code>request_id</code> 贯穿 Agent trace 与工具事件。</li></ul>
 <p>图上还给了三条<strong>答辩要点</strong>，都是"为什么这样设计"的问题：为什么"重启恢复"必须用两个进程验证；为什么长期记忆要<strong>显式写入</strong>而不是自动保存全部对话（隐私 + 错误记忆风险，而且「什么值得记」本身就是业务判断，不该交给模型自动决定）；为什么事件日志要<strong>脱敏后再落库</strong>（落库即泄漏，事后过滤没有意义）。</p>
 <p>数据库文件位置也打印在终端里：<code>code/ch04/storage/day19_memory.db</code>，学生可以直接用 SQLite 客户端打开核对。</p>
+<h4>4.4.8 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q04-03-01</code> ~ <code>q04-03-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q04-03-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">SQLite 建库前为何要建目录</td></tr><tr><td style="text-align:left"><code>q04-03-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">关闭线程检查后谁保证安全</td></tr><tr><td style="text-align:left"><code>q04-03-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">recent 查询为何要反转</td></tr><tr><td style="text-align:left"><code>q04-03-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">四类记忆的边界与风险</td></tr><tr><td style="text-align:left"><code>q04-03-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">适配器层为何隔离变化</td></tr><tr><td style="text-align:left"><code>q04-03-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现按字符预算的上下文装配</td></tr><tr><td style="text-align:left"><code>q04-03-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">把 MCP 工具适配成内部 Tool</td></tr></tbody></table>
+<h5><code>q04-03-01</code>（单选 · ★）SQLite 建库前为何要建目录</h5>
+<p>MemoryStore 在 sqlite3.connect 之前先执行了 Path(db_path).parent.mkdir(parents=True, exist_ok=True)。 这样做的直接原因是什么？</p>
+<ul><li><strong>A</strong>. SQLite 只创建数据库文件，不会自动创建父目录，否则抛 unable to open database file</li><li><strong>B</strong>. SQLite 要求数据库必须放在已存在的目录下才能启用索引</li><li><strong>C</strong>. mkdir 用于提前锁定文件，避免多线程并发写入冲突</li><li><strong>D</strong>. 为了让 SQLite 自动启用 WAL 日志模式</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>SQLite 不创建父目录</li><li>缺目录报 unable to open database file</li><li>mkdir 需 parents=True, exist_ok=True</li><li>与索引、锁、WAL 无关</li></ul>
+<p><strong>解析与常见错误</strong>：SQLite 只负责创建数据库文件本身，父目录不存在时 connect 会抛 OperationalError: unable to open database file。mkdir 与索引、锁、WAL 都无关，只是补上目录这一前置条件。</p>
+<h5><code>q04-03-02</code>（单选 · ★★）关闭线程检查后谁保证安全</h5>
+<p>代码用 sqlite3.connect(db_path, check_same_thread=False)，并配了一把 threading.Lock。 关于这个组合，下列说法正确的是？</p>
+<ul><li><strong>A</strong>. 关闭检查后 sqlite3 会自己加锁，Lock 只是冗余写法</li><li><strong>B</strong>. 关闭检查只是解除线程限制，线程安全必须由调用方保证，所以配锁</li><li><strong>C</strong>. check_same_thread=False 会让每个线程自动创建独立连接</li><li><strong>D</strong>. FastAPI 同步路由跑在同一线程，因此本来不需要关闭该检查</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>默认 True 限制同线程使用</li><li>线程池中会抛 ProgrammingError</li><li>False 只解除限制不加锁</li><li>安全由调用方用 Lock 保证</li></ul>
+<p><strong>解析与常见错误</strong>：默认 check_same_thread=True 时连接只能在创建它的线程使用，FastAPI 同步路由跑在线程池中，不同请求可能落到不同线程，会抛 ProgrammingError。关闭检查只是解除限制，不提供线程安全，所以要用 Lock 由调用方保证。</p>
+<h5><code>q04-03-03</code>（单选 · ★★）recent 查询为何要反转</h5>
+<p>recent 方法的 SQL 是 ORDER BY id DESC LIMIT ?，返回前又执行了 reversed(rows)。 这样写的目的与前提是什么？</p>
+<ul><li><strong>A</strong>. DESC 是为了让 id 更大者优先被删除，reversed 用于恢复插入顺序</li><li><strong>B</strong>. DESC 先取最近 N 条，reversed 还原为时间正序，前提是 id 单调递增</li><li><strong>C</strong>. DESC 用于避开索引，reversed 是为了把 metadata 解析提前</li><li><strong>D</strong>. DESC 与 reversed 相互抵消，等价于直接 ORDER BY id ASC LIMIT ?</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>DESC + LIMIT 取最近 N 条</li><li>反转还原时间正序</li><li>依赖 id 单调递增</li><li>直接 ASC LIMIT 会取到最早记录</li></ul>
+<p><strong>解析与常见错误</strong>：要取“最近 N 条”必须按 id 倒序加 LIMIT，否则会取到最早的 N 条；但喂给模型的消息必须是时间正序，所以再反转。这一做法依赖自增主键 id 单调递增，与插入时间同序。</p>
+<h5><code>q04-03-04</code>（简答 · ★★）四类记忆的边界与风险</h5>
+<p>请说明工作记忆、对话记忆、长期事实、事件日志四类记忆各自的保存内容、生命周期与主要风险。 并解释为什么设计原则要求「原始事件与给模型的摘要分开」。</p>
+<p><strong>提示</strong>：按保存内容、生命周期、风险三列对照；想想摘要出错时还能不能还原真相</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>工作记忆：当前任务消息与工具结果，一次运行，风险上下文过长</li><li>对话记忆：最近若干轮或摘要，一个会话，风险摘要丢细节</li><li>长期事实：用户授权保存的偏好或业务事实，跨会话，风险隐私、过期、错误写入</li><li>事件日志：工具调用、结果、耗时、停止原因，审计周期，风险敏感参数泄露</li><li>摘要会丢细节且不可回溯，原始事件保留可审计、可重建摘要</li><li>长期记忆需保留来源、时间、作用域，并支持删除与过期</li></ul>
+<p><strong>解析与常见错误</strong>：答题要按四类逐条给出三要素，不能只写名字。失分点在于把对话记忆与长期事实混为一谈，以及没答出“摘要丢细节、原始事件可审计”这一分离动机。</p>
+<h5><code>q04-03-05</code>（简答 · ★★★）适配器层为何隔离变化</h5>
+<p>无论工具来自本地 Python 函数、HTTP 服务还是 MCP Server，Agent 控制器只接收统一的名称、Schema 和执行结果。 请说明 ExternalToolAdapter / MCPToolAdapter 的职责，并解释为什么课程在 Day19 只建立内部契约、把 MCP 协议细节放到 Day27。</p>
+<p><strong>提示</strong>：先讲适配器做什么，再讲为什么推迟协议细节；注意 inputSchema 与 parameters 的字段名差异</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>适配器把外部工具包装成内部统一的「可调用 + 带 Schema」形态</li><li>控制器不感知背后是本地函数还是远程服务</li><li>适配器负责把内部调用翻译成外部协议，隔离变化</li><li>MCP 工具字段名是 inputSchema（驼峰），需转成 OpenAI tools 格式</li><li>协议细节多（无状态、_meta、请求头校验、错误码），放 Day17-20 会打断主线</li><li>Day19 先接最小可用 MCP 工具以满足验收，Day27 讲完整协议与自建 Server</li></ul>
+<p><strong>解析与常见错误</strong>：核心是“隔离变化”：适配器统一内部契约，让 Agent 不随外部协议变动而改动。失分点在于把内部接口 remote_client.call_tool 当成真实 MCP 请求格式，或只答“以后再讲”而说不出打断主线的理由。</p>
+<h5><code>q04-03-06</code>（代码 · ★★）实现按字符预算的上下文装配</h5>
+<p>实现 build_working_memory(history, max_chars=8000)。 history 是时间正序的消息列表，每项含 role 与 content。 要求：从最新消息往前累加 content 长度，超过预算就停止；至少保留一条；返回结果按时间正序。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def build_working_memory(history: list[dict], max_chars: int = 8000) -&gt; list[dict[str, str]]:
+    # 从最新往前取，超过预算停止，最后反转回时间正序
+    pass</code></pre>
+<p><strong>提示</strong>：判断条件里为什么要先判断 selected 非空；返回前别忘了再反转一次</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用 reversed(history) 从最新往前遍历</li><li>条件必须是 selected and used + size > max_chars</li><li>保证至少保留一条消息</li><li>累加 used 后返回前再 reversed 回正序</li><li>教学版按字符计数，生产应换 tokenizer</li></ul>
+<p><strong>解析与常见错误</strong>：关键是“至少保留一条”：若写成 used + size > max_chars 而不判断 selected，第一条超长消息会被直接丢弃，导致空上下文。另一常见错误是忘记最终反转，把倒序消息喂给模型。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def build_working_memory(history: list[dict], max_chars: int = 8000) -&gt; list[dict[str, str]]:
+    selected: list[dict[str, str]] = []
+    used = 0
+    for item in reversed(history):
+        size = len(item["content"])
+        if selected and used + size &gt; max_chars:
+            break
+        selected.append({"role": item["role"], "content": item["content"]})
+        used += size
+    return list(reversed(selected))
+
+
+if __name__ == "__main__":
+    history = [
+        {"role": "user", "content": "a" * 100},
+        {"role": "assistant", "content": "b" * 100},
+        {"role": "user", "content": "c" * 100},
+    ]
+    print(build_working_memory(history, max_chars=150))</code></pre>
+<p></details></p>
+<h5><code>q04-03-07</code>（代码 · ★★★）把 MCP 工具适配成内部 Tool</h5>
+<p>实现 MCPToolAdapter：构造时接收 client 与 tool_spec（含 name、description、inputSchema）。 要求提供 schema() 返回 OpenAI Function Calling 的 tools 格式，并提供 __call__(**kwargs) 转发到 client.call_tool。 注意 MCP 的字段名是 inputSchema（驼峰）。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>class MCPToolAdapter:
+    """把 MCP 工具适配成内部 Tool。"""
+
+    def __init__(self, client, tool_spec: dict):
+        # 读取 name / description / inputSchema
+        pass
+
+    def schema(self) -&gt; dict:
+        # 转成 OpenAI tools 格式
+        pass
+
+    def __call__(self, **kwargs) -&gt; dict:
+        # 转发调用
+        pass</code></pre>
+<p><strong>提示</strong>：OpenAI 格式里 parameters 是外层键，MCP 里叫 inputSchema；description 缺失时应给默认空串</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>从 tool_spec 读 name、description、inputSchema</li><li>字段名是 inputSchema 驼峰，不是 parameters</li><li>schema() 包成 type=function 的嵌套结构</li><li>__call__ 转发 client.call_tool(name, kwargs)</li><li>适配器隔离外部协议，Agent 无需感知来源</li></ul>
+<p><strong>解析与常见错误</strong>：易错点是把 MCP 的 inputSchema 直接当成 OpenAI 的 parameters 键名，或在 schema() 里漏掉 type=function 外层。适配器的价值在于统一内部契约，让 Agent 不区分本地函数与远程服务。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>class MCPToolAdapter:
+    """把 MCP 工具适配成内部 Tool。对 Agent 来说它与本地工具没有区别。"""
+
+    def __init__(self, client, tool_spec: dict):
+        self.client = client
+        self.name = tool_spec["name"]
+        self.description = tool_spec.get("description", "")
+        # 注意字段名是 inputSchema（驼峰），不是 parameters
+        self.parameters = tool_spec["inputSchema"]
+
+    def schema(self) -&gt; dict:
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": self.parameters,
+            },
+        }
+
+    def __call__(self, **kwargs) -&gt; dict:
+        return self.client.call_tool(self.name, kwargs)
+
+
+class FakeClient:
+    def call_tool(self, name, args):
+        return {"tool": name, "args": args}
+
+
+if __name__ == "__main__":
+    spec = {
+        "name": "search_policy",
+        "description": "查询企业制度知识库",
+        "inputSchema": {"type": "object", "properties": {"question": {"type": "string"}}},
+    }
+    adapter = MCPToolAdapter(FakeClient(), spec)
+    print(adapter.schema())
+    print(adapter(**{"question": "年假有几天？"}))</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -983,7 +1497,109 @@ class CopilotService:
 <p>学生如果能独立手写并测试这条循环，后续学习 LangGraph、CrewAI 或其他框架时，就能把框架概念映射到状态、节点、工具、记忆和终止条件，而不是只会复制示例代码。</p>
 <h3>4.10 教师参考资料</h3>
 <ul><li><a href="https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/server/tools.mdx" target="_blank" rel="noreferrer">MCP 2026-07-28 Tools 规范</a>：核对工具名称、Schema、调用结果与请求元数据要求。</li><li><a href="https://modelcontextprotocol.io/specification/draft/server/tools" target="_blank" rel="noreferrer">MCP Tools 当前草案</a>：用于授课前检查规范是否继续演进。</li><li><a href="https://pydantic.dev/docs/validation/2.11/api/pydantic/base_model/" target="_blank" rel="noreferrer">Pydantic BaseModel</a>：核对参数模型和运行时验证接口。</li></ul>
-<blockquote>链接与示例于 2026-09-15 核对。本章用内部 <code>Tool</code> 契约隔离协议变化；Day 27 再按课程当时锁定的 MCP SDK 完成 Server 与 Client 实战。</blockquote></div>
+<blockquote>链接与示例于 2026-09-15 核对。本章用内部 <code>Tool</code> 契约隔离协议变化；Day 27 再按课程当时锁定的 MCP SDK 完成 Server 与 Client 实战。</blockquote>
+<h4>4.5.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q04-04-01</code> ~ <code>q04-04-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q04-04-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">住宿超标任务缺少依据时</td></tr><tr><td style="text-align:left"><code>q04-04-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">request_id 的作用</td></tr><tr><td style="text-align:left"><code>q04-04-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">假模型测试的断言含义</td></tr><tr><td style="text-align:left"><code>q04-04-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">服务层为何先落库用户消息</td></tr><tr><td style="text-align:left"><code>q04-04-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">三种 Agent 范式如何选</td></tr><tr><td style="text-align:left"><code>q04-04-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现会话隔离的记忆读取</td></tr><tr><td style="text-align:left"><code>q04-04-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">脚本化假模型覆盖未知工具分支</td></tr></tbody></table>
+<h5><code>q04-04-01</code>（单选 · ★）住宿超标任务缺少依据时</h5>
+<p>用户问「上海出差住 3 晚，每晚 520 元，是否超标」。Agent 调用 search_knowledge 后，知识库中并没有上海住宿标准。 此时正确的处理是什么？</p>
+<ul><li><strong>A</strong>. 明确说明缺少上海标准这一依据，不自行编造额度</li><li><strong>B</strong>. 按通用标准 500 元/晚判断超标并给出差额</li><li><strong>C</strong>. 用 calculator 估算一个合理额度再下结论</li><li><strong>D</strong>. 直接回答「不超标」，因为 520 元接近常见标准</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>检索不到标准即缺少依据</li><li>不得编造额度</li><li>应明确告知用户无法判定</li><li>可提示补充制度来源</li></ul>
+<p><strong>解析与常见错误</strong>：教材要求：若知识库没有上海标准，必须明确说明缺少依据，不自行编造额度。B、C、D 都是凭空造标准，属于幻觉，即使数值看起来合理也不可接受。</p>
+<h5><code>q04-04-02</code>（单选 · ★★）request_id 的作用</h5>
+<p>CopilotService.handle 中，每次请求先由 uuid4 生成 request_id，写入用户消息 metadata，并随 assistant 消息和返回体一起保存。 这样设计最核心的目的是什么？</p>
+<ul><li><strong>A</strong>. 串联 API、Agent、工具和数据库日志，便于按请求追溯每一步</li><li><strong>B</strong>. 保证同一会话内多条消息按时间顺序排列</li><li><strong>C</strong>. 让模型在生成时能识别当前请求的唯一性</li><li><strong>D</strong>. 减少 SQLite 写入次数以提升吞吐</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>request_id 是跨层关联键</li><li>贯穿 API/Agent/工具/日志</li><li>便于审计与答辩追溯</li><li>与排序、性能无关</li></ul>
+<p><strong>解析与常见错误</strong>：request_id 是贯穿 API、Agent、工具调用与数据库日志的关联键，答辩时按它解释每一步动作。它不负责排序（那是时间戳）、不进入模型上下文、也不减少写入。</p>
+<h5><code>q04-04-03</code>（单选 · ★★）假模型测试的断言含义</h5>
+<p>测试用 ScriptedLLM 依次返回：第 1 轮请求 calculator(a=3,b=4,operator=*)，第 2 轮返回文本「结果是 12。」且无工具调用。max_steps=3。 断言 result.steps == 2 说明什么？</p>
+<ul><li><strong>A</strong>. 控制器执行了两轮「模型决策」，第 2 轮给出最终答案后停止</li><li><strong>B</strong>. 工具被调用了两次</li><li><strong>C</strong>. 模型共产生了 2 条 tool_calls</li><li><strong>D</strong>. 控制器因达到 max_steps 而终止</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>steps 是控制器循环轮数</li><li>第 2 轮无工具调用即结束</li><li>stop_reason 为 completed</li><li>未达 max_steps</li></ul>
+<p><strong>解析与常见错误</strong>：steps 记录的是控制器循环轮数：第 1 轮决策触发工具，第 2 轮决策直接给出最终答案，stop_reason 为 completed。工具只调用 1 次，也未触及 max_steps。</p>
+<h5><code>q04-04-04</code>（简答 · ★★）服务层为何先落库用户消息</h5>
+<p>CopilotService.handle 在调用 agent.run 之前，先把用户消息写入 memory。 请说明这样安排的理由，并分析如果改成「等 Agent 返回后再一起写入」会带来哪些问题。</p>
+<p><strong>提示</strong>：想想模型超时或抛异常时会发生什么；审计日志需要还原用户原始输入</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用户消息先落库，模型失败仍保留问题记录</li><li>便于排障与审计：知道用户问了什么</li><li>后写会导致失败请求无痕，无法复盘</li><li>后写还可能丢失并发下的会话顺序</li><li>与 request_id 配合形成完整链路</li></ul>
+<p><strong>解析与常见错误</strong>：要点是「失败也要留痕」。常见失分是只答「性能更好」或「顺序更对」，没抓住失败场景下的可追溯性，也没联系 request_id 的链路作用。</p>
+<h5><code>q04-04-05</code>（简答 · ★★★）三种 Agent 范式如何选</h5>
+<p>ReAct 风格、Plan-and-Solve、Reflection 三种范式在控制方式、适合任务和主要风险上各不相同。 请对比三者，并说明：面对「信息不断变化、需要工具反馈」的任务应选哪种，为什么；另外两种各自的代价是什么。</p>
+<p><strong>提示</strong>：从控制权在哪一步切入；注意「初始计划错误会传递」这条风险</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>ReAct 每步按新观察选下一动作</li><li>适合信息变化、需工具反馈的任务</li><li>ReAct 风险是步数多、可能循环</li><li>Plan-and-Solve 先计划后执行，初始计划错误会传递</li><li>Reflection 生成后评审修正，成本高、可能反复改</li></ul>
+<p><strong>解析与常见错误</strong>：答题要落到控制方式差异，而不是泛泛说「都行」。选 ReAct 的理由是它能根据工具返回的新观察调整动作。常见失分是忽略 Plan-and-Solve 的计划错误传递和 Reflection 的成本与反复修改代价。</p>
+<h5><code>q04-04-06</code>（代码 · ★★）实现会话隔离的记忆读取</h5>
+<p>MemoryStore 需要保证会话隔离：不同 session_id 的历史不能互相污染。 请实现 recent(session_id, limit) 方法，返回该会话最近 limit 条消息（按写入顺序，最新的在最后），且只返回该会话的记录。 消息结构为 dict：{"role": str, "content": str, "metadata": dict}。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>class MemoryStore:
+    def __init__(self):
+        self._data = {}  # session_id -&gt; list[dict]
+
+    def append(self, session_id, role, content, metadata=None):
+        self._data.setdefault(session_id, []).append(
+            {"role": role, "content": content, "metadata": metadata or {}}
+        )
+
+    def recent(self, session_id, limit=12):
+        # TODO: 返回该会话最近 limit 条消息
+        pass</code></pre>
+<p><strong>提示</strong>：不要遍历所有会话再过滤，直接按 key 取；注意切片方向：最新在末尾</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>按 session_id 取对应列表</li><li>未知会话返回空列表</li><li>用切片取末尾 limit 条</li><li>保持写入顺序，最新在最后</li><li>limit<=0 时返回空</li></ul>
+<p><strong>解析与常见错误</strong>：关键是按 session_id 隔离取数，再用 items[-limit:] 取最近若干条。常见错误是返回 items[:limit]（拿到最旧的）、跨会话拼接、或对 limit<=0 未做处理导致返回全部。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>class MemoryStore:
+    def __init__(self):
+        self._data = {}
+
+    def append(self, session_id, role, content, metadata=None):
+        self._data.setdefault(session_id, []).append(
+            {"role": role, "content": content, "metadata": metadata or {}}
+        )
+
+    def recent(self, session_id, limit=12):
+        items = self._data.get(session_id, [])
+        if limit &lt;= 0:
+            return []
+        return items[-limit:]</code></pre>
+<p></details></p>
+<h5><code>q04-04-07</code>（代码 · ★★★）脚本化假模型覆盖未知工具分支</h5>
+<p>请用 ScriptedLLM 写一个测试，覆盖「模型请求一个未注册工具」的分支。 要求：假模型第 1 轮请求工具 not_exist，第 2 轮返回最终文本；断言 Agent 未执行该工具、循环正常结束、stop_reason 为 completed。 假设 ReactAgent 只注册 CALCULATOR_SCHEMA，未注册工具会被拒绝并把结构化错误作为观察返回给模型。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def test_unknown_tool_is_rejected():
+    fake = ScriptedLLM([
+        # TODO: 第 1 轮请求未注册工具 not_exist
+        # TODO: 第 2 轮返回最终文本
+    ])
+    agent = ReactAgent(fake, [CALCULATOR_SCHEMA], max_steps=3)
+    result = agent.run("随便问点什么")
+    # TODO: 断言</code></pre>
+<p><strong>提示</strong>：未注册工具应被白名单拒绝并回结构化错误；断言工具未真正执行，而不只是模型没再调用</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>第 1 轮构造未注册工具调用</li><li>第 2 轮返回无工具调用的文本</li><li>断言 stop_reason 为 completed</li><li>断言未注册工具未被执行</li><li>断言 steps 为 2</li></ul>
+<p><strong>解析与常见错误</strong>：要点是用假模型稳定复现未知工具分支，并断言「拒绝而非执行」。常见错误是只断言最终文本、忘记断言工具未执行，或让假模型一直请求工具导致触及 max_steps 而非 completed。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def test_unknown_tool_is_rejected():
+    fake = ScriptedLLM([
+        ModelTurn(None, [ToolCall("c1", "not_exist", {"x": 1})]),
+        ModelTurn("该工具不存在，无法执行。", []),
+    ])
+    agent = ReactAgent(fake, [CALCULATOR_SCHEMA], max_steps=3)
+    result = agent.run("随便问点什么")
+
+    assert result.stop_reason == "completed"
+    assert result.steps == 2
+    assert result.answer == "该工具不存在，无法执行。"
+    executed = [s for s in result.steps if getattr(s, "name", None) == "not_exist"]
+    assert executed == []</code></pre>
+<p></details></p>
+<hr></div>
   </div>
 </section>
 

@@ -170,8 +170,8 @@ body.ui-hidden .bottom-bar,body.ui-hidden .brand,body.ui-hidden .scene-info{opac
         <button class="ctrl-btn" id="btnPrev" title="上一章 (←)">⏮</button>
         <button class="ctrl-btn" id="btnPlay" title="播放/暂停 (Space)">⏸</button>
         <button class="ctrl-btn" id="btnNext" title="下一章 (→)">⏭</button>
-        <button class="ctrl-btn" id="btnChapters" title="章节">☰</button>
-        <button class="ctrl-btn" id="btnFs" title="全屏 (F)">⛶</button>
+        <button class="ctrl-btn" id="btnChapters" title="章节"></button>
+        <button class="ctrl-btn" id="btnFs" title="全屏 (F)"></button>
       </div>
     </div>
   </div>
@@ -479,11 +479,11 @@ const SCENES = [
   init(){
     this.t=0;
     this.elems = [
-      {label:'角色', sub:'Persona', icon:'🎭', color:C.pink, x:0, y:0},
-      {label:'任务', sub:'Task', icon:'🎯', color:C.cyan, x:0, y:0},
-      {label:'上下文', sub:'Context', icon:'📚', color:C.green, x:0, y:0},
-      {label:'格式', sub:'Format', icon:'📐', color:C.amber, x:0, y:0},
-      {label:'约束', sub:'Constraints', icon:'⚖️', color:C.purple, x:0, y:0}
+      {label:'角色', sub:'Persona', icon:'', color:C.pink, x:0, y:0},
+      {label:'任务', sub:'Task', icon:'', color:C.cyan, x:0, y:0},
+      {label:'上下文', sub:'Context', icon:'', color:C.green, x:0, y:0},
+      {label:'格式', sub:'Format', icon:'', color:C.amber, x:0, y:0},
+      {label:'约束', sub:'Constraints', icon:'', color:C.purple, x:0, y:0}
     ];
   },
   update(ctx,p,dt){
@@ -630,7 +630,7 @@ const SCENES = [
       {text:'小明有 5 个苹果，给了小红 2 个，', sub:'初始状态', color:C.cyan},
       {text:'又买了 3 个，', sub:'中间变化', color:C.green},
       {text:'还被小华拿走了 1 个。', sub:'最终变化', color:C.pink},
-      {text:'小明现在有几个苹果？', sub:'答案：5-2+3-1 = 5个 ✓', color:C.amber, isAns:true}
+      {text:'小明现在有几个苹果？', sub:'答案：5-2+3-1 = 5个 ', color:C.amber, isAns:true}
     ];
   },
   update(ctx,p,dt){

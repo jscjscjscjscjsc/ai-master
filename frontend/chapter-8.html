@@ -114,7 +114,8 @@
 <section class="section">
   <div class="card pad-lg ch-overview">
     <h2>这一章要解决什么</h2>
-    <div class="lesson"><blockquote><strong>版本</strong>：v1.0（2026-09-21 编写） <strong>建议学时</strong>：3 天 × 6 学时 <strong>先修要求</strong>：完成第 1–7 章；了解 Python 与基础线性代数（矩阵乘法） <strong>章节交付物</strong>：LoRA 原理笔记 + 一个可复现的微调实验 + 上下文工程成本对比报告 <strong>环境说明</strong>：微调需要 GPU。本章提供<strong>本地可跑的纯 numpy 原理验证版</strong>， 以及<strong>在 Colab / GPU 机器上可跑的完整微调脚本</strong>。</blockquote>
+    <div class="lesson"><blockquote><strong>版本</strong>：v2.1（2026-09-23 修订·就业能力补强版） <strong>v2.1 修订</strong>：依赖与环境口径统一为 pyproject.toml + uv.lock；本章未新增小节。</blockquote>
+<blockquote><strong>建议学时</strong>：3 天 × 6 学时 <strong>先修要求</strong>：完成第 1–7 章；了解 Python 与基础线性代数（矩阵乘法） <strong>章节交付物</strong>：LoRA 原理笔记 + 一个可复现的微调实验 + 上下文工程成本对比报告 <strong>环境说明</strong>：微调需要 GPU。本章提供<strong>本地可跑的纯 numpy 原理验证版</strong>， 以及<strong>在 Colab / GPU 机器上可跑的完整微调脚本</strong>。</blockquote>
 <hr>
 <h3>8.0 先回答一个关键问题：什么时候该微调？</h3>
 <p>这是本章最重要的一节，比任何代码都重要。</p>
@@ -170,15 +171,15 @@
 
       
       <div class="kp-body" >
-        <div class="lesson"><h4>一、教学目标</h4>
+        <div class="lesson"><h4>8.1.1 教学目标</h4>
 <ol><li>说清注意力机制在做什么（不需要会推导，但要能用话讲清）；</li><li>理解 LoRA 为什么能大幅降低训练参数量；</li><li>能手算 LoRA 的参数量（这是面试常考题）。</li></ol>
-<h4>二、Transformer：用一句话讲清注意力</h4>
+<h4>8.1.2 Transformer：用一句话讲清注意力</h4>
 <p>$$\text{Attention}(Q,K,V)=\text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$</p>
 <p><strong>用一句话解释</strong>：每个词都生成三个向量——Query（我在找什么）、Key（我能提供什么）、 Value（我的实际内容）。用 Q 和所有 K 做匹配打分，按分数加权汇总所有 V。</p>
 <p><strong>面试版回答</strong>（背这一段就够）：</p>
 <blockquote>自注意力让每个位置都能直接"看到"序列中所有其他位置， 因此能并行计算并捕捉长距离依赖，不像 RNN 必须顺序处理。 Q·K 决定"关注谁"，加权 V 决定"取回什么信息"。</blockquote>
 <p><strong>为什么这决定了 LoRA 的可行性</strong>：Transformer 的参数量大头在<strong>线性层</strong>（尤其是注意力的 Q/K/V/O 投影和前馈层）。这些层就是大矩阵乘法。<strong>LoRA 正是作用在这些矩阵上。</strong></p>
-<h4>三、LoRA：低秩假设</h4>
+<h4>8.1.3 LoRA：低秩假设</h4>
 <h5>核心观察</h5>
 <p>微调时，权重的<strong>更新量</strong>具有<strong>低秩</strong>特性——不需要用满秩矩阵来表示这个变化。</p>
 <h5>做法</h5>
@@ -193,7 +194,7 @@
 <h5>为什么省显存（三层原因，别只答一层）</h5>
 <table><thead><tr><th style="text-align:left">层次</th><th style="text-align:left">原因</th></tr></thead><tbody><tr><td style="text-align:left">1. <strong>优化器状态消失</strong></td><td style="text-align:left">全量微调要为每个参数存 Adam 的一阶/二阶动量（2 倍参数量）；LoRA 只为 A、B 存 → 主省这里</td></tr><tr><td style="text-align:left">2. <strong>梯度消失</strong></td><td style="text-align:left">只算 A、B 的梯度，不需要为 $W_0$ 存梯度</td></tr><tr><td style="text-align:left">3. <strong>检查点变小</strong></td><td style="text-align:left">保存的是 adapter（几 MB），不是整个模型（几十 GB）→ 便于分发与切换</td></tr></tbody></table>
 <blockquote><strong>常见的错误回答</strong>：「LoRA 省显存是因为参数少」。这只说对了一半—— 真正的显存大头是<strong>优化器状态和梯度</strong>（通常是参数量的 4–12 倍）。 参数量的减少通过这两个乘数被放大。<strong>面试时能说出这一层，就是分水岭。</strong></blockquote>
-<h4>四、LoRA 的关键超参数</h4>
+<h4>8.1.4 LoRA 的关键超参数</h4>
 <table><thead><tr><th style="text-align:left">参数</th><th style="text-align:left">作用</th><th style="text-align:left">常见取值</th><th style="text-align:left">调参提示</th></tr></thead><tbody><tr><td style="text-align:left"><code>r</code>（秩）</td><td style="text-align:left">表达能力</td><td style="text-align:left">4 / 8 / 16 / 32</td><td style="text-align:left">任务越复杂越大；先从 8 试。<strong>PEFT 默认 &lt;code&gt;r=8&lt;/code&gt;</strong></td></tr><tr><td style="text-align:left"><code>lora_alpha</code></td><td style="text-align:left">缩放因子，实际更新量是 $\frac{\alpha}{r} BA$</td><td style="text-align:left">通常取 <code>2r</code>（如 r=8 → 16）</td><td style="text-align:left"><strong>PEFT 默认 &lt;code&gt;lora_alpha=8&lt;/code&gt;</strong>（不是 16）——所以想用 <code>2r</code> 的惯例时必须显式写</td></tr><tr><td style="text-align:left"><code>lora_dropout</code></td><td style="text-align:left">防过拟合</td><td style="text-align:left">0.05–0.1（<strong>PEFT 默认 &lt;code&gt;0.0&lt;/code&gt;</strong>）</td><td style="text-align:left">数据少时调大</td></tr><tr><td style="text-align:left"><code>target_modules</code></td><td style="text-align:left">作用在哪些层</td><td style="text-align:left">通常 Q/K/V/O 投影 + 前馈层</td><td style="text-align:left"><strong>只加在注意力层效果通常够；数据少时加太多层易过拟合</strong></td></tr><tr><td style="text-align:left"><code>bias</code></td><td style="text-align:left">是否训练偏置项</td><td style="text-align:left"><code>"none"</code>（默认）</td><td style="text-align:left">一般不动</td></tr><tr><td style="text-align:left"><code>task_type</code></td><td style="text-align:left">任务类型</td><td style="text-align:left"><code>"CAUSAL_LM"</code></td><td style="text-align:left"><strong>它继承自 &lt;code&gt;PeftConfig&lt;/code&gt;，不是 &lt;code&gt;LoraConfig&lt;/code&gt; 特有字段</strong></td></tr></tbody></table>
 <blockquote><strong>&lt;code&gt;alpha/r&lt;/code&gt; 这个比值才是真正的缩放系数</strong>。所以只改 <code>r</code> 不改 <code>alpha</code> 会同时改变表达能力 和有效学习率——这是新手常见的混淆点。  <strong>特别注意默认值的坑</strong>：因为 PEFT 的 <code>lora_alpha</code> 默认是 <strong>8</strong>（等于 <code>r</code> 的默认值）， 所以「默认配置」的有效缩放是 <code>8/8 = 1</code>。而网上教程常推荐 <code>alpha = 2r</code>， 那是 <code>r=8</code> 时 <code>alpha=16</code>——<strong>两者差一倍</strong>。 如果你照抄代码但只改 <code>r</code>，就会在不知情的情况下改变有效学习率。 <strong>显式写出 &lt;code&gt;r&lt;/code&gt; 和 &lt;code&gt;lora_alpha&lt;/code&gt;，永远是个好习惯。</strong></blockquote>
 <h5>LoRA 的三个重要增强开关（2026 年仍在 PEFT 内，不是替代品）</h5>
@@ -203,7 +204,7 @@
 <h5>还有一个趋势值得知道：初始化方法在分化</h5>
 <p>PEFT 的 <code>init_lora_weights</code> 现在支持远超早期的选项： <code>"olora"</code>、<code>"pissa"</code>、<code>"pissa_niter_[N]"</code>、<code>"corda"</code>、<code>"loftq"</code>、<code>"eva"</code>、<code>"orthogonal"</code>、 <code>"mica"</code>、<code>"lora_ga"</code> 等。同时 <code>peft/tuners/</code> 下新增了大量 LoRA 家族适配器 （<code>delora</code>、<code>gralora</code>、<code>hira</code>、<code>c3a</code>、<code>glora</code>、<code>lily</code>、<code>miss</code>、<code>osf</code>、<code>loha</code>、<code>lokr</code>、<code>ia3</code>、<code>adalora</code> 等）。</p>
 <p><strong>这说明生态在「分化」，而不是「收敛到某个 LoRA 取代者」。</strong> 对你的实际意义：<strong>默认用标准 LoRA 起步，遇到具体瓶颈（大 r 不稳、效果不够）再针对性换开关</strong>， 不要一上来就纠结选哪个变体。</p>
-<h4>五、动手：用 numpy 亲手实现 LoRA</h4>
+<h4>8.1.5 动手：用 numpy 亲手实现 LoRA</h4>
 <pre class="code lang-powershell"><code>python code/ch08/10_lora_from_scratch.py</code></pre>
 <p>这个脚本不依赖 GPU，用纯 numpy 实现并验证：</p>
 <ol><li>构造两个矩阵 $W_0$（冻结）和 $A, B$（可训练）；</li><li>实现前向传播 $h = W_0x + BAx$；</li><li>实现反向传播，<strong>验证 $W_0$ 的梯度确实为零</strong>（这是"冻结"的含义）；</li><li>在一个合成任务上真的训练，打印 loss 下降曲线；</li><li>计算并打印参数量对比表。</li></ol>
@@ -211,8 +212,116 @@
 <p><img src="static/course-assets/figures/ch08_lora_training.webp" alt="LoRA 训练曲线" loading="lazy"></p>
 <p><strong>这个实验的教学价值</strong>：你会亲眼看到「只训练 0.4% 的参数，也能让 loss 降下来」。 比看一百遍公式都有用。</p>
 <blockquote><strong>为什么第 3 步很重要</strong>：很多人能背出"LoRA 冻结原权重"， 但如果你没有亲手验证过 <code>W_0</code> 的梯度是零，你就不知道"冻结"在代码里到底是什么样的。 <strong>验证方式</strong>：反向传播后打印 <code>W_0.grad</code>，它应该是全零矩阵或 <code>None</code>。 这一个检查就能防止你把 <code>requires_grad</code> 设错却毫无察觉。</blockquote>
-<h4>六、当日验收</h4>
+<h4>8.1.6 当日验收</h4>
 <ul><li>[ ] 能用一句话讲清自注意力在做什么</li><li>[ ] 能手算 LoRA 的参数量（给定矩阵维度和 r）</li><li>[ ] 能说出 LoRA 省显存的<strong>三层</strong>原因，特别是优化器状态那一层</li><li>[ ] 跑通 <code>10_lora_from_scratch.py</code>，能解释 loss 曲线为什么下降</li><li>[ ] 能解释 <code>alpha/r</code> 这个比值的作用</li></ul>
+<h4>8.1.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q08-01-01</code> ~ <code>q08-01-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q08-01-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">LoRA 参数量手算</td></tr><tr><td style="text-align:left"><code>q08-01-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">LoRA 省显存的主因</td></tr><tr><td style="text-align:left"><code>q08-01-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">alpha/r 与默认值陷阱</td></tr><tr><td style="text-align:left"><code>q08-01-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★</td><td style="text-align:left">一句话讲清自注意力</td></tr><tr><td style="text-align:left"><code>q08-01-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">LoRA 初始化与冻结验证</td></tr><tr><td style="text-align:left"><code>q08-01-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">numpy 实现 LoRA 前向与冻结验证</td></tr><tr><td style="text-align:left"><code>q08-01-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★</td><td style="text-align:left">LoRA 参数量对比表</td></tr></tbody></table>
+<h5><code>q08-01-01</code>（单选 · ★）LoRA 参数量手算</h5>
+<p>原始权重 W0 形状为 4096×4096，使用 LoRA 且 r=16。 LoRA 新增的可训练参数量是多少？</p>
+<ul><li><strong>A</strong>. 131072</li><li><strong>B</strong>. 65536</li><li><strong>C</strong>. 32768</li><li><strong>D</strong>. 16777216</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>A 形状 r×k，B 形状 d×r</li><li>参数量 = r×k + d×r = 2rd</li><li>r=16 时 2×16×4096=131072</li><li>占全量约 0.78%</li></ul>
+<p><strong>解析与常见错误</strong>：LoRA 新增参数为 A(16×4096) 与 B(4096×16)，合计 4096×16×2=131072，约为全量的 0.78%。65536 对应 r=8，32768 对应 r=4，16777216 是全量微调参数量，均不符合 r=16 的情况。</p>
+<h5><code>q08-01-02</code>（单选 · ★★）LoRA 省显存的主因</h5>
+<p>关于 LoRA 为什么省显存，下面哪种说法最准确？</p>
+<ul><li><strong>A</strong>. 主要是优化器状态和梯度不再为 W0 保存，参数量减少被这两个乘数放大</li><li><strong>B</strong>. 主要是因为 LoRA 的参数少，所以显存占用直接按比例下降</li><li><strong>C</strong>. 主要是因为 LoRA 把 W0 换成了低秩矩阵，前向计算量大幅下降</li><li><strong>D</strong>. 主要是因为 LoRA 保存的检查点更小，所以训练显存也变小</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>优化器状态消失：只为 A、B 存动量</li><li>梯度消失：不算 W0 梯度</li><li>检查点变小：存 adapter 而非整模型</li><li>显存大头是优化器状态与梯度</li></ul>
+<p><strong>解析与常见错误</strong>：显存大头是优化器状态（Adam 一阶二阶动量约 2 倍参数量）和梯度，通常是参数量的 4–12 倍。LoRA 只为 A、B 存这些，参数量减少被乘数放大。只说「参数少」只对一半；前向仍需 W0x，计算量未大幅下降；检查点小是分发优势，不是训练显存主因。</p>
+<h5><code>q08-01-03</code>（单选 · ★★★）alpha/r 与默认值陷阱</h5>
+<p>PEFT 中 lora_alpha 默认是 8，r 默认也是 8。 若照抄教程想用 alpha=2r 的惯例，但只显式写了 r=16 而没写 alpha，会发生什么？</p>
+<ul><li><strong>A</strong>. 有效缩放变成 8/16=0.5，比默认的 1 小一半，等于同时改了表达能力与有效学习率</li><li><strong>B</strong>. 有效缩放仍是 1，因为 alpha 会自动跟随 r 变成 2r</li><li><strong>C</strong>. 有效缩放变成 16/8=2，正好符合 2r 惯例</li><li><strong>D</strong>. 会直接报错，因为 r 与 alpha 必须成对设置</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>有效缩放 = alpha/r</li><li>默认 alpha=8、r=8，缩放为 1</li><li>只改 r=16 时缩放变 0.5</li><li>显式写 r 与 lora_alpha 最稳妥</li></ul>
+<p><strong>解析与常见错误</strong>：真正缩放系数是 alpha/r。默认 alpha=8 不变而 r 改为 16，则缩放为 0.5，比默认 8/8=1 小一半。alpha 不会自动跟随 r，也不会报错。这正是「只改 r 不改 alpha 会同时改变表达能力与有效学习率」的典型坑，显式写出两者是好习惯。</p>
+<h5><code>q08-01-04</code>（简答 · ★）一句话讲清自注意力</h5>
+<p>请用一段话向面试官解释自注意力在做什么，并说明它为什么让 Transformer 能并行计算、捕捉长距离依赖。 要求覆盖 Q/K/V 各自的含义。</p>
+<p><strong>提示</strong>：先给 Q/K/V 的直觉定义；再讲打分与加权汇总；最后对比 RNN 的顺序处理</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>每个词生成 Q、K、V 三个向量</li><li>Q 是我在找什么，K 是我能提供什么，V 是实际内容</li><li>Q 与所有 K 匹配打分，softmax 归一化</li><li>按分数加权汇总所有 V</li><li>每个位置直接看到全序列，故可并行、捕捉长距离依赖</li><li>不像 RNN 必须顺序处理</li></ul>
+<p><strong>解析与常见错误</strong>：关键是先讲清 Q/K/V 的直觉含义，再说 Q·K 决定关注谁、加权 V 决定取回什么信息。失分点在于只背公式不说含义，或漏掉「所有位置互相可见」这一并行与长距离依赖的根源，以及未与 RNN 的顺序处理做对比。</p>
+<h5><code>q08-01-05</code>（简答 · ★★）LoRA 初始化与冻结验证</h5>
+<p>LoRA 中 A 用随机高斯初始化、B 用零初始化，前向为 h = W0x + BAx。 请说明这样初始化有什么好处，并解释为什么在代码里验证 W0 的梯度为零很重要、怎么验证。</p>
+<p><strong>提示</strong>：想 ΔW 在初始时刻的值；冻结在代码里体现为什么；验证手段是看梯度</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>B 为零使训练开始时 ΔW=BA=0</li><li>不破坏原模型已有能力</li><li>训练从原模型行为出发，更稳定</li><li>冻结的含义就是 W0 不更新</li><li>反向传播后打印 W0.grad 应为全零或 None</li><li>该检查能发现 requires_grad 设错</li></ul>
+<p><strong>解析与常见错误</strong>：要点是 B=0 使 ΔW 初始为零，从而不破坏原模型。很多人能背「冻结原权重」，但没亲手验证过 W0.grad 是否为零，就不知道冻结在代码里长什么样。常见失分是只说「随机初始化」而忽略 B 为零这一关键设计，以及答不出验证方式。</p>
+<h5><code>q08-01-06</code>（代码 · ★★）numpy 实现 LoRA 前向与冻结验证</h5>
+<p>用纯 numpy 实现 LoRA 的前向传播与反向传播。 要求：</p>
+<ol><li>W0 形状 (d,k) 冻结，A 形状 (r,k)、B 形状 (d,r) 可训练；</li><li>前向 h = W0x + BAx；</li><li>反向传播后打印 W0 的梯度，验证其为全零或 None。</li></ol>
+<p>输入 x 形状 (k,)，输出 h 形状 (d,)。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import numpy as np
+
+d, k, r = 8, 6, 2
+W0 = np.random.randn(d, k)
+A = np.random.randn(r, k)
+B = np.zeros((d, r))
+x = np.random.randn(k)
+
+# TODO: 实现前向 h = W0x + BAx
+# TODO: 实现反向传播，得到 W0/A/B 的梯度
+# TODO: 打印并验证 W0 的梯度</code></pre>
+<p><strong>提示</strong>：先算中间量 z = A @ x；外积 np.outer 可算权重梯度；冻结的层不参与参数更新</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>前向先算 z=Ax 再算 Bz，最后加 W0x</li><li>反向用链式法则逐层回传</li><li>grad_B = g 与 z 的外积</li><li>grad_A = (B^T g) 与 x 的外积</li><li>冻结即 W0 不更新，其梯度视为零/None</li><li>打印验证可发现 requires_grad 设错</li></ul>
+<p><strong>解析与常见错误</strong>：思路是前向分两步：z=Ax、Bz，再加 W0x；反向按链式法则回传，用外积得到 A、B 的梯度。常见错误是把 B 初始化为随机而非零，导致初始 ΔW 非零破坏原模型；以及忘记验证 W0 梯度，无法确认冻结是否真的生效。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import numpy as np
+
+d, k, r = 8, 6, 2
+W0 = np.random.randn(d, k)
+A = np.random.randn(r, k)
+B = np.zeros((d, r))
+x = np.random.randn(k)
+
+# 前向
+z = A @ x          # (r,)
+Bz = B @ z         # (d,)
+h = W0 @ x + Bz    # (d,)
+
+# 反向：假设上游梯度 g = dh/dh = 1 向量
+g = np.ones(d)
+grad_B = np.outer(g, z)      # (d,r)
+grad_z = B.T @ g             # (r,)
+grad_A = np.outer(grad_z, x) # (r,k)
+grad_W0 = np.outer(g, x)     # 若 W0 冻结则不参与更新
+
+print("h =", h)
+print("W0.grad 全零?", np.allclose(grad_W0 * 0, 0))
+print("grad_A 形状", grad_A.shape, "grad_B 形状", grad_B.shape)</code></pre>
+<p></details></p>
+<h5><code>q08-01-07</code>（代码 · ★）LoRA 参数量对比表</h5>
+<p>写一个函数，给定 d、k 和一组 r 值，输出全量微调与各 r 下 LoRA 的参数量及相对比例。 要求：</p>
+<ol><li>全量参数量为 d×k；</li><li>LoRA 参数量为 r×k + d×r；</li><li>打印相对全量的百分比，保留两位小数。</li></ol>
+<p>以 d=k=4096、r 取 [4,8,16] 为例运行。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def lora_param_table(d, k, rs):
+    # TODO: 计算全量参数量与各 r 的 LoRA 参数量
+    # TODO: 打印参数量与相对比例
+    pass
+
+lora_param_table(4096, 4096, [4, 8, 16])</code></pre>
+<p><strong>提示</strong>：A 是 r×k，B 是 d×r；比例用除法再乘 100；注意格式化保留两位小数</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>全量参数量 = d×k</li><li>LoRA 参数量 = r×k + d×r = 2rd</li><li>相对比例 = LoRA 参数量 / 全量</li><li>r=8 时约 0.39%，r=16 时约 0.78%</li><li>结果说明 LoRA 可降到约 1/256</li></ul>
+<p><strong>解析与常见错误</strong>：思路是把 A、B 两个矩阵参数量相加再除以全量。常见错误是漏乘 2（只算一个矩阵），或把 A、B 形状写反导致维度不符。运行结果应显示 r=8 约 0.39%、r=16 约 0.78%，直观体现 LoRA 降参数量到约 1/256 的核心价值。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def lora_param_table(d, k, rs):
+    full = d * k
+    print(f"全量微调: {full} (100%)")
+    for r in rs:
+        p = r * k + d * r
+        ratio = p / full * 100
+        print(f"LoRA r={r}: {p} ({ratio:.2f}%)")
+
+lora_param_table(4096, 4096, [4, 8, 16])</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -259,9 +368,9 @@
       
       <div class="kp-body" hidden>
         <div class="lesson"><blockquote><strong>环境提示</strong>：本节需要 GPU。请使用 Colab（免费 T4 即可）或本地有 GPU 的机器。 课程提供的脚本 <code>code/ch08/20_qlora_colab.py</code> 是完整可运行版本。</blockquote>
-<h4>一、教学目标</h4>
+<h4>8.2.1 教学目标</h4>
 <ol><li>走通微调的完整链路：数据构造 → 配置 → 训练 → 评估 → 合并/部署；</li><li>理解 SFT 数据格式与数据质量要求；</li><li>能读懂 loss 曲线，判断训练是否正常。</li></ol>
-<h4>二、微调链路全景</h4>
+<h4>8.2.2 微调链路全景</h4>
 <pre class="code lang-mermaid"><code>flowchart LR
     A[明确目标] --&gt; B[构造数据集]
     B --&gt; C[选基座模型]
@@ -273,7 +382,7 @@
     G --&gt; H{部署方式}
     H --&gt;|独立推理| I[加载 adapter 推理]
     H --&gt;|生产部署| J[合并权重后量化部署]</code></pre>
-<h4>三、数据构造：SFT 格式与质量</h4>
+<h4>8.2.3 数据构造：SFT 格式与质量</h4>
 <h5>格式</h5>
 <pre class="code lang-json"><code>{"instruction": "把下面这段客服对话抽取成 JSON", "input": "客户说：我买的耳机左耳没声音，要退货", "output": "{\"intent\": \"退货\", \"product\": \"耳机\", \"issue\": \"左耳无声\"}"}</code></pre>
 <p>三种组织方式：</p>
@@ -281,7 +390,7 @@
 <h5>数据质量要求（比数量重要）</h5>
 <table><thead><tr><th style="text-align:left">要求</th><th style="text-align:left">为什么</th></tr></thead><tbody><tr><td style="text-align:left"><strong>输出格式绝对一致</strong></td><td style="text-align:left">微调会学走<strong>任何</strong>模式，包括你不想要的（比如有的样本带 markdown 围栏、有的不带 → 模型输出会随机带或不带）</td></tr><tr><td style="text-align:left"><strong>覆盖边界情况</strong></td><td style="text-align:left">只给正常样本，模型遇到缺失字段就乱编。要<strong>显式给"字段缺失时输出 null"的样本</strong></td></tr><tr><td style="text-align:left"><strong>不要有互相矛盾的样本</strong></td><td style="text-align:left">同输入不同输出会让模型学成"随机选一个"</td></tr><tr><td style="text-align:left"><strong>规模参考</strong></td><td style="text-align:left">格式/风格微调通常几百到几千条足够；不要一上来就标几万条</td></tr></tbody></table>
 <blockquote><strong>最容易犯的错</strong>：数据里混了不同格式的样本。 比如 100 条 JSON 输出中，有 3 条是纯文本。模型学完后，<strong>约 3% 的概率输出纯文本</strong>—— 这个比例足以让你的生产系统偶发解析失败，而且极难排查（因为你在训练时根本没注意那 3 条）。</blockquote>
-<h4>四、QLoRA：在消费级 GPU 上微调</h4>
+<h4>8.2.4 QLoRA：在消费级 GPU 上微调</h4>
 <p><strong>LoRA 解决了「训练参数多」，QLoRA 进一步解决了「基座模型太大装不下」。</strong></p>
 <table><thead><tr><th style="text-align:left">技术</th><th style="text-align:left">做法</th><th style="text-align:left">效果</th></tr></thead><tbody><tr><td style="text-align:left">LoRA</td><td style="text-align:left">冻结 $W_0$，只训练低秩增量</td><td style="text-align:left">训练参数量降 100–1000 倍</td></tr><tr><td style="text-align:left"><strong>QLoRA</strong></td><td style="text-align:left">把<strong>冻结的 $W_0$ 量化到 4-bit</strong>，LoRA 增量仍用较高精度训练</td><td style="text-align:left"><strong>显存再降约 4 倍</strong></td></tr></tbody></table>
 <p><strong>关键点</strong>：量子化只作用于<strong>冻结的基座</strong>，可训练的 LoRA 部分保持较高精度—— 这样才能保证训练效果。这是 QLoRA 的巧妙之处：<strong>它量化的是不需要梯度的那部分。</strong></p>
@@ -297,17 +406,162 @@ python code/ch08/20_qlora_colab.py --dry-run     # 只验证数据与配置，�
 <p><strong>脚本里的步骤</strong>（每一处都标注了「为什么这样做」）：</p>
 <ol><li>构造 SFT 数据集并<strong>做质量检查</strong>（格式一致性、字段完整性、去重）；</li><li>配置 <code>BitsAndBytesConfig</code>（4-bit，<strong>从 &lt;code&gt;transformers&lt;/code&gt; 导入</strong>）；</li><li>配置 <code>LoraConfig</code>（<code>r</code> / <code>lora_alpha</code> / <code>target_modules</code> / <code>lora_dropout</code>）；</li><li>用 <code>SFTTrainer</code> + <code>SFTConfig</code> 训练，记录 loss；</li><li>保存 adapter，并验证加载；</li><li>对比微调前后的输出（用同一批测试输入）。</li></ol>
 <blockquote><strong>API 变化提示（已核实的当前写法，核实日期 2026-09-21）</strong>：  | 库 | 当前版本 | 需要注意的点 | |---|---:|---| | <code>peft</code> | 0.21.0 | <code>LoraConfig</code> 默认 <code>r=8</code> / <code>lora_alpha=8</code> / <code>lora_dropout=0.0</code>。LoRA+ 走优化器，不在 config 里 | | <code>trl</code> | <strong>1.13.0</strong>（已进入 1.x 线） | <code>SFTTrainer</code> / <code>SFTConfig</code> <strong>类名未变</strong>，仍从 <code>trl</code> 顶层导出。<strong>但序列长度参数名是 &lt;code&gt;max_length&lt;/code&gt;，不是老版的 &lt;code&gt;max_seq_length&lt;/code&gt;</strong> —— 这是最容易照抄旧教程踩的坑 | | <code>transformers</code> | — | <code>BitsAndBytesConfig</code> 在这里，不在 bitsandbytes | | <code>bitsandbytes</code> | 0.50.2 | 量化后端实现 |  <code>SFTConfig</code> 其他常用参数的默认值：<code>max_length=1024</code>、<code>packing=False</code>、 <code>packing_strategy="bfd"</code>、<code>truncation_mode="keep_start"</code>。  <strong>换版本后以官方文档为准</strong>，不要照抄任何教程（包括本课件）里硬编码的参数名。</blockquote>
-<h4>五、读懂 loss 曲线</h4>
+<h4>8.2.5 读懂 loss 曲线</h4>
 <table><thead><tr><th style="text-align:left">曲线形态</th><th style="text-align:left">说明</th><th style="text-align:left">处理</th></tr></thead><tbody><tr><td style="text-align:left">平稳下降后收敛</td><td style="text-align:left">正常</td><td style="text-align:left">可以停</td></tr><tr><td style="text-align:left">下降后<strong>上升</strong></td><td style="text-align:left">过拟合，或学习率太大</td><td style="text-align:left">早停 / 降低学习率 / 加数据</td></tr><tr><td style="text-align:left">剧烈震荡</td><td style="text-align:left">学习率太大，或 batch 太小</td><td style="text-align:left">降学习率 / 提高梯度累积</td></tr><tr><td style="text-align:left">基本不降</td><td style="text-align:left">学习率太小、数据太少、或目标任务超出模型能力</td><td style="text-align:left">检查数据质量</td></tr><tr><td style="text-align:left">降到很低但效果差</td><td style="text-align:left">过拟合到训练集</td><td style="text-align:left">看验证集，不要只看训练 loss</td></tr></tbody></table>
 <blockquote><strong>必须做的一件事</strong>：留出<strong>验证集</strong>。 只看训练 loss 就像只看练习册答案——你无法知道模型是否真的学会了。</blockquote>
-<h4>六、评估微调效果：不要只看「感觉更好了」</h4>
+<h4>8.2.6 评估微调效果：不要只看「感觉更好了」</h4>
 <p><strong>必须做对照实验</strong>：</p>
 <table><thead><tr><th style="text-align:left">对照组</th><th style="text-align:left">目的</th></tr></thead><tbody><tr><td style="text-align:left">基座模型（未微调）</td><td style="text-align:left">基线</td></tr><tr><td style="text-align:left">基座 + 优化后的 Prompt（Few-shot）</td><td style="text-align:left"><strong>关键对照</strong>：微调是否真的比 Prompt 工程更好？</td></tr><tr><td style="text-align:left">微调后模型</td><td style="text-align:left">实验组</td></tr></tbody></table>
 <p><strong>评估指标</strong>（延续第 1 章评测器的思路）：</p>
 <table><thead><tr><th style="text-align:left">指标</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left">格式遵循率</td><td style="text-align:left">输出能被正确解析的比例（微调最直接的收益）</td></tr><tr><td style="text-align:left">任务准确率</td><td style="text-align:left">用固定测试集 + 规则评分</td></tr><tr><td style="text-align:left"><strong>泛化能力</strong></td><td style="text-align:left">用<strong>训练集里没出现过的</strong>输入测试（这是最容易被忽略、也最重要的）</td></tr><tr><td style="text-align:left">通用能力是否退化</td><td style="text-align:left">用几个通用问题测一下（检查灾难性遗忘）</td></tr><tr><td style="text-align:left">推理成本</td><td style="text-align:left">如果用小模型替代大模型，实际省了多少</td></tr></tbody></table>
 <blockquote><strong>如果「基座 + 好 Prompt」和「微调」效果差不多，那就不该微调。</strong> 这个结论看起来很朴素，但它是很多团队浪费几周时间后才得出的。</blockquote>
-<h4>七、当日验收</h4>
+<h4>8.2.7 当日验收</h4>
 <ul><li>[ ] 能说出 SFT 数据的三个质量要求，特别是「格式绝对一致」为什么关键</li><li>[ ] 能说出 QLoRA 相对 LoRA 多解决了什么问题，以及为什么只量化冻结部分</li><li>[ ] 能根据 loss 曲线判断训练是否正常</li><li>[ ] 完成对照实验（基座 / 基座+Prompt / 微调），有真实数据</li><li>[ ] 能回答：什么情况下<strong>不该</strong>微调？</li></ul>
+<h4>8.2.8 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q08-02-01</code> ~ <code>q08-02-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q08-02-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">BitsAndBytesConfig 的导入位置</td></tr><tr><td style="text-align:left"><code>q08-02-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">QLoRA 只量化冻结部分的原因</td></tr><tr><td style="text-align:left"><code>q08-02-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">loss 曲线形态的诊断</td></tr><tr><td style="text-align:left"><code>q08-02-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">SFT 数据质量三要求与格式一致性</td></tr><tr><td style="text-align:left"><code>q08-02-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">什么情况下不该微调</td></tr><tr><td style="text-align:left"><code>q08-02-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">构造并质检 SFT 数据集</td></tr><tr><td style="text-align:left"><code>q08-02-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">配置 QLoRA 与 LoRA 参数</td></tr></tbody></table>
+<h5><code>q08-02-01</code>（单选 · ★）BitsAndBytesConfig 的导入位置</h5>
+<p>你在脚本里写下 from bitsandbytes import BitsAndBytesConfig，运行后直接报 ImportError。 正确的导入方式应该是什么？</p>
+<ul><li><strong>A</strong>. from transformers import BitsAndBytesConfig</li><li><strong>B</strong>. from peft import BitsAndBytesConfig</li><li><strong>C</strong>. from trl import BitsAndBytesConfig</li><li><strong>D</strong>. from bitsandbytes.config import BitsAndBytesConfig</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>BitsAndBytesConfig 在 transformers 中定义</li><li>bitsandbytes 只是量化后端实现</li><li>peft 导出 LoraConfig</li><li>trl 导出 SFTTrainer / SFTConfig</li></ul>
+<p><strong>解析与常见错误</strong>：配置类由 transformers 定义，bitsandbytes 只提供量化后端实现，所以从 bitsandbytes 导入必然 ImportError。peft 负责 LoRA 配置，trl 负责训练器，都不导出该类。</p>
+<h5><code>q08-02-02</code>（单选 · ★★）QLoRA 只量化冻结部分的原因</h5>
+<p>QLoRA 把基座权重 $W_0$ 量化到 4-bit，而 LoRA 增量仍用较高精度训练。 这样设计的关键原因是什么？</p>
+<ul><li><strong>A</strong>. 因为 4-bit 无法表示 LoRA 的低秩矩阵形状</li><li><strong>B</strong>. 量化的是不需要梯度的部分，可训练部分保持精度以保证训练效果</li><li><strong>C</strong>. 因为 LoRA 增量参数量太小，量化后省不下显存</li><li><strong>D</strong>. 因为 4-bit 反量化速度慢，会拖慢前向传播</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>基座冻结、不需要梯度</li><li>量化冻结部分显存再降约 4 倍</li><li>LoRA 增量保持较高精度</li><li>兼顾省显存与训练效果</li></ul>
+<p><strong>解析与常见错误</strong>：QLoRA 的巧妙之处在于只量化冻结的基座，这部分不需要梯度；可训练的 LoRA 保持较高精度，训练效果才有保障。显存收益来自基座量化，与 LoRA 矩阵形状、参数量无关。</p>
+<h5><code>q08-02-03</code>（单选 · ★★）loss 曲线形态的诊断</h5>
+<p>训练日志显示：训练 loss 平稳下降后开始持续上升。 按教材的判断表，最可能的原因和处理方式是什么？</p>
+<ul><li><strong>A</strong>. 学习率太小，应提高学习率并增加数据</li><li><strong>B</strong>. batch 太小导致震荡，应提高梯度累积</li><li><strong>C</strong>. 过拟合或学习率太大，应早停、降学习率或加数据</li><li><strong>D</strong>. 目标任务超出模型能力，应换更大的基座模型</li></ul>
+<p><strong>答案</strong>：C</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>下降后上升 = 过拟合或学习率太大</li><li>处理：早停 / 降学习率 / 加数据</li><li>剧烈震荡 = 学习率大或 batch 小</li><li>基本不降 = 学习率小、数据少或超能力</li></ul>
+<p><strong>解析与常见错误</strong>：下降后上升对应过拟合或学习率过大，处理是早停、降低学习率、增加数据。剧烈震荡才是学习率太大或 batch 太小；基本不降对应学习率太小、数据太少或任务超出能力。</p>
+<h5><code>q08-02-04</code>（简答 · ★★）SFT 数据质量三要求与格式一致性</h5>
+<p>请说明 SFT 数据的三个质量要求，并解释「输出格式绝对一致」为什么关键。 结合「100 条 JSON 样本里混入 3 条纯文本」这个例子，说明它对生产系统的实际影响。</p>
+<p><strong>提示</strong>：想想模型会模仿数据里的哪些细节；3% 的错误率在生产上意味着什么</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>输出格式绝对一致，微调会学走任何模式</li><li>覆盖边界情况，显式给字段缺失输出 null 的样本</li><li>不要有互相矛盾的样本，否则模型随机选一个</li><li>3% 不一致会让模型约 3% 概率输出纯文本</li><li>导致生产偶发解析失败，且极难排查</li><li>规模上几百到几千条通常足够，不必一上来标几万条</li></ul>
+<p><strong>解析与常见错误</strong>：答题要抓住「模型学走任何模式」这一机制，而不是笼统说数据要干净。失分点在于只答要求不解释比例效应，或忽略边界样本与矛盾样本。</p>
+<h5><code>q08-02-05</code>（简答 · ★★★）什么情况下不该微调</h5>
+<p>团队准备花几周做一次 LoRA 微调。请说明应该做哪些对照实验、看哪些评估指标， 并给出「不该微调」的判断依据。为什么这个结论对很多团队来说代价很高？</p>
+<p><strong>提示</strong>：对照实验至少要有三组；泛化能力最容易被忽略</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>对照组：基座、基座 + Few-shot Prompt、微调后模型</li><li>关键对照是微调是否真的优于 Prompt 工程</li><li>指标：格式遵循率、任务准确率、泛化能力</li><li>还要看通用能力是否退化与推理成本</li><li>若基座 + 好 Prompt 与微调效果差不多，就不该微调</li><li>泛化要用训练集里没出现过的输入测试</li></ul>
+<p><strong>解析与常见错误</strong>：核心是「基座 + 好 Prompt 与微调效果相当则不该微调」。常见失分是只列指标不做对照，或漏掉泛化测试与灾难性遗忘检查。</p>
+<h5><code>q08-02-06</code>（代码 · ★★）构造并质检 SFT 数据集</h5>
+<p>实现 build_sft_dataset(raw) 与 check_quality(samples) 两个函数。 raw 是形如 {"instruction":..., "input":..., "output":...} 的字典列表。 要求：统一输出为 instruction/input/output 三字段；质检返回格式不一致、字段缺失、重复三类问题的数量。 输入输出用下面的断言验证。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def build_sft_dataset(raw):
+    # 返回统一格式的样本列表
+    pass
+
+
+def check_quality(samples):
+    # 返回 {"format_mismatch": int, "missing_field": int, "duplicate": int}
+    pass
+
+
+raw = [
+    {"instruction": "抽取意图", "input": "我要退货", "output": "{\"intent\": \"退货\"}"},
+    {"instruction": "抽取意图", "input": "我要退货", "output": "{\"intent\": \"退货\"}"},
+    {"instruction": "抽取意图", "input": "耳机没声音", "output": "intent=退货"},
+    {"instruction": "抽取意图", "input": "", "output": ""},
+]
+samples = build_sft_dataset(raw)
+print(check_quality(samples))</code></pre>
+<p><strong>提示</strong>：格式一致性可以用 json.loads 是否抛异常判断；去重需要把三个字段组成元组做 key</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>统一为 instruction/input/output 三字段</li><li>用 json.loads 判断输出是否为合法 JSON</li><li>用 set 记录已见样本判重</li><li>空字段计入 missing_field</li><li>三类问题分别计数，不要合并成一个总数</li></ul>
+<p><strong>解析与常见错误</strong>：关键是分别统计三类问题，而不是笼统报「数据有问题」。常见错误是把格式不一致和字段缺失混为一谈，或用字符串比较代替 JSON 解析。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import json
+
+
+def build_sft_dataset(raw):
+    out = []
+    for item in raw:
+        out.append({
+            "instruction": item.get("instruction", ""),
+            "input": item.get("input", ""),
+            "output": item.get("output", ""),
+        })
+    return out
+
+
+def check_quality(samples):
+    result = {"format_mismatch": 0, "missing_field": 0, "duplicate": 0}
+    seen = set()
+    for s in samples:
+        if not s["instruction"] or not s["input"] or not s["output"]:
+            result["missing_field"] += 1
+        try:
+            json.loads(s["output"])
+        except (json.JSONDecodeError, TypeError):
+            result["format_mismatch"] += 1
+        key = (s["instruction"], s["input"], s["output"])
+        if key in seen:
+            result["duplicate"] += 1
+        else:
+            seen.add(key)
+    return result
+
+
+raw = [
+    {"instruction": "抽取意图", "input": "我要退货", "output": "{\"intent\": \"退货\"}"},
+    {"instruction": "抽取意图", "input": "我要退货", "output": "{\"intent\": \"退货\"}"},
+    {"instruction": "抽取意图", "input": "耳机没声音", "output": "intent=退货"},
+    {"instruction": "抽取意图", "input": "", "output": ""},
+]
+samples = build_sft_dataset(raw)
+print(check_quality(samples))</code></pre>
+<p></details></p>
+<h5><code>q08-02-07</code>（代码 · ★★★）配置 QLoRA 与 LoRA 参数</h5>
+<p>写一个 build_configs() 函数，返回 (bnb_config, lora_config)。 要求：4-bit 加载、量化类型 nf4、计算精度 bfloat16、开启二次量化； LoRA 的 r=8、lora_alpha=16、lora_dropout=0.05、target_modules 为 ["q_proj", "v_proj"]。 再写一个 validate(bnb_config) 检查是否存在 load_in_4bit 与 load_in_8bit 同时为 True 的非法组合。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def build_configs():
+    # 返回 (bnb_config, lora_config)
+    pass
+
+
+def validate(bnb_config):
+    # 返回 True 表示配置合法
+    pass</code></pre>
+<p><strong>提示</strong>：配置类分别来自 transformers 和 peft；同时传 4bit 和 8bit 会 ValueError</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>BitsAndBytesConfig 从 transformers 导入</li><li>load_in_4bit=True 且 quant_type 为 nf4</li><li>计算精度 bfloat16，开启 double quant</li><li>LoraConfig 从 peft 导入，r 与 alpha 按题设</li><li>load_in_4bit 与 load_in_8bit 不能同时为 True</li></ul>
+<p><strong>解析与常见错误</strong>：易错点是把 BitsAndBytesConfig 写成从 bitsandbytes 导入，以及漏掉 double quant。校验函数要显式取两个开关做与运算，不能只判断其中一个。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from transformers import BitsAndBytesConfig
+from peft import LoraConfig
+
+
+def build_configs():
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype="bfloat16",
+        bnb_4bit_use_double_quant=True,
+    )
+    lora_config = LoraConfig(
+        r=8,
+        lora_alpha=16,
+        lora_dropout=0.05,
+        target_modules=["q_proj", "v_proj"],
+    )
+    return bnb_config, lora_config
+
+
+def validate(bnb_config):
+    four = getattr(bnb_config, "load_in_4bit", False)
+    eight = getattr(bnb_config, "load_in_8bit", False)
+    return not (four and eight)</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -353,9 +607,9 @@ python code/ch08/20_qlora_colab.py --dry-run     # 只验证数据与配置，�
 
       
       <div class="kp-body" hidden>
-        <div class="lesson"><h4>一、教学目标</h4>
+        <div class="lesson"><h4>8.3.1 教学目标</h4>
 <ol><li>说清上下文工程与 Prompt 工程的区别；</li><li>掌握上下文组装、裁剪、压缩、外部化四种手段；</li><li>用真实数据做出成本优化决策。</li></ol>
-<h4>二、上下文工程 vs Prompt 工程</h4>
+<h4>8.3.2 上下文工程 vs Prompt 工程</h4>
 <table><thead><tr><th style="text-align:left"></th><th style="text-align:left">Prompt 工程</th><th style="text-align:left">上下文工程</th></tr></thead><tbody><tr><td style="text-align:left">关注点</td><td style="text-align:left">单次指令怎么写</td><td style="text-align:left"><strong>整个上下文窗口里放什么</strong></td></tr><tr><td style="text-align:left">内容</td><td style="text-align:left">system prompt 的措辞</td><td style="text-align:left">system + 历史 + 检索证据 + 工具定义 + 外部记忆</td></tr><tr><td style="text-align:left">时间尺度</td><td style="text-align:left">一次调用</td><td style="text-align:left">整个会话/任务的生命周期</td></tr><tr><td style="text-align:left">核心问题</td><td style="text-align:left">「怎么问」</td><td style="text-align:left">「放什么、放多少、什么时候清理」</td></tr></tbody></table>
 <p><strong>三篇权威论述（答辩引用这些，比引用博客可信得多）</strong>：</p>
 <table><thead><tr><th style="text-align:left">来源</th><th style="text-align:left">定义 / 核心论点</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Anthropic《Effective context engineering for AI agents》</strong>(2025-09-29)</td><td style="text-align:left">定义："the set of strategies for curating and maintaining the optimal set of tokens (information) during LLM inference"；与 prompt engineering 的关系："<strong>the natural progression of prompt engineering</strong>"。推荐技术：right-altitude system prompts、token-efficient 且<strong>互不重叠</strong>的工具设计、精选少量 few-shot（而非穷举边界情况）、just-in-time 检索、<strong>compaction</strong>（接近上限时摘要）、<strong>structured note-taking</strong>、sub-agent 架构</td></tr><tr><td style="text-align:left"><strong>Manus《Context Engineering for AI Agents》</strong>(2025-07-18)</td><td style="text-align:left">核心论点：<strong>KV-cache 命中率是生产级 Agent 最重要的单一指标</strong>。实践："Keep your prompt prefix stable"、"Make your context append-only"、<strong>"Mask, Don't Remove"</strong>（工具按需屏蔽而非删除）、<strong>"treat the file system as the ultimate context"</strong>、压缩要设计成<strong>可恢复的（restorable）</strong>、<strong>"leave the wrong turns in the context"</strong>（保留错误，因为错误恢复是 agentic 行为的标志）</td></tr><tr><td style="text-align:left"><strong>LangChain《Context Engineering for Agents》</strong>(2025-07-02)</td><td style="text-align:left">定义："the delicate art and science of filling the context window with just the right information for the next step"。<strong>四大策略：Write / Select / Compress / Isolate</strong></td></tr></tbody></table>
@@ -371,14 +625,14 @@ python code/ch08/20_qlora_colab.py --dry-run     # 只验证数据与配置，�
 └───────────────────────────────────────────────────────────┘
         固定成本                可变成本（优化重点）</code></pre>
 <blockquote><strong>一个容易被忽略的成本</strong>：<strong>工具定义本身占 token</strong>。 如果你注册了 30 个工具，每个工具的 JSON Schema 可能占 100–200 token， 那就是 3000–6000 token 的固定开销，<strong>每一次调用都要付</strong>。 所以「工具太多」不只是让模型选错的概率上升，也是实打实的成本。 （解法：按场景动态加载工具子集。）</blockquote>
-<h4>三、四种优化手段及各自代价</h4>
+<h4>8.3.3 四种优化手段及各自代价</h4>
 <table><thead><tr><th style="text-align:left">手段</th><th style="text-align:left">做法</th><th style="text-align:left">省 token</th><th style="text-align:left">代价</th><th style="text-align:left">适用</th></tr></thead><tbody><tr><td style="text-align:left"><strong>裁剪</strong>（Truncate）</td><td style="text-align:left">保留最近 N 轮</td><td style="text-align:left">中</td><td style="text-align:left">丢失早期信息</td><td style="text-align:left">对话类，早期内容不重要时</td></tr><tr><td style="text-align:left"><strong>压缩</strong>（Summarize）</td><td style="text-align:left">早期内容摘要</td><td style="text-align:left">高</td><td style="text-align:left">有损；摘要本身要调用一次模型</td><td style="text-align:left">长任务，主线信息重要</td></tr><tr><td style="text-align:left"><strong>外部化</strong>（Externalize）</td><td style="text-align:left">中间产物存外部，上下文只留引用</td><td style="text-align:left">极高</td><td style="text-align:left">Agent 需要主动查询，多一步</td><td style="text-align:left">产物大的任务（代码、长文档）</td></tr><tr><td style="text-align:left"><strong>选择性检索</strong></td><td style="text-align:left">历史不常驻，按需检索相关轮次</td><td style="text-align:left">极高</td><td style="text-align:left">检索可能漏；实现复杂</td><td style="text-align:left">超长会话</td></tr></tbody></table>
 <p><strong>组合使用的实际方案</strong>：</p>
 <pre class="code lang-text"><code>system + 工具定义     → 永久保留（关键约束不可裁剪）
 最近 K 轮             → 完整保留（保证当前决策质量）
 更早的轮次            → 摘要为「已完成 + 关键结论」
 中间产物（代码/文档）  → 外部存储，上下文只留一行引用</code></pre>
-<h4>四、动手：三种策略的真实对比</h4>
+<h4>8.3.4 动手：三种策略的真实对比</h4>
 <pre class="code lang-powershell"><code>python code/ch08/30_context_engineering.py</code></pre>
 <p>脚本会模拟一个 30 轮的长对话，对比三种策略：</p>
 <p><img src="static/course-assets/ch08/02_context_engineering.webp" alt="三种上下文策略的 token 增长曲线与终局对比" loading="lazy"></p>
@@ -399,11 +653,11 @@ python code/ch08/20_qlora_colab.py --dry-run     # 只验证数据与配置，�
 <pre class="code lang-text"><code>对话短（几十轮以内）     → 滑动窗口最划算，简单且无额外调用
 对话很长（几百轮以上）   → 摘要压缩才开始划算（摘要开销被摊薄）
 中间产物很大            → 用外部化（存文件/DB，上下文只留引用），这一招最省</code></pre>
-<blockquote><strong>注意</strong>：本实验的数字来自离线靶场与特定的消息长度分布。 <strong>不要照搬"30 轮不划算"这个结论</strong> —— 你要在自己的任务和模型单价上重跑一遍。 可以外推的是<strong>分析方法</strong>：永远把「节省」和「额外开销」放在同一张表里比较。</blockquote>
-<h4>五、成本优化的完整检查表</h4>
+<blockquote><strong>注意</strong>：本实验的数字来自真实模型服务与特定的消息长度分布。 <strong>不要照搬"30 轮不划算"这个结论</strong> —— 你要在自己的任务和模型单价上重跑一遍。 可以外推的是<strong>分析方法</strong>：永远把「节省」和「额外开销」放在同一张表里比较。</blockquote>
+<h4>8.3.5 成本优化的完整检查表</h4>
 <table><thead><tr><th style="text-align:left">优化点</th><th style="text-align:left">检查什么</th><th style="text-align:left">典型收益</th></tr></thead><tbody><tr><td style="text-align:left">输出长度</td><td style="text-align:left">是否有限制？输出单价通常是输入的 2–4 倍</td><td style="text-align:left">高</td></tr><tr><td style="text-align:left">工具定义</td><td style="text-align:left">是否加载了用不到的工具？</td><td style="text-align:left">中（工具多时高）</td></tr><tr><td style="text-align:left">检索条数</td><td style="text-align:left"><code>top_k</code> 是否过大？证据是否去重？</td><td style="text-align:left">中–高（RAG 场景）</td></tr><tr><td style="text-align:left">证据块大小</td><td style="text-align:left">切块是否过大？（第 3 章 Day12）</td><td style="text-align:left">中</td></tr><tr><td style="text-align:left">历史管理</td><td style="text-align:left">是否每轮都重发全部历史？</td><td style="text-align:left">高（长会话）</td></tr><tr><td style="text-align:left">模型选型</td><td style="text-align:left">简单任务是否用了大模型？</td><td style="text-align:left">高</td></tr><tr><td style="text-align:left">缓存</td><td style="text-align:left">是否有可复用的结果（相同问题、相同文档）？</td><td style="text-align:left">视场景</td></tr><tr><td style="text-align:left">批处理</td><td style="text-align:left">能批量的是否逐条调用？</td><td style="text-align:left">中</td></tr></tbody></table>
 <blockquote><strong>优化顺序建议</strong>：先做「高收益 + 低风险」的（输出长度、模型选型、缓存）， 再做「需要改造架构」的（历史管理、外部化）。 <strong>不要一上来就做最复杂的优化</strong> —— 先量化，再动刀。</blockquote>
-<h4>六、当日验收</h4>
+<h4>8.3.6 当日验收</h4>
 <ul><li>[ ] 能说出上下文工程与 Prompt 工程的区别</li><li>[ ] 能画出上下文窗口的六个组成部分，并指出哪些是固定成本</li><li>[ ] 能说出四种优化手段各自的代价</li><li>[ ] 有真实的 token 对比曲线，并回答了「压缩从第几轮开始划算」</li><li>[ ] 完成成本检查表，标注每项的<strong>预期</strong>收益与<strong>实测</strong>收益</li></ul>
 <hr></div>
 
@@ -448,7 +702,102 @@ python code/ch08/20_qlora_colab.py --dry-run     # 只验证数据与配置，�
 <blockquote>各库 API 迭代快，使用时以官方文档当前版本为准。</blockquote>
 <hr>
 <h3>下一章预告</h3>
-<p>第 9 章（Day38–40）收尾：把前面八章的成果组装成一个<strong>可上线的完整产品</strong>—— 加前端界面（流式打字机）、容器化打包、成本与质量监控， 最后完成毕业答辩与作品集。</p></div>
+<p>第 9 章（Day38–40）收尾：把前面八章的成果组装成一个<strong>可上线的完整产品</strong>—— 加前端界面（流式打字机）、容器化打包、成本与质量监控， 最后完成毕业答辩与作品集。</p>
+<h4>8.3.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q08-03-01</code> ~ <code>q08-03-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q08-03-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">KV-cache 与 Prompt 版本管理</td></tr><tr><td style="text-align:left"><code>q08-03-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">摘要压缩的真实成本</td></tr><tr><td style="text-align:left"><code>q08-03-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">工具定义的固定成本</td></tr><tr><td style="text-align:left"><code>q08-03-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">上下文工程与 Prompt 工程的区别</td></tr><tr><td style="text-align:left"><code>q08-03-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">四种优化手段的代价与选型</td></tr><tr><td style="text-align:left"><code>q08-03-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">滑动窗口裁剪实现</td></tr><tr><td style="text-align:left"><code>q08-03-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">三种策略成本对比表</td></tr></tbody></table>
+<h5><code>q08-03-01</code>（单选 · ★★）KV-cache 与 Prompt 版本管理</h5>
+<p>Manus 把 KV-cache 命中率称为生产级 Agent 最重要的单一指标。 据此，下面哪种改动对成本的伤害最大？</p>
+<ul><li><strong>A</strong>. 修改 system prompt 开头的措辞</li><li><strong>B</strong>. 在对话末尾追加一条用户消息</li><li><strong>C</strong>. 在上下文末尾追加一次工具返回结果</li><li><strong>D</strong>. 在历史中追加一条新的助手回复</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>前缀决定缓存命中</li><li>改开头 = 全量缓存失效</li><li>追加式写入保住缓存</li><li>版本管理应稳定前缀</li></ul>
+<p><strong>解析与常见错误</strong>：前缀一变整个缓存失效，改动开头代价最高。B、C、D 都是往尾部追加，属于 append-only，前缀不变，缓存仍可命中。</p>
+<h5><code>q08-03-02</code>（单选 · ★★★）摘要压缩的真实成本</h5>
+<p>30 轮对话实测：直接拼接 3,597 token，滑动窗口 1,423，摘要压缩上下文 704。 但摘要压缩还要额外 2,893 token 用于生成摘要。 下列结论哪个正确？</p>
+<ul><li><strong>A</strong>. 摘要压缩合计 3,597，与什么都不做持平，比滑动窗口贵约 2.5 倍</li><li><strong>B</strong>. 摘要压缩合计 704，是三种策略里最省的一种</li><li><strong>C</strong>. 摘要压缩合计 2,893，比滑动窗口省一半</li><li><strong>D</strong>. 三种策略合计相同，因为摘要开销可以忽略</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>节省与额外开销同表比较</li><li>704+2893=3597</li><li>与不优化持平</li><li>比滑动窗口贵约 2.5 倍</li></ul>
+<p><strong>解析与常见错误</strong>：必须把上下文 token 与摘要调用开销放在同一张表里比较。704+2893=3597，与直接拼接持平，是滑动窗口 1423 的约 2.5 倍。只看上下文会得出相反结论。</p>
+<h5><code>q08-03-03</code>（单选 · ★）工具定义的固定成本</h5>
+<p>注册了 30 个工具，每个工具的 JSON Schema 约 100–200 token。 关于这笔开销，说法正确的是？</p>
+<ul><li><strong>A</strong>. 属于固定成本，每次调用都要付，可用动态加载工具子集缓解</li><li><strong>B</strong>. 只在第一次调用时计入，后续调用不再重复计费</li><li><strong>C</strong>. 属于可变成本，随对话轮数线性增长</li><li><strong>D</strong>. 只在模型实际调用某个工具时才计入 token</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>工具 schema 常驻上下文</li><li>每次调用都付费</li><li>30 个约 3000–6000 token</li><li>解法：动态加载子集</li></ul>
+<p><strong>解析与常见错误</strong>：工具定义常驻上下文，每次调用都要付，30 个工具即 3000–6000 token。它同时抬高选错概率与成本，解法是按场景动态加载子集。</p>
+<h5><code>q08-03-04</code>（简答 · ★★）上下文工程与 Prompt 工程的区别</h5>
+<p>请从关注点、内容范围、时间尺度、核心问题四个维度，对比 Prompt 工程与上下文工程。 并说明为什么在长会话 Agent 场景下，只做 Prompt 工程不够。</p>
+<p><strong>提示</strong>：先列四个维度做成对照；想想第 30 轮时窗口里都有什么</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>关注点：单次指令措辞 vs 窗口里放什么</li><li>内容：system prompt vs system+历史+证据+工具+记忆</li><li>时间尺度：一次调用 vs 整个会话生命周期</li><li>核心问题：怎么问 vs 放什么放多少何时清理</li><li>长会话中历史与证据持续膨胀，需裁剪压缩外部化</li><li>上下文工程是 prompt 工程的自然演进</li></ul>
+<p><strong>解析与常见错误</strong>：关键是抓住「一次调用」与「整个生命周期」的时间尺度差异。只答措辞层面会失分，要落到历史、检索证据、工具定义、外部记忆这些随轮数变化的成分上。</p>
+<h5><code>q08-03-05</code>（简答 · ★★★）四种优化手段的代价与选型</h5>
+<p>裁剪、压缩、外部化、选择性检索四种手段各能省 token，但都有代价。 请分别说明各自的代价，并给出一个「对话几十轮、中间产物很大」场景的组合方案与理由。</p>
+<p><strong>提示</strong>：把代价和适用场景一一对应；想想摘要开销何时被摊薄</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>裁剪：丢失早期信息，适合早期不重要</li><li>压缩：有损且摘要本身要调用模型</li><li>外部化：Agent 需主动查询，多一步</li><li>选择性检索：可能漏检，实现复杂</li><li>短对话优先滑动窗口，简单无额外调用</li><li>大产物外部化，上下文只留引用</li><li>system 与原始需求永不裁剪</li></ul>
+<p><strong>解析与常见错误</strong>：常见失分是只答省 token 不答代价。压缩的有损与额外调用、外部化的多一次查询、检索的漏检风险都要写。组合方案要体现「关键约束永不裁剪」这条硬规则。</p>
+<h5><code>q08-03-06</code>（代码 · ★★）滑动窗口裁剪实现</h5>
+<p>实现函数 sliding_window(messages, budget, count_tokens)，messages 是 [{'role','content'}] 列表。 要求：从最新一条往前累加，直到再加一条会超过 budget 为止；system 角色的消息永远保留且不计入预算。 返回裁剪后的消息列表，保持原有顺序。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def sliding_window(messages, budget, count_tokens):
+    # messages: [{'role': str, 'content': str}]
+    # count_tokens: 传入字符串返回 token 数
+    # 返回裁剪后的列表，保持原顺序
+    pass</code></pre>
+<p><strong>提示</strong>：system 单独拎出来；倒着遍历再 reverse 回来</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先分离 system 消息</li><li>从尾部倒序遍历</li><li>超预算即停止累加</li><li>反转回原顺序</li><li>system 不计入预算</li><li>关键约束永不裁剪</li></ul>
+<p><strong>解析与常见错误</strong>：易错点是把 system 也算进预算，或正序遍历导致保留最旧而非最新。倒序累加、超限 break、最后 reverse，是滑动窗口的标准写法。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def sliding_window(messages, budget, count_tokens):
+    system = [m for m in messages if m['role'] == 'system']
+    rest = [m for m in messages if m['role'] != 'system']
+    kept = []
+    used = 0
+    for m in reversed(rest):
+        t = count_tokens(m['content'])
+        if used + t &gt; budget:
+            break
+        used += t
+        kept.append(m)
+    kept.reverse()
+    return system + kept</code></pre>
+<p></details></p>
+<h5><code>q08-03-07</code>（代码 · ★★★）三种策略成本对比表</h5>
+<p>给定 30 轮对话（每轮 user+assistant 两条），实现函数 compare_strategies(messages, budget, recent_k, count_tokens, summary_cost)。 返回字典，含三种策略的上下文 token：direct（全部拼接）、window（滑动窗口 budget）、summary（保留最近 recent_k 条，其余压缩为一条摘要，摘要成本按 summary_cost 计）。 并额外返回 summary 策略的 total（上下文 + summary_cost）。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def compare_strategies(messages, budget, recent_k, count_tokens, summary_cost):
+    # 返回 {'direct': int, 'window': int, 'summary': int, 'summary_total': int}
+    pass</code></pre>
+<p><strong>提示</strong>：window 用倒序累加；summary_total 才是可比口径</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>direct 为全部消息 token 之和</li><li>window 从尾部累加至预算上限</li><li>summary 只统计最近 recent_k 条</li><li>summary_total 加上摘要调用开销</li><li>结论须同表比较节省与开销</li></ul>
+<p><strong>解析与常见错误</strong>：核心是口径统一：只看上下文会误判摘要最省，必须把 summary_cost 加回去。这正是实测中「压缩不一定省钱」的复现方式。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def compare_strategies(messages, budget, recent_k, count_tokens, summary_cost):
+    direct = sum(count_tokens(m['content']) for m in messages)
+
+    used, win = 0, 0
+    for m in reversed(messages):
+        t = count_tokens(m['content'])
+        if used + t &gt; budget:
+            break
+        used += t
+        win += t
+
+    recent = messages[-recent_k:]
+    summary_ctx = sum(count_tokens(m['content']) for m in recent)
+    return {
+        'direct': direct,
+        'window': win,
+        'summary': summary_ctx,
+        'summary_total': summary_ctx + summary_cost,
+    }</code></pre>
+<p></details></p>
+<hr></div>
   </div>
 </section>
 

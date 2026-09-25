@@ -28,7 +28,11 @@ AI_CONFIG_KEYS = ('STARLAB_AI_BASE_URL', 'STARLAB_AI_MODEL', 'STARLAB_AI_FALLBAC
 
 
 def _load_local_env():
-    """把 .env 读进 os.environ（已存在的进程环境变量优先，不被文件覆盖）。"""
+    """把 .env 读进 os.environ（进程里有值的优先，不被文件覆盖）。
+
+    空字符串视为「没设」：否则 `ARK_API_KEY=` 这类空默认值会让进程环境
+    占住这个键，配置页显示"已配置"、实际调用却没有密钥。
+    """
     try:
         with open(ENV_FILE, encoding='utf-8') as fh:
             for line in fh:
@@ -36,9 +40,9 @@ def _load_local_env():
                 if not line or line.startswith('#') or '=' not in line:
                     continue
                 key, value = line.split('=', 1)
-                key, value = key.strip(), value.strip()
-                if key:
-                    os.environ.setdefault(key, value)
+                key, value = key.strip(), value.strip().strip('"\'')
+                if key and not os.environ.get(key):
+                    os.environ[key] = value
     except OSError:
         pass
 
@@ -124,7 +128,10 @@ class ArkClient:
     def events(self, messages, max_tokens=800, temperature=0.35):
         """产出事件流：model / delta / finish / usage / switch。失败抛 ArkError。"""
         if not self.key:
-            raise ArkError('请在本机 .env 中设置 ARK_API_KEY。')
+            raise ArkError(
+                '还没配置大模型，AI 功能暂时用不了。'
+                '打开 http://127.0.0.1:5178/setup 填上接口地址和 API Key 即可，'
+                '课程、刷题和判分不受影响。')
         deadline = time.monotonic() + 55
         with self.lock:
             models = [m for m in self.models if m not in self.exhausted]

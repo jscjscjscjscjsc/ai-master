@@ -110,10 +110,11 @@
 <section class="section">
   <div class="card pad-lg ch-overview">
     <h2>这一章要解决什么</h2>
-    <div class="lesson"><blockquote>建议学时：5 天，每天 6 学时 先修要求：完成第 1 章，已有可运行的 <code>llm_client</code>、Prompt 资产库和 <code>.env</code> 章节交付：支持异步、流式、多轮、上传、限流、重试和日志的企业级聊天后端</blockquote>
+    <div class="lesson"><blockquote><strong>版本</strong>：v2.1（2026-09-23 修订·就业能力补强版） <strong>v2.1 修订</strong>：新增 2.4.6 mypy 与类型工程、2.4.7 用 pytest 证明你的代码是对的；依赖口径统一为 pyproject.toml + uv.lock（uv sync --frozen）。</blockquote>
+<blockquote>建议学时：5 天，每天 6 学时 先修要求：完成第 1 章，已有可运行的 <code>llm_client</code>、Prompt 资产库和 <code>.env</code> 章节交付：支持异步、流式、多轮、上传、限流、重试和日志的企业级聊天后端</blockquote>
 <h3>2.0 本章学习路线</h3>
 <p>本章把“命令行里调用一次模型”逐层升级为“可供前端和其他系统调用的后端服务”。每天只增加一个主要复杂度。</p>
-<blockquote><strong>本章代码与真实运行截图</strong>：全部代码在 <code>code/ch02/</code>，每节配真实执行截图（由 <code>tools/shot.py</code> 捕获真实输出生成）。 运行前提：先启动离线靶场 <code>python tools/mock_llm_server.py --port 8100</code>。 <strong>本章修复了 v1.0 的 9 处代码缺陷</strong>（详见每节的「v1.0 缺陷修复」说明）。</blockquote>
+<blockquote><strong>本章代码与真实运行截图</strong>：全部代码在 <code>code/ch02/</code>，每节配真实执行截图（由 <code>tools/shot.py</code> 捕获真实输出生成）。 运行前提：<code>.env</code> 里的 <code>LLM_BASE_URL</code> / <code>LLM_API_KEY</code> / <code>LLM_CHAT_MODEL</code> 三行已填好， 并已用 <code>python code/ch01/02_verify_platform.py</code> 确认平台可达。 <strong>本章修复了 v1.0 的 9 处代码缺陷</strong>（详见每节的「v1.0 缺陷修复」说明）。</blockquote>
 <pre class="code lang-mermaid"><code>flowchart LR
     A[Day05 同步单次调用] --&gt; B[Day06 异步与多供应商]
     B --&gt; C[Day07 FastAPI 接口]
@@ -132,7 +133,7 @@ pydantic &gt;= 2
 python-multipart
 pytest
 pytest-asyncio</code></pre>
-<p>教师应在开课前将验证通过的精确版本锁定到 <code>requirements.txt</code>。模型 ID、URL、密钥和超时从环境变量读取，禁止写死在课件代码中。</p>
+<p>依赖用 <code>pyproject.toml</code> 声明、<code>uv.lock</code> 锁定（见 1.2.6）；开课前必须在全新环境跑一遍 <code>uv sync --frozen</code> 验证可复现。模型 ID、URL、密钥和超时从环境变量读取，禁止写死在课件代码中。</p>
 <hr></div>
   </div>
 </section>
@@ -292,6 +293,160 @@ time.sleep(0.5)    × 2 并发 ：1.00s   ← 独占事件循环，退化成串�
 <h4>2.1.7 v1.0 缺陷修复说明</h4>
 <table><thead><tr><th style="text-align:left">原问题</th><th style="text-align:left">后果</th><th style="text-align:left">本版修复</th></tr></thead><tbody><tr><td style="text-align:left"><code>compare_providers</code> 用 <code>asyncio.Semaphore</code> / <code>perf_counter</code> 但片段内<strong>未 import</strong></td><td style="text-align:left">复制报 <code>NameError</code></td><td style="text-align:left">补齐 import，并提供完整可运行文件</td></tr><tr><td style="text-align:left">只讲概念，<strong>没有真实耗时数据</strong></td><td style="text-align:left">学生无法判断"异步到底快多少"</td><td style="text-align:left">补三组对照实验与实测数据表</td></tr></tbody></table>
 <table><thead><tr><th style="text-align:left">环节</th><th style="text-align:right">时间</th><th style="text-align:left">产物</th></tr></thead><tbody><tr><td style="text-align:left">同步/异步耗时实验</td><td style="text-align:right">50 min</td><td style="text-align:left">实测表</td></tr><tr><td style="text-align:left">协程与事件循环讲授</td><td style="text-align:right">50 min</td><td style="text-align:left">时序图</td></tr><tr><td style="text-align:left">手写 AsyncLLMClient</td><td style="text-align:right">90 min</td><td style="text-align:left">统一客户端</td></tr><tr><td style="text-align:left">三家配置切换</td><td style="text-align:right">70 min</td><td style="text-align:left">对比结果 JSON</td></tr><tr><td style="text-align:left">并发限制与故障注入</td><td style="text-align:right">60 min</td><td style="text-align:left">超时/401/限流日志</td></tr><tr><td style="text-align:left">抽讲与提交</td><td style="text-align:right">40 min</td><td style="text-align:left">验收记录</td></tr></tbody></table>
+<h4>2.1.8 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q02-01-01</code> ~ <code>q02-01-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q02-01-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">gather 并发总耗时判断</td></tr><tr><td style="text-align:left"><code>q02-01-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">协程里误用 time.sleep</td></tr><tr><td style="text-align:left"><code>q02-01-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">并发任务异常隔离</td></tr><tr><td style="text-align:left"><code>q02-01-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">并发上限与理论下界</td></tr><tr><td style="text-align:left"><code>q02-01-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">统一配置与响应对象价值</td></tr><tr><td style="text-align:left"><code>q02-01-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">实现有上限的并发对比</td></tr><tr><td style="text-align:left"><code>q02-01-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">异步客户端与资源释放</td></tr></tbody></table>
+<h5><code>q02-01-01</code>（单选 · ★）gather 并发总耗时判断</h5>
+<p>用 asyncio.gather 并发调度三个协程，分别 await asyncio.sleep(1.0)、1.5、0.5 秒。 总耗时最接近下列哪个值？</p>
+<ul><li><strong>A</strong>. 接近 1.5 秒，即最慢的那个任务</li><li><strong>B</strong>. 接近 3.0 秒，即三者之和</li><li><strong>C</strong>. 接近 0.5 秒，即最快的那个任务</li><li><strong>D</strong>. 接近 0 秒，因为并发不消耗时间</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>gather 并发调度多个协程</li><li>等待时间可重叠</li><li>总耗时≈最慢单任务</li><li>并发下界不是 0</li></ul>
+<p><strong>解析与常见错误</strong>：gather 把三个协程交给事件循环并发调度，等待时间被重叠，总耗时由最慢的任务决定，即 1.5 秒。三者之和 3.0 秒是串行的结果；0.5 秒是最快任务，不是总耗时；并发下界是最慢单任务而非 0。</p>
+<h5><code>q02-01-02</code>（单选 · ★★）协程里误用 time.sleep</h5>
+<p>在协程中把 asyncio.sleep(0.5) 换成 time.sleep(0.5)，两个任务并发执行。 实测总耗时从 0.51s 变成 1.00s，原因是什么？</p>
+<ul><li><strong>A</strong>. time.sleep 独占事件循环，不让出执行权，并发退化成串行</li><li><strong>B</strong>. time.sleep 精度比 asyncio.sleep 低，产生了额外开销</li><li><strong>C</strong>. time.sleep 会创建新线程，线程切换拖慢了整体速度</li><li><strong>D</strong>. time.sleep 触发了连接池上限，请求被排队等待</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>time.sleep 阻塞整个事件循环</li><li>协程无法被调度</li><li>并发退化为串行</li><li>代码看似异步实则同步</li></ul>
+<p><strong>解析与常见错误</strong>：time.sleep 是同步阻塞调用，会占住事件循环，其他协程无法在此期间被调度，于是两个 0.5 秒变成串行的 1.0 秒。它不创建线程，也与连接池无关，精度差异不足以解释翻倍耗时。这是新手最常见的性能错误。</p>
+<h5><code>q02-01-03</code>（单选 · ★★）并发任务异常隔离</h5>
+<p>compare_providers 用 gather 并发请求多家供应商。 如果某个任务不捕获自身异常，让异常逃逸到 gather，会发生什么？</p>
+<ul><li><strong>A</strong>. 一家供应商失败会导致整批结果全部丢失</li><li><strong>B</strong>. 只有失败的那家返回错误，其余结果正常保留</li><li><strong>C</strong>. gather 会自动重试失败的任务直到成功</li><li><strong>D</strong>. 异常被静默忽略，失败任务返回空字符串</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>每个并发任务捕获自身异常</li><li>异常逃逸 gather 丢失整批</li><li>返回 ok/error 结构化结果</li><li>故障注入验证隔离效果</li></ul>
+<p><strong>解析与常见错误</strong>：异常逃逸到 gather 会让整批结果丢失，这正是要每个任务捕获自己异常的原因。正确做法是在 ask_one 内 try/except，返回 ok=False 与 error 字段，使其他供应商结果不受影响。gather 不会自动重试，也不会静默忽略异常。</p>
+<h5><code>q02-01-04</code>（简答 · ★★）并发上限与理论下界</h5>
+<p>实测数据：串行 3.64s（1.00x，峰值并发 1）；无序并发 1.02s（3.57x，峰值并发 6）；限流并发 Semaphore=2 时 1.81s（2.01x，峰值并发 2）。 请解释：为什么提高并发数不能让总耗时低于最慢的单任务？为什么生产环境仍必须设并发上限？</p>
+<p><strong>提示</strong>：想想最慢那个请求本身要多久；连接池和上游额度都是有限资源</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>总耗时下界是最慢单任务</li><li>等待可重叠但单个请求不会变快</li><li>无限并发峰值 6 连接，先被限流的是自己</li><li>Semaphore 保护连接池与上游额度</li><li>限流版耗时 1.81s 接近理论下界 1.80s</li></ul>
+<p><strong>解析与常见错误</strong>：关键是把「等待重叠」和「单个请求变快」区分开：并发只是让等待重叠，最慢任务本身耗时不变，所以总耗时下界就是它。提高并发数只会让请求排队，显得更慢。生产必须限流，否则本机连接池和上游额度先被打爆。</p>
+<h5><code>q02-01-05</code>（简答 · ★★）统一配置与响应对象价值</h5>
+<p>ProviderConfig 用 load_provider 从环境变量读取 base_url、api_key、model，缺失时抛 RuntimeError；ChatResult 归一化 text、model、provider、token 用量。 请说明这两个统一对象分别解决了什么问题，以及为什么客户端要在应用生命周期内复用。</p>
+<p><strong>提示</strong>：上层代码是否应该知道某家的字段名；反复创建客户端会丢掉什么</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>统一配置隔离各家环境变量名差异</li><li>缺失配置快速失败，报出缺哪些字段</li><li>ChatResult 屏蔽原始 JSON 结构差异</li><li>上层只依赖统一对象</li><li>复用客户端才能利用连接池</li></ul>
+<p><strong>解析与常见错误</strong>：统一配置让上层不依赖某家供应商的环境变量名，缺失时快速失败并列出缺哪些字段。ChatResult 把各家不同的原始 JSON 归一化，上层只读统一字段。客户端复用才能利用连接池，在热点循环里反复创建会丢掉复用收益。</p>
+<h5><code>q02-01-06</code>（代码 · ★★★）实现有上限的并发对比</h5>
+<p>实现 async def compare_providers(clients, question, limit=3)，并发向多个客户端提问。 要求：用 asyncio.Semaphore 限制并发数；每个任务记录耗时；单个任务失败时返回 {"ok": False, "provider": ..., "error": 异常类名, "latency": ...}，成功时返回 {"ok": True, "provider": ..., "text": ..., "latency": ...}；一家失败不影响其他结果。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import asyncio
+from time import perf_counter
+
+async def compare_providers(clients, question, limit=3):
+    # 在此实现
+    ...</code></pre>
+<p><strong>提示</strong>：信号量要放在所有任务都能看到的作用域；计时起点应在进入信号量之后</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>Semaphore 在函数内创建并共享</li><li>async with semaphore 包住请求</li><li>try/except 捕获每个任务异常</li><li>失败返回 ok=False 与异常类名</li><li>gather 收集全部结果</li></ul>
+<p><strong>解析与常见错误</strong>：核心是信号量限流加逐任务异常隔离。信号量需在函数内创建并被所有任务共享；计时放在 async with 之后，才能反映真实请求耗时而非排队时间。常见错误是把 try 写在 gather 外层，导致一家失败整批丢失。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import asyncio
+from time import perf_counter
+
+async def compare_providers(clients, question, limit=3):
+    semaphore = asyncio.Semaphore(limit)
+
+    async def ask_one(client):
+        async with semaphore:
+            started = perf_counter()
+            try:
+                result = await client.chat(
+                    [{"role": "user", "content": question}]
+                )
+                return {
+                    "ok": True,
+                    "provider": result.provider,
+                    "text": result.text,
+                    "latency": perf_counter() - started,
+                }
+            except Exception as exc:
+                return {
+                    "ok": False,
+                    "provider": client.config.name,
+                    "error": type(exc).__name__,
+                    "latency": perf_counter() - started,
+                }
+
+    return await asyncio.gather(*(ask_one(c) for c in clients))</code></pre>
+<p></details></p>
+<h5><code>q02-01-07</code>（代码 · ★★）异步客户端与资源释放</h5>
+<p>补全 AsyncLLMClient：构造函数接收 ProviderConfig，创建 httpx.AsyncClient，base_url 去掉尾部斜杠，带 Bearer 认证头，超时 60 秒、连接超时 10 秒，连接池上限 20、keepalive 10。 chat 方法 POST /chat/completions，调用 raise_for_status()，把响应归一化成 ChatResult，并实现 close() 释放连接。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import httpx
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ChatResult:
+    text: str
+    model: str
+    provider: str
+    prompt_tokens: int
+    completion_tokens: int
+
+class AsyncLLMClient:
+    def __init__(self, config):
+        ...
+
+    async def chat(self, messages):
+        ...
+
+    async def close(self):
+        ...</code></pre>
+<p><strong>提示</strong>：usage 字段可能不存在，要容错；关闭异步客户端要用 aclose 而不是 close</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>base_url 用 rstrip 去尾斜杠</li><li>认证头用 Bearer 前缀</li><li>Timeout 区分总超时与连接超时</li><li>raise_for_status 把错误状态变异常</li><li>usage 缺失时容错为 0</li><li>close 调用 aclose 释放连接</li></ul>
+<p><strong>解析与常见错误</strong>：重点是连接池参数、超时拆分和响应归一化。usage 可能缺失，需用 or {} 加默认值，否则 int(None) 会报错。raise_for_status 把非成功状态转成明确异常，交给上层隔离。常见错误是忘记 aclose 导致连接泄漏，或日志里打印 Authorization 泄露密钥。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import httpx
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ChatResult:
+    text: str
+    model: str
+    provider: str
+    prompt_tokens: int
+    completion_tokens: int
+
+class AsyncLLMClient:
+    def __init__(self, config):
+        self.config = config
+        self.client = httpx.AsyncClient(
+            base_url=config.base_url.rstrip("/"),
+            headers={"Authorization": f"Bearer {config.api_key}"},
+            timeout=httpx.Timeout(60.0, connect=10.0),
+            limits=httpx.Limits(
+                max_connections=20, max_keepalive_connections=10
+            ),
+        )
+
+    async def chat(self, messages):
+        response = await self.client.post(
+            "/chat/completions",
+            json={
+                "model": self.config.model,
+                "messages": messages,
+                "temperature": 0.2,
+            },
+        )
+        response.raise_for_status()
+        data = response.json()
+        usage = data.get("usage") or {}
+        return ChatResult(
+            text=data["choices"][0]["message"]["content"],
+            model=data.get("model", self.config.model),
+            provider=self.config.name,
+            prompt_tokens=int(usage.get("prompt_tokens", 0)),
+            completion_tokens=int(usage.get("completion_tokens", 0)),
+        )
+
+    async def close(self):
+        await self.client.aclose()</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -426,6 +581,119 @@ async def test_chat_rejects_empty_messages():
         response = await client.post("/chat", json={"messages": []})
     assert response.status_code == 422</code></pre>
 <p>验收要求学生用 <code>curl</code> 演示正常请求、空 messages、超长 content 和错误 JSON 四条路径。</p>
+<h4>2.2.5 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q02-02-01</code> ~ <code>q02-02-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q02-02-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">lifespan 中创建客户端的好处</td></tr><tr><td style="text-align:left"><code>q02-02-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">上游错误到 HTTP 状态码的映射</td></tr><tr><td style="text-align:left"><code>q02-02-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">ASGITransport 测试的真实陷阱</td></tr><tr><td style="text-align:left"><code>q02-02-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">为什么测试要先确认生命周期执行</td></tr><tr><td style="text-align:left"><code>q02-02-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">请求校验与错误信息边界</td></tr><tr><td style="text-align:left"><code>q02-02-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">用依赖覆盖写 /chat 测试</td></tr><tr><td style="text-align:left"><code>q02-02-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">实现 /chat 的错误映射</td></tr></tbody></table>
+<h5><code>q02-02-01</code>（单选 · ★）lifespan 中创建客户端的好处</h5>
+<p>在 FastAPI 的 lifespan 上下文管理器中创建 AsyncLLMClient，并在 yield 之后调用 close()。 相比在模块导入时直接创建网络客户端，这样做的直接好处是什么？</p>
+<ul><li><strong>A</strong>. 应用启动时只创建一次客户端，关闭时释放连接，且更容易测试</li><li><strong>B</strong>. 可以让每个请求都新建一个客户端，避免连接复用</li><li><strong>C</strong>. 可以绕过 Pydantic 校验，加快请求处理</li><li><strong>D</strong>. 可以让 /health 接口自动返回模型状态</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>启动时创建一次客户端</li><li>关闭时释放连接</li><li>比导入时创建更易测试</li><li>通过 app.state 共享实例</li></ul>
+<p><strong>解析与常见错误</strong>：lifespan 在应用启动时执行 yield 之前的代码、关闭时执行 yield 之后的代码，因此客户端只创建一次并在关闭时释放连接，同时便于在测试中替换。B 与「只创建一次」相反；C 与校验无关；D 中 /health 固定返回 {"status": "ok"}，不涉及模型状态。</p>
+<h5><code>q02-02-02</code>（单选 · ★★）上游错误到 HTTP 状态码的映射</h5>
+<p>/chat 接口捕获上游异常并转换为 HTTPException。 当上游模型响应超时、上游返回 HTTP 错误状态时，分别应映射为哪个状态码？</p>
+<ul><li><strong>A</strong>. 超时 504，上游 HTTP 错误 502</li><li><strong>B</strong>. 超时 502，上游 HTTP 错误 504</li><li><strong>C</strong>. 超时 500，上游 HTTP 错误 503</li><li><strong>D</strong>. 超时 408，上游 HTTP 错误 500</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>TimeoutException → 504</li><li>HTTPStatusError → 502</li><li>校验失败由框架返回 422</li><li>不泄露密钥与响应原文</li></ul>
+<p><strong>解析与常见错误</strong>：代码中 httpx.TimeoutException 映射为 504（网关超时），httpx.HTTPStatusError 映射为 502（上游请求失败）。B 把两者对调；C、D 的状态码在正文中没有依据。另外 Pydantic 校验失败由 FastAPI 自动返回 422，不要与这两者混淆。</p>
+<h5><code>q02-02-03</code>（单选 · ★★★）ASGITransport 测试的真实陷阱</h5>
+<p>用 httpx.ASGITransport(app=app) 直接构造 AsyncClient 测试 /chat，test_health 能通过，但 /chat 报 AttributeError: 'State' object has no attribute 'llm'。 对这个现象最准确的解释是？</p>
+<ul><li><strong>A</strong>. ASGITransport 只走 ASGI 协议，不执行 FastAPI 的 lifespan，app.state.llm 从未被创建</li><li><strong>B</strong>. Pydantic 校验在测试环境下被跳过，导致依赖注入失败</li><li><strong>C</strong>. AsyncLLMClient 的 close() 被提前调用，把 state 清空了</li><li><strong>D</strong>. httpx 不支持 async 测试，必须换成 requests 同步客户端</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>ASGITransport 不执行 lifespan</li><li>app.state.llm 未被创建</li><li>/health 不依赖 llm 故能过</li><li>修法：LifespanManager 或依赖覆盖</li></ul>
+<p><strong>解析与常见错误</strong>：根因是测试调用路径不执行 lifespan，启动逻辑没跑，app.state.llm 不存在。/health 不依赖 llm 所以碰巧能过。修复方式是用 asgi-lifespan 手动触发 startup/shutdown，或用 dependency_overrides 注入 FakeLLM。B、C、D 都不是该 AttributeError 的原因。</p>
+<h5><code>q02-02-04</code>（简答 · ★★）为什么测试要先确认生命周期执行</h5>
+<p>课件提出方法论：写异步 Web 框架的测试时，永远先确认「应用生命周期有没有被执行」。 请说明这个问题的典型表现、根因，以及两种正确修法各自的取舍。</p>
+<p><strong>提示</strong>：先想清楚 lifespan 什么时候执行；FakeLLM 需要实现哪些方法</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>典型表现：AttributeError: 'State' object has no attribute 'llm'</li><li>根因：ASGITransport 只走 ASGI，不跑 lifespan</li><li>修法一：asgi-lifespan 的 LifespanManager 手动触发 startup/shutdown</li><li>修法二：dependency_overrides 注入 FakeLLM 测试替身</li><li>取舍：修法一更接近真实启动流程，修法二更快更确定、不依赖真实模型</li><li>简单接口如 /health 不依赖 llm，会碰巧通过，掩盖问题</li></ul>
+<p><strong>解析与常见错误</strong>：答题要抓住「调用路径与预期不一致」这一根因，而不是把 AttributeError 当成依赖注入写错。两种修法要能对比：LifespanManager 验证真实启动逻辑，依赖覆盖让测试快且确定。常见失分是只说「加个 try/except」或「改成同步测试」，没有触及生命周期。</p>
+<h5><code>q02-02-05</code>（简答 · ★★）请求校验与错误信息边界</h5>
+<p>ChatRequest 对 messages 做了长度约束，Message 对 content 做了长度约束。 请说明这些约束在请求链路的哪一环生效、失败时返回什么，以及为什么错误响应里不能带上游的密钥、URL 和响应原文。</p>
+<p><strong>提示</strong>：校验发生在调用 llm.chat 之前还是之后；422 是谁返回的</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>约束由 Pydantic 在进入业务逻辑前校验</li><li>messages 长度 1~30，content 长度 1~8000</li><li>校验失败由 FastAPI 自动返回 422</li><li>上游超时映射 504，上游 HTTP 错误映射 502</li><li>不泄露密钥/URL/响应原文，避免信息泄露与攻击面扩大</li><li>客户端只需知道失败类别，不需要上游内部细节</li></ul>
+<p><strong>解析与常见错误</strong>：要点是校验前置、失败返回 422，以及错误映射只暴露类别不暴露细节。常见失分是把 422 说成自己 raise 的，或把上游原文直接塞进 detail。要强调泄露密钥和 URL 会带来安全风险，同时上游响应原文可能包含敏感内容。</p>
+<h5><code>q02-02-06</code>（代码 · ★★）用依赖覆盖写 /chat 测试</h5>
+<p>给定 app、get_llm 依赖和 ChatResult，请写一个 pytest 测试：用 dependency_overrides 注入 FakeLLM，验证 POST /chat 返回 200 且 answer 字段等于 FakeLLM 返回的文本。 要求使用 httpx.ASGITransport，测试结束后清理依赖覆盖。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import httpx
+import pytest
+
+# app, get_llm, ChatResult 已导入
+
+class FakeLLM:
+    async def chat(self, messages):
+        ...
+
+    async def close(self):
+        ...
+
+@pytest.mark.asyncio
+async def test_chat_with_fake_llm():
+    ...</code></pre>
+<p><strong>提示</strong>：依赖覆盖的 key 是 get_llm 函数本身；FakeLLM 的 chat 要返回 ChatResult 而不是字符串</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>FakeLLM 实现 chat 与 close</li><li>chat 返回 ChatResult 对象</li><li>dependency_overrides[get_llm] 注入替身</li><li>ASGITransport + AsyncClient 发请求</li><li>断言 200 与 answer 字段</li><li>finally 中 clear 覆盖，避免污染其他测试</li></ul>
+<p><strong>解析与常见错误</strong>：关键是用 dependency_overrides 把真实客户端换成 FakeLLM，绕开 lifespan 未执行的问题，测试不依赖真实模型。常见错误是覆盖后忘记 clear 导致测试互相污染，或 FakeLLM.chat 返回字符串而接口访问 result.text 报错。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import httpx
+import pytest
+
+class FakeLLM:
+    async def chat(self, messages):
+        return ChatResult(text="测试回答", model="fake", prompt_tokens=1, completion_tokens=2)
+
+    async def close(self):
+        pass
+
+@pytest.mark.asyncio
+async def test_chat_with_fake_llm():
+    app.dependency_overrides[get_llm] = lambda: FakeLLM()
+    try:
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post("/chat", json={"messages": [{"role": "user", "content": "你好"}]})
+        assert response.status_code == 200
+        assert response.json()["answer"] == "测试回答"
+    finally:
+        app.dependency_overrides.clear()</code></pre>
+<p></details></p>
+<h5><code>q02-02-07</code>（代码 · ★★★）实现 /chat 的错误映射</h5>
+<p>请实现 /chat 接口：接收 ChatRequest，通过 Depends 获取 llm，调用 llm.chat 并把 messages 转成 dict 列表。 成功时返回 answer、model 和 usage（prompt_tokens、completion_tokens）；上游超时返回 504，上游 HTTP 错误返回 502，且不泄露密钥、URL 和响应原文。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from fastapi import Depends, HTTPException
+import httpx
+
+@app.post("/chat")
+async def chat(payload: ChatRequest, llm = Depends(get_llm)) -&gt; dict:
+    ...</code></pre>
+<p><strong>提示</strong>：两个 except 的顺序与状态码要对应正确；detail 里不要放 exc 的原文</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用 model_dump() 把 Message 转 dict</li><li>await llm.chat 调用上游</li><li>成功返回 answer/model/usage 三部分</li><li>TimeoutException 映射 504</li><li>HTTPStatusError 映射 502</li><li>用 from exc 保留异常链，detail 不含敏感信息</li></ul>
+<p><strong>解析与常见错误</strong>：核心是把上游异常翻译成对外的 502/504，并保证响应体只含业务字段。常见错误是把 TimeoutException 映射成 502、把上游响应原文塞进 detail 造成泄露，或忘记 await。用 raise ... from exc 保留异常链便于排查，但不对外暴露。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>@app.post("/chat")
+async def chat(payload: ChatRequest, llm=Depends(get_llm)) -&gt; dict:
+    try:
+        result = await llm.chat([message.model_dump() for message in payload.messages])
+        return {
+            "answer": result.text,
+            "model": result.model,
+            "usage": {
+                "prompt_tokens": result.prompt_tokens,
+                "completion_tokens": result.completion_tokens,
+            },
+        }
+    except httpx.TimeoutException as exc:
+        raise HTTPException(504, "上游模型响应超时") from exc
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(502, "上游模型请求失败") from exc</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -562,6 +830,127 @@ class SessionStore:
 <p>这是单进程教学版。多 worker 部署需要 Redis 或数据库；按消息条数裁剪也只是入门方案，后续应改用 token 预算和摘要。</p>
 <h4>2.3.5 当日验收</h4>
 <ul><li>客户端能逐片显示文本，而不是最后一次性出现。</li><li>上游错误时收到 <code>error</code> 事件，连接能结束。</li><li>两个 <code>session_id</code> 的历史互不混淆。</li><li>超出 20 条后保留最近历史，system 指令单独管理，不能被裁掉。</li><li>学生能解释 SSE 与 WebSocket 的方向性和适用差别。</li></ul>
+<h4>2.3.6 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q02-03-01</code> ~ <code>q02-03-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q02-03-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">SSE 事件边界如何界定</td></tr><tr><td style="text-align:left"><code>q02-03-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">EventSource 能否直接调用该接口</td></tr><tr><td style="text-align:left"><code>q02-03-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">会话裁剪该保留什么</td></tr><tr><td style="text-align:left"><code>q02-03-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">SSE 与 WebSocket 的方向性差别</td></tr><tr><td style="text-align:left"><code>q02-03-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">单进程会话存储的局限</td></tr><tr><td style="text-align:left"><code>q02-03-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现上游流解析函数</td></tr><tr><td style="text-align:left"><code>q02-03-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">带错误事件的 SSE 转发</td></tr></tbody></table>
+<h5><code>q02-03-01</code>（单选 · ★）SSE 事件边界如何界定</h5>
+<p>在向浏览器转发 SSE 时，每个事件字符串的结尾必须是：</p>
+<p>return f"event: {event}\ndata: {json.dumps(data)}\n\n"</p>
+<p>这个结尾的作用是什么？</p>
+<ul><li><strong>A</strong>. 用空行标记一个事件的结束，客户端据此切分事件</li><li><strong>B</strong>. 用换行让浏览器自动刷新缓冲区</li><li><strong>C</strong>. 用两个换行触发 HTTP 分块传输的终止</li><li><strong>D</strong>. 用空行把 event 与 data 两个字段分隔开</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>空行是 SSE 事件分隔符</li><li>event 与 data 之间单个换行</li><li>JSON 编码避免换行破坏边界</li><li>客户端按空行拆分事件</li></ul>
+<p><strong>解析与常见错误</strong>：SSE 协议用空行（即连续的 \n\n）作为事件分隔符，客户端按空行切出完整事件。B 与协议无关，浏览器不会因此刷新。C 错，分块传输的终止由 chunked 编码的 0 块决定，不是空行。D 错，event 与 data 之间只需一个换行，空行是事件之间的边界。</p>
+<h5><code>q02-03-02</code>（单选 · ★★）EventSource 能否直接调用该接口</h5>
+<p>本课接口设计为 POST /chat/stream，用 JSON body 传 messages。</p>
+<p>关于前端如何消费这个流，下列说法正确的是：</p>
+<ul><li><strong>A</strong>. 浏览器原生 EventSource 只支持 GET，应改用 fetch 读取响应流</li><li><strong>B</strong>. EventSource 支持 POST，只要 media_type 是 text/event-stream</li><li><strong>C</strong>. EventSource 支持 POST，但需要设置 Content-Type 为 application/json</li><li><strong>D</strong>. EventSource 不支持流式，必须换成 WebSocket 才能接收</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>EventSource 只支持 GET</li><li>POST + JSON 需用 fetch 读流</li><li>也可改为 GET + 任务 ID</li><li>响应类型是 SSE 不等于 EventSource 可用</li></ul>
+<p><strong>解析与常见错误</strong>：EventSource 构造时只能给 URL，无法携带请求体，因此只直接支持 GET。接口用 POST 传 JSON，前端应使用 fetch 读取 response.body 流，或把接口改成 GET + 短期任务 ID。B、C 错在 EventSource 根本不支持 POST。D 错，SSE 本身支持流式，只是 EventSource 的调用方式受限。</p>
+<h5><code>q02-03-03</code>（单选 · ★★）会话裁剪该保留什么</h5>
+<p>SessionStore 用 history[-self.max_messages:] 裁剪历史，max_messages 默认 20。</p>
+<p>按当日验收要求，裁剪时必须保证的是：</p>
+<ul><li><strong>A</strong>. system 指令单独管理，不能被裁掉</li><li><strong>B</strong>. user 与 assistant 消息按 1:1 配对保留</li><li><strong>C</strong>. 裁剪后条数必须是偶数，避免角色错位</li><li><strong>D</strong>. 最近一条必须是 user 消息，否则丢弃</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>system 指令单独管理</li><li>裁剪不能丢失 system</li><li>按条数裁剪只是入门方案</li><li>后续改用 token 预算与摘要</li></ul>
+<p><strong>解析与常见错误</strong>：验收明确要求 system 指令单独管理、不能被裁掉，因为它是全局约束，一旦被裁掉模型行为会漂移。B、C 是合理但非验收要求，简单切片可能切断配对，但正文未把它列为必须。D 同样不是正文要求。裁剪只是入门方案，后续应改用 token 预算与摘要。</p>
+<h5><code>q02-03-04</code>（简答 · ★★）SSE 与 WebSocket 的方向性差别</h5>
+<p>请解释 SSE 与 WebSocket 在通信方向性上的差别，并说明在本课的对话流式场景中为什么选择 SSE，以及什么情况下应该改用 WebSocket。</p>
+<p><strong>提示</strong>：先讲方向性；再讲本课场景的推送需求；最后给反例场景</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>SSE 是单向：服务端到客户端</li><li>WebSocket 是全双工双向</li><li>SSE 基于 HTTP，实现与调试简单</li><li>对话流式只需服务端推 token</li><li>需要客户端持续上行时选 WebSocket</li><li>SSE 可自动重连，WebSocket 需自管</li></ul>
+<p><strong>解析与常见错误</strong>：要点是先定性方向性：SSE 单向服务端推送，WebSocket 全双工。再结合场景：对话流式只需把 token 推给客户端，上行只是一次 POST，SSE 足够且更简单。失分点在于只说「SSE 更轻」而不讲方向性，或没给出应改用 WebSocket 的场景，如需要客户端持续上行、低延迟双向交互。</p>
+<h5><code>q02-03-05</code>（简答 · ★★★）单进程会话存储的局限</h5>
+<p>SessionStore 用进程内 dict 加 asyncio.Lock 保存历史。请分析这种实现的两个具体局限，说明多 worker 部署下会出现什么现象，并给出改进方向。</p>
+<p><strong>提示</strong>：从进程边界想；想负载均衡把请求分到不同 worker；改进方向是共享存储</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>数据在进程内存，进程重启即丢失</li><li>多 worker 各自持有独立 dict</li><li>同一 session 请求落到不同 worker 会丢历史</li><li>锁只在本进程内有效，跨进程无效</li><li>改进：用 Redis 或数据库共享存储</li><li>裁剪改用 token 预算与摘要</li></ul>
+<p><strong>解析与常见错误</strong>：关键是识别 asyncio.Lock 只在单进程内有效，dict 也不跨进程。多 worker 下同一 session_id 的请求被负载均衡分到不同 worker，各自读到不同历史，表现为「聊着聊着忘了」。改进是用 Redis 或数据库做共享存储，并把按条数裁剪升级为 token 预算加摘要。只答「内存会满」属于偏题。</p>
+<h5><code>q02-03-06</code>（代码 · ★★）实现上游流解析函数</h5>
+<p>补全 stream_chat，从上游 OpenAI 兼容接口逐块取出文本。要求：</p>
+<ol><li>只处理以 data: 开头的行，跳过其他行；</li><li>遇到 [DONE] 立即结束；</li><li>解析 JSON 后取 choices[0].delta.content，为空则跳过；</li><li>用 async with 管理流，确保响应被关闭。</li></ol>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import json
+from collections.abc import AsyncIterator
+
+async def stream_chat(client, messages: list[dict[str, str]]) -&gt; AsyncIterator[str]:
+    payload = {"model": client.config.model, "messages": messages, "stream": True}
+    # TODO: 打开流、逐行解析、yield 文本
+    ...</code></pre>
+<p><strong>提示</strong>：用 aiter_lines 逐行读；removeprefix 去掉 data: 前缀；delta 可能没有 content 字段</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用 async with 管理流防泄漏</li><li>先 raise_for_status 检查状态</li><li>过滤非 data: 行</li><li>[DONE] 作为终止标记</li><li>delta.content 可能缺失需判空</li></ul>
+<p><strong>解析与常见错误</strong>：核心是 async with 包住 stream 调用，离开时自动关闭上游响应，避免连接泄漏。常见错误：用 response.text() 一次性读取导致失去流式意义；忘记 raise_for_status 让错误被静默吞掉；直接 chunk["choices"][0]["delta"]["content"] 在首块或末块缺字段时抛 KeyError。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import json
+from collections.abc import AsyncIterator
+
+async def stream_chat(client, messages: list[dict[str, str]]) -&gt; AsyncIterator[str]:
+    payload = {"model": client.config.model, "messages": messages, "stream": True}
+    async with client.client.stream("POST", "/chat/completions", json=payload) as response:
+        response.raise_for_status()
+        async for line in response.aiter_lines():
+            if not line.startswith("data:"):
+                continue
+            data = line.removeprefix("data:").strip()
+            if data == "[DONE]":
+                break
+            chunk = json.loads(data)
+            text = chunk["choices"][0].get("delta", {}).get("content")
+            if text:
+                yield text</code></pre>
+<p></details></p>
+<h5><code>q02-03-07</code>（代码 · ★★★）带错误事件的 SSE 转发</h5>
+<p>实现 POST /chat/stream：接收 ChatRequest（含 messages 与 session_id），把上游 token 以 token 事件转发，正常结束发 done 事件，上游抛异常时发 error 事件并结束连接。要求响应 media_type 为 text/event-stream，并设置 Cache-Control: no-cache。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from fastapi import FastAPI, Depends
+from fastapi.responses import StreamingResponse
+import json
+
+app = FastAPI()
+
+def sse(event: str, data: dict) -&gt; str:
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+@app.post("/chat/stream")
+async def chat_stream(payload, llm=Depends(get_llm)):
+    # TODO: 构造 events 生成器并返回 StreamingResponse
+    ...</code></pre>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>生成器内 try/except 包裹流</li><li>正常结束补发 done 事件</li><li>异常发 error 事件并结束</li><li>media_type 设为 text/event-stream</li><li>设置 Cache-Control: no-cache</li><li>ensure_ascii=False 保中文可读</li></ul>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from fastapi import FastAPI, Depends
+from fastapi.responses import StreamingResponse
+import json
+
+app = FastAPI()
+
+def sse(event: str, data: dict) -&gt; str:
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+@app.post("/chat/stream")
+async def chat_stream(payload, llm=Depends(get_llm)):
+    messages = [m.model_dump() for m in payload.messages]
+
+    async def events():
+        try:
+            async for token in stream_chat(llm, messages):
+                yield sse("token", {"text": token})
+            yield sse("done", {})
+        except Exception:
+            yield sse("error", {"message": "流式响应中断"})
+
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache"},
+    )</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -720,6 +1109,492 @@ async def run_chain(model: ChatModel, parser: OutputParser, messages: list[dict[
     result = await model.chat(messages)
     return parser.parse(result.text)</code></pre>
 <p>学生手写后应理解：框架主要提供标准接口、组合、回调与集成，不会替代需求分析、错误处理和评测。</p>
+<h4>2.4.6 结构化输出：让模型只吐你能解析的东西</h4>
+<p>到这一步，你的后端已经能重试、能限流、能写日志。但还有一个地方在裸奔：<strong>模型的输出格式</strong>。</p>
+<p>前面所有接口都假设模型会乖乖返回 JSON。真实情况是：它会加上 Markdown 围栏、会写注释、会在 JSON 后面补一句「希望对你有帮助」、会把 <code>priority</code> 填成 <code>"高"</code>。你的 <code>json.loads</code> 直接抛异常，前端拿到 500。</p>
+<p>这一节把「模型输出」当成<strong>不可信输入</strong>来对待——和用户上传的文件同等对待。</p>
+<h5>三种约束强度，先建立正确的预期</h5>
+<table><thead><tr><th style="text-align:left">强度</th><th style="text-align:left">做法</th><th style="text-align:left">模型不听话时</th><th style="text-align:left">适用</th></tr></thead><tbody><tr><td style="text-align:left">弱</td><td style="text-align:left">只在提示词里写「请返回 JSON」</td><td style="text-align:left">你承担全部后果</td><td style="text-align:left">一次性脚本、演示</td></tr><tr><td style="text-align:left">中</td><td style="text-align:left"><code>response_format={"type": "json_object"}</code></td><td style="text-align:left">保证是<strong>合法 JSON</strong>，但不保证<strong>符合你的 schema</strong></td><td style="text-align:left">结构简单的场景</td></tr><tr><td style="text-align:left">强</td><td style="text-align:left"><code>response_format={"type": "json_schema", ...}</code> 或工具调用的 schema</td><td style="text-align:left">上游尽力约束，仍要本地校验兜底</td><td style="text-align:left">生产接口、入库数据</td></tr></tbody></table>
+<p><strong>关键认知：「强约束」也不是零风险。</strong> 不同供应商对 strict 模式的支持程度不同，长上下文下仍可能降级。所以生产代码的写法是固定的一条链：</p>
+<pre class="code lang-text"><code>能约束就约束  →  拿到就校验  →  校验失败就修复重试  →  仍失败就降级返回</code></pre>
+<p>少任何一环，异常都会漏到用户面前。</p>
+<h5>第一步：把 schema 写成可复用的类型</h5>
+<p>用 Pydantic 定义一次，同时拿到三样东西：校验逻辑、JSON Schema（发给上游）、文档。</p>
+<pre class="code lang-python"><code># code/ch02/d09/structured_output.py
+from __future__ import annotations
+
+from pydantic import BaseModel, Field
+
+
+class Ticket(BaseModel):
+    title: str = Field(min_length=1, max_length=80)
+    priority: int = Field(ge=1, le=5)
+    tags: list[str] = Field(default_factory=list, max_length=5)
+
+
+def schema_for_upstream() -&gt; dict:
+    # 发给上游的 schema：直接由类型生成，不手写
+    return Ticket.model_json_schema()</code></pre>
+<p><code>model_json_schema()</code> 生成的就是标准 JSON Schema，可以直接塞进工具的 <code>parameters</code>，或转成 strict 模式要求的格式。<strong>别手写 schema</strong>：手写的和校验用的两份定义迟早会漂移，漂移的那天就是线上事故。</p>
+<h5>第二步：写一个能自我修复的解析器</h5>
+<p>核心思路：解析失败<strong>不是异常</strong>，而是一次「给模型第二次机会」的信号。把模型调用注入进来，这样它既能接真实 API，也能在测试里用假模型跑。</p>
+<pre class="code lang-python"><code># code/ch02/d09/parse_with_repair.py
+from __future__ import annotations
+
+from typing import Callable
+
+from pydantic import ValidationError
+
+from structured_output import Ticket
+
+REPAIR_TEMPLATE = (
+    "你上一次的输出无法通过校验：{error}\n"
+    "原始输出：\n{raw}\n\n"
+    "只返回修复后的 JSON 对象，不要任何解释、不要 Markdown 围栏。"
+)
+
+
+def parse_with_repair(
+    raw: str,
+    call_model: Callable[[str], str],
+    *,
+    max_repair: int = 2,
+) -&gt; tuple[Ticket | None, list[str]]:
+    "返回 (结果, 历史错误)。结果为 None 表示降级，调用方必须处理。"
+    errors: list[str] = []
+    for _ in range(max_repair + 1):
+        try:
+            return Ticket.model_validate_json(raw), errors
+        except ValidationError as exc:
+            first = exc.errors()[0]
+            errors.append(f"{first['loc']}: {first['msg']}")
+            raw = call_model(
+                REPAIR_TEMPLATE.format(error=errors[-1], raw=raw[:2000])
+            )
+    return None, errors</code></pre>
+<p>四个细节值得单独说：</p>
+<ul><li><strong>&lt;code&gt;max_repair=2&lt;/code&gt; 是硬上限。</strong> 修复循环本质是重试，没有上限就是烧钱循环。两次仍失败说明任务本身不适合这个 schema。</li><li><strong>只把第一条错误回传给模型。</strong> 一次塞十条错误会让模型手忙脚乱，改对一条再谈下一条，收敛更快。</li><li><strong>&lt;code&gt;raw[:2000]&lt;/code&gt; 截断。</strong> 原始输出可能很长，全量回传会让修复请求瞬间吃掉上下文预算。</li><li><strong>返回 &lt;code&gt;None&lt;/code&gt; 而不是抛异常。</strong> 降级路径由调用方决定：返回 422 给前端、写待人工处理队列、或退化成纯文本回复。</li></ul>
+<h5>第三步：用假模型证明它真的能修</h5>
+<p>这段不需要网络，直接可跑：</p>
+<pre class="code lang-python"><code># code/ch02/d09/test_parse.py
+from parse_with_repair import parse_with_repair
+
+bad = '{"title": "", "priority": 9, "tags": []}'
+good = '{"title": "登录超时", "priority": 3, "tags": ["auth"]}'
+
+seen: list[str] = []
+
+
+def fake_model(prompt: str) -&gt; str:
+    seen.append(prompt)
+    return good
+
+
+result, errors = parse_with_repair(bad, fake_model)
+assert result is not None
+assert result.priority == 3
+assert len(errors) == 1
+assert "title" in errors[0]
+
+# 永远修不好的情况：必须有降级
+result, errors = parse_with_repair(bad, lambda _: bad, max_repair=1)
+assert result is None
+assert len(errors) == 2
+print("OK")</code></pre>
+<p><strong>注意最后一段断言</strong>：它验证的不是「能修好」，而是「修不好时的行为」。绝大多数人只测 happy path，线上出问题的永远是这条分支。</p>
+<h5>常见失败模式与对应对策</h5>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">真实原因</th><th style="text-align:left">对策</th></tr></thead><tbody><tr><td style="text-align:left"><code>json.loads</code> 抛 <code>Expecting value</code></td><td style="text-align:left">模型加了围栏或前后寒暄</td><td style="text-align:left">校验前先剥离围栏；提示词里明确禁止</td></tr><tr><td style="text-align:left">JSON 合法但字段缺失</td><td style="text-align:left">中间强度约束只保证语法</td><td style="text-align:left">用 Pydantic 设默认值或标记必填</td></tr><tr><td style="text-align:left"><code>priority</code> 类型不对</td><td style="text-align:left">模型按语义填了 <code>"高"</code></td><td style="text-align:left">用 <code>Literal</code> 或枚举约束，别用裸 <code>int</code></td></tr><tr><td style="text-align:left">校验通过但内容离谱</td><td style="text-align:left">schema 约束不了语义</td><td style="text-align:left">这是评测问题，不是解析问题（见第 3 章指标分层）</td></tr><tr><td style="text-align:left">修复循环停不下来</td><td style="text-align:left">没有 <code>max_repair</code></td><td style="text-align:left">硬上限 + 失败计数进日志与告警</td></tr></tbody></table>
+<h5>当天自检</h5>
+<ul><li>[ ] 能说出三种约束强度各自的保证边界，以及为什么强约束仍需本地校验。</li><li>[ ] 输出的 JSON Schema 由类型定义生成，而不是手写。</li><li>[ ] 解析函数有硬性重试上限，并有明确的降级返回值。</li><li>[ ] 离线测试覆盖了「一次修好」和「永远修不好」两条分支，且全部通过。</li><li>[ ] 解析失败次数写进了结构化日志，能被监控统计。</li></ul>
+<h5>课堂练习</h5>
+<ol><li>把 <code>Ticket</code> 的 <code>priority</code> 改成 <code>Literal[1, 2, 3, 4, 5]</code>，观察报错信息与 <code>int</code> 版本有何不同。</li><li>给修复循环加一条日志，记录每次尝试用的 token 数，估算最坏情况的成本。</li><li>故意让 <code>fake_model</code> 返回带围栏的 JSON，写出剥离围栏的函数并让它通过测试。</li></ol>
+<h4>2.4.7 mypy 与类型工程：让错误在运行前暴露</h4>
+<p>你写的是 Python，但 Agent 项目<strong>最怕的就是「运行时才发现」</strong>。一个工具调用的参数名写错，可能要到线上第 300 次调用才暴露，而那时它已经在数据库里写脏了数据。</p>
+<p>这一节把类型从「注释」变成「检查」。</p>
+<h5>为什么 Agent 项目比普通项目更需要类型</h5>
+<table><thead><tr><th style="text-align:left">场景</th><th style="text-align:left">没有类型的后果</th></tr></thead><tbody><tr><td style="text-align:left">工具参数</td><td style="text-align:left"><code>{"city_name": ...}</code> 与 <code>def f(city: str)</code> 对不上，模型传的键名永远匹配不上</td></tr><tr><td style="text-align:left">消息列表</td><td style="text-align:left"><code>list[str]</code> 与 <code>list[dict]</code> 混用，运行时才 <code>TypeError</code></td></tr><tr><td style="text-align:left">多供应商返回</td><td style="text-align:left">不同平台字段名不同，靠猜 <code>result.text</code> / <code>result.content</code></td></tr><tr><td style="text-align:left">上下文装配</td><td style="text-align:left">传错顺序不会报错，只会让模型回答变差——<strong>最难排查的一类 bug</strong></td></tr></tbody></table>
+<p>静态类型检查的价值：<strong>把这几类错误从「用户先发现」变成「提交前发现」</strong>。</p>
+<h5>三类类型写法，从松到紧</h5>
+<p><strong>第一类：联合类型与可选值</strong></p>
+<pre class="code lang-python"><code>from typing import Literal
+
+Role = Literal["system", "user", "assistant", "tool"]
+FinishReason = Literal["stop", "length", "tool_calls", "content_filter"]
+
+
+def parse_finish_reason(raw: str) -&gt; FinishReason:
+    allowed: tuple[FinishReason, ...] = ("stop", "length", "tool_calls", "content_filter")
+    for item in allowed:
+        if raw == item:
+            return item
+    return "stop"</code></pre>
+<p><code>Literal</code> 比 <code>str</code> 严格得多：写 <code>role="userr"</code> 时 mypy 直接报错。<strong>Agent 项目的消息角色、工具状态、事件类型，都应该用 &lt;code&gt;Literal&lt;/code&gt;。</strong></p>
+<p><strong>第二类：TypedDict 描述消息体</strong></p>
+<pre class="code lang-python"><code>from typing import TypedDict
+
+
+class ChatMessage(TypedDict):
+    role: Role
+    content: str
+
+
+def build_messages(system: str, user: str) -&gt; list[ChatMessage]:
+    return [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]</code></pre>
+<p><code>dict[str, str]</code> 的问题在于「任何键都合法」；<code>TypedDict</code> 会检查键名和值类型。如果写成 <code>{"roles": "user", "content": ...}</code>，mypy 立刻报「缺少 role，多了 roles」。</p>
+<p><strong>第三类：Protocol 定义接口（Day 09 已用过）</strong></p>
+<pre class="code lang-python"><code>from typing import Protocol
+
+
+class ChatModel(Protocol):
+    async def chat(self, messages: list[ChatMessage]) -&gt; "ChatResult": ...</code></pre>
+<p><code>Protocol</code> 的价值是<strong>结构化子类型</strong>：任何实现了 <code>chat</code> 的对象都自动满足它，不需要继承。Agent 项目里大量使用「鸭子类型」——这就是把它显式化的方式，也是你后面写测试时能塞假实现的基础。</p>
+<h5>pydantic v2：边界校验的运行时防线</h5>
+<p>类型注解是<strong>开发时</strong>的，pydantic 是<strong>运行时</strong>的。两者互补，缺一不可。</p>
+<pre class="code lang-python"><code>from pydantic import BaseModel, Field, field_validator
+
+
+class ToolCallRequest(BaseModel):
+    tool_name: str = Field(min_length=1, max_length=64)
+    arguments: dict[str, object] = Field(default_factory=dict)
+    timeout_s: float = Field(default=10.0, ge=0.1, le=60.0)
+
+    @field_validator("tool_name")
+    @classmethod
+    def reject_unsafe_name(cls, v: str) -&gt; str:
+        if not v.replace("_", "").isalnum():
+            raise ValueError("工具名只允许字母、数字与下划线")
+        return v</code></pre>
+<pre class="code lang-python"><code>try:
+    req = ToolCallRequest(tool_name="query_weather", timeout_s=999)
+except Exception as exc:
+    print(exc)</code></pre>
+<p>输出会明确指出 <code>timeout_s</code> 超出上限（<code>less than or equal to 60</code>）。</p>
+<p><strong>为什么模型给的参数一定要过 pydantic</strong>：模型可能给出 <code>timeout_s: "十秒"</code>、<code>tool_name: "../etc/passwd"</code>、<code>arguments: null</code>。应用层手写 <code>if</code> 校验既啰嗦又容易漏，pydantic 一行覆盖，而且错误信息可以直接回灌给模型让它重试（Day 03 讲过的校验重试链路）。</p>
+<h5>打开 mypy，配置要严</h5>
+<pre class="code lang-bash"><code>uv add --dev mypy
+uv run mypy app</code></pre>
+<pre class="code lang-toml"><code># pyproject.toml
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["tiktoken.*", "chromadb.*"]
+ignore_missing_imports = true</code></pre>
+<table><thead><tr><th style="text-align:left">配置项</th><th style="text-align:left">挡住什么</th></tr></thead><tbody><tr><td style="text-align:left"><code>strict = true</code></td><td style="text-align:left">一步到位，避免逐个选项纠结</td></tr><tr><td style="text-align:left"><code>disallow_untyped_defs</code></td><td style="text-align:left">强迫所有函数写注解——<strong>这是最有价值的一条</strong></td></tr><tr><td style="text-align:left"><code>warn_unused_ignores</code></td><td style="text-align:left">防止随手 <code># type: ignore</code> 永久留在代码里</td></tr><tr><td style="text-align:left"><code>no_implicit_optional</code></td><td style="text-align:left"><code>def f(x: int = None)</code> 这种 bug 直接报错</td></tr><tr><td style="text-align:left"><code>plugins = ["pydantic.mypy"]</code></td><td style="text-align:left">让 mypy 理解 pydantic 模型的构造参数</td></tr></tbody></table>
+<p><strong>务实建议</strong>：老代码不要一次性开 <code>strict</code>，先只在<strong>新写的模块</strong>上开，或从 <code>disallow_untyped_defs</code> 一条开始。全量一次性开启会产生几百条错误，多半会放弃。</p>
+<p>把 mypy 也加进 Day 38 的 CI：</p>
+<pre class="code lang-yaml"><code>      - name: 类型检查
+        run: uv run mypy app</code></pre>
+<h5>常见错误与排查顺序</h5>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">原因</th><th style="text-align:left">解决</th></tr></thead><tbody><tr><td style="text-align:left">报错几百条无处下手</td><td style="text-align:left">一上来就开 <code>strict</code></td><td style="text-align:left">先加 <code>disallow_untyped_defs</code>，只在新模块启用</td></tr><tr><td style="text-align:left">第三方库没有类型</td><td style="text-align:left">该库未提供 stubs</td><td style="text-align:left">在 <code>overrides</code> 里对该模块设 <code>ignore_missing_imports = true</code></td></tr><tr><td style="text-align:left">pydantic 模型被报错</td><td style="text-align:left">缺 mypy 插件</td><td style="text-align:left">加上 <code>plugins = ["pydantic.mypy"]</code></td></tr><tr><td style="text-align:left">类型和运行时行为不一致</td><td style="text-align:left">只写了注解没校验</td><td style="text-align:left">关键边界（模型输出、用户输入）必须走 pydantic</td></tr><tr><td style="text-align:left"><code>Optional</code> 报错满天飞</td><td style="text-align:left">返回值可能是 <code>None</code> 却没处理</td><td style="text-align:left">这正是它要抓的 bug，老老实实加判断，别用 <code># type: ignore</code> 掩盖</td></tr><tr><td style="text-align:left"><code>Literal</code> 报错但值看着没错</td><td style="text-align:left">字符串字面量拼写不同</td><td style="text-align:left">复制粘贴常量，或定义枚举统一管理</td></tr></tbody></table>
+<h5>当日动手与验收</h5>
+<ol><li>给 <code>Role</code>、<code>FinishReason</code>、工具状态等枚举型字段全部换成 <code>Literal</code></li><li>用 <code>TypedDict</code> 描述 <code>ChatMessage</code>，替换掉裸 <code>dict[str, str]</code></li><li>为 <code>ToolCallRequest</code> 写边界用例：空工具名、非法字符、超限超时、<code>arguments=None</code></li><li>打开 mypy 并让 <code>app/</code> 目录<strong>零错误</strong></li><li>把 mypy 加进 CI，截图「本地零错误 + CI 绿」两张图</li></ol>
+<p><strong>验收标准</strong>：同学故意把一个参数名改错，<code>uv run mypy app</code> 必须在两秒内指出具体文件与行号。</p>
+<h4>2.4.8 用 pytest 证明你的代码是对的</h4>
+<p>到 Day 09 为止，你写的每个功能都靠「手动跑一遍，看到输出对了」来确认。<strong>这种方式在面试里一文不值</strong>，因为面试官无法验证，你自己下周改代码时也无法确认有没有改坏。</p>
+<p>这一节把「我觉得能跑」换成「一跑就知道」。</p>
+<h5>为什么必须是自动化测试</h5>
+<table><thead><tr><th style="text-align:left">手动验证</th><th style="text-align:left">自动化测试</th></tr></thead><tbody><tr><td style="text-align:left">每次改动都要重新点一遍</td><td style="text-align:left"><code>uv run pytest -q</code> 三秒给出结论</td></tr><tr><td style="text-align:left">无法覆盖边界（空输入、超长、异常）</td><td style="text-align:left">参数化一次覆盖十几个边界</td></tr><tr><td style="text-align:left">无法证明「改 A 没弄坏 B」</td><td style="text-align:left">回归测试自动拦住</td></tr><tr><td style="text-align:left">面试官无法验证</td><td style="text-align:left">仓库里 <code>.py</code> 测试文件就是他看得见的证据</td></tr></tbody></table>
+<p><strong>Agent 开发尤其需要它</strong>：模型输出不确定，所以你必须把<strong>确定性部分</strong>（消息装配、重试判定、限流计数、上下文裁剪、工具参数校验）全部测透，把不确定性收敛在最小的边界内。</p>
+<h5>最小可运行的三层测试</h5>
+<p>新建 <code>tests/</code> 目录，和 <code>src/</code> 平级。</p>
+<pre class="code lang-python"><code># tests/test_context.py
+import pytest
+from app.context import trim_messages
+
+
+def test_trim_keeps_system_prompt():
+    messages = [
+        {"role": "system", "content": "你是助手"},
+        {"role": "user", "content": "第一问"},
+        {"role": "assistant", "content": "第一答"},
+        {"role": "user", "content": "第二问"},
+    ]
+    result = trim_messages(messages, max_turns=1)
+    assert result[0]["role"] == "system"
+    assert len(result) == 3
+    assert result[-1]["content"] == "第二问"
+
+
+def test_trim_raises_on_non_positive_turns():
+    with pytest.raises(ValueError):
+        trim_messages([], max_turns=0)</code></pre>
+<p>命名规范不是形式主义：<strong>文件名必须以 &lt;code&gt;test_&lt;/code&gt; 开头，函数名必须以 &lt;code&gt;test_&lt;/code&gt; 开头</strong>，pytest 靠这个自动发现。</p>
+<h5>fixture：把重复的准备工作抽出来</h5>
+<pre class="code lang-python"><code># tests/conftest.py
+import pytest
+from app.llm_client import LLMClient
+
+
+@pytest.fixture
+def messages():
+    return [{"role": "user", "content": "你好"}]
+
+
+@pytest.fixture
+async def client():
+    c = LLMClient(base_url="https://api.anmoxuan.xyz/v1", api_key="sk-test")
+    yield c
+    await c.aclose()</code></pre>
+<pre class="code lang-python"><code>def test_client_requires_key():
+    with pytest.raises(ValueError):
+        LLMClient(base_url="https://api.anmoxuan.xyz/v1", api_key="")</code></pre>
+<p><code>conftest.py</code> 是 pytest 的自动加载约定：<strong>同目录及子目录下的测试都能直接用</strong>，不需要 import。</p>
+<p><code>yield</code> 之前的代码是准备，之后的是清理——和 Day 06 讲的异步资源释放是同一个道理。</p>
+<h5>参数化：一张表覆盖一组边界</h5>
+<pre class="code lang-python"><code># tests/test_retry.py
+import pytest
+from app.retry import should_retry
+
+
+@pytest.mark.parametrize(
+    "status,expected",
+    [
+        (200, False),
+        (400, False),
+        (401, False),
+        (404, False),
+        (408, True),
+        (429, True),
+        (500, True),
+        (503, True),
+    ],
+)
+def test_should_retry_by_status(status, expected):
+    assert should_retry(status) is expected</code></pre>
+<p>八个用例，一个函数。面试时把这行 <code>parametrize</code> 指给面试官看，比说十句「我考虑得很周全」有用。</p>
+<h5>测异步代码</h5>
+<pre class="code lang-bash"><code>uv add --dev pytest-asyncio</code></pre>
+<pre class="code lang-toml"><code># pyproject.toml
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]        # 让 `from app.xxx import ...` 能被找到（实测必需）</code></pre>
+<pre class="code lang-python"><code># tests/test_concurrency.py
+import asyncio
+import time
+
+
+async def test_gather_runs_concurrently():
+    async def slow(n):
+        await asyncio.sleep(0.1)
+        return n
+
+    started = time.perf_counter()
+    result = await asyncio.gather(slow(1), slow(2), slow(3))
+    elapsed = time.perf_counter() - started
+
+    assert result == [1, 2, 3]
+    assert elapsed &lt; 0.25</code></pre>
+<p><strong>注意断言的写法</strong>：不要断言 <code>elapsed &lt; 0.15</code> 这种贴着理论值的数字，CI 机器更慢，会随机失败。<strong>留出安全余量</strong>是写测试的工程素养之一。</p>
+<h5>不打真实网络：MockTransport 与 monkeypatch</h5>
+<p>测试<strong>绝不能</strong>真的调用模型 API——慢、贵、结果不确定。两种标准做法：</p>
+<p><strong>做法一：&lt;code&gt;httpx.MockTransport&lt;/code&gt;（推荐，测到 HTTP 层）</strong></p>
+<pre class="code lang-python"><code># tests/test_llm_client_http.py
+import httpx
+import pytest
+from app.llm_client import LLMClient
+
+
+@pytest.fixture
+def mock_client():
+    def handler(request: httpx.Request) -&gt; httpx.Response:
+        assert request.url.path.endswith("/chat/completions")
+        return httpx.Response(
+            200,
+            json={
+                "id": "chatcmpl-test",
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {"role": "assistant", "content": "你好"},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"prompt_tokens": 9, "completion_tokens": 2, "total_tokens": 11},
+            },
+        )
+
+    return LLMClient(
+        base_url="https://api.anmoxuan.xyz/v1",
+        api_key="sk-test",
+        transport=httpx.MockTransport(handler),
+    )
+
+
+async def test_chat_parses_usage(mock_client):
+    result = await mock_client.chat([{"role": "user", "content": "你好"}])
+    assert result.text == "你好"
+    assert result.completion_tokens == 2
+    assert result.finish_reason == "stop"</code></pre>
+<p>它的价值在于<strong>同时验证了请求和解析两侧</strong>：handler 里能断言 URL、请求头、请求体是否符合预期。</p>
+<p><strong>做法二：&lt;code&gt;monkeypatch&lt;/code&gt; 替换函数</strong></p>
+<pre class="code lang-python"><code># tests/test_evaluator.py
+import pytest
+from app.evaluator import evaluate_case
+
+
+async def test_evaluate_case_uses_injected_model(monkeypatch):
+    async def fake_chat(messages, **kwargs):
+        class R:
+            text = "订单 A-1024"
+            finish_reason = "stop"
+        return R()
+
+    monkeypatch.setattr("app.evaluator.llm_chat", fake_chat)
+
+    ok = await evaluate_case({"id": "c1", "expect": ["A-1024"]})
+    assert ok is True</code></pre>
+<p><code>monkeypatch</code> <strong>会在每个用例结束后自动还原</strong>，不会污染其他测试——这一点比自己手写 <code>setattr</code> + <code>finally</code> 可靠得多。</p>
+<h5>覆盖率：知道哪里没测</h5>
+<pre class="code lang-bash"><code>uv add --dev pytest-cov
+uv run pytest --cov=app --cov-report=term-missing</code></pre>
+<p>输出里的 <code>Missing</code> 列会直接告诉你<strong>哪些行从未被执行</strong>。</p>
+<p>对 Agent 项目的务实标准：</p>
+<table><thead><tr><th style="text-align:left">模块</th><th style="text-align:left">建议覆盖率</th><th style="text-align:left">理由</th></tr></thead><tbody><tr><td style="text-align:left">消息装配 / 上下文裁剪</td><td style="text-align:left">≥ 90%</td><td style="text-align:left">纯逻辑，必须测透</td></tr><tr><td style="text-align:left">重试 / 限流 / 退避</td><td style="text-align:left">≥ 90%</td><td style="text-align:left">边界多，最容易写错</td></tr><tr><td style="text-align:left">工具参数校验</td><td style="text-align:left">≥ 85%</td><td style="text-align:left">直接关系安全</td></tr><tr><td style="text-align:left">LLM 调用与解析</td><td style="text-align:left">≥ 70%</td><td style="text-align:left">用 MockTransport 覆盖成功与失败路径</td></tr><tr><td style="text-align:left">端到端流程</td><td style="text-align:left">若干条即可</td><td style="text-align:left">慢，只留关键路径</td></tr></tbody></table>
+<p><strong>不要为了数字写测试。</strong> 覆盖 100% 但只断言「不抛异常」的测试，面试官一眼看穿。</p>
+<h5>常见错误与排查顺序</h5>
+<table><thead><tr><th style="text-align:left">现象</th><th style="text-align:left">原因</th><th style="text-align:left">解决</th></tr></thead><tbody><tr><td style="text-align:left"><code>collected 0 items</code></td><td style="text-align:left">文件名或函数名没带 <code>test_</code> 前缀</td><td style="text-align:left">改名</td></tr><tr><td style="text-align:left"><code>ModuleNotFoundError: app</code></td><td style="text-align:left">项目根目录没进 <code>sys.path</code></td><td style="text-align:left">在 <code>pyproject.toml</code> 里配置 <code>pythonpath = ["."]</code>，或安装为可编辑包</td></tr><tr><td style="text-align:left">异步用例被跳过并警告</td><td style="text-align:left">没装或没配 <code>pytest-asyncio</code></td><td style="text-align:left"><code>uv add --dev pytest-asyncio</code>，并设 <code>asyncio_mode = "auto"</code></td></tr><tr><td style="text-align:left">测试很慢</td><td style="text-align:left">真的发了网络请求</td><td style="text-align:left">检查是否漏了 MockTransport；给网络用例打 <code>@pytest.mark.slow</code> 并默认排除</td></tr><tr><td style="text-align:left">时而通过时而失败</td><td style="text-align:left">依赖时间或并发顺序</td><td style="text-align:left">放宽时间断言；不要断言字典顺序；不要依赖真实时钟</td></tr><tr><td style="text-align:left">改了代码测试没反应</td><td style="text-align:left">pytest 缓存</td><td style="text-align:left">清 <code>.pytest_cache/</code>；确认没在 <code>__pycache__</code> 里跑旧文件</td></tr></tbody></table>
+<h5>当日动手与验收</h5>
+<ol><li>给 Day 09 的三个确定性模块写测试：<strong>退避重试</strong>、<strong>滑动窗口限流</strong>、<strong>上传校验</strong></li><li>每个模块至少一条参数化用例，覆盖表里的正常值、边界值、异常值</li><li>用 <code>httpx.MockTransport</code> 为 <code>LLMClient</code> 写成功与失败两条路径的测试</li><li>跑 <code>uv run pytest --cov=app --cov-report=term-missing</code>，把输出截图</li><li>把截图与覆盖率数字写进 <code>notes/resume_materials.md</code></li></ol>
+<p><strong>验收标准</strong>：把任意一个模块的实现改错一行，测试必须失败。同学随机抽一条测试问你「它在防什么」，你能立刻答出来。</p>
+<h4>2.4.9 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q02-04-01</code> ~ <code>q02-04-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q02-04-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">哪些错误不该重试</td></tr><tr><td style="text-align:left"><code>q02-04-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">退避延迟的计算</td></tr><tr><td style="text-align:left"><code>q02-04-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">进程内限流的局限</td></tr><tr><td style="text-align:left"><code>q02-04-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">重试三条纪律与原因</td></tr><tr><td style="text-align:left"><code>q02-04-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">上传接口的安全层次</td></tr><tr><td style="text-align:left"><code>q02-04-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现带抖动的有限重试</td></tr><tr><td style="text-align:left"><code>q02-04-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">补齐滑动窗口限流器</td></tr></tbody></table>
+<h5><code>q02-04-01</code>（单选 · ★）哪些错误不该重试</h5>
+<p>调用 LLM API 时收到以下响应，哪一类重试一次也不可能成功？</p>
+<p>请选出最准确的判断标准。</p>
+<ul><li><strong>A</strong>. 401 密钥错误与 400 参数错误</li><li><strong>B</strong>. 429 限流与 503 上游过载</li><li><strong>C</strong>. 连接超时与读取超时</li><li><strong>D</strong>. 502 与 504 网关错误</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>只重试瞬时错误：429/5xx/连接超时</li><li>401、403 与大部分 400 不重试</li><li>判断标准：重试一次有可能成功吗</li><li>确定性错误重试只浪费配额</li></ul>
+<p><strong>解析与常见错误</strong>：判断标准是「重试一次有可能成功吗」。网络抖动、上游过载属于瞬时故障，重试可能成功；而密钥错、参数错是确定性错误，重试一百次结果相同，只会浪费配额。429/5xx/超时都在 RETRYABLE_STATUS 或异常捕获范围内。</p>
+<h5><code>q02-04-02</code>（单选 · ★★）退避延迟的计算</h5>
+<p>重试退避公式为：</p>
+<p>delay = min(4.0, 0.5 * 2 ** (attempt - 1)) + random.uniform(0, 0.2)</p>
+<p>当 attempt = 1 时，delay 的取值范围是？</p>
+<ul><li><strong>A</strong>. 0.5 秒到 0.7 秒之间</li><li><strong>B</strong>. 0.5 秒到 4.0 秒之间</li><li><strong>C</strong>. 1.0 秒到 1.2 秒之间</li><li><strong>D</strong>. 0 秒到 0.2 秒之间</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>attempt=1 时指数项为 0.5</li><li>min(4.0, ...) 封顶 4 秒</li><li>抖动 uniform(0, 0.2) 叠加</li><li>抖动防止重试风暴</li></ul>
+<p><strong>解析与常见错误</strong>：attempt=1 时 0.5 * 2**0 = 0.5，min(4.0, 0.5) = 0.5，再加 random.uniform(0, 0.2)，所以落在 0.5~0.7 秒。指数部分随 attempt 翻倍，到 attempt=4 时被 min 截断在 4.0。抖动是叠加项，不是替代项。</p>
+<h5><code>q02-04-03</code>（单选 · ★★）进程内限流的局限</h5>
+<p>用 SlidingWindowLimiter 在单进程内做限流，服务扩展到 4 个实例后，实际允许的请求速率会怎样？</p>
+<p>应该怎么处理？</p>
+<ul><li><strong>A</strong>. 变成约 4 倍，应迁移到网关或 Redis 共享状态</li><li><strong>B</strong>. 保持不变，因为限流器按 key 分桶</li><li><strong>C</strong>. 变成约 4 倍，应把 limit 除以 4 写死</li><li><strong>D</strong>. 保持不变，因为 asyncio.Lock 是全局的</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>进程内状态不跨实例共享</li><li>多实例总速率近似翻倍</li><li>asyncio.Lock 不跨进程</li><li>应迁移到网关或 Redis</li></ul>
+<p><strong>解析与常见错误</strong>：进程内限流器的 records 与 lock 都在单个进程内存里，多实例各算各的，总速率近似按实例数放大。asyncio.Lock 只保护本进程协程，不跨进程。正确做法是把限流迁到网关或 Redis，而不是把 limit 写死除以实例数。</p>
+<h5><code>q02-04-04</code>（简答 · ★★）重试三条纪律与原因</h5>
+<p>请说明带退避的有限重试必须遵守的三条纪律，并解释每条纪律背后的失败场景。</p>
+<p>再补充：为什么抖动（jitter）不能省？</p>
+<p><strong>提示</strong>：问「重试一次有可能成功吗」；想想大量请求同一时刻重试会怎样</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>只重试瞬时错误：429/5xx/连接超时</li><li>401/400 是确定性错误，重试无意义</li><li>必须有次数上限，否则故障放大成雪崩</li><li>必须加随机抖动，避免重试风暴</li><li>抖动打散同时刻重试，保护上游</li></ul>
+<p><strong>解析与常见错误</strong>：三条纪律要答全：可重试范围、次数上限、随机抖动。常见失分是只答「要重试」而不说边界，或把抖动说成「让延迟更好看」。抖动的作用是打散重试时刻，防止同步重试再次压垮上游。</p>
+<h5><code>q02-04-05</code>（简答 · ★★★）上传接口的安全层次</h5>
+<p>上传接口做了扩展名白名单、大小限制、UUID 重命名三件事。</p>
+<p>请分别说明每件事防住了什么攻击，并指出仅靠这三层还不够、生产环境还需要补什么。</p>
+<p><strong>提示</strong>：原始文件名可能含 ../；扩展名是用户可控的字符串</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>扩展名白名单挡掉明显非法类型</li><li>大小限制防超大文件耗尽磁盘/内存</li><li>UUID 重命名防路径穿越与覆盖</li><li>扩展名可伪造，需查 MIME 与文件签名</li><li>还需恶意内容扫描与隔离存储</li></ul>
+<p><strong>解析与常见错误</strong>：要区分「防住了什么」和「防不住什么」。扩展名检查只是第一层，攻击者可以把可执行内容改名成 .txt。UUID 重命名解决的是路径穿越与同名覆盖，不是内容安全。答不出隔离存储与签名校验会失分。</p>
+<h5><code>q02-04-06</code>（代码 · ★★）实现带抖动的有限重试</h5>
+<p>实现 call_with_retry(operation, attempts=3)：</p>
+<ul><li>只对 429/500/502/503/504 以及连接错误、超时重试</li><li>其他 HTTP 状态码直接抛出</li><li>达到次数上限时抛出最后一次异常</li><li>退避延迟用 min(4.0, 0.5 * 2 ** (attempt - 1)) 加 0~0.2 秒随机抖动</li></ul>
+<p>operation 是无参可等待函数，返回结果。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import asyncio
+import random
+import httpx
+
+RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
+async def call_with_retry(operation, attempts: int = 3):
+    # TODO: 实现有限重试与退避
+    ...</code></pre>
+<p><strong>提示</strong>：判断顺序：先看状态码是否可重试；attempt == attempts 时不要再 sleep</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>for 循环用 attempt 从 1 开始</li><li>非可重试状态码立即 raise</li><li>最后一次尝试直接 raise 不再睡</li><li>延迟用 min 封顶并叠加抖动</li><li>循环外兜底 raise 保证不返回 None</li></ul>
+<p><strong>解析与常见错误</strong>：关键在异常分支的短路顺序：不可重试或已达上限必须立刻抛出，否则会多睡一次再抛。抖动是加在指数退避之上，不是替代。常见错误是忘记循环外兜底 raise，导致函数隐式返回 None。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import asyncio
+import random
+import httpx
+
+RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
+async def call_with_retry(operation, attempts: int = 3):
+    for attempt in range(1, attempts + 1):
+        try:
+            return await operation()
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code not in RETRYABLE_STATUS or attempt == attempts:
+                raise
+        except (httpx.ConnectError, httpx.TimeoutException):
+            if attempt == attempts:
+                raise
+        delay = min(4.0, 0.5 * 2 ** (attempt - 1)) + random.uniform(0, 0.2)
+        await asyncio.sleep(delay)
+    raise RuntimeError("不可达分支")</code></pre>
+<p></details></p>
+<h5><code>q02-04-07</code>（代码 · ★★★）补齐滑动窗口限流器</h5>
+<p>补全 SlidingWindowLimiter：</p>
+<ul><li>按 key 记录请求时间戳，窗口内超过 limit 则拒绝</li><li>用单调时钟，避免系统时间回拨</li><li>用 asyncio.Lock 保证并发安全</li></ul>
+<p>allow(key) 返回 True 表示放行，False 表示被限流。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from collections import defaultdict, deque
+from time import monotonic
+import asyncio
+
+class SlidingWindowLimiter:
+    def __init__(self, limit: int, window_seconds: float):
+        self.limit = limit
+        self.window = window_seconds
+        # TODO: 初始化 records 与 lock
+
+    async def allow(self, key: str) -&gt; bool:
+        # TODO: 清理过期记录并判断是否放行
+        ...</code></pre>
+<p><strong>提示</strong>：deque 左端是最老的记录；边界判断是 >= limit 而不是 > limit</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>records 用 defaultdict(deque)</li><li>lock 在 __init__ 中创建</li><li>用 monotonic 而非 time.time</li><li>先弹出窗口外的时间戳</li><li>判断用 >= limit 再 append</li></ul>
+<p><strong>解析与常见错误</strong>：原课件缺 asyncio.Lock 和 deque 的 import，直接复制会 NameError，这是本题的陷阱。逻辑上要先清理过期记录再判断长度，用 >= limit 表示「再加一个就超了」。用 time.time 会在系统时间回拨时出错。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from collections import defaultdict, deque
+from time import monotonic
+import asyncio
+
+class SlidingWindowLimiter:
+    def __init__(self, limit: int, window_seconds: float):
+        self.limit = limit
+        self.window = window_seconds
+        self.records: dict[str, deque[float]] = defaultdict(deque)
+        self.lock = asyncio.Lock()
+
+    async def allow(self, key: str) -&gt; bool:
+        now = monotonic()
+        async with self.lock:
+            queue = self.records[key]
+            while queue and queue[0] &lt;= now - self.window:
+                queue.popleft()
+            if len(queue) &gt;= self.limit:
+                return False
+            queue.append(now)
+            return True</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -769,7 +1644,9 @@ async def run_chain(model: ChatModel, parser: OutputParser, messages: list[dict[
 <pre class="code lang-text"><code>ai_chat_backend/
 ├─ .env.example
 ├─ .gitignore
-├─ requirements.txt
+├─ pyproject.toml          # 声明依赖（见 1.2.6）
+├─ uv.lock                 # 锁定整棵依赖树，必须提交
+├─ .github/workflows/ci.yml  # 每次提交自动检查（见 9.1.5）
 ├─ src/
 │  ├─ config.py
 │  ├─ models.py
@@ -873,7 +1750,137 @@ python code/ch02/50_load_test.py</code></pre>
 <p>第二章完成了可靠的模型访问和服务外壳。第三章不重写后端，而是在这一服务中增加文档解析、索引、检索和引用，使 <code>/chat</code> 从通用对话升级为企业知识问答。</p>
 <h3>2.9 教师参考资料</h3>
 <ul><li><a href="https://www.python-httpx.org/async/" target="_blank" rel="noreferrer">HTTPX Async Support</a>：核对 <code>AsyncClient</code> 复用、流式读取和关闭要求。</li><li><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">FastAPI Tutorial</a>：核对路由、依赖注入、请求校验和文件上传。</li><li><a href="https://fastapi.tiangolo.com/advanced/custom-response/" target="_blank" rel="noreferrer">FastAPI Custom Response</a>：核对 <code>StreamingResponse</code>。</li></ul>
-<blockquote>链接于 2026-09-15 核对。授课时以锁定依赖版本对应的官方文档为准。</blockquote></div>
+<blockquote>链接于 2026-09-15 核对。授课时以锁定依赖版本对应的官方文档为准。</blockquote>
+<h4>2.5.6 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q02-05-01</code> ~ <code>q02-05-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q02-05-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">压测报告缺失哪个字段最致命</td></tr><tr><td style="text-align:left"><code>q02-05-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">四接口失败路径语义判断</td></tr><tr><td style="text-align:left"><code>q02-05-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">压测脚本并发与统计实现</td></tr><tr><td style="text-align:left"><code>q02-05-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">为什么压测报告必须写环境与 P95</td></tr><tr><td style="text-align:left"><code>q02-05-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">最终验收流程的完整步骤</td></tr><tr><td style="text-align:left"><code>q02-05-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现 20 并发压测并输出统计</td></tr><tr><td style="text-align:left"><code>q02-05-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">上传接口的大小与类型校验</td></tr></tbody></table>
+<h5><code>q02-05-01</code>（单选 · ★）压测报告缺失哪个字段最致命</h5>
+<p>一份 20 并发压测报告写了环境、并发数、成功率，但没有写 P95 延迟和失败原因分析。 按必备字段要求，这份报告的问题是什么？</p>
+<ul><li><strong>A</strong>. 缺少 P50/P95 延迟和失败原因分析，长尾体验与失败根因都无法判断</li><li><strong>B</strong>. 缺少总请求数，无法判断样本量是否足够</li><li><strong>C</strong>. 缺少模型名称，无法判断上游是哪家供应商</li><li><strong>D</strong>. 缺少状态码分布，无法判断是否出现 429</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>必备字段含 P50/P95 延迟</li><li>平均值掩盖长尾，长尾决定体验</li><li>至少分析一个失败请求</li><li>只报数字不算合格报告</li></ul>
+<p><strong>解析与常见错误</strong>：必备字段明确要求 P50 与 P95 延迟以及失败原因分析，平均值会掩盖长尾，而长尾决定用户体验；只报数字不分析失败请求不算合格。其余选项虽也是必备字段，但题干已写明环境与成功率，且状态码分布未提及缺失，属干扰项。</p>
+<h5><code>q02-05-02</code>（单选 · ★★）四接口失败路径语义判断</h5>
+<p>关于四个接口契约的失败路径，下列哪项描述是正确的？</p>
+<ul><li><strong>A</strong>. POST /chat 的失败路径包含 422/429/502/504</li><li><strong>B</strong>. GET /health 依赖异常时返回 502</li><li><strong>C</strong>. POST /upload 的失败路径是 429/504</li><li><strong>D</strong>. POST /chat/stream 失败时返回 413</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>/chat 失败路径 422/429/502/504</li><li>health 异常标记 degraded</li><li>upload 失败路径 413/415</li><li>stream 失败走流内 error 事件</li></ul>
+<p><strong>解析与常见错误</strong>：/chat 契约明确列出 422/429/502/504 四种失败路径。health 依赖异常时是标记 degraded 而非返回 502；upload 的失败路径是 413/415，对应超大文件与非法扩展名；stream 的失败走流内 error 事件，不是 413。</p>
+<h5><code>q02-05-03</code>（单选 · ★★★）压测脚本并发与统计实现</h5>
+<p>20 并发压测脚本用 asyncio.gather 发起请求，用 perf_counter 计时，用 statistics.median 求中位数，并单独计算 p95。 下列关于该脚本的说法，哪项正确？</p>
+<ul><li><strong>A</strong>. 用 gather 并发发起、按状态码分组统计，能反映部分请求 429 的情况</li><li><strong>B</strong>. 用 perf_counter 计时得到的是 CPU 时间，不能反映真实延迟</li><li><strong>C</strong>. median 求出的就是 P95，无需单独计算</li><li><strong>D</strong>. gather 会串行执行，实际并发度只有 1</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>gather 并发发起请求</li><li>perf_counter 为墙上时钟</li><li>median 是中位数非 P95</li><li>按状态码分组统计</li></ul>
+<p><strong>解析与常见错误</strong>：脚本用 asyncio.gather 并发发起 20 个请求，并按状态码分组统计，因此能暴露部分请求 429 这类情况。perf_counter 是墙上时钟，能反映真实延迟；median 是中位数而非 P95；gather 是并发而非串行。</p>
+<h5><code>q02-05-04</code>（简答 · ★★）为什么压测报告必须写环境与 P95</h5>
+<p>请说明压测报告为什么必须写明环境（CPU/内存/模型/上游限额）和 P50/P95 延迟。 并解释只看成功率和平均值会漏掉哪些问题。</p>
+<p><strong>提示</strong>：想想换台机器数字会怎样；平均值和长尾的关系</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>没有环境的性能数字没有意义</li><li>20 并发与 200 并发结论不同</li><li>只看成功率会漏掉部分 429</li><li>平均值掩盖长尾</li><li>长尾决定用户体验</li><li>至少分析一个失败请求</li></ul>
+<p><strong>解析与常见错误</strong>：答题要抓住两点：环境决定数字可比性，不同并发与上游限额下结论完全不同；平均值掩盖长尾，而 P95 才反映最差体验。常见失分是只答“要写环境”而不解释原因，或忽略状态码分布会漏掉部分 429。</p>
+<h5><code>q02-05-05</code>（简答 · ★★★）最终验收流程的完整步骤</h5>
+<p>请按顺序描述企业级聊天后端的最终验收流程，并说明每一步在验证什么能力。 重点解释切换供应商不改路由代码、双 session 验证、以及注入 429 或超时这三步的意义。</p>
+<p><strong>提示</strong>：从配置到压测的完整链路；供应商切换验证的是解耦</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>从 .env.example 配置供应商并启动</li><li>调 /health 与 /chat 展示正常 JSON</li><li>切换供应商不改路由代码重跑</li><li>/chat/stream 展示逐片与结束事件</li><li>双 session 验证隔离与上下文裁剪</li><li>上传合法/超大/非法扩展名</li><li>注入 429 或超时展示有限重试</li><li>跑 20 并发提交报告与日志</li></ul>
+<p><strong>解析与常见错误</strong>：要按八步顺序作答并点出每步验证的能力：切换供应商验证配置解耦，双 session 验证会话隔离与上下文裁剪，注入 429 或超时验证有限重试与对外错误映射。常见失分是漏掉上传的合法/超大/非法三类测试，或把压测报告与日志样例遗漏。</p>
+<h5><code>q02-05-06</code>（代码 · ★★）实现 20 并发压测并输出统计</h5>
+<p>请实现一个异步压测函数：向 http://127.0.0.1:8000 的 /chat 并发发起 20 个 POST 请求， 每个请求体为 messages 含一条 user 消息。 统计并打印：总数、成功数、中位数延迟、P95 延迟、状态码分布。 要求用 httpx.AsyncClient、asyncio.gather、perf_counter 和 statistics.median。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>import asyncio
+from statistics import median
+from time import perf_counter
+import httpx
+
+async def one_request(client, index):
+    # TODO: 计时并发起一次 /chat 请求，返回 status 与 latency
+    ...
+
+async def load_test(total: int = 20) -&gt; None:
+    # TODO: 并发发起并统计输出
+    ...
+
+if __name__ == "__main__":
+    asyncio.run(load_test())</code></pre>
+<p><strong>提示</strong>：用 async with 管理 client；P95 要单独取分位</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>单例 AsyncClient 并设 timeout</li><li>gather 并发发起全部请求</li><li>perf_counter 计墙上时钟</li><li>median 求中位数</li><li>单独计算 P95</li><li>按状态码分组统计</li></ul>
+<p><strong>解析与常见错误</strong>：关键是用一个 AsyncClient 承载全部并发请求，用 gather 一次性发起，再对延迟排序取中位数与 P95。常见错误是把请求写成串行 await、忘记设置 timeout、或直接对延迟列表用 median 当 P95。状态码分布要按出现过的码分组统计。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>import asyncio
+from statistics import median
+from time import perf_counter
+import httpx
+
+async def one_request(client: httpx.AsyncClient, index: int) -&gt; dict:
+    started = perf_counter()
+    response = await client.post("/chat", json={
+        "messages": [{"role": "user", "content": f"用一句话解释异步编程，编号 {index}"}]})
+    return {"status": response.status_code, "latency": perf_counter() - started}
+
+async def load_test(total: int = 20) -&gt; None:
+    async with httpx.AsyncClient(base_url="http://127.0.0.1:8000", timeout=90) as client:
+        rows = await asyncio.gather(*(one_request(client, i) for i in range(total)))
+        latencies = sorted(row["latency"] for row in rows)
+        p95 = latencies[max(0, int(len(latencies) * 0.95) - 1)]
+        print({
+            "total": total,
+            "success": sum(row["status"] == 200 for row in rows),
+            "median_seconds": round(median(latencies), 3),
+            "p95_seconds": round(p95, 3),
+            "statuses": {code: sum(row["status"] == code for row in rows)
+                         for code in sorted({row["status"] for row in rows})},
+        })
+
+if __name__ == "__main__":
+    asyncio.run(load_test())</code></pre>
+<p></details></p>
+<h5><code>q02-05-07</code>（代码 · ★★★）上传接口的大小与类型校验</h5>
+<p>实现一个 FastAPI 的 POST /upload 接口：接收 multipart 文件， 要求校验文件大小不超过 5MB、扩展名只允许 .txt/.md/.pdf， 不合法分别返回 413 和 415；合法则保存到 data/uploads/ 下并使用随机文件名， 返回 file_id 与 size。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from fastapi import FastAPI, UploadFile, File, HTTPException
+import uuid, os
+
+app = FastAPI()
+UPLOAD_DIR = "data/uploads"
+MAX_SIZE = 5 * 1024 * 1024
+ALLOWED = {".txt", ".md", ".pdf"}
+
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)):
+    # TODO: 校验大小与扩展名，保存并返回
+    ...</code></pre>
+<p><strong>提示</strong>：扩展名用 splitext 取后缀；文件名不要用用户原始名</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先校验扩展名返回 415</li><li>再校验大小返回 413</li><li>读取内容判断真实字节数</li><li>用 uuid 生成随机文件名</li><li>保存到受控目录 data/uploads</li><li>返回 file_id 与 size</li></ul>
+<p><strong>解析与常见错误</strong>：要点是先做类型校验再做大小校验，扩展名用 splitext 取小写后缀比对白名单，大小按实际读取字节数判断。常见错误是直接用用户文件名保存造成路径穿越、把 413 与 415 写反、或忘记 makedirs 导致目录不存在报错。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from fastapi import FastAPI, UploadFile, File, HTTPException
+import uuid, os
+
+app = FastAPI()
+UPLOAD_DIR = "data/uploads"
+MAX_SIZE = 5 * 1024 * 1024
+ALLOWED = {".txt", ".md", ".pdf"}
+
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)):
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in ALLOWED:
+        raise HTTPException(status_code=415, detail="unsupported file type")
+    content = await file.read()
+    if len(content) &gt; MAX_SIZE:
+        raise HTTPException(status_code=413, detail="file too large")
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    file_id = uuid.uuid4().hex + ext
+    with open(os.path.join(UPLOAD_DIR, file_id), "wb") as f:
+        f.write(content)
+    return {"file_id": file_id, "size": len(content)}</code></pre>
+<p></details></p>
+<hr></div>
   </div>
 </section>
 

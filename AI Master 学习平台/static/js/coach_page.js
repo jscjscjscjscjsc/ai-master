@@ -193,7 +193,7 @@ const CoachPage = {
   addTools(row, text) {
     const tools = row.querySelector('.msg-tools');
     const speak = document.createElement('button');
-    speak.textContent = '🔊 朗读';
+    speak.textContent = '朗读';
     speak.addEventListener('click', () => this.speak(text, 'coach'));
     tools.appendChild(speak);
     if (this.mode === 'interview') {
@@ -276,7 +276,7 @@ const CoachPage = {
 
   /* ── 语音输出 ───────────────────────────────────────── */
   async speak(text, character) {
-    const clean = String(text || '').replace(/[`*#>]|🤔/g, '').trim();
+    const clean = String(text || '').replace(/[`*#>]/g, '').trim();
     if (!clean) return;
     const short = clean.slice(0, 700);
     try {
@@ -312,13 +312,13 @@ const CoachPage = {
       if (recording) return;
       recording = true;
       button.classList.add('rec');
-      button.textContent = '🔴 听…';
+      button.textContent = '聆听中…';
       recognizer.start();
     };
     const stop = () => {
       recording = false;
       button.classList.remove('rec');
-      button.textContent = '🎙 说';
+      button.textContent = '语音输入';
       try { recognizer.stop(); } catch (error) { /* 已经停了 */ }
     };
     recognizer.onresult = (event) => {

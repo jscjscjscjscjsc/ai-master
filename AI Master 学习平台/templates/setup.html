@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block title %}模型配置 · AI Master{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<style>
+.setup-wrap { max-width: 860px; margin: 0 auto; padding: 34px 20px 90px; }
+.setup-wrap h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 10px; letter-spacing: .5px; }
+.setup-wrap .lead { color: var(--ink-2); font-size: 14px; line-height: 1.85; margin: 0 0 8px; }
+.setup-wrap .lead b { color: var(--gold); }
+.quick {
+  background: rgba(114, 246, 228, .05); border: 1px solid rgba(114, 246, 228, .24);
+  border-radius: var(--radius-lg); padding: 18px 20px; margin: 22px 0 26px;
+}
+.quick-head { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14px; }
+.quick-head .tag {
+  background: var(--cyan); color: #04121a; font-size: 11px; font-weight: 800;
+  padding: 3px 9px; border-radius: 999px;
+}
+.quick ol { margin: 12px 0 0 20px; padding: 0; font-size: 13px; color: var(--ink-2); line-height: 2; }
+.quick ol a { color: var(--cyan); }
+.quick ol code { background: rgba(3, 6, 17, .7); padding: 2px 6px; border-radius: 5px; font-family: var(--mono); font-size: 12.5px; }
+.quick-note { margin-top: 12px; font-size: 12px; color: var(--muted); }
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 12.5px; color: var(--ink-2); margin-bottom: 7px; font-weight: 600; }
+.field .opt { color: var(--muted); font-weight: 400; }
+.field input[type=text], .field input[type=password] {
+  width: 100%; padding: 11px 13px; border-radius: var(--radius);
+  border: 1px solid var(--line-strong); background: rgba(3, 6, 17, .62);
+  color: var(--ink); font-family: var(--mono); font-size: 13px; outline: none;
+}
+.field input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(114, 246, 228, .12); }
+.field .hint { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.75; }
+.field .hint code { background: rgba(3, 6, 17, .7); padding: 1px 5px; border-radius: 4px; font-family: var(--mono); }
+.preset { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+.preset button, button.mini {
+  padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line);
+  background: rgba(3, 6, 17, .5); color: var(--ink-2); font-size: 12px;
+  cursor: pointer; font-family: inherit; transition: .16s;
+}
+.preset button:hover, button.mini:hover { border-color: var(--cyan); color: var(--ink); }
+button.mini { color: var(--cyan); border-color: var(--cyan); vertical-align: baseline; }
+.row { display: flex; gap: 11px; margin-top: 24px; }
+.msg { margin-top: 15px; padding: 12px 14px; border-radius: var(--radius); font-size: 13px; display: none; line-height: 1.7; }
+.msg.show { display: block; }
+.msg.ok { background: rgba(125, 232, 168, .1); border: 1px solid rgba(125, 232, 168, .38); color: var(--green); }
+.msg.err { background: rgba(255, 157, 179, .1); border: 1px solid rgba(255, 157, 179, .38); color: var(--rose); }
+.msg.info { background: rgba(114, 246, 228, .08); border: 1px solid rgba(114, 246, 228, .3); color: var(--cyan); }
+.skip-box { margin-top: 30px; padding-top: 22px; border-top: 1px dashed var(--line); text-align: center; }
+.btn-skip {
+  width: 100%; background: transparent; border: 1px solid var(--line); color: var(--ink-2);
+  font-family: inherit; font-size: 13.5px; padding: 12px 20px; border-radius: var(--radius);
+  cursor: pointer; transition: .16s;
+}
+.btn-skip:hover { border-color: var(--cyan); color: var(--ink); background: rgba(114, 246, 228, .05); }
+.skip-hint { margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.9; text-align: left; }
+.skip-hint b { color: var(--ink-2); }
+.status-line { font-size: 12.5px; color: var(--muted); margin-top: 14px; }
+.status-line .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; margin-right: 8px; }
+.pill.on { background: rgba(125, 232, 168, .15); color: var(--green); border: 1px solid rgba(125, 232, 168, .4); }
+.pill.off { background: rgba(255, 176, 66, .12); color: #f0c07a; border: 1px solid rgba(255, 176, 66, .4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="setup-wrap">
+  <h1>接入大模型</h1>
+  <p class="lead">平台的 AI 功能（星语智能体、AI 批改、星辰教练、模拟面试）需要你自己的模型 API。
+    <b>没有 Key 也可以先跳过</b>——课程、刷题、判分、星空修为都不依赖大模型，照样能用。</p>
+  <div class="status-line">
+    <span class="pill {{ 'on' if configured else 'off' }}">{{ '已配置' if configured else '未配置' }}</span>
+    {% if configured %}
+      当前模型 <code>{{ model }}</code>
+      {% if probe_ok %}· 连通性正常{% else %}· 连通性检查：{{ probe_message }}{% endif %}
+    {% else %}
+      填好下面的三项并保存，AI 功能会立刻生效，不用重启平台。
+    {% endif %}
+  </div>
+
+  <div class="quick">
+    <div class="quick-head"><span class="tag">最快上手</span>用 DeepSeek 官方接口，三步搞定</div>
+    <ol>
+      <li>打开 <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer">platform.deepseek.com/api_keys</a>
+          注册，点「创建 API key」，复制那串 <code>sk-</code> 开头的字符。</li>
+      <li>点 <button type="button" class="mini" data-url="https://api.deepseek.com/v1" data-model="deepseek-chat">① 一键填好 DeepSeek 地址</button></li>
+      <li>把 Key 粘到下面「API Key」那一栏，点「测试连接」→ 通过后点「保存并启用 AI 功能」。</li>
+    </ol>
+    <div class="quick-note">详细图文教程见压缩包里的《大模型添加说明书和教程.md》。</div>
+  </div>
+
+  <div class="field">
+    <label>接口地址（Base URL）</label>
+    <input type="text" id="cfg-url" placeholder="https://api.deepseek.com/v1" value="{{ base_url or '' }}">
+    <div class="hint">
+      任何 OpenAI 兼容接口都可以。填到 <code>/v1</code> 为止，不用带后面的 <code>/chat/completions</code>。
+      <div class="preset">
+        <button data-url="https://api.deepseek.com/v1" data-model="deepseek-chat">DeepSeek（推荐）</button>
+        <button data-url="https://ark.cn-beijing.volces.com/api/v3" data-model="doubao-seed-2-0-code-preview-260215">火山方舟</button>
+        <button data-url="https://api.siliconflow.cn/v1" data-model="deepseek-ai/DeepSeek-V3">硅基流动</button>
+        <button data-url="https://dashscope.aliyuncs.com/compatible-mode/v1" data-model="qwen-plus">通义千问</button>
+        <button data-url="http://localhost:11434/v1" data-model="qwen2.5:7b">本地 Ollama</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>模型名称</label>
+    <input type="text" id="cfg-model" placeholder="例如 deepseek-chat" value="{{ model or '' }}">
+    <div class="hint">要和你在服务商控制台开通的模型名称完全一致。DeepSeek 常用：<code>deepseek-chat</code>（快）、<code>deepseek-reasoner</code>（强推理）。</div>
+  </div>
+
+  <div class="field">
+    <label>API Key</label>
+    <input type="password" id="cfg-key" placeholder="{{ '已保存 ' + key_tail + '，留空表示不改' if key_tail else '粘贴你的 API Key' }}">
+    <div class="hint">只保存在本机 <code>.env</code> 文件里，不会上传到任何地方。</div>
+  </div>
+
+  <div class="field">
+    <label>备用模型 <span class="opt">（可选）</span></label>
+    <input type="text" id="cfg-fallback" placeholder="主模型不可用时按顺序尝试，多个用英文逗号分隔"
+           value="{{ fallback or '' }}">
+  </div>
+
+  <div class="row">
+    <button class="btn ghost" id="btn-test">测试连接</button>
+    <button class="btn primary" id="btn-save" style="flex:1">保存并启用 AI 功能</button>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <div class="skip-box">
+    <button class="btn-skip" id="btn-skip">暂时不配置，先去看看课程 →</button>
+    <div class="skip-hint">
+      课程正文、章节 CG、刷题判题、星空修为、学习档案都<b>不需要大模型</b>，现在就能用。
+      只有星语智能体、AI 批改、星辰教练会提示「还没配置」——
+      之后随时可以在<b>顶部导航「模型配置」</b>里补上，补完立刻生效，不用重启。
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+  var keySaved = {{ 'true' if key_tail else 'false' }};
+  function $(id) { return document.getElementById(id); }
+  function showMsg(kind, text) {
+    var box = $('msg');
+    box.className = 'msg show ' + kind;
+    box.textContent = text;
+  }
+  function post(url, body) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); });
+  }
+  function applyPreset(b) {
+    $('cfg-url').value = b.dataset.url;
+    $('cfg-model').value = b.dataset.model;
+    $('cfg-key').focus();
+  }
+  document.querySelectorAll('.preset button, button.mini').forEach(function (b) {
+    b.addEventListener('click', function () { applyPreset(b); });
+  });
+  function collect() {
+    return { base_url: $('cfg-url').value.trim(), model: $('cfg-model').value.trim(),
+             api_key: $('cfg-key').value.trim(), fallback: $('cfg-fallback').value.trim() };
+  }
+
+  $('btn-test').addEventListener('click', function () {
+    var data = collect();
+    if (!data.base_url || !data.model) { showMsg('err', '请先填接口地址和模型名称'); return; }
+    if (!data.api_key && !keySaved) { showMsg('err', '请填 API Key'); return; }
+    this.disabled = true; this.textContent = '测试中…';
+    var self = this;
+    showMsg('info', '正在向模型发一条测试请求…');
+    post('/api/setup/test', data).then(function (res) {
+      self.disabled = false; self.textContent = '测试连接';
+      showMsg(res.success ? 'ok' : 'err', (res.success ? '✓ ' : '✗ ') + (res.message || ''));
+    }).catch(function () {
+      self.disabled = false; self.textContent = '测试连接';
+      showMsg('err', '连不上本地服务（' + location.host + '）：确认启动窗口还开着，再试一次。');
+    });
+  });
+
+  $('btn-save').addEventListener('click', function () {
+    var data = collect();
+    if (!data.base_url || !data.model) { showMsg('err', '请先填接口地址和模型名称'); return; }
+    if (!data.api_key && !keySaved) { showMsg('err', '请填 API Key'); return; }
+    this.disabled = true; this.textContent = '保存中…';
+    var self = this;
+    post('/api/setup', data).then(function (res) {
+      self.disabled = false; self.textContent = '保存并启用 AI 功能';
+      if (!res.success) { showMsg('err', res.message || '保存失败'); return; }
+      showMsg(res.ok ? 'ok' : 'info',
+              (res.ok ? '✓ 配置已保存，AI 功能已开启。' : '配置已保存，但连通性检查没通过：' + (res.message || '')) +
+              ' 正在返回…');
+      setTimeout(function () { location.href = '/'; }, 1400);
+    }).catch(function () {
+      self.disabled = false; self.textContent = '保存并启用 AI 功能';
+      showMsg('err', '连不上本地服务（' + location.host + '）：确认启动窗口还开着，再试一次。');
+    });
+  });
+
+  $('btn-skip').addEventListener('click', function () {
+    this.disabled = true; this.textContent = '正在进入…';
+    var self = this;
+    post('/api/setup/skip', {}).then(function (res) {
+      self.disabled = false; self.textContent = '暂时不配置，先去看看课程 →';
+      if (res && res.success) { location.href = '/'; }
+      else { showMsg('err', (res && res.message) || '操作失败，请重试'); }
+    }).catch(function () {
+      self.disabled = false; self.textContent = '暂时不配置，先去看看课程 →';
+      showMsg('err', '连不上本地服务（' + location.host + '）：确认启动窗口还开着，再试一次。');
+    });
+  });
+})();
+</script>
+{% endblock %}

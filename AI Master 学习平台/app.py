@@ -45,6 +45,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import coach_engine as coach
 import demo_mode
+import learning_memory as learner
 import roadmap
 import star_engine as game
 import starlab_engine as lab
@@ -170,6 +171,75 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 USERS_FILE = os.path.join(DATA_DIR, 'users.json')
 ark = ArkClient()
+
+# 「暂时不配模型，先进去看看」——学生密钥还没申请下来时不该被挡在门外。
+# 标记写在 data 目录而不是 cookie：换浏览器、清缓存不该把状态弄丢。
+SETUP_SKIP_FLAG = os.path.join(DATA_DIR, '.setup_skipped')
+
+
+def ai_configured():
+    """模型是否配置完整（不联网，只看本地有没有地址+模型+Key）。"""
+    return bool(os.environ.get('ARK_API_KEY') or os.environ.get('STARLAB_API_KEY')) \
+        and bool(os.environ.get('STARLAB_AI_BASE_URL')) \
+        and bool(os.environ.get('STARLAB_AI_MODEL'))
+
+
+def setup_is_skipped():
+    return os.path.exists(SETUP_SKIP_FLAG)
+
+
+def set_setup_skipped(value):
+    try:
+        if value:
+            with open(SETUP_SKIP_FLAG, 'w', encoding='utf-8') as fh:
+                fh.write(datetime.now().isoformat())
+        elif os.path.exists(SETUP_SKIP_FLAG):
+            os.remove(SETUP_SKIP_FLAG)
+    except OSError:
+        pass
+
+
+def _key_tail():
+    key = os.environ.get('ARK_API_KEY', '')
+    return ('****' + key[-4:]) if len(key) >= 4 else ''
+
+
+def test_connection(base, model, key, timeout=20):
+    """拿页面上填的值真发一次最小请求。与 ark_client 用同一套请求头，
+    否则会出现「测试通过但正式调用 403」这种最让人困惑的组合。"""
+    import uuid as _uuid
+    from ark_client import BROWSER_UA, endpoint
+    url = endpoint(base)
+    body = json.dumps({
+        'model': model,
+        'messages': [{'role': 'user', 'content': '请只回复两个字：可用'}],
+        # 推理模型会把预算先花在思考上，给 16 个 token 正文会是空的
+        'max_tokens': 64, 'temperature': 0,
+        'thinking': {'type': 'disabled'},
+    }).encode('utf-8')
+    request = urllib.request.Request(url, data=body, headers={
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + key,
+        'User-Agent': BROWSER_UA,
+        'x-opencode-session': str(_uuid.uuid4()),
+    })
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            result = json.loads(response.read().decode('utf-8'))
+        content = (result['choices'][0]['message'].get('content') or '').strip()
+        if not content:
+            return {'success': True, 'message': '调用成功（接口通、鉴权对；模型这次没返回正文，不影响使用）'}
+        return {'success': True, 'message': '调用成功，模型回复：' + content[:30]}
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode('utf-8', 'ignore')[:160]
+        hints = {401: 'API Key 不正确或已失效（也可能是模型名称写错）',
+                 403: '没有该模型的权限，或 Key 被限制',
+                 404: '模型名称或接口地址不对',
+                 429: '请求过于频繁，或额度已用尽'}
+        return {'success': False, 'message': hints.get(exc.code, '接口返回错误 HTTP %d' % exc.code) + '｜原始信息：' + detail}
+    except Exception as exc:
+        return {'success': False,
+                'message': '连不上这个接口（%s）。检查网络、地址是否写错，或换个服务商。' % type(exc).__name__}
 
 
 # ── 小工具 ──────────────────────────────────────────────
@@ -355,7 +425,8 @@ def docs():
 
 def retrieve(query, chapter_id=None, top_k=4, budget=2800, kinds=None):
     """按词重合度检索。分数越高越相关；同章内容加权，题目略加权。"""
-    key = (str(query)[:200], str(chapter_id), top_k)
+    key = (str(query)[:200], str(chapter_id), top_k, budget,
+           tuple(sorted(kinds)) if kinds else ())
     hit = _RAG_CACHE.get(key)
     if hit and time.time() - hit[0] < _RAG_TTL:
         return hit[1]
@@ -420,6 +491,90 @@ def cache_put(key, value):
     if len(AI_CACHE) > AI_CACHE_LIMIT:
         AI_CACHE.clear()
     AI_CACHE[key] = (time.time(), value)
+
+
+# ── 问题级缓存：让"同一个问题"从 2.4 秒掉到 0.01 秒 ────────────
+# 上面那个 cache_key 是对**整条 messages** 取哈希的。问答链路里 messages
+# 含会话历史、当前页面、学生特征 —— 每个人、每一轮都不一样，所以缓存
+# 几乎永远不命中（实测同一问题连问 3 次，每次仍要 2.4 秒首字）。
+#
+# 但课堂里最高频的场景恰恰是"同一个问题被反复问"：同一个班几十个人问
+# "什么是变量"，下一届学生还会再问一遍。所以另做一层**只按问题本身**
+# 索引的缓存：键 = (讲解者角色, 章节, 归一化后的问句)。
+#
+# 代价要说清楚：这样复用回来的答案里不含"这个学生自己的进度"，
+# 所以只在**问题短且不含学生特征引用**时启用（见 question_cache_key），
+# 长问题、追问、带上下文的问题一律仍走真实调用 —— 那些确实需要个性化。
+_Q_CACHE = {}
+_Q_CACHE_TTL = 60 * 60 * 6      # 6 小时：课程内容是静态的，答案可以放久一点
+_Q_CACHE_LIMIT = 800
+_Q_LOCK = threading.Lock()
+
+# 问句归一化：去掉语气词、标点、多余空白，让"什么是变量？"和
+# "什么是变量"、"请问，什么是变量" 命中同一条。
+_NOISE = re.compile(r'[\s，。！？、；：“”‘’（）()【】\[\]~～!?.,;:]+')
+_FILLER = ('请问', '我想知道', '麻烦问一下', '想问一下', '问一下', '能讲讲', '能解释一下',
+           '帮我解释', '解释一下', '说一下', '讲讲', '什么意思啊', '是什么意思啊')
+
+
+def normalize_question(text):
+    """把问题压成可比较的形状。只用于缓存键，不影响真正送给模型的原文。"""
+    q = str(text or '').strip().lower()
+    for word in _FILLER:
+        q = q.replace(word, '')
+    q = _NOISE.sub('', q)
+    return q[:160]
+
+
+def question_cache_key(role, chapter_id, question):
+    """问题级缓存键。
+
+    刻意**不含**学生状态与页面信息 —— 这是它命中的前提。
+    为了不误伤个性化场景，只对"短问句"启用：
+    超过 60 字的、或明显在指代上文（含"这个/上面/刚才/它"等）的，
+    返回 None，调用方照常走真实请求。
+    """
+    q = normalize_question(question)
+    if not q or len(q) > 60:
+        return None
+    if any(w in q for w in ('这个', '那个', '上面', '刚才', '继续', '接下来', '它', '这里')):
+        return None
+    return 'qcache|%s|%s|%s' % (role, chapter_id or '-', q)
+
+
+def question_cache_get(key):
+    if not key:
+        return None
+    with _Q_LOCK:
+        hit = _Q_CACHE.get(key)
+        if not hit:
+            return None
+        if time.time() - hit[0] >= _Q_CACHE_TTL:
+            _Q_CACHE.pop(key, None)
+            return None
+        return hit[1]
+
+
+def question_cache_put(key, value):
+    if not key or not value:
+        return
+    with _Q_LOCK:
+        if len(_Q_CACHE) > _Q_CACHE_LIMIT:
+            # 先清过期的，还超再整体清空（比 LRU 简单，够用）
+            now = time.time()
+            for k in [k for k, v in _Q_CACHE.items() if now - v[0] >= _Q_CACHE_TTL]:
+                _Q_CACHE.pop(k, None)
+            if len(_Q_CACHE) > _Q_CACHE_LIMIT:
+                _Q_CACHE.clear()
+        _Q_CACHE[key] = (time.time(), value)
+
+
+def question_cache_stats():
+    """给后台/自检看的命中情况。"""
+    with _Q_LOCK:
+        now = time.time()
+        live = sum(1 for v in _Q_CACHE.values() if now - v[0] < _Q_CACHE_TTL)
+        return {'entries': live, 'total': len(_Q_CACHE), 'ttl_seconds': _Q_CACHE_TTL}
 
 
 def sse(event):
@@ -648,10 +803,24 @@ def agent_payload(question, chapter_id=None, page='', history=None):
     local = local_intent(question)
     context = retrieve((question + ' ' + (page or ''))[:600], chapter_id)
 
+    # 导航类高频问题由课程索引即时回答；无需等待远端模型建连。
+    if local:
+        action = normalize_action(local)
+        summary = _plain(context.split('\n', 1)[-1])[:170] if context else ''
+        reply = ('我已定位到对应内容。' + (summary if summary else '打开后可以直接学习或练习。'))
+        return {'reply': reply, 'action': action, 'action_url': action_url(action),
+                'sources': [], 'local_intent': True, 'raw_ok': True}
+
+    profile = learner.context(_state(), lab.courses(), chapter_id)
+    recent = [m for m in (history or [])[-4:] if isinstance(m, dict)
+              and m.get('role') in ('user', 'assistant')]
+    recent_text = '\n'.join('%s: %s' % (m['role'], str(m.get('content') or '')[:350])
+                            for m in recent)
     messages = [{'role': 'system', 'content': STAR_SYSTEM_PROMPT},
                 {'role': 'user',
-                 'content': '【可导航目录】\n%s\n\n【检索到的课程内容】\n%s\n\n【学生所在位置】\n%s\n\n【学生说】\n%s'
+                 'content': '【可导航目录】\n%s\n\n【检索到的课程内容】\n%s\n\n【学习特征】\n%s\n\n【最近对话】\n%s\n\n【学生所在位置】\n%s\n\n【学生说】\n%s'
                             % (_agent_catalog(), context or '（无匹配内容）',
+                               profile or '（暂无）', recent_text or '（无）',
                                page or '（未知页面）', question)}]
 
     # 本地意图很确定时（问路类），直接给动作，回答交给模型补齐；
@@ -708,7 +877,56 @@ def _extract_json(text):
     return None
 
 
+# 「进去以后提示需要配置大模型」——首次打开先把人引到模型配置页，
+# 但配置页上可以选「暂时不配置」：跳过之后整个平台照常可用，
+# 只有 AI 功能不可用（课程、刷题、判分、修为都不需要模型）。
+# 只拦 HTML 页面，不拦 /api/*：接口返回 JSON 的场景（前端 fetch）
+# 被 302 会解析失败，表现成"点了没反应"。
+SETUP_EXEMPT_PREFIXES = ('/setup', '/api/', '/static/', '/login', '/logout',
+                         '/favicon.ico', '/oauth', '/transition', '/intro')
+PAGE_PREFIXES = ('/', '/roadmap', '/agent', '/training', '/coach', '/constellation',
+                 '/progress', '/stars', '/chapter')
+
+
+@app.before_request
+def require_ai_setup():
+    path = request.path or '/'
+    if path.startswith(SETUP_EXEMPT_PREFIXES):
+        return None
+    if not path.startswith(PAGE_PREFIXES):
+        return None
+    # 只处理页面导航（浏览器地址栏/点链接）。前端 fetch 用的页面片不做跳转。
+    if request.method != 'GET' or 'text/html' not in (request.headers.get('Accept') or ''):
+        return None
+    if ai_configured() or setup_is_skipped():
+        return None
+    return redirect(url_for('setup_page'))
+
+
 # ── 页面 ────────────────────────────────────────────────
+@app.route('/intro')
+def intro_page():
+    return render_template('entry_cg.html')
+
+
+@app.route('/start')
+def start_page():
+    """站点入口：先播开场 CG，再进学习界面。
+
+    每次打开都播（片头自带「跳过开场」）。原先 /intro 只是个孤立页面、
+    没有入口强制经过，等于这支片子没人看得到；而按 Cookie 记"看过"
+    又会让换浏览器/清缓存的人完全见不到 —— 入口是要发给学生的，
+    第一次打开必须看到，所以做成"每次走一遍、可一键跳过"。
+
+    去自由 ?next= 决定，默认回看板；片头的「跳过」走的就是这条路。
+    """
+    nxt = request.args.get('next') or url_for('dashboard')
+    # 只接受站内相对路径，避免被拼成任意跳转
+    if not nxt.startswith('/') or nxt.startswith('//'):
+        nxt = url_for('dashboard')
+    return redirect(url_for('intro_page', next=nxt))
+
+
 @app.route('/')
 def dashboard():
     st = _state()
@@ -1011,6 +1229,7 @@ def api_complete_kp():
         return True
 
     state = _persist(username, mutate)
+    _persist(username, lambda st: learner.observe(st, chapter_id, kp_index, 'lesson') or True)
     return jsonify({'success': True, **(state.get('_settlement') or {})})
 
 
@@ -1019,6 +1238,20 @@ def api_learning_status():
     st = _state()
     return jsonify({'success': True, 'completed_kps': sorted(_done_kps(st)),
                     'username': who(), 'is_guest': who() == 'guest'})
+
+
+@app.route('/api/learning-graph')
+def api_learning_graph():
+    """个人知识点掌握图 + 该重点回看的薄弱点。
+
+    薄弱点单独列出来，是因为"图"适合看全局、"清单"适合直接行动：
+    学生打开进度页最想知道的是"我现在该补哪一块"。
+    """
+    st = _state()
+    courses = lab.courses()
+    return jsonify({'success': True,
+                    **learner.graph(st, courses),
+                    'weak_spots': learner.weak_spots(st, courses)})
 
 
 @app.route('/api/knowledge-universe')
@@ -1208,13 +1441,28 @@ def api_coach_chat():
         parts.append('【学生当前页面】\n' + str(page)[:400])
     if context:
         parts.append('【本课程相关讲义（优先按这里讲过的来解释）】\n' + context)
+    memory = learner.context(_state(), lab.courses(), chapter_id)
+    if memory:
+        parts.append('【学生学习特征；据此调整解释深浅】\n' + memory)
     parts.append('【学生说】\n' + question)
     messages = [{'role': 'system', 'content': system}] + history + \
                [{'role': 'user', 'content': '\n\n'.join(parts)}]
 
+    # 高频问题快通道：课堂里最高频的场景就是"同一个问题被反复问"。
+    # 只在短问句且没带页面上下文时启用（取舍见 question_cache_key 的说明），
+    # 命中时首字从约 2.4 秒降到约 0.01 秒。
+    qkey = question_cache_key(mode, chapter_id, question) if not page else None
+    quick = question_cache_get(qkey)
+
     def generate():
         answer = []
         yield sse({'type': 'session', 'session_id': session_id})
+        if quick:
+            # 命中时不发"正在想…"：学生看到的就是立刻出字
+            yield sse({'type': 'delta', 'text': quick})
+            yield sse({'type': 'done', 'model': ark.active_model, 'cached': True,
+                       'title': coach.make_title(question)})
+            return
         yield sse({'type': 'status',
                    'message': '面试官正在记录…' if mode == 'interview' else '星辰教练正在想…'})
         try:
@@ -1240,8 +1488,74 @@ def api_coach_chat():
         if username != 'guest' and text:
             coach.append_message(username, session_id, 'assistant', text,
                                  {'source': mode, 'chapter_id': chapter_id}, auto_title=False)
+        question_cache_put(qkey, text)
         yield sse({'type': 'done', 'model': ark.active_model,
                    'title': coach.make_title(question)})
+
+    return stream(generate())
+
+
+# ── 选段即时解释：只处理被框选的内容，原地弹出，不生成对话 ──
+@app.route('/api/selection/explain', methods=['POST'])
+def api_selection_explain():
+    payload = request.get_json(silent=True) or {}
+    selected = str(payload.get('selection') or '').strip()
+    if not 2 <= len(selected) <= 1800:
+        return jsonify({'success': False, 'message': '请框选 2 到 1800 字的内容'}), 400
+    chapter_id = payload.get('chapter_id')
+    kp_index = payload.get('kp_index')
+    lesson = next((c for c in lab.courses() if str(c['id']) == str(chapter_id)), None)
+    if not lesson:
+        return jsonify({'success': False, 'message': '章节不存在'}), 404
+    try:
+        kp_index = int(kp_index)
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'message': '知识点编号无效'}), 400
+    if not any(kp['index'] == kp_index for kp in lesson.get('knowledge_points') or []):
+        return jsonify({'success': False, 'message': '知识点不存在'}), 404
+    context = retrieve(selected[:600], chapter_id, top_k=2, budget=1400)
+    memory = learner.context(_state(), lab.courses(), chapter_id, limit=3)
+    messages = [
+        {'role': 'system', 'content': '你是课程旁注教师。只解释学生选中的代码或文字，不扩展成整章讲解。'
+         '先用一句话说明含义，再结合选段指出关键语法或概念，最多 180 字。'
+         '代码优先解释输入、输出与易错处。不要编造选段没有的事实。'},
+        {'role': 'user', 'content': '【选段】\n%s\n\n【课程依据】\n%s\n\n【学习特征】\n%s' %
+         (selected, context or '（无）', memory or '（暂无）')},
+    ]
+    cache_id = cache_key(messages)
+    cached = cache_get(cache_id)
+    # 同一段内容被反复框选也很常见（学生来回看同一处代码）。
+    # 这层只按选段文本 + 章节索引，跨学生复用。
+    sel_key = 'sel|%s|%s|%s' % (chapter_id, kp_index, normalize_question(selected))
+    if not cached:
+        cached = question_cache_get(sel_key)
+    username = who()
+
+    def generate():
+        if cached:
+            if username != 'guest':
+                _persist(username, lambda st: learner.observe(
+                    st, chapter_id, kp_index, 'help') or True)
+            yield sse({'type': 'delta', 'text': cached})
+            yield sse({'type': 'done', 'cached': True})
+            return
+        chunks = []
+        try:
+            for event in ark.events(messages, max_tokens=360):
+                if event['type'] == 'delta':
+                    chunks.append(event['text'])
+                    yield sse({'type': 'delta', 'text': event['text']})
+        except ArkError as exc:
+            yield sse({'type': 'error', 'message': str(exc)})
+            return
+        answer = ''.join(chunks).strip()
+        if answer:
+            cache_put(cache_id, answer)
+            question_cache_put(sel_key, answer)
+            if username != 'guest':
+                _persist(username, lambda st: learner.observe(
+                    st, chapter_id, kp_index, 'help') or True)
+        yield sse({'type': 'done', 'cached': False})
 
     return stream(generate())
 
@@ -1267,12 +1581,16 @@ def api_ask_stream():
     rag = retrieve((question + ' ' + context)[:1200], chapter_id)
     if rag:
         parts.append('【本课程相关讲义（优先按这里讲过的来解释，不要跑题）】\n' + rag)
+    memory = learner.context(_state(), lab.courses(), chapter_id)
+    if memory:
+        parts.append('【学生学习特征】\n' + memory)
     parts.append('【学生提问】\n' + question)
     messages = [{'role': 'system', 'content': coach.COACH_SYSTEM_PROMPT},
                 {'role': 'user', 'content': '\n\n'.join(parts)}]
 
     key = cache_key(messages)
     cached = cache_get(key)
+    username = who()
 
     def generate():
         yield sse({'type': 'status', 'message': '正在连接模型…'})
@@ -1296,8 +1614,8 @@ def api_ask_stream():
         answer = ''.join(chunks).strip()
         if answer:
             cache_put(key, answer)
-            if who() != 'guest':
-                coach.record_exchange(who(), question, answer,
+            if username != 'guest':
+                coach.record_exchange(username, question, answer,
                                       chapter_id=str(chapter_id or ''), source='exercise',
                                       title_hint=coach.make_title(question))
         yield sse({'type': 'done', 'model': ark.active_model})
@@ -1316,7 +1634,10 @@ def api_agent_ask():
         return jsonify({'success': False, 'message': '问题太长，请精简到 4000 字以内'}), 400
     page = payload.get('page') or ''
     chapter_id = payload.get('chapter_id')
-    key = cache_key([{'role': 'agent', 'content': question + '|' + str(page)[:120]}])
+    memory = learner.context(_state(), lab.courses(), chapter_id)
+    key = cache_key([{'role': 'agent', 'content': '|'.join(
+        [who(), question, str(page)[:120], str(chapter_id), memory,
+         json.dumps((payload.get('history') or [])[-4:], ensure_ascii=False)])}])
     cached = cache_get(key)
     if cached:
         return jsonify({'success': True, 'cached': True, **cached})
@@ -1331,6 +1652,10 @@ def api_agent_ask():
                               chapter_id=str(chapter_id or ''), source='agent',
                               meta={'action': result['action']},
                               title_hint=coach.make_title(question))
+        action = result.get('action') or {}
+        if action.get('type') == 'goto_kp':
+            _persist(username, lambda st: learner.observe(
+                st, action.get('chapter_id'), action.get('kp_index'), 'help') or True)
     return jsonify({'success': True, 'cached': False, **result})
 
 
@@ -1460,6 +1785,10 @@ def api_training_submit():
     def mutate(state):
         receipt = lab.record_attempt(state, item, verdict, answer=answer,
                                      feedback=feedback, used_ai=use_ai)
+        # 带 ref：以后要回答"系统凭什么说这块弱"时，能直接点回这道题
+        learner.observe(state, item.get('chapter_id'), item.get('kp_index'),
+                        'question', verdict.get('score'),
+                        ref='qbank:%s' % (item.get('id') or ''))
         state['_receipt'] = receipt
         return True
 
@@ -1548,6 +1877,13 @@ def api_training_ai_help():
         parts.append('【学生的问题】\n' + asked)
     else:
         parts.append('【学生的问题】\n这道题我不会，给我思路。')
+    memory = learner.context(_state(), lab.courses(), item.get('chapter_id'))
+    if memory:
+        parts.append('【学生学习特征】\n' + memory)
+    username = who()
+    if username != 'guest':
+        _persist(username, lambda st: learner.observe(
+            st, item.get('chapter_id'), item.get('kp_index'), 'help') or True)
     messages = [
         {'role': 'system', 'content': coach.COACH_SYSTEM_PROMPT +
          '\n\n现在学生在做题。你只给思路与关键步骤，不给完整代码或最终答案；'
@@ -1569,8 +1905,8 @@ def api_training_ai_help():
             yield sse({'type': 'error', 'message': str(exc)})
             return
         answer = ''.join(chunks).strip()
-        if answer and who() != 'guest':
-            coach.record_exchange(who(), statement[:200] if not asked else asked, answer,
+        if answer and username != 'guest':
+            coach.record_exchange(username, statement[:200] if not asked else asked, answer,
                                   chapter_id=str(item.get('chapter_id') or ''),
                                   source='training', title_hint='做题求助 · ' + (item.get('title') or ''))
         yield sse({'type': 'done', 'model': ark.active_model})
@@ -1964,7 +2300,73 @@ def api_glossary():
 def api_ai_status():
     ok, message = ark.probe()
     return jsonify({'success': True, 'ok': ok, 'message': message,
-                    'model': ark.active_model, 'endpoint': ark.url})
+                    'model': ark.active_model, 'endpoint': ark.url,
+                    'configured': ai_configured(), 'skipped': setup_is_skipped()})
+
+
+@app.route('/api/setup/status')
+def api_setup_status():
+    """给提示条用的轻量状态：不发任何网络请求，页面加载就能问。"""
+    return jsonify({'success': True, 'configured': ai_configured(),
+                    'skipped': setup_is_skipped(), 'model': ark.active_model if ai_configured() else ''})
+
+
+@app.route('/setup')
+def setup_page():
+    """模型配置页。
+
+    以前这个平台只有在 /api/setup 这个 POST 接口 —— 也就是只能在网页里
+    「改」配置，却没有任何一个页面能让人「填」配置：学生拿到压缩包、
+    密钥还没申请下来时，根本找不到入口。这里把它补成一个正经页面。
+    """
+    ok, message = (False, '尚未配置')
+    if ai_configured():
+        ok, message = ark.probe()
+    # 全新机器上预填 DeepSeek 的地址与模型名：学生只要粘一个 Key 就能存，
+    # 不用先搞懂"Base URL 要填到哪一层"。已经配过就显示已保存的值。
+    return render_template('setup.html',
+                           username=who(),
+                           configured=ai_configured(),
+                           skipped=setup_is_skipped(),
+                           base_url=(os.environ.get('STARLAB_AI_BASE_URL') or 'https://api.deepseek.com/v1'),
+                           model=(os.environ.get('STARLAB_AI_MODEL') or 'deepseek-chat'),
+                           fallback=os.environ.get('STARLAB_AI_FALLBACK_MODELS', ''),
+                           key_tail=_key_tail(),
+                           probe_ok=ok, probe_message=message)
+
+
+@app.route('/api/setup/skip', methods=['POST'])
+def api_setup_skip():
+    """「先跳过」：放行整个平台，只关掉 AI 功能。"""
+    set_setup_skipped(True)
+    return jsonify({'success': True, 'skipped': True,
+                    'message': '已跳过。课程、刷题、判分、修为都能用，配好模型后 AI 自动开启。'})
+
+
+@app.route('/api/setup/reopen', methods=['POST'])
+def api_setup_reopen():
+    set_setup_skipped(False)
+    return jsonify({'success': True, 'skipped': False})
+
+
+@app.route('/api/setup/test', methods=['POST'])
+def api_setup_test():
+    """测试连接：拿页面上填的值真发一次最小请求，不落盘。"""
+    payload = request.get_json(silent=True) or {}
+    base = (payload.get('base_url') or '').strip()
+    model = (payload.get('model') or '').strip()
+    key = (payload.get('api_key') or '').strip()
+    if key.startswith('****'):
+        key = ''
+    if not key:
+        key = os.environ.get('ARK_API_KEY', '')
+    if not base or not model:
+        return jsonify({'success': False, 'message': '接口地址和模型名称都要填'})
+    if not base.startswith(('http://', 'https://')):
+        return jsonify({'success': False, 'message': '地址要以 http:// 或 https:// 开头'})
+    if not key:
+        return jsonify({'success': False, 'message': '请填写 API Key'})
+    return jsonify(test_connection(base, model, key))
 
 
 @app.route('/api/setup', methods=['POST'])
@@ -1974,35 +2376,60 @@ def api_setup():
     base = (payload.get('base_url') or '').strip()
     model = (payload.get('model') or '').strip()
     key = (payload.get('api_key') or '').strip()
-    if not key:
-        return jsonify({'success': False, 'message': '请填写 API Key'})
-    lines = []
-    for name in ('STARLAB_AI_BASE_URL', 'STARLAB_AI_MODEL', 'ARK_API_KEY',
-                 'STARLAB_AI_FALLBACK_MODELS', 'STARLAB_AI_THINKING'):
-        current = os.environ.get(name, '')
-        if name == 'STARLAB_AI_BASE_URL' and base:
-            current = base
-        if name == 'STARLAB_AI_MODEL' and model:
-            current = model
-        if name == 'ARK_API_KEY':
-            current = key
-        lines.append('%s=%s' % (name, current))
+    fallback = (payload.get('fallback') or '').strip()
+
+    if not base or not model:
+        return jsonify({'success': False, 'message': '接口地址和模型名称都要填'})
+    if not base.startswith(('http://', 'https://')):
+        return jsonify({'success': False, 'message': '地址要以 http:// 或 https:// 开头'})
+    # 密钥留空（或显示的是 **** 掩码）表示「沿用已保存的那把」，
+    # 否则用户每次改模型名字都得把 Key 重打一遍。
+    if not key or key.startswith('****'):
+        key = os.environ.get('ARK_API_KEY', '')
+        if not key:
+            return jsonify({'success': False, 'message': '请填写 API Key'})
+
+    # 只保留我们认识的键，其余（用户自己加的注释、备用键）原样留住，
+    # 免得改一次配置就把别人的 .env 清空。
+    keep = []
     env_path = os.path.join(WRITE_ROOT, '.env')
+    managed = {'STARLAB_AI_BASE_URL', 'STARLAB_AI_MODEL', 'ARK_API_KEY',
+               'STARLAB_AI_FALLBACK_MODELS', 'STARLAB_AI_THINKING'}
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, encoding='utf-8') as fh:
+                for raw in fh:
+                    line = raw.rstrip('\n')
+                    name = line.split('=', 1)[0].strip() if '=' in line else ''
+                    if name in managed:
+                        continue
+                    if line.strip():
+                        keep.append(line)
+        except OSError:
+            pass
+    lines = ['STARLAB_AI_BASE_URL=%s' % base.rstrip('/'),
+             'STARLAB_AI_MODEL=%s' % model,
+             'ARK_API_KEY=%s' % key,
+             'STARLAB_AI_FALLBACK_MODELS=%s' % fallback,
+             'STARLAB_AI_THINKING=%s' % os.environ.get('STARLAB_AI_THINKING', 'disabled')]
+    lines.extend(keep)
     tmp = env_path + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as fh:
         fh.write('\n'.join(lines) + '\n')
     os.replace(tmp, env_path)
+
     global ark
     os.environ['ARK_API_KEY'] = key
-    if base:
-        os.environ['STARLAB_AI_BASE_URL'] = base
-    if model:
-        os.environ['STARLAB_AI_MODEL'] = model
+    os.environ['STARLAB_AI_BASE_URL'] = base.rstrip('/')
+    os.environ['STARLAB_AI_MODEL'] = model
+    os.environ['STARLAB_AI_FALLBACK_MODELS'] = fallback
     ark = ArkClient()
     AI_CACHE.clear()
     _RAG_CACHE.clear()
+    set_setup_skipped(False)          # 配好了就把「已跳过」撤掉，否则提示条一直在
     ok, message = ark.probe()
-    return jsonify({'success': True, 'ok': ok, 'message': message})
+    return jsonify({'success': True, 'ok': ok, 'message': message,
+                    'configured': ai_configured()})
 
 
 # ── 启动 ────────────────────────────────────────────────

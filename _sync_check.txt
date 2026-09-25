@@ -1,0 +1,41 @@
+教材题目：280  旧题库：280  合并后：280
+差异条目：37
+  q01-01-06    starter_code "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO  ->  "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO
+  q01-01-06    solution     "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO  ->  "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO
+  q01-01-07    starter_code "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO  ->  "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO
+  q01-01-07    solution     "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO  ->  "import os\nimport httpx\n\nBASE_URL = os.environ[\"LLM_BASE_URL\"]\nAPI_KEY = os.environ[\"LLM_API_KEY\"]\nMO
+  q03-04-03    explanation  "只看收益列会误判「越靠后越好」，必须把 P95 倍数当代价一起看：D 用 4.63 倍延迟换来 0.0120 的 MRR。B 忽略代价；C 忽略 C 组把 q025 从 1.0 拉到 0.5；D 把伪 embeddin  ->  "只看收益列会误判「越靠后越好」，必须把 P95 倍数当代价一起看：D 用 4.63 倍延迟换来 0.0120 的 MRR。B 忽略代价；C 忽略 C 组把 q025 从 1.0 拉到 0.5；D 把本地哈希伪 embe
+  q03-06-04    explanation  "关键是把「编号有效性」与「内容支撑度」区分开：前者只校验 label 是否在引用集合里，后者要求答案内容真被证据支持。常见失分是只答「模型能力不足」，忽略靶场接口不读传入证据这一具体原因，也漏掉生产环境仍需保留该项。"  ->  "关键是把「编号有效性」与「内容支撑度」区分开：前者只校验 label 是否在引用集合里，后者要求答案内容真被证据支持。常见失分是只答「模型能力不足」，忽略离线演示接口不读传入证据这一具体原因，也漏掉生产环境仍需保留该项
+  q03-06-04    hints        ["想想靶场 LLM 的证据来源", "编号校验只查 label 是否存在"]  ->  ["想想离线演示接口的证据来源", "编号校验只查 label 是否存在"]
+  q05-03-01    statement    "在 CrewAI 中构造 Agent 时没有传 llm= 参数，按本课程（靶场/DeepSeek/通义）配置的环境直接运行，最可能发生什么？"  ->  "在 CrewAI 中构造 Agent 时没有传 llm= 参数，按本课程的 OpenAI 兼容中转站配置运行，最可能发生什么？"
+  q05-03-01    explanation  "CrewAI 在缺省情况下默认连 OpenAI，需要 OPENAI_API_KEY，而课程环境用的是靶场/DeepSeek/通义，因此会认证失败，属于阻断级缺陷。B 错在 CrewAI 不会自动读 LLM_BASE_U  ->  "CrewAI 在缺省情况下默认连 OpenAI，需要 OPENAI_API_KEY，而课程环境用的是 OpenAI 兼容中转站，因此会认证失败，属于阻断级缺陷。B 错在 CrewAI 不会自动读 LLM_BASE_UR
+  q05-03-01    options      ["CrewAI 默认去连 OpenAI，需要 OPENAI_API_KEY，报认证失败", "CrewAI 自动读取 LLM_BASE_URL 环境变量并连上靶场", "CrewAI 会抛出 NameError，因为   ->  ["CrewAI 默认去连 OpenAI，需要 OPENAI_API_KEY，报认证失败", "CrewAI 自动读取 LLM_BASE_URL 环境变量并连上中转站", "CrewAI 会抛出 NameError，因为
+  q05-03-02    options      ["写 \"openai/mock-chat\"，前缀告诉 CrewAI 用哪个 provider 适配器", "写 \"mock-chat\"，只要 base_url 指向靶场即可自动识别", "写 \"openai:  ->  ["写 \"openai/mock-chat\"，前缀告诉 CrewAI 用哪个 provider 适配器", "写 \"mock-chat\"，只要 base_url 指向中转站即可自动识别", "写 \"openai
+  q05-03-05    title        "桩模型现象与验收方式"  ->  "Agent 步数失控与产出质量的排查"
+  q05-03-05    statement    "用离线靶场（关键词驱动的确定性桩模型）跑 CrewAI 与 smolagents 时会出现两个可观察现象：CrewAI 三个 Task 产出质量不高；smolagents 一直循环到 max_steps。请解释各自原因  ->  "用真实模型（OpenAI 兼容中转站）跑多步 Agent 时，常出现两类现象：\nsmolagents 反复调用同一个工具，一直跑到 max_steps 才停；\nCrewAI 三个 Task 能跑完，但产出笼统、缺少
+  q05-03-05    explanation  "关键是区分「链路正确性」与「产出质量」两件事。CrewAI 质量低是因为桩模型不产出结构化输出，链路本身已验证；smolagents 循环是因为把含关键词的 Observation 当新输入，由 max_steps 兜  ->  "两类现象都指向「约束不足」：一类缺终止条件，一类缺输出标准。Agent 循环的根因通常在 Observation 的信息量——模型看不到「已经够了」的信号，只能反复调同一个工具；这时 max_steps 是最后一道防线
+  q05-03-05    hints        ["区分链路正确性与产出质量", "循环原因是 Observation 被当新输入", "验收看日志不看措辞"]  ->  ["循环时先看每轮的 Observation 有没有新信息", "CrewAI 侧先看 Task 的 description 与 expected_output", "想清楚上限为什么是硬性要求"]
+  q05-03-06    starter_code "import os\n# TODO: 在 import crewai 之前关闭遥测\n\nfrom crewai import LLM, Agent, Crew, Process, Task\n\n# TODO: 构造  ->  "import os\n# TODO: 在 import crewai 之前关闭遥测\n\nfrom crewai import LLM, Agent, Crew, Process, Task\n\n# TODO: 构造
+  q07-02-02    kp_title     "Day 32｜Dify：可视化工作流与插件引擎"  ->  "Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎"
+  q07-02-03    kp_title     "Day 32｜Dify：可视化工作流与插件引擎"  ->  "Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎"
+  q07-02-04    kp_title     "Day 32｜Dify：可视化工作流与插件引擎"  ->  "Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎"
+  q07-02-05    kp_title     "Day 32｜Dify：可视化工作流与插件引擎"  ->  "Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎"
+  q07-02-06    kp_title     "Day 32｜Dify：可视化工作流与插件引擎"  ->  "Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎"
+  q07-02-07    kp_title     "Day 32｜Dify：可视化工作流与插件引擎"  ->  "Day 32｜Dify 与 LangFlow：可视化工作流与插件引擎"
+  q07-02-08    statement    "关于 LangFlow（核实日期 2026-09-23，版本 1.12.3），下列说法正确的是？"  ->  "关于 LangFlow（核实日期 2026-09-23，版本 1.12.3），下列说法**正确**的是？"
+  q07-02-08    explanation  "LangFlow 是 MIT 许可的开源项目（仓库 langflow-ai/langflow，主语言 Python，默认服务地址 http://127.0.0.1:7860），A 错。它不绑定特定模型供应商，可通过 O  ->  "LangFlow 是 MIT 许可的开源项目（仓库 `langflow-ai/langflow`，主语言 Python，默认服务地址 `http://127.0.0.1:7860`），A 错。它不绑定特定模型供应商，可
+  q07-02-08    options      ["A. 它是闭源商业产品，只能通过官方托管云服务使用", "B. 它以 MIT 许可开源、主语言是 Python、可自托管在 7860 端口", "C. 它只支持自带的模型供应商，不能接 OpenAI 兼容接口", "  ->  ["它是闭源商业产品，只能通过官方托管云服务使用", "它以 MIT 许可开源、主语言是 Python、可自托管在 7860 端口", "它只支持自带的模型供应商，不能接 OpenAI 兼容接口", "它只能作为 MCP
+  q07-02-08    answer       "B"  ->  1
+  q07-02-09    statement    "某团队要做一个内部知识库问答应用：团队里有一位会写 Python 的后端、两位不写代码的运营同学；公司要求数据必须留在自己的服务器上；上线后关键路径还要嵌进已有的 Python 后端做精细控制。\n请回答：\n1. 结  ->  "某团队要做一个内部知识库问答应用：团队里有一位会写 Python 的后端、两位不写代码的运营同学；公司要求数据必须留在自己的服务器上；上线后关键路径还要嵌进已有的 Python 后端做精细控制。\n\n请回答：\n\n
+  q07-02-09    explanation  "合理答法是「运营用画布做原型与日常迭代，后端把关键路径用代码重写并接回自己的服务」，且因为数据不出内网而优先 MIT 可自托管的 LangFlow。第 2 问的正确答案是核心已被抽成独立包 lfx，旧路径只是兼容转发层  ->  "合理答法是「运营用画布做原型与日常迭代，后端把关键路径用代码重写并接回自己的服务」，且因为数据不出内网而优先 MIT 可自托管的 LangFlow。第 2 问的正确答案是核心已被抽成独立包 `lfx`，旧路径只是兼容转
+  q07-02-10    statement    "调用一条 LangFlow 流（POST /api/v1/run/<FLOW_ID>）会得到一层套一层的 JSON。为便于教学，本题只需对下面这份结构简化的返回体负责：\npayload = {\"outputs\":  ->  "调用一条 LangFlow 流（`POST /api/v1/run/<FLOW_ID>`）会得到一层套一层的 JSON。为便于教学，本题只需对**下面这份结构简化的返回体**负责：\n\n```python\npayl
+  q07-02-10    explanation  "思路是「每一层先判类型、再取值」，把 payload -> outputs[] -> outputs[] -> results.message.text 每一跳都写成「类型不对就跳过」，最后统一收集文本。常见错误有三类  ->  "思路是「每一层先判类型、再取值」，把 `payload → outputs[] → outputs[] → results.message.text` 每一跳都写成「类型不对就跳过」，最后统一收集文本。常见错误有三类：
+  q07-02-10    starter_code "def extract_message_texts(payload):\n    \"\"\"从 LangFlow 运行返回体中提取全部 message.text\"\"\"\n    texts = []\n      ->  "def extract_message_texts(payload):\n    \"\"\"+ '\"\"\"' + r\"\"\"从 LangFlow 运行返回体中提取全部 message.text\"\"\"+ 
+  q07-02-10    solution     "def extract_message_texts(payload):\n    \"\"\"从 LangFlow 运行返回体中提取全部 message.text\"\"\"\n    texts = []\n      ->  "def extract_message_texts(payload):\n    \"\"\"+ '\"\"\"' + r\"\"\"从 LangFlow 运行返回体中提取全部 message.text\"\"\"+ 
+  q07-02-10    hints        ["先判断 payload 是不是字典、outputs 是不是列表，再逐层用 .get() 下钻", "不要用 payload[\"outputs\"][0][\"outputs\"][0] 这种硬索引"]  ->  ["先判断 `payload` 是不是字典、`outputs` 是不是列表，再逐层用 `.get()` 下钻", "不要用 `payload[\"outputs\"][0][\"outputs\"][0]` 这种硬索引"
+  q07-04-03    explanation  "正文强调：轨迹里有靶场造成的偏差（第 2、3 步形态不是真实模型行为），但「工具真的被执行」和「环检测真的拦住了重复调用」这两点都是真实的。读输出必须能区分框架能力与靶场局限。"  ->  "正文强调：轨迹里第 2、3 步的形态偏离理想路径，属模型或配置造成的偏差，但「工具真的被执行」和「环检测真的拦住了重复调用」这两点都是真实的。读输出必须能区分框架能力与模型能力边界。"
+  q07-04-03    options      ["第 3 步的通用回答证明模型具备真实推理能力", "第 2 步的重复调用是真实模型的标准行为", "工具真的被执行、环检测真的拦住重复调用，这两点真实", "整条轨迹都是靶场偏差，不能作为框架能力的证据"]  ->  ["第 3 步的通用回答证明模型具备真实推理能力", "第 2 步的重复调用是真实模型的标准行为", "工具真的被执行、环检测真的拦住重复调用，这两点真实", "整条轨迹都是模型偏差，不能作为框架能力的证据"]
+  q09-03-03    explanation  "教材点明第 2 条「快速开始」和第 7 条「已知局限与后续计划」最容易加分也最易被忽略：招聘方不愿花 30 分钟配环境，能离线靶场一键跑是巨大加分；主动写局限显得可信。其余几块同样必要，但不是被特别强调的加分点。"  ->  "教材点明第 2 条「快速开始」和第 7 条「已知局限与后续计划」最容易加分也最易被忽略：招聘方不愿花 30 分钟配环境，能一键跑起来是巨大加分；主动写局限显得可信。其余几块同样必要，但不是被特别强调的加分点。"
+  q09-03-03    options      ["快速开始（离线靶场一键跑）与已知局限及后续计划", "架构图与关键设计决策", "评测数据与成本性能", "演示截图与项目名一句话说明"]  ->  ["快速开始（三条命令一键跑）与已知局限及后续计划", "架构图与关键设计决策", "评测数据与成本性能", "演示截图与项目名一句话说明"]
+
+(--check，未写盘)

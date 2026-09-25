@@ -115,7 +115,7 @@ const PyMusic = {
           <button id="pymusic-play" class="primary" title="播放 / 暂停">▶</button>
           <button id="pymusic-next" title="下一首">⏭</button>
           <span class="pymusic-vol-wrap" title="音量">
-            🔊<input type="range" id="pymusic-volume" min="0" max="100" value="${Math.round(this.volume * 100)}">
+            音量<input type="range" id="pymusic-volume" min="0" max="100" value="${Math.round(this.volume * 100)}">
           </span>
         </div>
       </div>`;
@@ -266,7 +266,7 @@ const PyMusic = {
     // 老页面上的按钮（如果存在）也跟着变
     const legacy = document.getElementById('music-toggle-btn');
     if (legacy) {
-      legacy.textContent = isPlaying ? '🎵' : '🎶';
+      legacy.textContent = isPlaying ? '♫' : '♪';
       legacy.title = isPlaying ? '关闭背景音乐' : '开启背景音乐';
     }
   },

@@ -51,7 +51,9 @@ const MdLite = {
     html = html.replace(/^\s*[-*+]\s+(.+)$/gm, '<li>$1</li>');
     html = html.replace(/^\s*(\d+)\.\s+(.+)$/gm, '<li>$2</li>');
     html = html.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, '<ul>$1</ul>');
-    html = html.replace(/(🤔\s*想一想：[^\n<]*)/g, '</p><div class="think-line">$1</div><p>');
+    // 「想一想」用排版标记而不是表情脸：这个项目整体不走 emoji 那一路，
+    // 一个思考脸就把整页的克制感拉低了。
+    html = html.replace(/(?:🤔\s*)?(想一想：[^\n<]*)/g, '</p><div class="think-line">$1</div><p>');
 
     html = html.split(/\n{2,}/).map((para) => {
       const trimmed = para.trim();

@@ -118,7 +118,8 @@
 <section class="section">
   <div class="card pad-lg ch-overview">
     <h2>这一章要解决什么</h2>
-    <div class="lesson"><blockquote>建议学时：6 天，每天 6 学时 学习方式：原理讲授、教师手写、分组实验、项目迭代 章节交付：可评测、可拒答、带来源引用的企业知识库问答系统</blockquote>
+    <div class="lesson"><blockquote><strong>版本</strong>：v2.1（2026-09-23 修订·就业能力补强版） <strong>v2.1 修订</strong>：依赖与环境口径统一为 pyproject.toml + uv.lock；本章未新增小节。</blockquote>
+<blockquote>建议学时：6 天，每天 6 学时 学习方式：原理讲授、教师手写、分组实验、项目迭代 章节交付：可评测、可拒答、带来源引用的企业知识库问答系统</blockquote>
 <h3>3.0 本章学习目标</h3>
 <p>完成本章后，学生能够：</p>
 <ol><li>解释 RAG 的数据流，以及它缓解知识过期和无依据回答的原因。</li><li>将 PDF、Word、HTML 转成统一的 <code>Document</code> 数据。</li><li>独立实现固定窗口、递归和基于段落的切块，并通过实验选择参数。</li><li>使用 Embedding 和向量库完成增、删、查与元数据过滤。</li><li>实现 BM25 与向量检索的融合，理解 rerank 的位置和价值。</li><li>为回答添加证据引用、低置信拒答与可复现评测。</li><li>将完整链路封装成 FastAPI 服务，并能解释每一层的输入和输出。</li></ol>
@@ -157,7 +158,7 @@ fastapi
 uvicorn
 pydantic &gt;= 2
 pytest</code></pre>
-<p>上表是依赖名称，不是可复现的版本锁。教师应在开课前的全新虚拟环境验证代码，把实际通过测试的精确版本写入 <code>requirements.txt</code>；不要让学生在同一次实验中使用不同主版本。</p>
+<p>上表是依赖名称，不是可复现的版本锁。按本课程统一做法，它们写进 <code>pyproject.toml</code> 并由 <code>uv.lock</code> 锁定（见 1.2.6）；开课前必须在全新环境跑 <code>uv sync --frozen</code> 验证可复现。</p>
 <hr></div>
   </div>
 </section>
@@ -283,6 +284,129 @@ def load_file(path: Path) -&gt; list[Document]:
 <table><thead><tr><th style="text-align:left">文件名</th><th style="text-align:left">格式</th><th style="text-align:left">加载器</th><th style="text-align:right">文档数</th><th style="text-align:right">字符数</th><th style="text-align:right">空文档</th><th style="text-align:left">页码范围</th><th style="text-align:left">需要 OCR</th></tr></thead><tbody><tr><td style="text-align:left">员工手册.pdf</td><td style="text-align:left">.pdf</td><td style="text-align:left">pymupdf</td><td style="text-align:right">13</td><td style="text-align:right">4348</td><td style="text-align:right">0</td><td style="text-align:left">1-13</td><td style="text-align:left">否</td></tr><tr><td style="text-align:left">报销制度.docx</td><td style="text-align:left">.docx</td><td style="text-align:left">python-docx</td><td style="text-align:right">1</td><td style="text-align:right">1598</td><td style="text-align:right">0</td><td style="text-align:left">-</td><td style="text-align:left">否</td></tr><tr><td style="text-align:left">公司福利.html</td><td style="text-align:left">.html</td><td style="text-align:left">beautifulsoup</td><td style="text-align:right">1</td><td style="text-align:right">1287</td><td style="text-align:right">0</td><td style="text-align:left">-</td><td style="text-align:left">否</td></tr><tr><td style="text-align:left">扫描件示例.pdf</td><td style="text-align:left">.pdf</td><td style="text-align:left">-</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:left">-</td><td style="text-align:left"><strong>是</strong></td></tr></tbody></table>
 <h4>3.2.5 当日教学流程</h4>
 <table><thead><tr><th style="text-align:right">时间</th><th style="text-align:left">教学活动</th><th style="text-align:left">学生产出</th></tr></thead><tbody><tr><td style="text-align:right">20 min</td><td style="text-align:left">比较模型裸答与查制度后的回答</td><td style="text-align:left">RAG 必要性说明</td></tr><tr><td style="text-align:right">50 min</td><td style="text-align:left">讲离线、在线两条链路</td><td style="text-align:left">手绘数据流</td></tr><tr><td style="text-align:right">90 min</td><td style="text-align:left">教师手写统一加载器</td><td style="text-align:left">可运行代码</td></tr><tr><td style="text-align:right">80 min</td><td style="text-align:left">学生解析三种格式</td><td style="text-align:left">JSONL 结果</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">质量统计与扫描件故障注入</td><td style="text-align:left">数据质量报告</td></tr><tr><td style="text-align:right">60 min</td><td style="text-align:left">抽查、复盘、提交</td><td style="text-align:left">Git commit</td></tr></tbody></table>
+<h4>3.2.6 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q03-01-01</code> ~ <code>q03-01-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q03-01-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">扫描版 PDF 的处理方式</td></tr><tr><td style="text-align:left"><code>q03-01-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">PDF 逐页生成 Document 的理由</td></tr><tr><td style="text-align:left"><code>q03-01-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">LOADERS 分发表的工程价值</td></tr><tr><td style="text-align:left"><code>q03-01-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">为什么元数据不能拼进正文</td></tr><tr><td style="text-align:left"><code>q03-01-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">数据质量报告要回答什么</td></tr><tr><td style="text-align:left"><code>q03-01-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现 HTML 加载器</td></tr><tr><td style="text-align:left"><code>q03-01-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">批量加载与质量报告</td></tr></tbody></table>
+<h5><code>q03-01-01</code>（单选 · ★）扫描版 PDF 的处理方式</h5>
+<p>一份扫描版 PDF 有 1 页，用 pymupdf 解析后得到 0 个字符。 按照当日验收要求，正确的处理方式是什么？</p>
+<ul><li><strong>A</strong>. 标记为「需要 OCR」，不能把空内容写入向量库</li><li><strong>B</strong>. 照常入库，检索不到是用户提问方式的问题</li><li><strong>C</strong>. 把文件名当作正文写入，保证至少有一条记录</li><li><strong>D</strong>. 直接跳过该文件，不记录任何异常信息</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>空文本或低文本量要识别出来</li><li>判定为疑似扫描件，标记需要 OCR</li><li>不能悄悄入库</li><li>异常要进入报告列表</li></ul>
+<p><strong>解析与常见错误</strong>：扫描件是图片型 PDF，pymupdf 取不到文本层，解析字符数接近 0。教材明确要求标记为「需要 OCR」而不是把空内容写入向量库，否则用户会看到「知识库中没有依据」。B 错在把解析失败归因于提问；C 用文件名污染正文，检索无意义；D 缺少异常记录，无法排查。</p>
+<h5><code>q03-01-02</code>（单选 · ★★）PDF 逐页生成 Document 的理由</h5>
+<p>load_pdf 对每一页单独生成一个 Document，metadata 里写入 page 为 page_index + 1。 这样设计的主要收益是什么？</p>
+<ul><li><strong>A</strong>. 保留页码引用，检索命中后能定位到原文第几页</li><li><strong>B</strong>. 减少 Document 数量，降低向量库存储开销</li><li><strong>C</strong>. 让 normalize_text 只需处理单页，速度更快</li><li><strong>D</strong>. 避免 pymupdf 在跨页读取时抛出异常</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>逐页切分保留 page 元数据</li><li>page 从 1 开始，便于人读</li><li>命中后可回溯原文页码</li><li>溯源信息放 metadata 不放正文</li></ul>
+<p><strong>解析与常见错误</strong>：教材指出「每页 PDF 单独形成 Document，可保留页码引用」，这是溯源元数据的关键。B 恰好相反，逐页会增多 Document 数；C 清洗速度不是设计动机；D 跨页读取并非 pymupdf 的报错来源。验收要求每条输出包含 source、page、loader，逐页切分正是 page 元数据不错位的前提。</p>
+<h5><code>q03-01-03</code>（单选 · ★★）LOADERS 分发表的工程价值</h5>
+<p>代码用 LOADERS = {".pdf": load_pdf, ".docx": load_docx, ".html": load_html, ".htm": load_html} 做后缀到加载器的映射，load_file 只做一次查表。 新增 Markdown 加载器时，这个结构带来的好处是什么？</p>
+<ul><li><strong>A</strong>. 只需往字典里加一条映射，不必修改 load_file 的控制流</li><li><strong>B</strong>. 可以自动识别文件真实类型，不再依赖后缀名</li><li><strong>C</strong>. 能保证所有加载器返回的 Document 数量一致</li><li><strong>D</strong>. 可以让不支持的格式自动降级为纯文本读取</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>字典把后缀映射到加载器函数</li><li>load_file 只负责查表与调用</li><li>新增格式不改控制流</li><li>未支持格式抛 ValueError</li></ul>
+<p><strong>解析与常见错误</strong>：分发表把「选哪个加载器」与「怎么加载」解耦，扩展时只加映射项，load_file 的 if/elif 控制流不变。B 是内容嗅探，本题没做；C 各加载器返回数量本就不同（PDF 多页、docx 一条）；D 未支持的格式在本题里是抛 ValueError，不是降级。</p>
+<h5><code>q03-01-04</code>（简答 · ★★）为什么元数据不能拼进正文</h5>
+<p>统一文档对象把 source、page、loader 放在 metadata 里，而不是拼进 text。 请说明这样做的原因，并对比「把文件名拼进正文」会带来哪些具体问题。</p>
+<p><strong>提示</strong>：想想向量检索算的是哪段文本的相似度；元数据能做过滤，正文能吗</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>正文用于检索与生成，元数据用于溯源</li><li>拼进正文会污染语义，干扰相似度计算</li><li>文件名重复出现会拉高无关文档得分</li><li>元数据可结构化过滤，正文不能</li><li>溯源信息应可单独展示，不必进入上下文</li><li>拼接后难以按字段统计与校验</li></ul>
+<p><strong>解析与常见错误</strong>：要点是区分「检索用的语义内容」与「溯源用的结构化字段」。常见失分是只说「不美观」而不谈对相似度与过滤的影响。答出污染语义、干扰打分、无法结构化过滤、难以统计校验这几点即可得分。</p>
+<h5><code>q03-01-05</code>（简答 · ★★）数据质量报告要回答什么</h5>
+<p>quality_report 返回 documents、characters、empty、short_under_30、max_length 五个指标。 请说明每个指标各自能暴露什么数据问题，以及为什么在入库前必须先看这份报告。</p>
+<p><strong>提示</strong>：每个指标对应一类失败模式；想想空文档和超长文档分别会导致什么</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>documents 反映解析出的文档条数</li><li>characters 反映总文本量是否异常偏低</li><li>empty 直接暴露空文档，需排查 OCR</li><li>short_under_30 发现碎片或模板噪声</li><li>max_length 发现超长文档，提示要切分</li><li>入库前体检可避免脏数据污染向量库</li></ul>
+<p><strong>解析与常见错误</strong>：要逐指标对应失败模式：空文档指向扫描件，短文档指向模板噪声或解析残缺，超长文档提示需要 chunking。常见失分是只罗列指标名而不说暴露什么问题，或忽略「入库前」这个时机的重要性。</p>
+<h5><code>q03-01-06</code>（代码 · ★★）实现 HTML 加载器</h5>
+<p>用 BeautifulSoup 实现 load_html(path: Path) -> list[Document]。 要求：读取 UTF-8 文件；去除 script、style、nav、footer 标签；正文经 normalize_text 清洗； metadata 包含 source、title、loader 三个字段，loader 值为 "beautifulsoup"；正文为空时返回空列表。 Document 为 frozen dataclass，字段为 text 与 metadata。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from pathlib import Path
+from bs4 import BeautifulSoup
+
+def normalize_text(text: str) -&gt; str:
+    lines = [line.strip() for line in text.replace("\u3000", " ").splitlines()]
+    return "\n".join(line for line in lines if line)
+
+def load_html(path: Path) -&gt; list:
+    # 在此实现
+    ...</code></pre>
+<p><strong>提示</strong>：先删标签再取文本；soup.title 可能为 None，要判空</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>read_text 指定 encoding="utf-8"</li><li>用 html.parser 构造 BeautifulSoup</li><li>decompose 移除 script/style/nav/footer</li><li>get_text("\n") 后过 normalize_text</li><li>title 缺失时取空串</li><li>正文为空返回空列表</li></ul>
+<p><strong>解析与常见错误</strong>：关键是先 decompose 噪声标签再 get_text，顺序反了会把脚本内容带进正文。常见错误：忘记 encoding 导致中文乱码；soup.title 为 None 时直接 .get_text() 报错；未做空文本判断，返回一条空 Document 污染向量库。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from pathlib import Path
+from bs4 import BeautifulSoup
+
+def normalize_text(text: str) -&gt; str:
+    lines = [line.strip() for line in text.replace("\u3000", " ").splitlines()]
+    return "\n".join(line for line in lines if line)
+
+def load_html(path: Path) -&gt; list:
+    html = path.read_text(encoding="utf-8")
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup(["script", "style", "nav", "footer"]):
+        tag.decompose()
+    text = normalize_text(soup.get_text("\n"))
+    title = normalize_text(soup.title.get_text()) if soup.title else ""
+    if not text:
+        return []
+    return [Document(text, {
+        "source": path.name,
+        "title": title,
+        "loader": "beautifulsoup",
+    })]</code></pre>
+<p></details></p>
+<h5><code>q03-01-07</code>（代码 · ★★★）批量加载与质量报告</h5>
+<p>实现 load_dir(directory: Path) -> tuple[list, list]，遍历目录下所有文件： 支持的格式交给 load_file 处理，不支持的格式不抛异常，而是把 (文件名, 错误信息) 记入异常列表。 再实现 quality_report(documents) 返回 documents、characters、empty、short_under_30、max_length 五个指标。 最后打印每个文件的加载器、文档数、字符数，以及异常列表。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from pathlib import Path
+
+def load_dir(directory: Path):
+    # 返回 (documents, errors)
+    ...
+
+def quality_report(documents):
+    # 返回五个指标
+    ...</code></pre>
+<p><strong>提示</strong>：一个文件失败不应中断整批；max() 对空列表会报错，记得给默认值</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>iterdir 遍历并过滤非文件</li><li>逐个调用 load_file 并 extend 结果</li><li>捕获 ValueError 记入 errors 不中断</li><li>lengths 列表复用，避免重复计算</li><li>max 用 default=0 处理空列表</li><li>异常列表要打印出来供排查</li></ul>
+<p><strong>解析与常见错误</strong>：难点在容错：单个文件解析失败要记入异常列表并继续，而不是让整批中断。常见错误：不捕获 ValueError 导致程序崩溃；max(lengths) 在无文档时抛异常；把 errors 收集了却不输出，等于没做异常报告。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from pathlib import Path
+
+def load_dir(directory: Path):
+    documents, errors = [], []
+    for path in sorted(directory.iterdir()):
+        if not path.is_file():
+            continue
+        try:
+            documents.extend(load_file(path))
+        except ValueError as exc:
+            errors.append((path.name, str(exc)))
+    return documents, errors
+
+def quality_report(documents):
+    lengths = [len(doc.text) for doc in documents]
+    return {
+        "documents": len(documents),
+        "characters": sum(lengths),
+        "empty": sum(length == 0 for length in lengths),
+        "short_under_30": sum(length &lt; 30 for length in lengths),
+        "max_length": max(lengths, default=0),
+    }
+
+docs, errors = load_dir(Path("data"))
+report = quality_report(docs)
+print(report)
+for name, msg in errors:
+    print("异常:", name, msg)</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -407,6 +531,130 @@ def make_chunk(doc: Document, text: str, index: int) -&gt; Document:
 <p><strong>读图要点</strong>：A 组的直方图是一根「尖峰」，因为定长切块长度几乎全等于 size；C、D 两组是「散开的多峰」，P95 明显高于平均值——这正是「块长不齐」的代价。P95 不是缺陷，而是<strong>你必须提前知道并写进报告的代价</strong>：块长不齐意味着某些块会占用更多上下文预算。</p>
 <h4>3.3.6 当日教学流程</h4>
 <p>教师先演示一个答案跨越切块边界的失败案例，再让学生预测 overlap 增大后的变化。课堂后半段完成四组实验，不以“看起来更好”为结论，必须保存数据表。</p>
+<h4>3.3.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q03-02-01</code> ~ <code>q03-02-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q03-02-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">固定窗口切块的步长计算</td></tr><tr><td style="text-align:left"><code>q03-02-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">膨胀率的来源判断</td></tr><tr><td style="text-align:left"><code>q03-02-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">块长不齐的代价</td></tr><tr><td style="text-align:left"><code>q03-02-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">稳定 chunk_id 的价值与构造</td></tr><tr><td style="text-align:left"><code>q03-02-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">切块实验的变量控制</td></tr><tr><td style="text-align:left"><code>q03-02-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现固定窗口切块</td></tr><tr><td style="text-align:left"><code>q03-02-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">实现递归切块</td></tr></tbody></table>
+<h5><code>q03-02-01</code>（单选 · ★）固定窗口切块的步长计算</h5>
+<p>固定窗口切块函数中，size=500、overlap=80 时，窗口每次前进的字符数是多少？</p>
+<ul><li><strong>A</strong>. 500</li><li><strong>B</strong>. 580</li><li><strong>C</strong>. 420</li><li><strong>D</strong>. 80</li></ul>
+<p><strong>答案</strong>：C</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>step = size - overlap</li><li>500 - 80 = 420</li><li>overlap 保留边界上下文</li><li>重叠会增加索引量</li></ul>
+<p><strong>解析与常见错误</strong>：step = size - overlap = 500 - 80 = 420，决定窗口每次前进多少。选 500 忽略了重叠会回退，选 580 把 overlap 加而非减，选 80 只看到 overlap 本身。</p>
+<h5><code>q03-02-02</code>（单选 · ★★）膨胀率的来源判断</h5>
+<p>四组实验中 A 组膨胀率 1.12、B 组 1.06，而 recursive 两组正好是 1.00。造成这一差异的根本原因是什么？</p>
+<ul><li><strong>A</strong>. recursive 切块用的 max_size 更大，所以总字符更少</li><li><strong>B</strong>. fixed 切块的 overlap 造成边界内容被重复索引，recursive 按边界切分天然不重复</li><li><strong>C</strong>. recursive 丢弃了过短的块，所以总字符没有膨胀</li><li><strong>D</strong>. fixed 切块把扫描件也算了进去，导致字符变多</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>膨胀率=总字符/原文长度</li><li>overlap 导致重复索引</li><li>recursive 按边界切分不重复</li><li>语料固定为 7233 字符</li></ul>
+<p><strong>解析与常见错误</strong>：膨胀率多出来的部分全是 overlap 造成的重复索引量，recursive 按边界切分天然不重复，故为 1.00。A、C、D 都把原因归到 size、丢块或语料上，而语料是固定的同一份。</p>
+<h5><code>q03-02-03</code>（单选 · ★★）块长不齐的代价</h5>
+<p>读分布图时，A 组直方图是一根尖峰，C、D 两组是散开的多峰且 P95 明显高于平均值。关于这一现象，下列说法正确的是？</p>
+<ul><li><strong>A</strong>. P95 偏高说明 recursive 切块实现有 bug，应改回固定窗口</li><li><strong>B</strong>. 块长不齐是缺陷，必须通过调大 max_size 消除</li><li><strong>C</strong>. 块长不齐意味着某些块会占用更多上下文预算，是必须提前知道并写进报告的代价</li><li><strong>D</strong>. 尖峰说明固定窗口的召回效果一定优于递归切块</li></ul>
+<p><strong>答案</strong>：C</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>A 组长度≈size 呈尖峰</li><li>C/D 多峰、P95 高于均值</li><li>块长不齐占用更多上下文预算</li><li>需写进报告而非消除</li></ul>
+<p><strong>解析与常见错误</strong>：P95 不是缺陷，而是必须提前知道并写进报告的代价：块长不齐意味着某些块占用更多上下文预算。A、B 把它当 bug 或必须消除，D 由长度分布直接推断召回优劣，都缺乏依据。</p>
+<h5><code>q03-02-04</code>（简答 · ★★）稳定 chunk_id 的价值与构造</h5>
+<p>请说明给切块增加稳定 ID 的做法：它由哪些字段拼成、如何生成，以及稳定 ID 带来哪些具体价值。</p>
+<p><strong>提示</strong>：想想重复入库时会发生什么；评测报告需要定位到哪一块</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>raw_id 由 source、page、index、text 拼接</li><li>用 sha256 编码后取前 16 位</li><li>重复入库时可更新而非无限新增</li><li>评测报告能精确指出命中的证据块</li><li>metadata 中保留 chunk_id 与 chunk_index</li></ul>
+<p><strong>解析与常见错误</strong>：要点是把 source/page/index/text 拼成 raw_id 再哈希截断，并说清「更新而非新增」与「评测可定位证据块」两个价值。常见失分是只写哈希算法，漏掉字段构成或价值。</p>
+<h5><code>q03-02-05</code>（简答 · ★★★）切块实验的变量控制</h5>
+<p>设计切块对比实验时，为什么要求「一次只改变一个主要变量」，并且不能同时更换文档、Embedding 和 top-k？请结合四组实验的固定条件与记录指标说明。</p>
+<p><strong>提示</strong>：如果同时换语料和策略，结论能归因给谁；要保存哪些指标才能写报告</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>语料固定为 15 条 Document/7233 字符</li><li>排除无文本层的扫描件</li><li>同时换多个变量无法归因</li><li>记录块数、平均长度、P95、索引时间</li><li>记录 Recall@5 与典型失败样本</li></ul>
+<p><strong>解析与常见错误</strong>：核心是归因：同时更换文档、Embedding、top-k 就无法判断效果差异来自哪个变量。应说明语料固定、扫描件排除，以及块数、平均长度、P95、索引时间、Recall@5 和失败样本等记录项。</p>
+<h5><code>q03-02-06</code>（代码 · ★★）实现固定窗口切块</h5>
+<p>实现 fixed_chunks(text, size=500, overlap=80)，按固定窗口把文本切成块。要求：size<=0 抛 ValueError；overlap 不满足 0<=overlap<size 抛 ValueError；每块 strip 后非空才加入；末尾不产生多个高度重复的短块。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def fixed_chunks(text: str, size: int = 500, overlap: int = 80) -&gt; list[str]:
+    # 在此实现
+    pass</code></pre>
+<p><strong>提示</strong>：窗口前进量是 size 减 overlap；什么时候该停止循环</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先校验 size 与 overlap</li><li>step = size - overlap</li><li>切片后 strip 且非空才加入</li><li>末尾 break 防止重复短块</li><li>用 range 按 step 推进</li></ul>
+<p><strong>解析与常见错误</strong>：关键是 step=size-overlap 与末尾 break。常见错误是忘记校验 overlap、用 size 当步长导致重叠失效，或漏掉 break 在末尾产生多个重复短块。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def fixed_chunks(text: str, size: int = 500, overlap: int = 80) -&gt; list[str]:
+    if size &lt;= 0:
+        raise ValueError("size 必须大于 0")
+    if not 0 &lt;= overlap &lt; size:
+        raise ValueError("overlap 必须满足 0 &lt;= overlap &lt; size")
+    chunks: list[str] = []
+    step = size - overlap
+    for start in range(0, len(text), step):
+        chunk = text[start:start + size].strip()
+        if chunk:
+            chunks.append(chunk)
+        if start + size &gt;= len(text):
+            break
+    return chunks</code></pre>
+<p></details></p>
+<h5><code>q03-02-07</code>（代码 · ★★★）实现递归切块</h5>
+<p>实现 recursive_chunks(text, max_size=500, separators=("\n\n","\n","。","；","，"))：先 strip，空文本返回 []，长度不超过 max_size 直接返回；separators 为空时退化为 fixed_chunks(text, max_size, 0)；按当前分隔符切分，若只有一段则用剩余分隔符递归；否则用 buffer 累积，超长时对 buffer 递归并重新开始。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def recursive_chunks(
+    text: str,
+    max_size: int = 500,
+    separators: tuple[str, ...] = ("\n\n", "\n", "。", "；", "，"),
+) -&gt; list[str]:
+    # 在此实现
+    pass</code></pre>
+<p><strong>提示</strong>：先尝试大边界，再退化到小边界；buffer 拼接时注意分隔符</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先 strip 并处理空文本</li><li>长度不超 max_size 直接返回</li><li>无分隔符退化为 fixed_chunks</li><li>单段时换下一个分隔符递归</li><li>buffer 超长时递归并重置</li></ul>
+<p><strong>解析与常见错误</strong>：思路是先大边界后小边界，逐级退化。常见错误是忘记 separators 为空时退化、单段时未换下一个分隔符、buffer 超长时未先递归旧内容就重置，导致丢文本或块超长。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def fixed_chunks(text: str, size: int = 500, overlap: int = 80) -&gt; list[str]:
+    if size &lt;= 0:
+        raise ValueError("size 必须大于 0")
+    if not 0 &lt;= overlap &lt; size:
+        raise ValueError("overlap 必须满足 0 &lt;= overlap &lt; size")
+    chunks: list[str] = []
+    step = size - overlap
+    for start in range(0, len(text), step):
+        chunk = text[start:start + size].strip()
+        if chunk:
+            chunks.append(chunk)
+        if start + size &gt;= len(text):
+            break
+    return chunks
+
+
+def recursive_chunks(
+    text: str,
+    max_size: int = 500,
+    separators: tuple[str, ...] = ("\n\n", "\n", "。", "；", "，"),
+) -&gt; list[str]:
+    text = text.strip()
+    if not text:
+        return []
+    if len(text) &lt;= max_size:
+        return [text]
+    if not separators:
+        return fixed_chunks(text, max_size, 0)
+    separator, *rest = separators
+    parts = text.split(separator)
+    if len(parts) == 1:
+        return recursive_chunks(text, max_size, tuple(rest))
+    output: list[str] = []
+    buffer = ""
+    for part in parts:
+        candidate = f"{buffer}{separator}{part}".strip(separator) if buffer else part
+        if len(candidate) &lt;= max_size:
+            buffer = candidate
+        else:
+            if buffer:
+                output.extend(recursive_chunks(buffer, max_size, tuple(rest)))
+            buffer = part
+    if buffer:
+        output.extend(recursive_chunks(buffer, max_size, tuple(rest)))
+    return output</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -550,18 +798,133 @@ class ChromaStore:
 <ul><li>重复执行入库，记录数不应翻倍。</li><li>修改一个源文件后能按稳定 ID 更新。</li><li>10 个问题保存 top-5、分数和来源。</li><li>展示一个语义命中案例与一个关键词更占优势的失败案例。</li></ul>
 <p><strong>运行验证：入库是幂等的</strong>：</p>
 <pre class="code lang-powershell"><code>python code/ch03/20_build_index.py</code></pre>
-<p><img src="static/course-assets/ch03/03_build_index.webp" alt="向量化入库的真实输出：20 个切块写入 512 维向量库，连续两次入库后库内条数保持 20 不变（幂等），另含元数据清洗、相似度语义自检与按来源删除后重写的增量更新演示" loading="lazy"></p>
+<p><img src="static/course-assets/ch03/03_build_index.webp" alt="向量化入库的真实输出：20 个切块写入 384 维向量库，连续两次入库后库内条数保持 20 不变（幂等），另含元数据清洗、相似度语义自检与按来源删除后重写的增量更新演示" loading="lazy"></p>
 <p><strong>这张图要看四处</strong>：</p>
-<ol><li><strong>重复入库不膨胀</strong>——第一次写入 20 条 → 库内 20 条；第二次写入 20 条 → 库内仍是 20 条。原因是 <code>chunk_id</code> 是 <code>sha256(来源|页码|序号|正文)</code> 的稳定哈希，<code>upsert</code> 遇到已存在的 id 走更新路径，不会新增行。这就是验收第 1 条要求的直接证据。</li><li><strong>向量维度 512</strong>，与靶场 <code>EMBED_DIM=512</code> 一致；向量化耗时 0.02s（20 块，平均 1 ms/块）。</li><li><strong>相似度语义自检</strong>——库返回的 <code>score</code> 与手算余弦逐条对比，差值 0.000000，证明 <code>space=cosine</code> 生效、且 <code>score = 1 - cosine_distance</code> 成立。这正是 3.4.4 那段注意事项要求的「用已知向量做一次校验」。</li><li><strong>改版文档的增量更新</strong>——按来源删除 <code>公司福利.html</code> 的 3 块后剩 17 条，写入改版后的新块变 18 条。脚本特别指出：<strong>要按来源删除，不能只 upsert</strong>。因为改版后旧块正文变了、<code>chunk_id</code> 也跟着变，旧 id 不会被覆盖，会作为「幽灵条目」一直留在库里被检索到。</li></ol>
+<ol><li><strong>重复入库不膨胀</strong>——第一次写入 20 条 → 库内 20 条；第二次写入 20 条 → 库内仍是 20 条。原因是 <code>chunk_id</code> 是 <code>sha256(来源|页码|序号|正文)</code> 的稳定哈希，<code>upsert</code> 遇到已存在的 id 走更新路径，不会新增行。这就是验收第 1 条要求的直接证据。</li><li><strong>向量维度 384</strong>，由 <code>code/common/embedding.py</code> 的 <code>DEFAULT_DIM</code> 决定；向量化耗时约 0.02s（20 块，平均 1 ms/块）。检索全程在本机完成，不消耗平台额度。</li><li><strong>相似度语义自检</strong>——库返回的 <code>score</code> 与手算余弦逐条对比，差值 0.000000，证明 <code>space=cosine</code> 生效、且 <code>score = 1 - cosine_distance</code> 成立。这正是 3.4.4 那段注意事项要求的「用已知向量做一次校验」。</li><li><strong>改版文档的增量更新</strong>——按来源删除 <code>公司福利.html</code> 的 3 块后剩 17 条，写入改版后的新块变 18 条。脚本特别指出：<strong>要按来源删除，不能只 upsert</strong>。因为改版后旧块正文变了、<code>chunk_id</code> 也跟着变，旧 id 不会被覆盖，会作为「幽灵条目」一直留在库里被检索到。</li></ol>
 <p>还有一段容易被跳过但很典型的工程细节——<strong>元数据清洗</strong>：Chroma 只接受标量，嵌套 <code>dict</code> 会直接 <code>ValueError</code>，<code>page=None</code> 这类值会一路带到建库才炸。这就是「延迟错误」，越早清洗越省事。</p>
 <p><strong>运行验证：纯向量检索基线</strong>：</p>
 <pre class="code lang-powershell"><code>python code/ch03/21_retrieval_baseline.py</code></pre>
-<p><img src="static/course-assets/ch03/04_retrieval_baseline.webp" alt="纯向量检索基线的真实输出：q002 语义命中案例（正确证据排在第 1 位、分数 0.2284）、q012 失败案例剖析，以及全量 30 题基线指标 Recall@5=0.8800、MRR=0.6513、HitRate@5=0.9200 与分层结果" loading="lazy"></p>
-<p><strong>这张图是本课程「只看成功的案例是自欺欺人」这条原则的样板</strong>——脚本同时打印一个命中案例和一个失败案例：</p>
-<ul><li><strong>语义命中案例 q002</strong>「入职满 1 年不满 3 年的员工每年有多少天年假？」→ 正确证据（<code>员工手册.pdf</code> 第 4 页，第四章 年假与各类假期）以 0.2284 排在第 1 位。</li><li><strong>失败案例 q012</strong>「婚假有多少天？」→ 应当命中却<strong>没有进入 top-5</strong>。脚本给出归因：证据句确实在索引里（已用 gold 匹配确认），但伪向量只看字符二元组，问题与原文词重叠少时相似度被大量无关文本超过。</li></ul>
+<p><img src="static/course-assets/ch03/04_retrieval_baseline.webp" alt="纯向量检索基线的真实输出：q002 语义命中案例（正确证据排在第 1 位、分数 0.4232）、q019 薄弱案例剖析（正确证据排到第 3 位），以及全量 30 题基线指标 Recall@5=1.0000、MRR=0.9133、HitRate@5=1.0000 与分层结果" loading="lazy"></p>
+<p><strong>这张图是本课程「只看成功的案例是自欺欺人」这条原则的样板</strong>——脚本同时打印一个命中案例和一个<strong>薄弱</strong>案例：</p>
+<ul><li><strong>语义命中案例 q002</strong>「入职满 1 年不满 3 年的员工每年有多少天年假？」→ 正确证据（<code>员工手册.pdf</code> 第 4 页，第四章 年假与各类假期）以 0.4232 排在第 1 位，且与第 2 名（0.3218）拉开明显差距。注意问题说的是「入职满 1 年不满 3 年」，原文写的是「转正后可享受」，两处措辞不同却仍能排第一 —— 这是检索链路可用的直接证据。</li><li><strong>薄弱案例 q019</strong>「业务招待费的人均标准是多少？」→ 正确证据<strong>在前 5 名里，但只排到第 3 位</strong>（0.2942），第 1 名是报销流程表、第 2 名是 10 万元以上的大额审批条款。脚本的判读是：<strong>10 题全部命中，但位次靠后同样会伤害 RAG</strong> —— top-5 里挤进太多无关块，会把 prompt 里的有效证据稀释掉。这比「完全没检到」更常见，也更隐蔽。</li></ul>
+<blockquote><strong>教学点</strong>：不要把「命中」当成终点。<strong>位次（MRR）和是否命中（Recall）是两个指标，必须分开看</strong> —— 只报 Recall 会漏掉「检到了但排在很后面」这类问题。</blockquote>
 <p>全量 30 题基线指标（这是 Day14 消融的对照基准）：</p>
-<table><thead><tr><th style="text-align:left">指标</th><th style="text-align:right">数值</th></tr></thead><tbody><tr><td style="text-align:left">Recall@5</td><td style="text-align:right">0.8800</td></tr><tr><td style="text-align:left">MRR</td><td style="text-align:right">0.6513</td></tr><tr><td style="text-align:left">HitRate@5</td><td style="text-align:right">0.9200</td></tr><tr><td style="text-align:left">P50 延迟</td><td style="text-align:right">2.68 ms</td></tr><tr><td style="text-align:left">P95 延迟</td><td style="text-align:right">3.26 ms</td></tr></tbody></table>
-<p>分层看差距很明显：<strong>单段落 20 题 Recall@5 = 0.9500，跨段落 5 题只有 0.6000</strong>。知识库外 5 题不参与 Recall 统计（gold 为空，<code>recall_at_k</code> 返回 <code>None</code> 而不是抛异常）——把「不需要召回」当成「召回失败」是评测里最常见的读错表。</p>
+<table><thead><tr><th style="text-align:left">指标</th><th style="text-align:right">数值</th></tr></thead><tbody><tr><td style="text-align:left">Recall@5</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">MRR</td><td style="text-align:right">0.9133</td></tr><tr><td style="text-align:left">HitRate@5</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">P50 延迟</td><td style="text-align:right">1.33 ms</td></tr><tr><td style="text-align:left">P95 延迟</td><td style="text-align:right">1.74 ms</td></tr></tbody></table>
+<p><strong>怎么读这组数字</strong>：Recall@5 = 1.0000 表示 25 道可回答题的正确证据<strong>全部</strong>进入了前 5 名；但 MRR 只有 0.9133，说明<strong>仍有部分题目的正确证据不排第 1</strong>（q009 / q010 / q019 / q025 四题位次靠后）。这正是上面的「薄弱案例」段在提醒的事。分层结果：<strong>单段落 20 题与跨段落 5 题 Recall@5 均为 1.0000</strong>。知识库外 5 题不参与 Recall 统计（gold 为空，<code>recall_at_k</code> 返回 <code>None</code> 而不是抛异常）——把「不需要召回」当成「召回失败」是评测里最常见的读错表。</p>
+<h4>3.4.6 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q03-03-01</code> ~ <code>q03-03-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q03-03-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">为什么按 index 排序返回结果</td></tr><tr><td style="text-align:left"><code>q03-03-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">改版文档为何要按来源删除</td></tr><tr><td style="text-align:left"><code>q03-03-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">score 与 distance 的换算前提</td></tr><tr><td style="text-align:left"><code>q03-03-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">语义命中与关键词失败案例</td></tr><tr><td style="text-align:left"><code>q03-03-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">元数据清洗与延迟错误</td></tr><tr><td style="text-align:left"><code>q03-03-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现带缓存的 Embedder</td></tr><tr><td style="text-align:left"><code>q03-03-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★</td><td style="text-align:left">手写余弦相似度并自检</td></tr></tbody></table>
+<h5><code>q03-03-01</code>（单选 · ★★）为什么按 index 排序返回结果</h5>
+<p>CompatibleEmbedder 在解析 /embeddings 响应时，先对 data 按 item["index"] 排序，再取出 embedding。 这样做的核心理由是什么？</p>
+<ul><li><strong>A</strong>. 批量接口返回结构带输入序号，不能把「当前恰好有序」当作永久假设</li><li><strong>B</strong>. 排序后可以去掉重复向量，减少存储占用</li><li><strong>C</strong>. index 字段是模型对向量质量的置信度，需要按它过滤</li><li><strong>D</strong>. 排序能让余弦相似度计算更快</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>批量返回带输入序号 index</li><li>返回顺序无永久保证</li><li>按 index 归位才能与输入对齐</li><li>错位会导致向量与文本不匹配</li></ul>
+<p><strong>解析与常见错误</strong>：批量接口每条结果自带 index 表示它对应输入的第几条，服务端不保证返回顺序与输入一致，所以客户端要显式按 index 归位。index 不是置信度，也不影响相似度计算速度，去重与它无关。</p>
+<h5><code>q03-03-02</code>（单选 · ★★★）改版文档为何要按来源删除</h5>
+<p>某来源文档改版后重新入库，只做 upsert 会导致旧内容仍被检索到。 最准确的原因是什么？</p>
+<ul><li><strong>A</strong>. upsert 只更新向量，不更新 documents 字段</li><li><strong>B</strong>. 正文变了导致 chunk_id 变化，旧 id 不会被覆盖，成为幽灵条目</li><li><strong>C</strong>. Chroma 的 upsert 对同一来源只保留最后一条</li><li><strong>D</strong>. 改版后向量维度会变化，旧向量无法被覆盖</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>chunk_id 由正文哈希决定</li><li>正文变则 id 变</li><li>upsert 无法覆盖不同 id</li><li>需按来源删除旧块再写入</li></ul>
+<p><strong>解析与常见错误</strong>：chunk_id 是 sha256(来源|页码|序号|正文) 的稳定哈希，正文一变 id 就变，upsert 找不到同 id 便新增行，旧块作为幽灵条目留在库里被检索到。所以要按来源先删除再写入。</p>
+<h5><code>q03-03-03</code>（单选 · ★★）score 与 distance 的换算前提</h5>
+<p>ChromaStore.search 里写了 score = 1.0 - float(distance)。 关于这行代码，说法正确的是？</p>
+<ul><li><strong>A</strong>. 任何向量库都可以这样换算，distance 都等于 1 减余弦</li><li><strong>B</strong>. 只有在 space=cosine 配置下才成立，换库或换配置必须查文档并用已知向量校验</li><li><strong>C</strong>. distance 是欧氏距离，1 减它得到的是归一化分数</li><li><strong>D</strong>. 只要向量已归一化，distance 就恒等于余弦相似度</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>distance 定义随库与配置而变</li><li>1-distance 仅 cosine 空间成立</li><li>需查当前版本文档</li><li>用已知向量做一次校验</li></ul>
+<p><strong>解析与常见错误</strong>：不同向量库对 distance 的定义不同，1 - distance 只在 cosine 空间下等价于余弦相似度。课堂截图里 score 与手算余弦差值 0.000000，正是 space=cosine 生效的证据；换库必须重新校验。</p>
+<h5><code>q03-03-04</code>（简答 · ★★）语义命中与关键词失败案例</h5>
+<p>纯向量检索基线同时打印了一个命中案例和一个失败案例。 请说明这两个案例分别是什么，失败案例的归因是什么，以及为什么必须把失败案例一起展示。</p>
+<p><strong>提示</strong>：想想伪向量的构造方式；失败不等于证据缺失</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>命中：q002 年假问题，正确证据排第 1，score 0.2284</li><li>失败：q012 婚假问题未进 top-5</li><li>证据句确在索引中，gold 匹配已确认</li><li>伪向量只看字符二元组，词重叠少</li><li>只看成功案例是自欺欺人</li></ul>
+<p><strong>解析与常见错误</strong>：要点是把「证据在库里」与「没被召回」区分开：失败源于表示能力而非数据缺失。常见失分是只答「检索效果不好」，没有指出字符二元组导致词重叠少这一具体归因。</p>
+<h5><code>q03-03-05</code>（简答 · ★★）元数据清洗与延迟错误</h5>
+<p>入库时 Chroma 只接受标量元数据，嵌套 dict 会直接 ValueError，page=None 这类值会一路带到建库才炸。 请说明什么是延迟错误、它为什么更麻烦，以及在入库流程中应该把清洗放在哪一步。</p>
+<p><strong>提示</strong>：想想报错栈指向哪里；清洗属于哪一层的职责</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>延迟错误指错误在远离源头处才暴露</li><li>报错点与根因位置不一致，排查成本高</li><li>嵌套 dict 直接 ValueError</li><li>None 等值会带到建库阶段才失败</li><li>清洗应放在入库前，越早越好</li></ul>
+<p><strong>解析与常见错误</strong>：关键是理解「越早清洗越省事」：错误在源头附近暴露时上下文完整，拖到建库阶段则要回溯整条链路。常见失分是只说「要清洗」，没说明延迟错误为何更难定位。</p>
+<h5><code>q03-03-06</code>（代码 · ★★）实现带缓存的 Embedder</h5>
+<p>实现 CachedEmbedder，包装任意 Embedder：</p>
+<ol><li>对输入文本去重后再查询缓存，只对未命中的文本调用 inner.embed；</li><li>若返回向量数量与请求数量不一致，抛 RuntimeError；</li><li>返回结果顺序必须与输入 texts 一一对应，允许输入含重复文本。</li></ol>
+<p>请补全 embed 方法。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from typing import Protocol
+
+class Embedder(Protocol):
+    def embed(self, texts: list[str]) -&gt; list[list[float]]: ...
+
+class CachedEmbedder:
+    def __init__(self, inner: Embedder):
+        self.inner = inner
+        self.cache: dict[str, list[float]] = {}
+
+    def embed(self, texts: list[str]) -&gt; list[list[float]]:
+        # TODO: 去重查缓存、只请求缺失项、校验数量、按原顺序返回
+        ...</code></pre>
+<p><strong>提示</strong>：dict.fromkeys 可以保序去重；缓存回填后统一按原输入取值</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>dict.fromkeys 去重且保序</li><li>只把缺失文本传给 inner</li><li>数量不一致抛 RuntimeError</li><li>用 zip 回填缓存</li><li>按原 texts 顺序取值返回</li></ul>
+<p><strong>解析与常见错误</strong>：核心是「去重请求、按原序返回」两件事分开做。常见错误是直接对 texts 调 inner 导致重复计费，或返回顺序与输入错位；还有漏掉数量校验，让供应商返回错位向量悄悄污染缓存。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from typing import Protocol
+
+class Embedder(Protocol):
+    def embed(self, texts: list[str]) -&gt; list[list[float]]: ...
+
+class CachedEmbedder:
+    def __init__(self, inner: Embedder):
+        self.inner = inner
+        self.cache: dict[str, list[float]] = {}
+
+    def embed(self, texts: list[str]) -&gt; list[list[float]]:
+        missing = [t for t in dict.fromkeys(texts) if t not in self.cache]
+        if missing:
+            vectors = self.inner.embed(missing)
+            if len(vectors) != len(missing):
+                raise RuntimeError("Embedding 返回数量与输入不一致")
+            self.cache.update(zip(missing, vectors))
+        return [self.cache[t] for t in texts]</code></pre>
+<p></details></p>
+<h5><code>q03-03-07</code>（代码 · ★）手写余弦相似度并自检</h5>
+<p>实现 cosine_similarity(a, b)：</p>
+<ol><li>维度不一致或向量为空时抛 ValueError；</li><li>任一向量模长为 0 时返回 0.0；</li><li>否则返回余弦相似度。</li></ol>
+<p>然后用 a=[1,0]、b=[0,1] 与 a=[1,2]、b=[2,4] 各验证一次。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from math import sqrt
+
+def cosine_similarity(a: list[float], b: list[float]) -&gt; float:
+    # TODO
+    ...
+
+if __name__ == "__main__":
+    # TODO: 打印两组验证结果
+    ...</code></pre>
+<p><strong>提示</strong>：先做参数校验再计算；零向量要单独处理</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先校验长度一致且非空</li><li>点积用 zip 求和</li><li>分别求两向量模长</li><li>模长为 0 返回 0.0 避免除零</li><li>正交向量得 0，同向得 1</li></ul>
+<p><strong>解析与常见错误</strong>：公式本身简单，易错点全在边界：空列表、维度不一致、零向量。常见错误是漏掉零向量判断导致 ZeroDivisionError，或把维度校验写在计算之后。同向向量 [1,2] 与 [2,4] 应得 1.0，可用来验证实现正确。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from math import sqrt
+
+def cosine_similarity(a: list[float], b: list[float]) -&gt; float:
+    if len(a) != len(b) or not a:
+        raise ValueError("向量必须非空且维度一致")
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = sqrt(sum(x * x for x in a))
+    norm_b = sqrt(sum(y * y for y in b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
+
+if __name__ == "__main__":
+    print(cosine_similarity([1, 0], [0, 1]))   # 0.0
+    print(cosine_similarity([1, 2], [2, 4]))   # 1.0</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -709,24 +1072,117 @@ def reciprocal_rank(retrieved_ids: list[str], relevant_ids: set[str]) -&gt; floa
 <p>对同一批问题运行四组：向量检索、BM25、RRF 混合、RRF + rerank。记录 Recall@5、MRR、P50 延迟、P95 延迟。结论必须包含收益和代价。</p>
 <pre class="code lang-powershell"><code>python code/ch03/30_hybrid_ablation.py</code></pre>
 <h5>真实实验数据</h5>
-<p><img src="static/course-assets/ch03/05_hybrid_ablation.webp" alt="四组消融实验的真实输出：向量检索 / BM25 / RRF 混合 / RRF+重排 的 Recall@5、MRR、HitRate@5 与 P50/P95 延迟对比，含收益代价表、逐题差异表和 q025 失败案例分析" loading="lazy"></p>
+<p><img src="static/course-assets/ch03/05_hybrid_ablation.webp" alt="四组消融实验的真实输出：向量检索 / BM25 / RRF 混合 / RRF+重排 的 Recall@5、MRR、HitRate@5 与 P50/P95 延迟对比，含收益代价表、分层指标与结论要点" loading="lazy"></p>
 <p>四组方案在 25 道可回答题上的实测结果：</p>
-<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:right">Recall@5</th><th style="text-align:right">MRR</th><th style="text-align:right">HitRate@5</th><th style="text-align:right">P50(ms)</th><th style="text-align:right">P95(ms)</th></tr></thead><tbody><tr><td style="text-align:left">A 向量检索</td><td style="text-align:right">0.8800</td><td style="text-align:right">0.6513</td><td style="text-align:right">0.9200</td><td style="text-align:right">2.5100</td><td style="text-align:right">2.9100</td></tr><tr><td style="text-align:left">B BM25</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.8533</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.0500</td><td style="text-align:right">0.1400</td></tr><tr><td style="text-align:left">C RRF 混合</td><td style="text-align:right">0.9800</td><td style="text-align:right">0.7680</td><td style="text-align:right">1.0000</td><td style="text-align:right">3.1400</td><td style="text-align:right">3.7400</td></tr><tr><td style="text-align:left">D RRF+重排</td><td style="text-align:right">0.8800</td><td style="text-align:right">0.6633</td><td style="text-align:right">0.9200</td><td style="text-align:right">12.0300</td><td style="text-align:right">13.4600</td></tr></tbody></table>
-<p><strong>收益与代价必须一起报</strong>——只看左边三列会得出「越靠后越好」的错误结论：</p>
-<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:right">ΔRecall@5</th><th style="text-align:right">ΔMRR</th><th style="text-align:right">P95 倍数（vs 向量）</th><th style="text-align:right">P95(ms)</th></tr></thead><tbody><tr><td style="text-align:left">A 向量检索</td><td style="text-align:right">0.0000</td><td style="text-align:right">0.0000</td><td style="text-align:right">1.00</td><td style="text-align:right">2.9100</td></tr><tr><td style="text-align:left">B BM25</td><td style="text-align:right">+0.1200</td><td style="text-align:right">+0.2020</td><td style="text-align:right">0.05</td><td style="text-align:right">0.1400</td></tr><tr><td style="text-align:left">C RRF 混合</td><td style="text-align:right">+0.1000</td><td style="text-align:right">+0.1167</td><td style="text-align:right">1.29</td><td style="text-align:right">3.7400</td></tr><tr><td style="text-align:left">D RRF+重排</td><td style="text-align:right">0.0000</td><td style="text-align:right">+0.0120</td><td style="text-align:right"><strong>4.63</strong></td><td style="text-align:right">13.4600</td></tr></tbody></table>
-<p><strong>读法</strong>：ΔRecall / ΔMRR 是收益，P95 倍数是代价。D 组 Recall 一点没涨、MRR 只涨 0.0120，P95 却翻了 4.63 倍——<strong>某一组如果 Recall 没涨、P95 却翻了几倍，那它在生产里就不该上线</strong>。这不是说重排没用，而是说：重排的价值取决于 reranker 的质量，用一个没有语义能力的假 reranker，你花 4.63 倍延迟买到的只有噪声。</p>
-<h5>一个把结论推翻的失败案例</h5>
-<p>脚本做了「逐题差异表」——找出谁被救回来了、谁被搞坏了。最有价值的一行是 <strong>q025</strong>：</p>
-<table><thead><tr><th style="text-align:left">题目</th><th style="text-align:left">类型</th><th style="text-align:right">向量</th><th style="text-align:right">BM25</th><th style="text-align:right">混合</th><th style="text-align:left">变化</th><th style="text-align:left">问题</th></tr></thead><tbody><tr><td style="text-align:left">q012</td><td style="text-align:left">single</td><td style="text-align:right">0.0000</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.0000</td><td style="text-align:left">持平</td><td style="text-align:left">婚假有多少天？</td></tr><tr><td style="text-align:left">q021</td><td style="text-align:left">cross</td><td style="text-align:right">0.0000</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.0000</td><td style="text-align:left">持平</td><td style="text-align:left">一位入职满 4 年的员工，年假有多少天…</td></tr><tr><td style="text-align:left">q023</td><td style="text-align:left">cross</td><td style="text-align:right">0.5000</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.0000</td><td style="text-align:left">持平</td><td style="text-align:left">试用期员工能休年假吗？弹性上班…</td></tr><tr><td style="text-align:left"><strong>q025</strong></td><td style="text-align:left">cross</td><td style="text-align:right"><strong>0.5000</strong></td><td style="text-align:right"><strong>1.0000</strong></td><td style="text-align:right"><strong>0.5000</strong></td><td style="text-align:left"><strong>混合更差 ↓</strong></td><td style="text-align:left">离职后还要保密多久？离职前要提前多久通知？</td></tr></tbody></table>
-<p>q025 的两路检索完全冲突：向量只拿到 0.5，BM25 拿到 1.0，<strong>融合之后反而掉回 0.5</strong>。</p>
-<p>原因：<strong>RRF 只看排名，不看分数，也不看谁更可信</strong>。当两路意见冲突时，它们会互相牵扯——BM25 排第 1 的证据被向量路的低排名拉了下来。</p>
-<p>这条结论比「融合总是更好」有价值得多，它直接推翻了一个常见默认值：</p>
-<blockquote><strong>RRF 的参数 &lt;code&gt;k&lt;/code&gt; 不能默认 60 就不管。</strong> 它必须用固定评测集调参，并且要在逐题差异表里检查有没有「融合反而变差」的样本。平均值会掩盖它：C 组整体 Recall 是 0.98，看上去很好，但代价是把 q025 从 1.0 拉到了 0.5。</blockquote>
+<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:right">Recall@5</th><th style="text-align:right">MRR</th><th style="text-align:right">HitRate@5</th><th style="text-align:right">P50(ms)</th><th style="text-align:right">P95(ms)</th></tr></thead><tbody><tr><td style="text-align:left">A 向量检索</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.9133</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.25</td><td style="text-align:right">1.53</td></tr><tr><td style="text-align:left">B BM25</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.8533</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.05</td><td style="text-align:right">0.10</td></tr><tr><td style="text-align:left">C RRF 混合</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.9000</td><td style="text-align:right">1.0000</td><td style="text-align:right">1.72</td><td style="text-align:right">2.04</td></tr><tr><td style="text-align:left">D RRF+重排</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.9200</td><td style="text-align:right">1.0000</td><td style="text-align:right">3.77</td><td style="text-align:right">5.32</td></tr></tbody></table>
+<p><strong>收益与代价必须一起报</strong>——只看 Recall 一列会得出「四组没区别」的结论，真正的区别藏在 MRR 和延迟里：</p>
+<table><thead><tr><th style="text-align:left">方案</th><th style="text-align:right">ΔRecall@5</th><th style="text-align:right">ΔMRR</th><th style="text-align:right">P95 倍数（vs 向量）</th><th style="text-align:right">P95(ms)</th></tr></thead><tbody><tr><td style="text-align:left">A 向量检索</td><td style="text-align:right">0.0000</td><td style="text-align:right">0.0000</td><td style="text-align:right">1.00</td><td style="text-align:right">1.53</td></tr><tr><td style="text-align:left">B BM25</td><td style="text-align:right">0.0000</td><td style="text-align:right">-0.0600</td><td style="text-align:right">0.07</td><td style="text-align:right">0.10</td></tr><tr><td style="text-align:left">C RRF 混合</td><td style="text-align:right">0.0000</td><td style="text-align:right">-0.0133</td><td style="text-align:right">1.33</td><td style="text-align:right">2.04</td></tr><tr><td style="text-align:left">D RRF+重排</td><td style="text-align:right">0.0000</td><td style="text-align:right"><strong>+0.0067</strong></td><td style="text-align:right">3.48</td><td style="text-align:right">5.32</td></tr></tbody></table>
+<blockquote><strong>延迟要连环境一起报。</strong> 上面是本次实测值；同一份代码换一台机器、换一次系统负载，毫秒数就会变（本项目两次实跑，D 组 P95 分别是 5.00 ms 与 5.32 ms）。<strong>可复现的是倍率关系与结论形式，不是毫秒绝对值</strong>——只写「5.32 ms」而不写机器与负载，这个数字第二年就没人能复核。</blockquote>
+<p><strong>读法</strong>：Recall@5 四组全满，说明「证据有没有被捞进前 5」在这套语料上已经没有区分度；此时把 Recall 当唯一指标，你会得出「四组一样好」的错误结论。真正拉开差距的是 MRR：B 组 Recall 与 A 组并列满分，MRR 却低了 0.0600——<strong>捞得回来不等于排得靠前</strong>。D 组是唯一 MRR 净收益为正的方案（+0.0067），代价是 P95 延迟涨到向量基线的 3.48 倍。这不是说重排没用，而是说：<strong>重排的价值取决于 reranker 的质量，你必须用固定评测集量出它换来了多少 MRR、花掉了多少延迟，再决定上不上线。</strong></p>
+<h5>逐题差异表：平均值掩盖了什么</h5>
+<p>脚本做了「逐题差异表」——找出谁被救回来了、谁被搞坏了。第一次比对时它按 <strong>Recall@5</strong> 出表，结果是<strong>空的</strong>：四组在所有可回答问题上 Recall 完全相同。这本身就是结论——<strong>指标饱和之后，它就不能再用来做方案选择了，必须换分辨率更高的指标。</strong></p>
+<p>把比对口径换成逐题 <strong>MRR</strong> 后，25 道题里有 9 道出现分差：</p>
+<table><thead><tr><th style="text-align:left">题目</th><th style="text-align:left">类型</th><th style="text-align:right">向量</th><th style="text-align:right">BM25</th><th style="text-align:right">混合</th><th style="text-align:right">RRF+重排</th><th style="text-align:left">观察</th></tr></thead><tbody><tr><td style="text-align:left">q006</td><td style="text-align:left">single</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:right">1.00</td><td style="text-align:left">BM25 把正确块排低了一档</td></tr><tr><td style="text-align:left">q007</td><td style="text-align:left">single</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:left">重排又把它压回去了</td></tr><tr><td style="text-align:left">q010</td><td style="text-align:left">single</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:left">两路各执一词，融合站错了边</td></tr><tr><td style="text-align:left">q014</td><td style="text-align:left">single</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:right">1.00</td><td style="text-align:left">同 q006</td></tr><tr><td style="text-align:left">q017</td><td style="text-align:left">single</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:right">1.00</td><td style="text-align:left">同 q006</td></tr><tr><td style="text-align:left">q019</td><td style="text-align:left">single</td><td style="text-align:right">0.33</td><td style="text-align:right">0.50</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:left"><strong>重排把正确块从第 3 位提到第 1 位</strong></td></tr><tr><td style="text-align:left">q020</td><td style="text-align:left">single</td><td style="text-align:right">1.00</td><td style="text-align:right">0.33</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:left">融合掉档，重排救回</td></tr><tr><td style="text-align:left">q024</td><td style="text-align:left">cross</td><td style="text-align:right">1.00</td><td style="text-align:right">1.00</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:left"><strong>重排把原本第 1 位的正确块挤到第 2 位</strong></td></tr><tr><td style="text-align:left">q025</td><td style="text-align:left">cross</td><td style="text-align:right">0.50</td><td style="text-align:right">1.00</td><td style="text-align:right">0.50</td><td style="text-align:right">0.50</td><td style="text-align:left">两路冲突，融合与重排都没救回来</td></tr></tbody></table>
+<p>（数值是每题的 RR，即首条正确证据的倒数排名；1.00 表示正确块排在第 1 位。）</p>
+<p>两条最该讲的样本互为镜像：</p>
+<ul><li><strong>q019 是重排的正面样本</strong>：MRR 从 0.33 提到 1.00，这正是 D 组能拿到净正收益的来源。</li><li><strong>q024 是重排的负面样本</strong>：A / B / C 三组都已经是 1.00（正确块排第 1），D 组反而掉到 0.50。重排把本来排第 1 的证据挤到了第 2 位。</li></ul>
+<p><strong>这就是必须看逐题表的理由</strong>：D 组 MRR 净涨 0.0067，看上去「重排有效」；但同一份数据里躺着 q024 这样的单题劣化。只报均值，你会把「净收益为正」误读成「每一题都变好」。</p>
+<p><strong>RRF 的参数 &lt;code&gt;k&lt;/code&gt; 同样不能默认 60 就不管。</strong> 它必须用固定评测集调参；而且调参的判据不能只看平均值——逐题表里出现的反例，才是决定你敢不敢上线的依据。</p>
 <h5>这张实验报告的局限（必须如实说明）</h5>
-<p>这个实验跑在<strong>离线靶场的伪 embedding</strong> 上（字符二元组哈希向量，见 3.4 与本章评测报告的已知局限）。因此：</p>
-<ol><li><strong>BM25 表现优于向量检索是正常的，不能外推</strong>。伪向量不具备同义词泛化能力，而 BM25 与它高度同源、甚至更直接——所以 B 组「全指标第一」是本靶场的产物，不是普遍规律。<strong>换真实 embedding 后，向量检索会明显改善，两路的强弱关系会重新洗牌。</strong></li><li><strong>真正可以外推的是实验方法和结论形式</strong>：控制变量、四组对照、收益与代价并列、逐题差异归因。这些在真实模型上同样成立。</li><li>报告 JSON（<code>reports/ch03_ablation.json</code>）里也写了同一句话作为提示：<code>note</code> 字段明确标注「本表不能外推到生产，可用的是实验方法与收益/代价并列的结论形式」。<strong>不要让学生把这张表记成「BM25 总是比向量好」。</strong></li></ol>
-<p><img src="static/course-assets/figures/ch03_ablation.webp" alt="四组消融实验的指标可视化：Recall@5 / MRR / HitRate@5 三项质量指标、延迟对比（收益的代价），以及「分层 Recall：跨段落题天生更差」；最右结论框指出最优项为 B BM25、最慢为 D RRF+重排（相对向量基线慢 4.8 倍）" loading="lazy"></p>
-<p><strong>读图要点</strong>：最值得看的是左下「延迟对比」和右下「分层 Recall」两张图放在一起——延迟那张告诉你 D 组的代价有多贵，分层那张告诉你<strong>跨段落题的 Recall 普遍低于单段落题</strong>（A、C、D 三组分别是 0.60 / 0.90 / 0.60，而单段落都在 0.95 以上；只有 B 组两组都是 1.00，这同样要归因到伪向量的靶场局限）。而且这个问题<strong>靠调融合参数解决不了</strong>——答案分散在多个块里时，必须全部召回才能拿满分，这是切块粒度的结构性代价。右下角结论框也点明了：<strong>阈值 / 融合参数都要在评测集上校准，不能凭感觉设</strong>。</p>
+<p>四组方案里的「向量检索」用的是本机词法向量（字符与词片段哈希，见 3.4 与本章评测报告的已知局限），因此：</p>
+<ol><li><strong>BM25 不弱于向量检索这件事要归因到向量来源，不能外推。</strong> 本机词法向量与 BM25 同源——两者都建立在字词重合之上（BM25 用词频与逆文档频率，词法向量用片段哈希），所以两路高度相关，互补性天然弱于神经 embedding。本组实验里两路 Recall 完全相同、差异只体现在排序上，就是这个原因。<strong>换成语义 embedding 后，两路的强弱关系会重新洗牌</strong>；但在换之前先用当前方案测一遍基线，是必须做的一步。</li><li><strong>真正可以外推的是实验方法和结论形式</strong>：控制变量、四组对照、收益与代价并列、逐题差异归因。这些在真实模型上同样成立。</li><li>报告 JSON（<code>reports/ch03_ablation.json</code>）里也写了同一句话作为提示：<code>note</code> 字段明确标注「本机词法向量与 BM25 同源（都基于字词重合），因此两路互补性弱于神经 embedding；可外推的是实验方法与收益/代价并列的结论形式」。<strong>不要让学生把这张表记成「BM25 和向量检索一样好」。</strong></li></ol>
+<p><img src="static/course-assets/figures/ch03_ablation.webp" alt="四组消融实验的指标可视化：Recall@5 / MRR / HitRate@5 三项质量指标、延迟对比（收益的代价），以及分层 MRR；最右结论框指出 MRR 最优项为 D RRF+重排（0.920），最慢也是 D（P95 5.3 ms，相对向量基线慢 3.48 倍）" loading="lazy"></p>
+<p><strong>读图要点</strong>：最值得看的是左下「延迟对比」和右下「分层 MRR」两张图放在一起——延迟那张告诉你 D 组的代价有多贵，分层那张提醒你要<strong>逐组检查「跨段落题是不是更难排对」这个假设</strong>，而不是直接接受它。</p>
+<p>四组的（单段落 MRR / 跨段落 MRR）与差值是：A 0.92 / 0.90（+0.02）、B 0.82 / 1.00（−0.18）、C 0.90 / 0.90（0.00）、D 0.95 / 0.80（+0.15）。<strong>差值的符号在两个方向上都有，幅度从 −0.18 到 +0.15</strong>——这不是「跨段落天生更差」的图景，而是 5 道题的样本波动主导了结论。所以别顺手写下前者：跨段落题只有 5 道，任何单题都会把均值拽走一大截。</p>
+<p>真正稳的结论只有一条：<strong>答案分散在多个块里时，必须全部召回才能拿满分，召回之后还要排得靠前</strong>——这是切块粒度的结构性代价，靠调融合参数解决不了（后续分层评测换了实验条件后仍然复现同一方向：单段落 MRR 0.95、跨段落 0.80）。右下角结论框也点明了：<strong>指标一旦饱和就要换指标，而不是宣布「没有区别」；阈值 / 融合参数都要在评测集上校准，不能凭感觉设。</strong></p>
+<h4>3.5.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q03-04-01</code> ~ <code>q03-04-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q03-04-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">RRF 融合公式的构成</td></tr><tr><td style="text-align:left"><code>q03-04-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">BM25 中 df 与 idf 的含义</td></tr><tr><td style="text-align:left"><code>q03-04-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">消融实验的收益与代价</td></tr><tr><td style="text-align:left"><code>q03-04-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">q025 为何融合反而变差</td></tr><tr><td style="text-align:left"><code>q03-04-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">为什么先评测检索</td></tr><tr><td style="text-align:left"><code>q03-04-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现 RRF 融合函数</td></tr><tr><td style="text-align:left"><code>q03-04-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现 Recall@k 与 MRR</td></tr></tbody></table>
+<h5><code>q03-04-01</code>（单选 · ★）RRF 融合公式的构成</h5>
+<p>RRF 用排名而非分数做融合，其定义式为 RRF(d)=Σ 1/(k+rank_r(d))。 关于这个公式，下列说法正确的是？</p>
+<ul><li><strong>A</strong>. k 越大，头部名次与尾部名次的贡献差异越平滑</li><li><strong>B</strong>. k 是文档长度归一化系数，需按平均长度设定</li><li><strong>C</strong>. 公式中的 rank_r(d) 取的是该文档的检索相似度分数</li><li><strong>D</strong>. 两路检索必须先把分数归一化到同一量纲才能相加</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>RRF 只用排名，不用分数</li><li>公式为 Σ 1/(k+rank)</li><li>k 越大名次差异越平滑</li><li>无需量纲归一化</li><li>k 需用固定评测集调参</li></ul>
+<p><strong>解析与常见错误</strong>：RRF 只用排名，k 是平滑常数，k 越大名次差异越被压平。B 混淆了 BM25 的 b 与 RRF 的 k；C 把排名说成分数；D 恰好相反，RRF 的设计初衷就是不要求两路分数同量纲。</p>
+<h5><code>q03-04-02</code>（单选 · ★★）BM25 中 df 与 idf 的含义</h5>
+<p>教学版 BM25 中，df 用 Counter 统计，idf 由 log(1+(N-df+0.5)/(df+0.5)) 计算。 下列关于 df 与 idf 的说法，正确的是？</p>
+<ul><li><strong>A</strong>. df 统计包含该词的文档数，而非该词在全库出现的总次数</li><li><strong>B</strong>. df 统计该词在全库出现的总次数，出现越多 idf 越高</li><li><strong>C</strong>. idf 让高频常见词获得更高区分度，从而提升召回</li><li><strong>D</strong>. length_norm 的作用是让长文档因词频高而获得更高分</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>df = 包含该词的文档数</li><li>用 set 去重后再计数</li><li>idf 让少见词区分度更高</li><li>制度编号、专有名词受益</li><li>length_norm 抑制长文档占优</li></ul>
+<p><strong>解析与常见错误</strong>：df 是文档频率，统计有多少篇文档包含该词，代码里用 set(terms) 去重正是为此。B 把 df 说成总词频；C 说反了，idf 让少见词得分高；D 也反了，length_norm 是抑制长文档靠词频堆分。</p>
+<h5><code>q03-04-03</code>（单选 · ★★★）消融实验的收益与代价</h5>
+<p>四组方案实测：A 向量 Recall@5=0.88、P95=2.91ms；B BM25 1.00、0.14ms；C RRF 0.98、3.74ms；D RRF+重排 0.88、13.46ms。 按「收益与代价一起报」的读法，最应得出的结论是？</p>
+<ul><li><strong>A</strong>. D 组 Recall 没涨、MRR 只涨 0.0120，P95 却翻 4.63 倍，不该直接上线</li><li><strong>B</strong>. D 组 MRR 高于 A 组，说明重排一定值得，延迟可接受</li><li><strong>C</strong>. C 组 Recall 0.98 接近满分，可直接替换 B 组作为生产方案</li><li><strong>D</strong>. B 组全指标第一，说明 BM25 普遍优于向量检索</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>收益看 ΔRecall、ΔMRR</li><li>代价看 P95 倍数</li><li>D 组 Recall 零增长、延迟 4.63 倍</li><li>重排价值取决于 reranker 质量</li><li>本地哈希伪向量的实验结论不可外推</li></ul>
+<p><strong>解析与常见错误</strong>：只看收益列会误判「越靠后越好」，必须把 P95 倍数当代价一起看：D 用 4.63 倍延迟换来 0.0120 的 MRR。B 忽略代价；C 忽略 C 组把 q025 从 1.0 拉到 0.5；D 把本地哈希伪 embedding 的实验产物外推成普遍规律。</p>
+<h5><code>q03-04-04</code>（简答 · ★★）q025 为何融合反而变差</h5>
+<p>在逐题差异表中，q025（离职后还要保密多久？离职前要提前多久通知？）向量检索得 0.5、BM25 得 1.0，RRF 融合后却掉回 0.5。 请解释这个现象的原因，并说明它推翻了哪个常见默认做法，以及应当如何排查这类样本。</p>
+<p><strong>提示</strong>：想想 RRF 公式里到底用了什么信息；平均值 0.98 会掩盖单题退化</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>RRF 只看排名，不看分数</li><li>也不判断哪一路更可信</li><li>两路冲突时互相牵扯</li><li>BM25 排第 1 的证据被向量路低排名拉下</li><li>推翻 k 默认 60 不管的做法</li><li>需固定评测集调参并查逐题差异表</li></ul>
+<p><strong>解析与常见错误</strong>：关键是指出 RRF 丢弃了分数与可信度信息，冲突时两路互相拉扯。常见失分点：只说「融合不一定好」而不解释机制；或忽略平均值掩盖单题退化、必须看逐题差异表这一排查手段。</p>
+<h5><code>q03-04-05</code>（简答 · ★★）为什么先评测检索</h5>
+<p>教材强调「若检索证据都错了，单独调整生成提示词通常治标不治本」，并提出先分层评测检索、再评测生成。 请说明这一顺序的理由，并给出 Recall@k 与 MRR 各自衡量什么、以及为什么两者要一起看。</p>
+<p><strong>提示</strong>：想上下游依赖关系；Recall 看覆盖、MRR 看排序位置</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>证据错则生成再调也无效</li><li>检索是生成的上游瓶颈</li><li>Recall@k 衡量前 k 条覆盖多少相关项</li><li>MRR 衡量第一个相关项排得多靠前</li><li>只高 Recall 可能相关项排很后</li><li>分层评测便于定位问题层级</li></ul>
+<p><strong>解析与常见错误</strong>：答题要抓住「上游错下游白搭」这一因果，再分别说清 Recall@k 是覆盖率、MRR 是首个命中名次的倒数。失分点是把两者混为一谈，或只说「都要评测」而说不出各自衡量什么。</p>
+<h5><code>q03-04-06</code>（代码 · ★★）实现 RRF 融合函数</h5>
+<p>实现 rrf_fusion(ranked_lists, limit=10, k=60)： 输入是多路已排序的检索结果列表，每个元素是含 chunk_id、text、metadata 的 dict； 输出按融合分降序的前 limit 条，每条在原有字段上追加 fusion_score。 要求同一文档在多路中的排名贡献累加，并保留原始文本与元数据。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>from collections import defaultdict
+
+def rrf_fusion(ranked_lists, limit=10, k=60):
+    # 返回融合后的结果列表
+    pass</code></pre>
+<p><strong>提示</strong>：enumerate 的 start 应为 1；用字典保存 chunk_id 到原始条目的映射</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用 defaultdict 累加融合分</li><li>rank 从 1 开始计数</li><li>贡献为 1/(k+rank)</li><li>by_id 保留原始文本与元数据</li><li>按融合分降序截断 limit</li></ul>
+<p><strong>解析与常见错误</strong>：核心是两路排名贡献累加，并用 by_id 保住原文与元数据。常见错误：rank 从 0 开始导致分母偏小；只累加分数却丢掉 text；对同一文档在多路中重复覆盖而非累加。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>from collections import defaultdict
+
+def rrf_fusion(ranked_lists, limit=10, k=60):
+    scores = defaultdict(float)
+    by_id = {}
+    for results in ranked_lists:
+        for rank, item in enumerate(results, start=1):
+            cid = item["chunk_id"]
+            scores[cid] += 1.0 / (k + rank)
+            by_id[cid] = item
+    ordered = sorted(scores, key=scores.get, reverse=True)[:limit]
+    return [{**by_id[cid], "fusion_score": scores[cid]} for cid in ordered]</code></pre>
+<p></details></p>
+<h5><code>q03-04-07</code>（代码 · ★★）实现 Recall@k 与 MRR</h5>
+<p>实现两个评测函数： recall_at_k(retrieved_ids, relevant_ids, k)，返回前 k 条中命中相关项的比例，relevant_ids 为空时抛 ValueError； reciprocal_rank(retrieved_ids, relevant_ids)，返回第一个命中项的排名倒数，无命中返回 0.0。 排名从 1 开始计数。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def recall_at_k(retrieved_ids, relevant_ids, k):
+    pass
+
+def reciprocal_rank(retrieved_ids, relevant_ids):
+    pass</code></pre>
+<p><strong>提示</strong>：交集用 set & set；排名从 1 开始</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先校验 relevant_ids 非空</li><li>用集合交集统计命中数</li><li>分母是相关项总数</li><li>MRR 取首个命中的名次倒数</li><li>无命中返回 0.0</li></ul>
+<p><strong>解析与常见错误</strong>：Recall@k 是命中数除以相关项总数，MRR 只看第一个命中项的位置。常见错误：分母误用 k 或 retrieved 长度；rank 从 0 开始导致除零；忘记空 relevant_ids 的异常分支。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def recall_at_k(retrieved_ids, relevant_ids, k):
+    if not relevant_ids:
+        raise ValueError("relevant_ids 不能为空")
+    hits = len(set(retrieved_ids[:k]) &amp; relevant_ids)
+    return hits / len(relevant_ids)
+
+def reciprocal_rank(retrieved_ids, relevant_ids):
+    for rank, cid in enumerate(retrieved_ids, start=1):
+        if cid in relevant_ids:
+            return 1.0 / rank
+    return 0.0</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -833,6 +1289,91 @@ def validate_citations(answer: str, allowed_labels: set[str]) -&gt; list[str]:
     used = set(re.findall(r"\[(S\d+)\]", answer))
     return sorted(used - allowed_labels)</code></pre>
 <p>这个检查只能发现“引用了不存在的编号”，不能证明引用内容支持结论。后者需要人工审核或额外的蕴含判定。</p>
+<h4>3.6.7 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q03-05-01</code> ~ <code>q03-05-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q03-05-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">拒答阈值该怎么定</td></tr><tr><td style="text-align:left"><code>q03-05-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">两种拒答信号怎么选</td></tr><tr><td style="text-align:left"><code>q03-05-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★★</td><td style="text-align:left">引用校验能查出什么</td></tr><tr><td style="text-align:left"><code>q03-05-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">拒答与引用护栏如何配合</td></tr><tr><td style="text-align:left"><code>q03-05-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">RAG 评测为什么要分层</td></tr><tr><td style="text-align:left"><code>q03-05-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现带引用的上下文构建</td></tr><tr><td style="text-align:left"><code>q03-05-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现检索前置拒答</td></tr></tbody></table>
+<h5><code>q03-05-01</code>（单选 · ★★）拒答阈值该怎么定</h5>
+<p>系统需要设置检索前置拒答的 min_score 阈值。 以下哪种做法最符合工程要求？</p>
+<ul><li><strong>A</strong>. 凭经验拍一个 0.5，简单直接</li><li><strong>B</strong>. 用一组可回答与不可回答问题扫描多个阈值，看错误回答率与错误拒答率，选业务可接受点</li><li><strong>C</strong>. 把阈值设为 0，保证任何问题都回答</li><li><strong>D</strong>. 取所有检索结果的最高分作为阈值</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>阈值不能凭感觉确定</li><li>用可回答/不可回答问题扫描</li><li>观察错误回答率与错误拒答率</li><li>选业务可接受点</li><li>校准结果落盘复用</li></ul>
+<p><strong>解析与常见错误</strong>：阈值是权衡曲线上的一个点，不是魔法数字。用标注好的可回答/不可回答问题扫描阈值，观察两类错误率，才能选到业务可接受点。拍 0.5 无依据；阈值 0 等于不拒答；用最高分当阈值会让每次查询标准漂移。</p>
+<h5><code>q03-05-02</code>（单选 · ★★）两种拒答信号怎么选</h5>
+<p>阈值校准显示：score 信号最优阈值 0.5721、平衡准确率 0.7800；coverage 信号最优阈值 0.2345、平衡准确率 0.9400。 按「风险优先」应选哪个，为什么？</p>
+<ul><li><strong>A</strong>. 选 score，因为它的阈值更大更安全</li><li><strong>B</strong>. 选 coverage，因为平衡准确率更高，误判更少</li><li><strong>C</strong>. 两个都不用，直接全部回答</li><li><strong>D</strong>. 选 score，因为分数比覆盖率更直观</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>coverage 平衡准确率 0.9400</li><li>score 平衡准确率仅 0.7800</li><li>风险优先选可分性更好的信号</li><li>阈值大小不等于安全性</li><li>校准结果写入 abstain_threshold.json</li></ul>
+<p><strong>解析与常见错误</strong>：coverage 的平衡准确率 0.9400 明显高于 score 的 0.7800，说明它在两类错误上更均衡，风险优先场景应选可分性更好的信号。阈值大小与安全性无关，0.5721 并不比 0.2345 更安全；全部回答则放弃拒答护栏。</p>
+<h5><code>q03-05-03</code>（单选 · ★★★）引用校验能查出什么</h5>
+<p>validate_citations 用正则找出回答里的 [S#] 编号，返回 used - allowed_labels。 关于它的能力边界，哪项说法正确？</p>
+<ul><li><strong>A</strong>. 它能证明引用内容支持结论</li><li><strong>B</strong>. 它只能发现引用了不存在的编号，不能证明内容支撑</li><li><strong>C</strong>. 它能检测同义改写导致的引用偏差</li><li><strong>D</strong>. 它能替代人工抽检，无需再看支撑度</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>只查编号是否存在</li><li>不能证明内容支持结论</li><li>编号合法≠引用名副其实</li><li>内容支撑需人工或蕴含判定</li><li>支撑度检查偏严也偏松</li></ul>
+<p><strong>解析与常见错误</strong>：该函数只做编号集合差，能发现「引用了不存在的编号」，但编号合法不代表内容名副其实。脚本特意构造了编号合法但内容不符的回答，两级检查结论不同，正说明这一点。同义改写误判属于内容支撑度检查的边界，人工抽检不可省。</p>
+<h5><code>q03-05-04</code>（简答 · ★★）拒答与引用护栏如何配合</h5>
+<p>请说明检索前置拒答（should_abstain）与带引用生成、引用校验三者在整条 RAG 链路中的分工。 要求讲清各自拦住了什么风险、在什么时机介入，以及为什么三者不能互相替代。</p>
+<p><strong>提示</strong>：想清楚每道护栏在链路的哪个位置；拒答管入口，校验管出口</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>拒答在生成前拦截无证据问题</li><li>受约束提示词要求标注 [S#] 编号</li><li>证据不足时明确回答无足够依据</li><li>引用校验查编号是否存在</li><li>内容支撑度需人工或蕴含判定</li><li>三者分别管入口、生成、出口</li></ul>
+<p><strong>解析与常见错误</strong>：答题要按链路顺序定位：拒答在检索后、生成前，用最高分或覆盖率判断证据是否足够；生成阶段靠 SYSTEM_PROMPT 约束只能依据证据并标注编号；出口用 validate_citations 查编号有效性。常见失分是只说「都为了准确」，没讲清时机与各自边界。</p>
+<h5><code>q03-05-05</code>（简答 · ★★）RAG 评测为什么要分层</h5>
+<p>评测指标被分为解析、切块、检索、生成、系统五层。 请说明这样分层的好处，并各举一个该层指标，解释它回答的是什么问题。</p>
+<p><strong>提示</strong>：先想端到端分数低时怎么定位；每层回答一个不同的问题</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>分层定位故障在哪一环</li><li>解析层看空页率、乱码率</li><li>切块层看长度分布、边界完整率</li><li>检索层看 Recall@k、MRR</li><li>生成层看忠实度、引用正确率</li><li>系统层看拒答准确率、P95 延迟、成本</li></ul>
+<p><strong>解析与常见错误</strong>：分层价值在于把端到端的坏结果拆到具体环节：解析层判断文档是否正确进入系统，切块层判断检索单元是否合理，检索层看正确证据是否被找到并排前，生成层看答案是否依据证据，系统层看产品是否安全可用。常见失分是只罗列指标名，不解释各层回答的问题。</p>
+<h5><code>q03-05-06</code>（代码 · ★★）实现带引用的上下文构建</h5>
+<p>实现 build_context(results, max_chars=6000)。 results 每项含 text、chunk_id、metadata（含 source、page）。 要求：按顺序给每块编号 S1、S2…；块格式为 [S#] 来源=… 页码=…\n正文；累计长度超过 max_chars 时停止；返回拼接后的 context 字符串与 citations 列表（含 label、chunk_id 及 metadata 字段）。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def build_context(results: list[dict], max_chars: int = 6000):
+    blocks = []
+    citations = []
+    used = 0
+    # TODO: 遍历 results，构造带 [S#] 的块
+    return "\n\n".join(blocks), citations</code></pre>
+<p><strong>提示</strong>：编号要和 citations 里的 label 一致；先判断长度再决定是否加入</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>enumerate 从 1 开始编号</li><li>块内含 [S#]、来源、页码、正文</li><li>超长先判断再 break</li><li>citations 含 label 与 chunk_id</li><li>metadata 用 **meta 展开</li><li>用双换行拼接各块</li></ul>
+<p><strong>解析与常见错误</strong>：关键点是编号与 citations 严格对应，且长度判断要在 append 之前，否则会超限。常见错误：用 enumerate 默认从 0 开始导致编号错位；先 append 再判断长度；citations 漏掉 chunk_id 或 metadata，导致后续引用无法定位到具体文件页码。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def build_context(results: list[dict], max_chars: int = 6000):
+    blocks = []
+    citations = []
+    used = 0
+    for index, item in enumerate(results, start=1):
+        meta = item["metadata"]
+        label = f"S{index}"
+        block = f"[{label}] 来源={meta.get('source')} 页码={meta.get('page', '无')}\n{item['text']}"
+        if used + len(block) &gt; max_chars:
+            break
+        blocks.append(block)
+        citations.append({"label": label, "chunk_id": item["chunk_id"], **meta})
+        used += len(block)
+    return "\n\n".join(blocks), citations</code></pre>
+<p></details></p>
+<h5><code>q03-05-07</code>（代码 · ★★）实现检索前置拒答</h5>
+<p>实现 should_abstain(results, min_score)，返回 (bool, str)。 规则：results 为空时拒答，原因「没有检索到任何证据」；否则取每项 rerank_score，缺失时回退 score，取最大值，若低于 min_score 则拒答并给出原因（含最高分与阈值）。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def should_abstain(results: list[dict], min_score: float):
+    # TODO: 空结果与低于阈值两种情况都要拒答
+    return False, ""</code></pre>
+<p><strong>提示</strong>：注意 rerank_score 可能不存在；拒答原因要能解释给用户看</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>空结果直接拒答</li><li>优先 rerank_score 再回退 score</li><li>用 max 取最高分</li><li>低于阈值拒答并说明原因</li><li>原因里带上最高分与阈值</li><li>不拒答时返回空字符串</li></ul>
+<p><strong>解析与常见错误</strong>：要点是分数回退逻辑与拒答原因的可解释性。常见错误：直接用 item['score'] 在只有 rerank_score 时报 KeyError；忘记空结果分支；拒答原因只写「拒答」而不带最高分与阈值，用户和排查者都无法判断是分数太低还是阈值太高。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def should_abstain(results: list[dict], min_score: float):
+    if not results:
+        return True, "没有检索到任何证据"
+    best = max(float(item.get("rerank_score", item.get("score", 0.0))) for item in results)
+    if best &lt; min_score:
+        return True, f"证据不足（最高分 {best:.3f}，阈值 {min_score:.3f}）"
+    return False, ""</code></pre>
+<p></details></p>
+<hr>
 <hr></div>
 
         
@@ -948,13 +1489,13 @@ def ask(payload: AskRequest):
 <pre class="code lang-powershell"><code>python code/ch03/41_eval_report.py</code></pre>
 <p><img src="static/course-assets/ch03/07_eval_report.webp" alt="30 题分层评测报告的真实输出：检索层 Recall@5/MRR/HitRate@5 与延迟、按题型的分层指标、生成层引用编号有效性与支撑度、系统层拒答准确率与错误回答率，以及失败样本归因清单" loading="lazy"></p>
 <p>报告按 3.6.5 的分层结构出数，把它和前面的单点实验串成一张可复核的表：</p>
-<table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">指标</th><th style="text-align:right">实测值</th></tr></thead><tbody><tr><td style="text-align:left">检索</td><td style="text-align:left">Recall@5</td><td style="text-align:right">0.8800</td></tr><tr><td style="text-align:left">检索</td><td style="text-align:left">MRR</td><td style="text-align:right">0.6513</td></tr><tr><td style="text-align:left">检索</td><td style="text-align:left">HitRate@5</td><td style="text-align:right">0.9200</td></tr><tr><td style="text-align:left">生成</td><td style="text-align:left">引用编号有效性</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">生成</td><td style="text-align:left">引用内容支撑度</td><td style="text-align:right">0.4318</td></tr><tr><td style="text-align:left">系统</td><td style="text-align:left">拒答准确率</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">系统</td><td style="text-align:left">错误回答率</td><td style="text-align:right">0.0000</td></tr></tbody></table>
+<table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">指标</th><th style="text-align:right">实测值</th></tr></thead><tbody><tr><td style="text-align:left">检索</td><td style="text-align:left">Recall@5</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">检索</td><td style="text-align:left">MRR</td><td style="text-align:right">0.9200</td></tr><tr><td style="text-align:left">检索</td><td style="text-align:left">HitRate@5</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">生成</td><td style="text-align:left">引用编号有效性</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">生成</td><td style="text-align:left">引用内容支撑度</td><td style="text-align:right">0.9653</td></tr><tr><td style="text-align:left">系统</td><td style="text-align:left">拒答准确率</td><td style="text-align:right">1.0000</td></tr><tr><td style="text-align:left">系统</td><td style="text-align:left">错误回答率</td><td style="text-align:right">0.0000</td></tr></tbody></table>
 <p><strong>分层结果暴露了平均值掩盖的问题</strong>：</p>
-<table><thead><tr><th style="text-align:left">题型</th><th style="text-align:right">题数</th><th style="text-align:right">参与 Recall 统计</th><th style="text-align:right">Recall@5</th></tr></thead><tbody><tr><td style="text-align:left">单段落</td><td style="text-align:right">20</td><td style="text-align:right">20</td><td style="text-align:right">0.9500</td></tr><tr><td style="text-align:left">跨段落</td><td style="text-align:right">5</td><td style="text-align:right">5</td><td style="text-align:right">0.6000</td></tr><tr><td style="text-align:left">知识库外</td><td style="text-align:right">5</td><td style="text-align:right">0</td><td style="text-align:right">—</td></tr></tbody></table>
-<p>跨段落题只有 0.6000，和 3.5.6 消融实验里的结论完全一致——<strong>这是结构性问题，调阈值解决不了</strong>。</p>
-<p><strong>拒答混淆矩阵（用绝对数字，比百分比更能说明问题）</strong>：正确拒答 5、错误拒答 3、错误回答 0、正常回答 22。报告特别强调：<strong>只报「拒答准确率」是不够的</strong>——把所有问题都拒答，这个指标看起来也不难看。必须同时看「错误回答率」（安全代价）与「错误拒答率」（体验代价）两个方向。</p>
-<p>报告还附了<strong>失败样本归因清单</strong>：检索未命中 2 条（q012、q021）、错误拒答 3 条（q012、q021、q025）、引用不支撑 15 条。每一条都给出题号、题型、问题和观察数据，可以直接拿去做人工抽检。</p>
-<blockquote><strong>这张报告最有教学价值的部分是它的「已知局限」章节（见 &lt;code&gt;reports/chapter3_eval.md&lt;/code&gt;）</strong>：引用支撑度 0.4318 偏低，脚本如实说明了原因——离线靶场的对话接口从它自己内置的语料里作答，并不真正读取传入的证据，所以会出现「编号合法但内容不符」的张冠李戴。<strong>换真实模型后该指标会显著改善，但这一类失败在生产环境依然存在，评测必须保留这一项。</strong></blockquote>
+<table><thead><tr><th style="text-align:left">题型</th><th style="text-align:right">题数</th><th style="text-align:right">参与 Recall 统计</th><th style="text-align:right">Recall@5</th><th style="text-align:right">MRR</th></tr></thead><tbody><tr><td style="text-align:left">单段落</td><td style="text-align:right">20</td><td style="text-align:right">20</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.9500</td></tr><tr><td style="text-align:left">跨段落</td><td style="text-align:right">5</td><td style="text-align:right">5</td><td style="text-align:right">1.0000</td><td style="text-align:right">0.8000</td></tr><tr><td style="text-align:left">知识库外</td><td style="text-align:right">5</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="text-align:right">—</td></tr></tbody></table>
+<p>Recall@5 两个题型都是满分，区分度全落在 MRR 上：跨段落题 0.8000、单段落题 0.9500。<strong>Recall 满分不等于检索做好了</strong>——证据都捞回来了，但跨段落题的证据排得更靠后，这正是 3.5.6 消融实验里 D 组暴露的那条结构性差异。<strong>指标一旦饱和就失去分辨力</strong>，必须换用分辨率更高的指标（这里换成 MRR），否则平均值会把问题盖住。</p>
+<p><strong>拒答混淆矩阵（用绝对数字，比百分比更能说明问题）</strong>：正确拒答 5、错误拒答 0、错误回答 0、正常回答 25。报告特别强调：<strong>只报「拒答准确率」是不够的</strong>——把所有问题都拒答，这个指标看起来也不难看。必须同时看「错误回答率」（安全代价）与「错误拒答率」（体验代价）两个方向。</p>
+<p>报告还附了<strong>失败样本归因清单</strong>：本次检索层与系统层都没有失败样本（检索未命中 0 条、错误回答 0 条、错误拒答 0 条），剩下的 3 条全部落在生成层的「引用不支撑」——q014（引用 [S3] 与回答句的词面重叠仅 0.23）、q017（0.00）、q022（0.31）。每一条都给出题号、题型、问题和观察数据，可以直接拿去做人工抽检。</p>
+<blockquote><strong>这张报告最有教学价值的部分是它的「已知局限」章节（见 &lt;code&gt;reports/chapter3_eval.md&lt;/code&gt;）</strong>：引用支撑度 0.9653，但仍有 3 条不达标。脚本如实说明了原因——支撑度检查用的是<strong>词面重合</strong>，不是语义蕴含：同义改写会被判成「不支撑」（偏严），套话重合会被判成「支撑」（偏松）。所以它只能当自动预警，不能替代人工抽检。<strong>这一类失败在生产环境依然存在，评测必须保留这一项。</strong></blockquote>
 <h4>3.7.3 最终演示脚本</h4>
 <p>学生现场依次演示：</p>
 <ol><li>上传一份新制度并增量入库。</li><li>提问一个文档内问题，回答含正确来源与页码。</li><li>提问一个同义改写问题，展示语义检索效果。</li><li>提问一个带制度编号的问题，展示混合检索效果。</li><li>提问一个知识库外问题，系统明确拒答。</li><li>修改一个 chunk 参数，运行固定评测集并解释指标变化。</li></ol>
@@ -1005,7 +1546,107 @@ def ask(payload: AskRequest):
 问题 -&gt; 多路召回 -&gt; 融合 -&gt; 重排 -&gt; 证据组装 -&gt; 生成 -&gt; 引用校验/拒答</code></pre>
 <h3>3.11 教师参考资料</h3>
 <ul><li><a href="https://pymupdf.readthedocs.io/en/latest/the-basics.html" target="_blank" rel="noreferrer">PyMuPDF 文本提取教程</a>：核对 <code>pymupdf.open</code>、<code>Page.get_text()</code> 与扫描件 OCR 路径。</li><li><a href="https://docs.trychroma.com/reference/python" target="_blank" rel="noreferrer">Chroma Python Client</a>：核对 <code>PersistentClient</code> 与 collection 生命周期。</li><li><a href="https://docs.trychroma.com/reference/chroma-api/record/upsert-records" target="_blank" rel="noreferrer">Chroma Upsert Records</a>：核对 <code>ids</code>、<code>embeddings</code>、<code>documents</code>、<code>metadatas</code> 的并行数组约束。</li><li><a href="https://pydantic.dev/docs/validation/2.11/api/pydantic/base_model/" target="_blank" rel="noreferrer">Pydantic BaseModel</a>：核对 Pydantic 2 的模型验证接口。</li></ul>
-<blockquote>链接与示例于 2026-09-15 核对。技术接口可能继续变化，授课前以锁定版本的官方文档为准。</blockquote></div>
+<blockquote>链接与示例于 2026-09-15 核对。技术接口可能继续变化，授课前以锁定版本的官方文档为准。</blockquote>
+<h4>3.7.5 当日练习：7 道题</h4>
+<blockquote>本节的 7 道题与 AI Master 当日练习台账一一对应（<code>q03-06-01</code> ~ <code>q03-06-07</code>）。 提交后由 AI 逐题排错：不只判对错，还会指出你卡在哪一步、对应本节哪个知识点，并给出追问。 代码题可在平台内直接运行；卡住时先看「提示」，仍无思路再展开参考解。</blockquote>
+<table><thead><tr><th style="text-align:left">编号</th><th style="text-align:left">题型</th><th style="text-align:left">难度</th><th style="text-align:left">标题</th></tr></thead><tbody><tr><td style="text-align:left"><code>q03-06-01</code></td><td style="text-align:left">单选</td><td style="text-align:left">★</td><td style="text-align:left">拒答判断的时机与收益</td></tr><tr><td style="text-align:left"><code>q03-06-02</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">跨段落题 Recall 偏低的归因</td></tr><tr><td style="text-align:left"><code>q03-06-03</code></td><td style="text-align:left">单选</td><td style="text-align:left">★★</td><td style="text-align:left">拒答指标为何不能只看一个</td></tr><tr><td style="text-align:left"><code>q03-06-04</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★</td><td style="text-align:left">引用支撑度低的原因与对策</td></tr><tr><td style="text-align:left"><code>q03-06-05</code></td><td style="text-align:left">简答</td><td style="text-align:left">★★★</td><td style="text-align:left">生产接口的异常与信息暴露</td></tr><tr><td style="text-align:left"><code>q03-06-06</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★</td><td style="text-align:left">实现拒答判断函数</td></tr><tr><td style="text-align:left"><code>q03-06-07</code></td><td style="text-align:left">代码</td><td style="text-align:left">★★★</td><td style="text-align:left">一次遍历生成上下文与引用</td></tr></tbody></table>
+<h5><code>q03-06-01</code>（单选 · ★）拒答判断的时机与收益</h5>
+<p>RagPipeline.answer 中，should_abstain 在调用 self.llm.chat 之前执行。 这样安排最直接的好处是什么？</p>
+<ul><li><strong>A</strong>. 低置信结果直接拒答，省下 LLM 调用成本并减少幻觉</li><li><strong>B</strong>. 避免检索器返回超过 top_k 条结果</li><li><strong>C</strong>. 让 citations 的编号顺序与检索结果一致</li><li><strong>D</strong>. 保证 validate_citations 一定不会抛异常</li></ul>
+<p><strong>答案</strong>：A</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>拒答发生在调用 LLM 之前</li><li>节省调用成本</li><li>减少无依据幻觉</li><li>返回 abstained=True 与 reason</li></ul>
+<p><strong>解析与常见错误</strong>：低置信时提前返回，不再调用 LLM，既省 token 成本又避免模型在无依据时编造答案。B 与 top_k 无关；C 靠同一次遍历生成上下文与引用保证；D 引用校验针对模型输出，与是否拒答无关。</p>
+<h5><code>q03-06-02</code>（单选 · ★★）跨段落题 Recall 偏低的归因</h5>
+<p>分层评测中单段落题 Recall@5 为 0.9500，跨段落题只有 0.6000。 关于这个差距，下列说法正确的是？</p>
+<ul><li><strong>A</strong>. 调低 min_score 阈值即可把跨段落 Recall 提到 0.95</li><li><strong>B</strong>. 这是结构性问题，与消融实验结论一致，调阈值解决不了</li><li><strong>C</strong>. 跨段落题不参与 Recall 统计，所以数字没有意义</li><li><strong>D</strong>. 说明引用编号有效性出了问题，需要重写校验逻辑</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>跨段落 Recall@5 仅 0.6000</li><li>与消融实验结论一致</li><li>属结构性问题</li><li>调阈值无效</li></ul>
+<p><strong>解析与常见错误</strong>：报告明确指出跨段落 0.6000 与 3.5.6 消融实验结论一致，属于结构性问题，调阈值解决不了。不参与 Recall 统计的是知识库外题目；引用编号有效性为 1.0000，与检索召回无关。</p>
+<h5><code>q03-06-03</code>（单选 · ★★）拒答指标为何不能只看一个</h5>
+<p>拒答混淆矩阵为：正确拒答 5、错误拒答 3、错误回答 0、正常回答 22。 报告强调只报「拒答准确率」不够，原因是？</p>
+<ul><li><strong>A</strong>. 拒答准确率的分母会随题型分布变化而不稳定</li><li><strong>B</strong>. 把所有问题都拒答也能让拒答准确率看起来不难看</li><li><strong>C</strong>. 错误拒答属于安全问题，必须优先于错误回答</li><li><strong>D</strong>. 混淆矩阵的四个格子不能换算成百分比</li></ul>
+<p><strong>答案</strong>：B</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>全拒答也能刷高拒答准确率</li><li>需看错误回答率=安全代价</li><li>需看错误拒答率=体验代价</li><li>两个方向同时看</li></ul>
+<p><strong>解析与常见错误</strong>：若系统一律拒答，拒答准确率仍可能很高，因此必须同时看错误回答率（安全代价）与错误拒答率（体验代价）两个方向。A、D 不是报告给出的理由；C 把两类代价的优先级说反了。</p>
+<h5><code>q03-06-04</code>（简答 · ★★）引用支撑度低的原因与对策</h5>
+<p>评测报告显示引用编号有效性为 1.0000，但引用内容支撑度只有 0.4318。 请解释为什么会出现「编号合法但内容不符」，并说明换真实模型后该指标会怎样变化、评测是否还应保留这一项。</p>
+<p><strong>提示</strong>：想想离线演示接口的证据来源；编号校验只查 label 是否存在</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>早期离线演示接口从内置语料作答，不读传入证据</li><li>并不真正读取传入证据</li><li>于是编号合法但内容张冠李戴</li><li>换真实模型后支撑度显著改善</li><li>该类失败在生产仍存在</li><li>评测必须保留此项</li></ul>
+<p><strong>解析与常见错误</strong>：关键是把「编号有效性」与「内容支撑度」区分开：前者只校验 label 是否在引用集合里，后者要求答案内容真被证据支持。常见失分是只答「模型能力不足」，忽略离线演示接口不读传入证据这一具体原因，也漏掉生产环境仍需保留该项。</p>
+<h5><code>q03-06-05</code>（简答 · ★★★）生产接口的异常与信息暴露</h5>
+<p>FastAPI 骨架中，ValueError 返回 400 并带上原始 detail，其他异常统一返回 500 且 detail 为「知识库服务暂时不可用」。 请说明这样分层的理由，以及为什么不能把内部异常原文返回客户端；RagAnswer 里的 retrieved 字段在生产接口中应如何处理？</p>
+<p><strong>提示</strong>：区分客户端错误与服务端错误；想想 retrieved 里可能有什么</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>空问题属客户端错误返回 400</li><li>内部异常不暴露细节返回 500</li><li>原文可能泄露实现与敏感信息</li><li>完整堆栈写入带请求 ID 的服务端日志</li><li>retrieved 供调试用</li><li>生产按权限决定是否暴露全文</li></ul>
+<p><strong>解析与常见错误</strong>：要点是错误分类：可预期的输入错误给 400 并说明原因，不可预期异常给 500 且只给通用文案，细节进日志。retrieved 含检索全文，属于内部调试信息，需按权限决定是否暴露。常见失分是只说「安全」而不落到日志与权限两个具体动作。</p>
+<h5><code>q03-06-06</code>（代码 · ★★）实现拒答判断函数</h5>
+<p>实现 should_abstain(results, min_score)，results 是检索结果列表，每项为含 score 键的 dict。 要求：结果为空时返回 (True, 原因字符串)；最高分低于 min_score 时返回 (True, 原因字符串)；否则返回 (False, 空字符串)。 原因字符串需能区分「无检索结果」与「置信度不足」两种情况。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def should_abstain(results: list[dict], min_score: float) -&gt; tuple[bool, str]:
+    """返回 (是否拒答, 原因)"""
+    # 在这里实现
+    pass</code></pre>
+<p><strong>提示</strong>：空列表不能直接 max；比较对象是最高分</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>先判空列表</li><li>空结果与低分原因要区分</li><li>用 max 取最高分而非首条</li><li>比较用严格小于</li><li>通过时返回空字符串</li></ul>
+<p><strong>解析与常见错误</strong>：核心是两条拒答路径要分开报原因，且用最高分而非第一条的分数比较。常见错误是空列表直接 max 抛异常、用 results[0]['score'] 导致顺序敏感、以及把等于阈值也判成拒答。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def should_abstain(results: list[dict], min_score: float) -&gt; tuple[bool, str]:
+    """返回 (是否拒答, 原因)"""
+    if not results:
+        return True, "检索结果为空"
+    top_score = max(r["score"] for r in results)
+    if top_score &lt; min_score:
+        return True, f"最高分 {top_score:.4f} 低于阈值 {min_score}"
+    return False, ""
+
+
+if __name__ == "__main__":
+    print(should_abstain([], 0.35))
+    print(should_abstain([{"score": 0.2}], 0.35))
+    print(should_abstain([{"score": 0.8}], 0.35))</code></pre>
+<p></details></p>
+<h5><code>q03-06-07</code>（代码 · ★★★）一次遍历生成上下文与引用</h5>
+<p>实现 build_context(results)，一次遍历同时产出 context 字符串与 citations 列表。 要求：每条结果按顺序编号，label 形如 [1]、[2]；context 中每段以该 label 开头并包含文本；citations 每项含 label、source、page 三个键，label 与 context 中的编号严格一致。 results 每项为含 text、source、page 的 dict。</p>
+<p><strong>起始代码</strong></p>
+<pre class="code lang-python"><code>def build_context(results: list[dict]) -&gt; tuple[str, list[dict]]:
+    """返回 (context, citations)"""
+    # 在这里实现
+    pass</code></pre>
+<p><strong>提示</strong>：编号从 1 开始；label 只生成一次</p>
+<p><strong>判分要点</strong>（AI 排错时逐条核对）</p>
+<ul><li>用 enumerate 从 1 开始编号</li><li>label 与 citations 同源生成</li><li>编号格式统一为 [n]</li><li>段落用空行拼接</li><li>避免两次遍历导致编号错位</li></ul>
+<p><strong>解析与常见错误</strong>：要点是上下文与引用在同一次遍历中生成，保证编号严格对应。常见错误是分两次遍历分别编号、从 0 开始编号、以及 label 格式在 context 与 citations 中不一致，导致后续 validate_citations 误判。</p>
+<p><details><summary>参考解（先自己写，卡住再展开）</summary></p>
+<pre class="code lang-python"><code>def build_context(results: list[dict]) -&gt; tuple[str, list[dict]]:
+    """返回 (context, citations)"""
+    parts = []
+    citations = []
+    for i, r in enumerate(results, start=1):
+        label = f"[{i}]"
+        parts.append(f"{label} {r['text']}")
+        citations.append({
+            "label": label,
+            "source": r["source"],
+            "page": r["page"],
+        })
+    return "\n\n".join(parts), citations
+
+
+if __name__ == "__main__":
+    rs = [
+        {"text": "年假按工龄计算", "source": "制度A.pdf", "page": 3},
+        {"text": "报销需附发票", "source": "制度B.pdf", "page": 1},
+    ]
+    ctx, cits = build_context(rs)
+    print(ctx)
+    print(cits)</code></pre>
+<p></details></p>
+<hr></div>
   </div>
 </section>
 

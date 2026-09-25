@@ -284,7 +284,7 @@
       'padding:10px 46px 10px 18px;background:linear-gradient(90deg,#0b1220f2,#0e1a2af2);' +
       'border-top:1px solid #72f6e455;color:#d6e6ff;font-size:13.5px;line-height:1.6;' +
       'font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;backdrop-filter:blur(8px);';
-    bar.innerHTML = '<span>🧪 <b>在线演示站</b>：课程正文、教材截图、' +
+    bar.innerHTML = '<span><b>在线演示站</b>：课程正文、教材截图、' +
       '<b>CG / 实验室 / 3D 星海</b>、<b>刷题与选择题判分</b>、' +
       '<b>逐日路线</b>、<b>星空修为</b>都可正常使用（进度存在你自己的浏览器里）；' +
       '<b>AI 答疑 / 评分 / 语音 / 模拟面试</b>需下载本地版</span>' +
