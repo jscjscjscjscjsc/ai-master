@@ -71,8 +71,11 @@
 {% block scripts %}
 {# star_coach.js 负责画那尊会随境界变化的法相，starfield.js 负责背后那片星海。
    两者都必须在 coach_page.js 之前加载：coach_page 里是同步调用
-   window.StarCoach.render 的，晚一步就画不出来。 #}
+   window.StarCoach.render 的，晚一步就画不出来。
+   agent_viz.js 是智能体画图用的 SVG 渲染器（思维导图 / 流程图 / 数组图），
+   也要在 coach_page.js 之前，因为它负责把工具返回的图元画成图形。 #}
 <script src="{{ url_for('static', filename='js/star_coach.js') }}"></script>
 <script src="{{ url_for('static', filename='js/starfield.js') }}"></script>
+<script src="{{ url_for('static', filename='js/agent_viz.js') }}"></script>
 <script src="{{ url_for('static', filename='js/coach_page.js') }}"></script>
 {% endblock %}

@@ -5,7 +5,23 @@
 {% block pageclass %}{% endblock %}
 
 {% block head %}
-<script>if (!sessionStorage.getItem('aimaster_entry_seen')) location.replace('/intro');</script>
+<script>
+/* 会话内第一次打开看板，先看开场 CG。
+   跳转前先落一个「已引导」标记，是为了防死循环：片头结束时也会写
+   aimaster_entry_seen，但万一它没写成（脚本被拦、无痕模式写入失败），
+   只认那一个标记就会变成 看板 → 片头 → 看板 … 学生永远进不去。
+   两个标记任一存在就放行，所以最多引导一次。 */
+(function () {
+  try {
+    if (sessionStorage.getItem('aimaster_entry_seen')
+        || sessionStorage.getItem('aimaster_entry_guided')) return;
+    sessionStorage.setItem('aimaster_entry_guided', '1');
+    location.replace('/intro?next=' + encodeURIComponent(location.pathname + location.search));
+  } catch (e) {
+    /* sessionStorage 不可用（部分无痕模式）：直接留在看板，不把人挡在门外 */
+  }
+})();
+</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 {% endblock %}
 

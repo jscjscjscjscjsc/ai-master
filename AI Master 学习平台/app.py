@@ -51,6 +51,8 @@ import roadmap
 import star_engine as game
 import starlab_engine as lab
 import tts_engine as tts
+import agent_tools as tools
+import agent_runtime as agent_rt
 from ark_client import ArkClient, ArkError
 
 # ── 装配 ────────────────────────────────────────────────
@@ -1808,6 +1810,127 @@ def api_agent_suggest():
     suggestions.append({'text': '我想做几道题', 'hint': '打开练习'})
     suggestions.append({'text': '我想模拟面试', 'hint': '打开星辰教练'})
     return jsonify({'success': True, 'suggestions': suggestions[:7]})
+
+
+# ── 管家智能体（工具调用）────────────────────────────────
+def _agent_context(question, chapter_id=None, page=''):
+    """给工具循环准备上下文：学生是谁、在哪、有什么数据可查。
+
+    这里刻意把「学生状态」一次性查好塞进 ctx，而不是让每个工具自己去翻——
+    工具函数保持纯函数式（进出都是普通数据），好测、好复用，
+    也不会因为某个工具漏查状态而给出错误判断。
+    """
+    state = _state()
+    weak = []
+    done = _done_kps(state)
+    attempts = state.get('attempts') or {}
+    for chapter in lab.courses():
+        kps = chapter.get('knowledge_points') or []
+        pending = [kp for kp in kps if '%s_%s' % (chapter['id'], kp['index']) not in done]
+        wrong = [item for item in lab.load_bank()
+                 if item.get('chapter_id') == chapter['id']
+                 and (attempts.get(item.get('id')) or {}).get('wrong')
+                 and not (attempts.get(item.get('id')) or {}).get('solved')]
+        if not pending and not wrong:
+            continue
+        weak.append({
+            'chapter_id': chapter['id'], 'title': chapter.get('title', ''),
+            'reason': ('有 %d 道错题还没重做' % len(wrong)) if wrong
+                      else ('还有 %d 个知识点没完成' % len(pending)),
+            'pending_count': len(pending), 'wrong_count': len(wrong),
+            'pending_kps': [{'index': kp['index'], 'title': kp['title']} for kp in pending[:4]],
+        })
+    weak.sort(key=lambda row: (row['wrong_count'], row['pending_count']), reverse=True)
+
+    def build_roadmap(days, focus):
+        plan = roadmap.build(lab.courses(), done, daily_minutes=max(20, days and 60 or 60))
+        return {'summary': plan.get('summary') or {},
+                'days': [{k: row.get(k) for k in ('day', 'label', 'minutes', 'done')}
+                         for row in (plan.get('days') or [])][:days]}
+
+    parts = []
+    if page:
+        parts.append('【学生当前页面】' + str(page)[:200])
+    memory = learner.context(state, lab.courses(), chapter_id)
+    if memory:
+        parts.append('【学生学习特征】\n' + memory)
+    parts.append('【学生说】\n' + question)
+    return {'courses': lab.courses(), 'progress': {'weak': weak},
+            'build_roadmap': build_roadmap, 'user_content': '\n\n'.join(parts)}
+
+
+@app.route('/api/agent/stream', methods=['POST'])
+def api_agent_stream():
+    """管家智能体：带工具调用的流式接口。
+
+    和 /api/agent/ask 的区别：那个是「单轮 JSON」，一次只能给出一个动作；
+    这个是真正的工具循环，可以连续查进度 → 画图 → 跳页。
+    """
+    payload = request.get_json(silent=True) or {}
+    question = (payload.get('question') or '').strip()
+    if not question:
+        return jsonify({'success': False, 'message': '请输入内容'}), 400
+    if len(question) > 4000:
+        return jsonify({'success': False, 'message': '问题太长，请精简到 4000 字以内'}), 400
+    chapter_id = payload.get('chapter_id')
+    page = payload.get('page') or ''
+    username = who()
+    # 必须先在这里把请求上下文里的东西取完：下面 generate() 是流式生成器，
+    # 真正执行时请求上下文已经销毁，再调 _state()/session 会直接抛
+    # RuntimeError: Working outside of request context。
+    ctx = _agent_context(question, chapter_id, page)
+
+    def generate():
+        answer = []
+        final = {}
+        try:
+            for event in agent_rt.run_agent(ark, tools.REGISTRY, question, ctx):
+                kind = event.get('type')
+                if kind == 'delta':
+                    answer.append(event['text'])
+                    yield sse(event)
+                elif kind == 'tool_calls':
+                    continue
+                elif kind in ('stage', 'tool', 'render', 'navigate', 'reset_text',
+                              'status', 'switch', 'model'):
+                    yield sse(event)
+                elif kind == 'done':
+                    final = event.get('turn') or {}
+        except ArkError as exc:
+            yield sse({'type': 'error', 'message': str(exc)})
+            return
+
+        text = ''.join(answer).strip()
+        # 存会话：把这一轮做了什么记进去，学生回来能看到「上次让它画过什么」
+        if username != 'guest' and (text or final.get('tools_used')):
+            try:
+                coach.record_exchange(
+                    username, question, text or '（已为你生成图表）',
+                    chapter_id=str(chapter_id or ''), source='agent',
+                    meta={'tools': final.get('tools_used') or [],
+                          'action': final.get('action')},
+                    title_hint=coach.make_title(question))
+            except Exception:                     # noqa: BLE001 - 存不上不影响回答
+                pass
+            action = final.get('action') or {}
+            if action.get('type') == 'goto_kp' and action.get('chapter_id'):
+                _persist(username, lambda st: learner.observe(
+                    st, action.get('chapter_id'), action.get('kp_index'), 'help') or True)
+        yield sse({'type': 'done', 'model': ark.active_model,
+                   'tools': final.get('tools_used') or [],
+                   'action': final.get('action')})
+
+    return stream(generate())
+
+
+@app.route('/api/agent/tools')
+def api_agent_tools():
+    """列出智能体可用的工具。前端拿它渲染「它能做什么」的说明，也便于自检。"""
+    rows = []
+    for spec in tools.REGISTRY.specs():
+        fn = spec.get('function') or {}
+        rows.append({'name': fn.get('name'), 'description': fn.get('description')})
+    return jsonify({'success': True, 'tools': rows, 'count': len(rows)})
 
 
 # ── 题库与做题 ──────────────────────────────────────────

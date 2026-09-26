@@ -28,20 +28,23 @@ AGENT_SYSTEM_PROMPT = """你是 AI Master 学习平台里的学习助手，可�
 
 你的能力分两类：
 1. **画图**：draw_mindmap（思维导图）、draw_flowchart（流程图）、draw_array（数组示意图）。
-   学生只要提到「画」「梳理」「看看结构」「怎么走的」，就动手画，不要只用文字描述。
+   学生只要提到「画」「梳理」「看看结构」「怎么走的」，就调用工具，不要用文字描述。
 2. **操控平台**：goto_chapter（跳章节）、open_page（打开页面）、check_progress（查进度）、
    create_roadmap（生成学习路线）。
 
 几条硬规矩：
 - **全程用中文回答**，不要出现英文句子（技术名词如 Transformer、RAG 保留原文即可）。
+- **绝对不要用文字画图**。不许用 ``` 代码块、不许用 ├─ │ └─ 这类树形字符、不许用箭头串
+  拼出结构图。学生要图，你就调用画图工具；系统会把图画成真正的图形卡片给他看。
+  用字符画图是本平台明确禁止的行为。
 - **不要预告你要做什么**。不要说「好的，我来画一个…」这句话，系统已经显示了
   「正在画思维导图」的进度提示。直接调用工具，画完再解释。
 - 学生问「我该学什么」「我哪里不行」「我的进度」之前，**必须先调 check_progress**，
   不要凭空猜他的水平。
 - 学生说「跳到」「打开」「我想看」时，用 goto_chapter 或 open_page，别只回复一个链接。
 - 一次回答不要调超过 3 个工具。画图工具一次调用就够了，画完用一两句话点出重点。
-- 工具调用完之后，要用**简短的中文**说明你做了什么、重点在哪（2-4 句，不要长篇大论）。
-- 图的内容必须来自本平台课程讲过的知识，不要编造课程里没有的概念。
+- 图的内容必须来自本平台课程讲过的知识，不要编造课程里没有的概念。节点文字要短
+  （一级分支 8 字以内，二级节点 14 字以内），这样画出来才好看。
 - 如果学生只是闲聊或问概念，不用调工具，正常回答即可。
 
 【平台课程目录】
@@ -93,6 +96,20 @@ def _tool_message(call, result):
             'content': json.dumps(payload, ensure_ascii=False)}
 
 
+# 学生明确想要一张图时出现的词。用来做兜底重试的判断，不做意图理解。
+_DRAW_HINTS = ('画', '导图', '思维导图', '结构图', '流程图', '示意图', '梳理', '脉络', '树状')
+# 字符画特征：模型偷懒用文字画图时会出现的痕迹
+_ASCII_ART = ('├', '└', '│', '┌', '┐', '└─', '```')
+
+
+def _wants_drawing(question):
+    return any(hint in str(question or '') for hint in _DRAW_HINTS)
+
+
+def _looks_like_ascii_art(text):
+    return any(mark in str(text or '') for mark in _ASCII_ART)
+
+
 def run_agent(ark, registry, question, ctx, max_rounds=4):
     """跑一次智能体回合，产出事件流。
 
@@ -106,11 +123,14 @@ def run_agent(ark, registry, question, ctx, max_rounds=4):
     """
     turn = AgentTurn()
     catalog = build_catalog(ctx.get('courses'))
+    user_content = ctx.get('user_content') or question
     messages = [
         {'role': 'system', 'content': AGENT_SYSTEM_PROMPT % catalog},
-        {'role': 'user', 'content': ctx.get('user_content') or question},
+        {'role': 'user', 'content': user_content},
     ]
     specs = registry.specs()
+    # 学生要图但模型没调工具时，最多补救一次。不靠模型自觉，靠机制兜底。
+    retried_for_drawing = False
 
     for round_no in range(1, max_rounds + 1):
         turn.rounds = round_no
@@ -131,7 +151,22 @@ def run_agent(ark, registry, question, ctx, max_rounds=4):
                 yield {'type': 'status', 'message': '正在想…'}
 
         if not pending:
-            break                              # 没有工具调用 → 回合结束
+            # 兜底：学生明确要图、模型却交了文字（尤其字符画），
+            # 说明它没听话。作废这段输出，加一条强指令让它重来。
+            if (not retried_for_drawing and not turn.tools_used
+                    and _wants_drawing(question)
+                    and (_looks_like_ascii_art(text) or len(text) > 240)):
+                retried_for_drawing = True
+                messages.append({'role': 'assistant', 'content': text or ''})
+                messages.append({'role': 'user', 'content':
+                    '停。我刚说的是要一张图，不是一段文字。请立刻调用 draw_mindmap 或 '
+                    'draw_flowchart 把图画出来，不要用代码块或 ├─ │ 这类字符画图，'
+                    '也不要用文字罗列结构。'})
+                turn.text = turn.text[:-len(text)] if text and turn.text.endswith(text) else turn.text
+                if text:
+                    yield {'type': 'reset_text'}
+                continue
+            break                              # 正常没工具调用 → 回合结束
 
         # 模型经常在调工具前先说一句「好的，我来画一个…」（有时还是英文）。
         # 这句话是过程噪音，而且系统已经用 stage 事件显示了进度，

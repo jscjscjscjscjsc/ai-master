@@ -190,6 +190,124 @@ const CoachPage = {
     return row;
   },
 
+  /* ── 智能体图元 ────────────────────────────────────── */
+  /* 工具画出来的图挂在这里。每张图独立成卡片，可单独下载：
+     学生经常想把导图存下来贴进笔记，所以「存图」按钮是必要的，
+     不是装饰。
+
+     注意：图卡片必须挂在气泡里、且和文字分属不同容器。
+     文字是流式更新的（每来一段就重写 innerHTML），如果图也放在
+     被重写的那个容器里，第二轮回答一开始就会把刚画好的图冲掉。 */
+  addRender(row, data) {
+    const kinds = { mindmap: '思维导图', flowchart: '流程图', array: '示意图' };
+    // AgentViz 在本文件之前加载；两种取法都兼容，避免顶层 const 不挂 window 的坑。
+    const viz = window.AgentViz || (typeof AgentViz !== 'undefined' ? AgentViz : null);
+    const svg = viz ? viz.render(data) : '';
+    if (!svg) return null;
+    const card = document.createElement('div');
+    card.className = 'viz-card';
+    card.innerHTML = `
+      <div class="viz-head">
+        <b>${Star.esc(data.title || '')}</b>
+        <span class="viz-kind">${kinds[data.kind] || data.kind}</span>
+        <button data-act="save">存为图片</button>
+      </div>
+      <div class="viz-body">${svg}</div>`;
+    card.querySelector('[data-act="save"]').addEventListener('click', () => {
+      this.saveViz(card.querySelector('svg'), data.title || data.kind);
+    });
+    const bubble = row.querySelector('.bubble');
+    bubble.appendChild(card);
+    document.getElementById('coach-thread').scrollTop = 1e6;
+    return card;
+  },
+
+  /* 文本容器：所有流式文字都写进这里，绝不碰 .bubble 的 innerHTML，
+     否则会把图卡片一起冲掉。 */
+  textBox(row) {
+    const bubble = row.querySelector('.bubble');
+    let box = bubble.querySelector('.msg-text');
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'msg-text';
+      bubble.insertBefore(box, bubble.firstChild);
+    }
+    return box;
+  },
+
+  /* 把 SVG 导出成 PNG。不用 canvas.toBlob 直接存 SVG，
+     因为多数聊天软件和笔记不认 SVG；转成 PNG 才能随手贴。 */
+  saveViz(svg, name) {
+    try {
+      const box = svg.getBoundingClientRect();
+      const scale = 2;                       // 2 倍图，贴进文档不糊
+      const clone = svg.cloneNode(true);
+      clone.setAttribute('width', box.width * scale);
+      clone.setAttribute('height', box.height * scale);
+      const blob = new Blob(
+        ['<?xml version="1.0" encoding="UTF-8"?>' + new XMLSerializer().serializeToString(clone)],
+        { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = box.width * scale;
+        canvas.height = box.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#0a1024';           // 深色底，贴到浅色背景也不突兀
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((out) => {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(out);
+          link.download = `${String(name).replace(/[\\/:*?"<>|]/g, '')}.png`;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+          Star.toast('已存成 PNG，可以直接贴进笔记', 'good');
+        });
+      };
+      image.onerror = () => { URL.revokeObjectURL(url); Star.toast('存图失败，可以截屏保存', 'bad'); };
+      image.src = url;
+    } catch (error) {
+      Star.toast('存图失败，可以截屏保存', 'bad');
+    }
+  },
+
+  /* 工具执行中的一行提示。同一个工具重复调用就复用那一行，不刷屏。 */
+  setStage(row, message) {
+    const bubble = row.querySelector('.bubble');
+    let box = row.querySelector('.viz-stage');
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'viz-stage';
+      bubble.appendChild(box);
+    }
+    box.innerHTML = `<span class="dot"></span><span>${Star.esc(message)}</span>`;
+    box.classList.remove('done');
+    document.getElementById('coach-thread').scrollTop = 1e6;
+  },
+
+  finishStage(row, label) {
+    const box = row.querySelector('.viz-stage');
+    if (!box) return;
+    box.classList.add('done');
+    box.innerHTML = `<span>${Star.esc(label || '完成')}</span>`;
+  },
+
+  /* 导航提示条。不直接跳页（会打断学生看讲解），
+     给一个按钮让他自己决定什么时候去。 */
+  addGoto(row, action, url) {
+    if (!action || !url) return;
+    const bubble = row.querySelector('.bubble');
+    const box = document.createElement('div');
+    box.className = 'viz-goto';
+    box.innerHTML = `<span>${Star.esc(action.label || '去看看')}</span>
+      <a href="${Star.esc(url)}">现在就去 →</a>`;
+    bubble.appendChild(box);
+    document.getElementById('coach-thread').scrollTop = 1e6;
+  },
+
   addTools(row, text) {
     const tools = row.querySelector('.msg-tools');
     const speak = document.createElement('button');
@@ -217,28 +335,65 @@ const CoachPage = {
     input.value = '';
     this.push('me', Star.esc(question).replace(/\n/g, '<br>'));
     const seq = ++this.seq;
-    const row = this.push('jj', '<span class="typing">正在想</span>');
-    const bubble = row.querySelector('.bubble');
+    const row = this.push('jj', '');
     let answer = '';
+    // 所有文字都写进 .msg-text，图卡片另放。两者互不干扰，
+    // 流式更新文字时不会把已经画好的图冲掉。
+    const textBox = this.textBox(row);
+
+    // 面试模式仍走原来的单轮接口（面试官不需要工具）；
+    // 答疑模式走「管家智能体」，它能查进度、画图、带你跳页。
+    const endpoint = this.mode === 'interview' ? '/api/coach/chat' : '/api/agent/stream';
+
+    /* 页面信息只在真正知道的时候才传。以前无论在哪都拼一句「第 ? 章 ·」
+       塞给模型，那是纯噪音，会干扰它判断学生当前在哪。 */
+    const chapterId = document.body.dataset.chapterId || '';
+    const pageBits = [];
+    if (chapterId) pageBits.push(`第 ${chapterId} 章`);
+    if (document.body.dataset.page) pageBits.push(document.body.dataset.page);
 
     try {
-      await Star.stream('/api/coach/chat', {
+      await Star.stream(endpoint, {
         question,
         session_id: this.sessionId,
         mode: this.mode,
-        page: `第 ${document.body.dataset.chapterId || '?'} 章 · ${document.body.dataset.page || ''}`,
-        chapter_id: document.body.dataset.chapterId || '',
+        page: pageBits.join(' · '),
+        chapter_id: chapterId,
       }, {
+        /* 智能体一轮里可能要跑工具、画图、再写解释，比普通问答慢，
+           默认 90 秒不够；给它 3 分钟。 */
+        timeout: this.mode === 'interview' ? 90000 : 180000,
         onSession: (event) => { if (!this.sessionId) this.sessionId = event.session_id; },
-        onStatus: (message) => { if (!answer) bubble.innerHTML = `<span class="typing">${Star.esc(message)}</span>`; },
+        onStatus: (message) => {
+          if (!answer) textBox.innerHTML = `<span class="typing">${Star.esc(message)}</span>`;
+        },
         onDelta: (text) => {
           if (seq !== this.seq) return;
           answer = text;
-          bubble.innerHTML = `<div class="md">${Star.md(text)}</div>`;
+          textBox.innerHTML = `<div class="md">${Star.md(text)}</div>`;
           document.getElementById('coach-thread').scrollTop = 1e6;
         },
+        /* 模型有时会在调工具前先嘀咕一句（还可能是英文），
+           后端把那一轮文字作废。 */
+        onResetText: () => {
+          answer = '';
+          textBox.innerHTML = '<span class="typing">正在处理</span>';
+        },
+        /* 工具开始干活：显示「正在画思维导图…」这类进度 */
+        onStage: (event) => this.setStage(row, event.message),
+        onTool: (event) => this.finishStage(row, event.label),
+        /* 图到手：渲染成 SVG 卡片 */
+        onRender: (event) => {
+          if (seq !== this.seq) return;
+          this.addRender(row, event.render);
+        },
+        /* 导航动作：给一条可点的提示，不强行跳页 */
+        onNavigate: (event) => {
+          if (seq !== this.seq) return;
+          this.addGoto(row, event.action, event.action_url);
+        },
         onReplace: (event) => {
-          if (event.text) bubble.innerHTML = `<div class="md">${Star.md(event.text)}</div>`;
+          if (event.text) textBox.innerHTML = `<div class="md">${Star.md(event.text)}</div>`;
           if (event.score !== undefined && event.score !== null) {
             const badge = row.querySelector('.msg-score');
             badge.textContent = `${event.score} 分`;
@@ -261,16 +416,21 @@ const CoachPage = {
         },
         onDone: () => {
           this.lastAnswer = answer;
-          if (answer) this.addTools(row, answer);
+          if (answer) {
+            // 只重写文字容器，图卡片原样保留（这是画完图后图表能留下来的关键）
+            const md = textBox.querySelector('.md');
+            if (md) md.innerHTML = Star.md(answer);
+            this.addTools(row, answer);
+          }
           if (this.voiceOn && this.mode !== 'interview') this.speak(answer, 'coach');
           this.loadSessions();
         },
         onError: (message) => {
-          bubble.innerHTML = `<span style="color:var(--rose)">${Star.esc(message)}</span>`;
+          textBox.innerHTML = `<span style="color:var(--rose)">${Star.esc(message)}</span>`;
         },
       });
     } catch (error) {
-      bubble.innerHTML = `<span style="color:var(--rose)">${Star.esc(error.message)}</span>`;
+      textBox.innerHTML = `<span style="color:var(--rose)">${Star.esc(error.message)}</span>`;
     }
   },
 

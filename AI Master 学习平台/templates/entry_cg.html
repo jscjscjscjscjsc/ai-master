@@ -209,6 +209,14 @@ h1 em{font-style:normal;color:var(--cyan)}
     $('#route').innerHTML = a.route.map((t) => `<span>${t}</span>`).join('');
     navBtns.forEach((b, k) => b.classList.toggle('on', k === i));
     $('#sig').textContent = `${a.cn.toUpperCase()} / ${String(i + 1).padStart(2, '0')}`;
+    // 末幕把「继续」的含义说清楚：这里是出口，不是还能往后翻。
+    // 提示语按输入方式分开写 —— 触屏没有空格键，给它桌面那套提示等于没说。
+    const atEnd = i === LAST;
+    $('#hint').textContent = atEnd
+      ? (COARSE ? '点「进入学习界面」继续' : '空格 / 回车 进入学习界面')
+      : (COARSE ? '左右滑动翻阅' : '滚轮 / 拖拽 / 方向键 翻阅 · 空格继续');
+    $('#skip').innerHTML = atEnd ? '进入学习界面 <span aria-hidden="true">→</span>'
+                                 : '跳过开场 <span aria-hidden="true">→</span>';
     // 逐个点亮标签，做出「正在装载」的节奏（比一次性全亮更像系统在工作）
     [...$('#route').children].forEach((el, k) =>
       setTimeout(() => el.classList.add('on'), 200 + k * 250));
@@ -572,7 +580,12 @@ h1 em{font-style:normal;color:var(--cyan)}
 
   /* ── 交互 ─────────────────────────────────────────────── */
   function goTo(i, user) { S.target = clamp(i, 0, LAST); if (user) stopAuto(); }
-  function next() { goTo(Math.round(S.pos) + 1, true); }
+  function next() {
+    // 末幕的「继续」就是出站：否则按空格被 clamp 弹回原处，
+    // 界面写着"空格继续"却毫无反应，看完的人只能自己去找跳过按钮。
+    if (Math.round(S.pos) >= LAST) { finish(); return; }
+    goTo(Math.round(S.pos) + 1, true);
+  }
   function stopAuto() {
     S.auto = false;
     if (S.autoTimer) { clearTimeout(S.autoTimer); S.autoTimer = null; }
@@ -607,7 +620,9 @@ h1 em{font-style:normal;color:var(--cyan)}
   addEventListener('pointercancel', () => { S.dragging = false; });
 
   addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault(); next();
+    }
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goTo(Math.round(S.pos) - 1, true); }
     else if (e.key === 'Home') goTo(0, true);
     else if (e.key === 'End') goTo(LAST, true);
@@ -621,6 +636,9 @@ h1 em{font-style:normal;color:var(--cyan)}
   function finish() {
     if (finished) return;
     finished = true; disposed = true;
+    // 落标记：看板靠它判断"这个会话已经看过片头"。
+    // 漏写这一步会造成 看板 → 片头 → 看板 的死循环（学生反馈的真实故障）。
+    try { sessionStorage.setItem('aimaster_entry_seen', '1'); } catch (e) { /* 写入被拒也照常出站 */ }
     if (S.autoTimer) clearTimeout(S.autoTimer);
     if (frame) cancelAnimationFrame(frame);
     // 一次快速的亮度收束再跳转：直接跳会显得很「断」
@@ -655,7 +673,6 @@ h1 em{font-style:normal;color:var(--cyan)}
   }
   paintAct(START);
   if (START === LAST) S.auto = false; else scheduleAuto();
-  if (COARSE) $('#hint').textContent = '左右滑动翻阅';
 })();
 </script>
 </body>

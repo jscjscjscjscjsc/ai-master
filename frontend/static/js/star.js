@@ -76,6 +76,22 @@ const Star = {
           } else if (event.type === 'done') {
             done = true;
             if (handlers.onDone) handlers.onDone(event);
+          } else if (event.type === 'stage') {
+            /* 智能体开始调某个工具（「正在画思维导图…」） */
+            if (handlers.onStage) handlers.onStage(event);
+          } else if (event.type === 'tool') {
+            /* 工具执行完了，带成功标志与一句话结果 */
+            if (handlers.onTool) handlers.onTool(event);
+          } else if (event.type === 'render') {
+            /* 要画给学生看的图（导图 / 流程图 / 数组图） */
+            if (handlers.onRender) handlers.onRender(event);
+          } else if (event.type === 'navigate') {
+            /* 智能体要带学生去某个页面 */
+            if (handlers.onNavigate) handlers.onNavigate(event);
+          } else if (event.type === 'reset_text') {
+            /* 模型在调工具前先说了句废话，后端作废掉这一轮文字 */
+            answer = '';
+            if (handlers.onResetText) handlers.onResetText(event);
           }
         }
         if (chunk.done) break;
